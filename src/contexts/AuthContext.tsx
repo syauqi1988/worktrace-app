@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
-interface User {
-  id: string;
-  email: string;
-}
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 interface Profile {
   id: string;
@@ -38,78 +35,100 @@ export function useAuth() {
   return ctx;
 }
 
-// Mock auth for now — will be replaced with Supabase
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('worktrace_user');
-    const storedProfile = localStorage.getItem('worktrace_profile');
-    if (stored) {
-      setUser(JSON.parse(stored));
-      if (storedProfile) setProfile(JSON.parse(storedProfile));
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (!error && data) {
+      setProfile(data as Profile);
     }
-    setLoading(false);
   }, []);
 
+  useEffect(() => {
+    // Restore session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        fetchProfile(currentUser.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes — no async callback to avoid deadlocks
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          // Wrap in setTimeout to avoid deadlock per Supabase guidance
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [fetchProfile]);
+
   const signInWithOtp = async (email: string): Promise<{ error?: string }> => {
-    // Mock: always succeed
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) return { error: error.message };
     return {};
   };
 
   const verifyOtp = async (email: string, token: string): Promise<{ error?: string; isNewUser?: boolean }> => {
-    if (token === '000000') {
-      return { error: 'Kod tidak sah atau telah tamat tempoh' };
-    }
-    const id = crypto.randomUUID();
-    const newUser = { id, email };
-    setUser(newUser);
-    localStorage.setItem('worktrace_user', JSON.stringify(newUser));
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+    if (error) return { error: error.message };
 
-    const existingProfile = localStorage.getItem('worktrace_profile');
-    if (existingProfile) {
-      const p = JSON.parse(existingProfile);
-      setProfile(p);
-      return { isNewUser: !p.onboarding_complete };
+    const userId = data.user?.id;
+    if (!userId) return { error: 'Ralat pengesahan' };
+
+    // Fetch profile to check onboarding status
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (profileData) {
+      setProfile(profileData as Profile);
+      return { isNewUser: !profileData.onboarding_complete };
     }
 
-    const newProfile: Profile = {
-      id,
-      company_name: null,
-      phone: null,
-      address: null,
-      logo_url: null,
-      plan: 'free',
-      tin_number: null,
-      msic_code: null,
-      sst_registered: false,
-      lhdn_enabled: false,
-      onboarding_complete: false,
-    };
-    setProfile(newProfile);
-    localStorage.setItem('worktrace_profile', JSON.stringify(newProfile));
+    // Profile should be auto-created by trigger, but if not found yet, it's a new user
     return { isNewUser: true };
   };
 
   const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
-    localStorage.removeItem('worktrace_user');
-    localStorage.removeItem('worktrace_profile');
   };
 
   const updateProfile = async (data: Partial<Profile>) => {
-    if (!profile) return;
-    const updated = { ...profile, ...data };
-    setProfile(updated);
-    localStorage.setItem('worktrace_profile', JSON.stringify(updated));
+    if (!user) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', user.id);
+    if (!error) {
+      setProfile(prev => prev ? { ...prev, ...data } : null);
+    }
   };
 
   const refreshProfile = async () => {
-    const stored = localStorage.getItem('worktrace_profile');
-    if (stored) setProfile(JSON.parse(stored));
+    if (user) await fetchProfile(user.id);
   };
 
   return (
