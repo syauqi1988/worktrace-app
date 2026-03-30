@@ -34,9 +34,13 @@ const App = () => (
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="jobs" element={<PlaceholderPage title="Kerja" />} />
+              <Route path="jobs/new" element={<PlaceholderPage title="Kerja Baru" />} />
+              <Route path="jobs/:id" element={<PlaceholderPage title="Kerja" />} />
               <Route path="customers" element={<PlaceholderPage title="Pelanggan" />} />
+              <Route path="customers/new" element={<PlaceholderPage title="Pelanggan Baru" />} />
               <Route path="quotations" element={<PlaceholderPage title="Sebut Harga" />} />
               <Route path="invoices" element={<PlaceholderPage title="Invois" />} />
+              <Route path="invoices/new" element={<PlaceholderPage title="Invois Baru" />} />
               <Route path="settings" element={<PlaceholderPage title="Tetapan" />} />
               <Route path="profile" element={<PlaceholderPage title="Profil" />} />
             </Route>
