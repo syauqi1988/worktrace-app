@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 60 100% 100%;
     --foreground: 215 28% 10%;
 
     --card: 0 0% 100%;
@@ -65,7 +65,3 @@
   }
 }
 
-/* Logo filter for dark version on light backgrounds */
-.logo-dark {
-  filter: brightness(0) saturate(100%) invert(10%) sepia(40%) saturate(800%) hue-rotate(195deg) brightness(90%);
-}

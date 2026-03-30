@@ -105,7 +105,7 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6">
         {/* Mobile logo */}
         <div className="md:hidden mb-8">
-          <img src={logo} alt="WorkTrace" className="h-10 logo-dark" />
+          <img src={logo} alt="WorkTrace" className="h-10" style={{ background: 'transparent' }} />
         </div>
 
         <div className="w-full max-w-sm">
