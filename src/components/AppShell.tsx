@@ -5,6 +5,9 @@ import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut
 } from 'lucide-react';
+import {
+  Sheet, SheetContent, SheetTrigger, SheetClose,
+} from '@/components/ui/sheet';
 import logo from '@/assets/logo.svg';
 
 const NAV_ITEMS = [
@@ -23,6 +26,17 @@ const BOTTOM_TABS = [
   { to: '/profile', label: 'Profil', icon: User },
 ];
 
+const QUICK_ACTIONS = [
+  { label: 'Kerja Baru', to: '/jobs/new', icon: Briefcase },
+  { label: 'Pelanggan Baru', to: '/customers/new', icon: Users },
+  { label: 'Invois Baru', to: '/invoices/new', icon: Receipt },
+];
+
+function isNavActive(pathname: string, to: string) {
+  if (to === '/dashboard') return pathname === '/dashboard';
+  return pathname === to || pathname.startsWith(to + '/');
+}
+
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickActionOpen, setQuickActionOpen] = useState(false);
@@ -40,6 +54,15 @@ export default function AppShell() {
     navigate('/login');
   };
 
+  const navLinkClass = (to: string) => {
+    const active = isNavActive(location.pathname, to);
+    return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      active
+        ? 'bg-navy-foreground text-navy'
+        : 'text-navy-foreground/80 hover:bg-navy-foreground/[0.08]'
+    }`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Top Header */}
@@ -47,7 +70,7 @@ export default function AppShell() {
         <button onClick={() => setSidebarOpen(true)} className="md:hidden text-navy-foreground mr-3">
           <Menu className="h-5 w-5" />
         </button>
-        <img src={logo} alt="WorkTrace" className="h-9" />
+        <img src={logo} alt="WorkTrace" className="h-9" style={{ background: 'transparent' }} />
         <div className="flex-1" />
         <div className="relative">
           <button
@@ -59,7 +82,12 @@ export default function AppShell() {
           {profileDropdown && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setProfileDropdown(false)} />
-              <div className="absolute right-0 mt-2 w-44 bg-card rounded-xl shadow-lg border border-border z-50 py-1">
+              <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl shadow-lg border border-border z-50 py-1">
+                {/* User info */}
+                <div className="px-4 py-3 border-b border-border">
+                  <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || 'Syarikat'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                </div>
                 <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2">
                   <User className="h-4 w-4" /> Profil
                 </button>
@@ -84,13 +112,7 @@ export default function AppShell() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-navy-foreground text-navy'
-                      : 'text-navy-foreground/80 hover:bg-navy-foreground/[0.08]'
-                  }`
-                }
+                className={() => navLinkClass(item.to)}
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
@@ -105,7 +127,7 @@ export default function AppShell() {
             <div className="fixed inset-0 bg-foreground/40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
             <aside className="fixed inset-y-0 left-0 w-[260px] bg-navy z-50 md:hidden animate-slide-in-left flex flex-col">
               <div className="flex items-center justify-between px-5 py-4 border-b border-navy-foreground/10">
-                <img src={logo} alt="WorkTrace" className="h-9" />
+                <img src={logo} alt="WorkTrace" className="h-9" style={{ background: 'transparent' }} />
                 <button onClick={() => setSidebarOpen(false)} className="text-navy-foreground">
                   <X className="h-5 w-5" />
                 </button>
@@ -116,13 +138,7 @@ export default function AppShell() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setSidebarOpen(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-navy-foreground text-navy'
-                          : 'text-navy-foreground/80 hover:bg-navy-foreground/[0.08]'
-                      }`
-                    }
+                    className={() => navLinkClass(item.to)}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}
@@ -142,7 +158,7 @@ export default function AppShell() {
       {/* Bottom nav — mobile */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 flex items-center justify-around h-16 safe-area-pb">
         {BOTTOM_TABS.slice(0, 2).map(tab => {
-          const active = location.pathname === tab.to;
+          const active = isNavActive(location.pathname, tab.to);
           return (
             <NavLink key={tab.to} to={tab.to} className="flex flex-col items-center gap-0.5 py-1">
               <tab.icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -151,28 +167,33 @@ export default function AppShell() {
           );
         })}
 
-        {/* Quick action + */}
-        <div className="relative">
-          <button
-            onClick={() => setQuickActionOpen(!quickActionOpen)}
-            className="h-12 w-12 rounded-full bg-primary flex items-center justify-center -mt-4 shadow-lg"
-          >
-            <Plus className="h-6 w-6 text-primary-foreground" />
-          </button>
-          {quickActionOpen && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setQuickActionOpen(false)} />
-              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-48 bg-card rounded-xl shadow-lg border border-border z-40 py-1">
-                <button onClick={() => { setQuickActionOpen(false); navigate('/jobs/new'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent">Kerja Baru</button>
-                <button onClick={() => { setQuickActionOpen(false); navigate('/customers/new'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent">Pelanggan Baru</button>
-                <button onClick={() => { setQuickActionOpen(false); navigate('/invoices/new'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent">Invois Baru</button>
-              </div>
-            </>
-          )}
-        </div>
+        {/* Quick action + (Sheet) */}
+        <Sheet open={quickActionOpen} onOpenChange={setQuickActionOpen}>
+          <SheetTrigger asChild>
+            <button className="h-12 w-12 rounded-full bg-primary flex items-center justify-center -mt-4 shadow-lg">
+              <Plus className="h-6 w-6 text-primary-foreground" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="rounded-t-2xl px-6 pb-8 pt-4">
+            <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
+            <div className="space-y-1">
+              {QUICK_ACTIONS.map(action => (
+                <SheetClose key={action.to} asChild>
+                  <button
+                    onClick={() => navigate(action.to)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors"
+                  >
+                    <action.icon className="h-5 w-5 text-muted-foreground" />
+                    {action.label}
+                  </button>
+                </SheetClose>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {BOTTOM_TABS.slice(2).map(tab => {
-          const active = location.pathname === tab.to;
+          const active = isNavActive(location.pathname, tab.to);
           return (
             <NavLink key={tab.to} to={tab.to} className="flex flex-col items-center gap-0.5 py-1">
               <tab.icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
