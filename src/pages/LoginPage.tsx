@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft } from 'lucide-react';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/logo-new.png';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -97,7 +97,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       {/* Left panel — desktop only */}
       <div className="hidden md:flex md:w-1/2 bg-navy flex-col items-center justify-center">
-        <img src={logo} alt="WorkTrace" className="h-12 mb-4 border-4 border-primary-foreground opacity-100 bg-transparent" />
+        <img src={logo} alt="WorkTrace" className="h-12 mb-4 opacity-100 bg-transparent border-transparent border-0" />
         <p className="text-navy-foreground/80 text-lg">Jejak Kerja. Senang Collect.</p>
       </div>
 
