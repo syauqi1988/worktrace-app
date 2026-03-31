@@ -56,21 +56,21 @@ export default function AppShell() {
 
   const navLinkClass = (to: string) => {
     const active = isNavActive(location.pathname, to);
-    return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+    return `flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
       active
-        ? 'bg-navy-foreground text-navy'
-        : 'text-navy-foreground/80 hover:bg-navy-foreground/[0.08]'
+        ? 'bg-primary text-primary-foreground'
+        : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
     }`;
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Top Header */}
-      <header className="sticky top-0 z-50 h-14 bg-navy flex items-center px-4 shrink-0">
-        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-navy-foreground mr-3">
+      <header className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 shrink-0">
+        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">
           <Menu className="h-5 w-5" />
         </button>
-        <img src={logo} alt="WorkTrace" className="h-9" style={{ background: 'transparent' }} />
+        <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
         <div className="flex-1" />
         <div className="relative">
           <button
@@ -82,20 +82,19 @@ export default function AppShell() {
           {profileDropdown && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setProfileDropdown(false)} />
-              <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl shadow-lg border border-border z-50 py-1">
-                {/* User info */}
+              <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl border border-border z-50 py-1" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                 <div className="px-4 py-3 border-b border-border">
                   <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || 'Syarikat'}</p>
                   <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
-                <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2">
+                <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-sidebar-background flex items-center gap-2">
                   <User className="h-4 w-4" /> Profil
                 </button>
-                <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2">
+                <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-sidebar-background flex items-center gap-2">
                   <Settings className="h-4 w-4" /> Tetapan
                 </button>
                 <hr className="border-border my-1" />
-                <button onClick={handleSignOut} className="w-full px-4 py-2.5 text-left text-sm text-destructive hover:bg-accent flex items-center gap-2">
+                <button onClick={handleSignOut} className="w-full px-4 py-2.5 text-left text-sm text-destructive hover:bg-sidebar-background flex items-center gap-2">
                   <LogOut className="h-4 w-4" /> Log Keluar
                 </button>
               </div>
@@ -106,8 +105,8 @@ export default function AppShell() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — desktop */}
-        <aside className="hidden md:flex flex-col w-[220px] bg-navy shrink-0">
-          <nav className="flex-1 py-4 px-3 space-y-1">
+        <aside className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
+          <nav className="flex-1 py-4 space-y-1">
             {NAV_ITEMS.map(item => (
               <NavLink
                 key={item.to}
@@ -125,14 +124,14 @@ export default function AppShell() {
         {sidebarOpen && (
           <>
             <div className="fixed inset-0 bg-foreground/40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
-            <aside className="fixed inset-y-0 left-0 w-[260px] bg-navy z-50 md:hidden animate-slide-in-left flex flex-col">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-navy-foreground/10">
-                <img src={logo} alt="WorkTrace" className="h-9" style={{ background: 'transparent' }} />
-                <button onClick={() => setSidebarOpen(false)} className="text-navy-foreground">
+            <aside className="fixed inset-y-0 left-0 w-[260px] bg-sidebar z-50 md:hidden animate-slide-in-left flex flex-col border-r border-border">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
+                <button onClick={() => setSidebarOpen(false)} className="text-muted-foreground">
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <nav className="flex-1 py-4 px-3 space-y-1">
+              <nav className="flex-1 py-4 space-y-1">
                 {NAV_ITEMS.map(item => (
                   <NavLink
                     key={item.to}
