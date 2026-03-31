@@ -97,7 +97,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       {/* Left panel — desktop only */}
       <div className="hidden md:flex md:w-1/2 bg-navy flex-col items-center justify-center">
-        <img src={logo} alt="WorkTrace" className="h-12 mb-4" />
+        <img src={logo} alt="WorkTrace" className="h-12 mb-4 border-4 border-primary-foreground opacity-100 bg-transparent" />
         <p className="text-navy-foreground/80 text-lg">Jejak Kerja. Senang Collect.</p>
       </div>
 
