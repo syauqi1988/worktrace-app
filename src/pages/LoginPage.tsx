@@ -96,16 +96,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — desktop only */}
-      <div className="hidden md:flex md:w-1/2 bg-navy flex-col items-center justify-center">
+      <div className="hidden md:flex md:w-1/2 bg-primary flex-col items-center justify-center">
         <img src={logo} alt="WorkTrace" className="h-12 mb-4 opacity-100 bg-transparent border-transparent border-0" />
-        <p className="text-navy-foreground/80 text-lg">Jejak Kerja. Senang Collect.</p>
+        <p className="text-primary-foreground/80 text-lg">Jejak Kerja. Senang Collect.</p>
       </div>
 
       {/* Right panel / mobile full */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 bg-card">
         {/* Mobile logo */}
         <div className="md:hidden mb-8">
-          <img src={logo} alt="WorkTrace" className="h-10" style={{ background: 'transparent' }} />
+          <img src={logo} alt="WorkTrace" className="h-10 logo-dark" style={{ background: 'transparent' }} />
         </div>
 
         <div className="w-full max-w-sm">
