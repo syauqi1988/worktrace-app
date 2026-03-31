@@ -8,7 +8,7 @@ import {
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
 } from '@/components/ui/sheet';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/logo.png';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
