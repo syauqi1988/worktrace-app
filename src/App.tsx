@@ -11,6 +11,9 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import AuthCallback from "@/pages/AuthCallback";
 import DashboardPage from "@/pages/DashboardPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
+import JobsListPage from "@/pages/JobsListPage";
+import JobDetailPage from "@/pages/JobDetailPage";
+import JobFormPage from "@/pages/JobFormPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,9 +36,10 @@ const App = () => (
             }>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="jobs" element={<PlaceholderPage title="Kerja" />} />
-              <Route path="jobs/new" element={<PlaceholderPage title="Kerja Baru" />} />
-              <Route path="jobs/:id" element={<PlaceholderPage title="Kerja" />} />
+              <Route path="jobs" element={<JobsListPage />} />
+              <Route path="jobs/new" element={<JobFormPage />} />
+              <Route path="jobs/:id" element={<JobDetailPage />} />
+              <Route path="jobs/:id/edit" element={<JobFormPage />} />
               <Route path="customers" element={<PlaceholderPage title="Pelanggan" />} />
               <Route path="customers/new" element={<PlaceholderPage title="Pelanggan Baru" />} />
               <Route path="quotations" element={<PlaceholderPage title="Sebut Harga" />} />
