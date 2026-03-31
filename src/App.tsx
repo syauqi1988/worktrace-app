@@ -11,6 +11,9 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import AuthCallback from "@/pages/AuthCallback";
 import DashboardPage from "@/pages/DashboardPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
+import JobsListPage from "@/pages/JobsListPage";
+import JobDetailPage from "@/pages/JobDetailPage";
+import JobFormPage from "@/pages/JobFormPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
