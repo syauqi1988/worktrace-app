@@ -15,6 +15,7 @@ import JobsListPage from "@/pages/JobsListPage";
 import JobDetailPage from "@/pages/JobDetailPage";
 import JobFormPage from "@/pages/JobFormPage";
 import NotFound from "@/pages/NotFound";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      <Analytics />
     </TooltipProvider>
   </QueryClientProvider>
 );
