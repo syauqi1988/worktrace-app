@@ -14,6 +14,9 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import JobsListPage from "@/pages/JobsListPage";
 import JobDetailPage from "@/pages/JobDetailPage";
 import JobFormPage from "@/pages/JobFormPage";
+import CustomersListPage from "@/pages/CustomersListPage";
+import CustomerDetailPage from "@/pages/CustomerDetailPage";
+import CustomerFormPage from "@/pages/CustomerFormPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,8 +43,10 @@ const App = () => (
               <Route path="jobs/new" element={<JobFormPage />} />
               <Route path="jobs/:id" element={<JobDetailPage />} />
               <Route path="jobs/:id/edit" element={<JobFormPage />} />
-              <Route path="customers" element={<PlaceholderPage title="Pelanggan" />} />
-              <Route path="customers/new" element={<PlaceholderPage title="Pelanggan Baru" />} />
+              <Route path="customers" element={<CustomersListPage />} />
+              <Route path="customers/new" element={<CustomerFormPage />} />
+              <Route path="customers/:id" element={<CustomerDetailPage />} />
+              <Route path="customers/:id/edit" element={<CustomerFormPage />} />
               <Route path="quotations" element={<PlaceholderPage title="Sebut Harga" />} />
               <Route path="invoices" element={<PlaceholderPage title="Invois" />} />
               <Route path="invoices/new" element={<PlaceholderPage title="Invois Baru" />} />
