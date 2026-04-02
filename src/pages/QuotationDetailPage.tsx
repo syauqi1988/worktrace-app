@@ -39,6 +39,7 @@ interface Quotation {
     id: string;
     job_number: string;
     title: string;
+    customer_id: string | null;
     customers: { name: string; phone: string | null } | null;
   } | null;
 }
