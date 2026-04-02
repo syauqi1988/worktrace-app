@@ -11,6 +11,9 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import AuthCallback from "@/pages/AuthCallback";
 import DashboardPage from "@/pages/DashboardPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
+import QuotationsListPage from "@/pages/QuotationsListPage";
+import QuotationDetailPage from "@/pages/QuotationDetailPage";
+import QuotationFormPage from "@/pages/QuotationFormPage";
 import JobsListPage from "@/pages/JobsListPage";
 import JobDetailPage from "@/pages/JobDetailPage";
 import JobFormPage from "@/pages/JobFormPage";
@@ -47,7 +50,10 @@ const App = () => (
               <Route path="customers/new" element={<CustomerFormPage />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />
               <Route path="customers/:id/edit" element={<CustomerFormPage />} />
-              <Route path="quotations" element={<PlaceholderPage title="Sebut Harga" />} />
+              <Route path="quotations" element={<QuotationsListPage />} />
+              <Route path="quotations/new" element={<QuotationFormPage />} />
+              <Route path="quotations/:id" element={<QuotationDetailPage />} />
+              <Route path="quotations/:id/edit" element={<QuotationFormPage />} />
               <Route path="invoices" element={<PlaceholderPage title="Invois" />} />
               <Route path="invoices/new" element={<PlaceholderPage title="Invois Baru" />} />
               <Route path="settings" element={<PlaceholderPage title="Tetapan" />} />
