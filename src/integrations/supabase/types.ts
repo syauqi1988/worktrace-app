@@ -60,14 +60,19 @@ export type Database = {
         Row: {
           created_at: string
           customer_id: string | null
+          discount: number
           due_date: string | null
           id: string
           invoice_number: string
           issued_date: string | null
+          items: Json
           job_id: string | null
           notes: string | null
           paid_date: string | null
+          quote_id: string | null
           status: string
+          subtotal: number
+          tax_rate: number
           total: number
           updated_at: string
           user_id: string
@@ -75,14 +80,19 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_id?: string | null
+          discount?: number
           due_date?: string | null
           id?: string
           invoice_number: string
           issued_date?: string | null
+          items?: Json
           job_id?: string | null
           notes?: string | null
           paid_date?: string | null
+          quote_id?: string | null
           status?: string
+          subtotal?: number
+          tax_rate?: number
           total?: number
           updated_at?: string
           user_id: string
@@ -90,14 +100,19 @@ export type Database = {
         Update: {
           created_at?: string
           customer_id?: string | null
+          discount?: number
           due_date?: string | null
           id?: string
           invoice_number?: string
           issued_date?: string | null
+          items?: Json
           job_id?: string | null
           notes?: string | null
           paid_date?: string | null
+          quote_id?: string | null
           status?: string
+          subtotal?: number
+          tax_rate?: number
           total?: number
           updated_at?: string
           user_id?: string
@@ -115,6 +130,13 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
             referencedColumns: ["id"]
           },
         ]
@@ -225,6 +247,65 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quotations: {
+        Row: {
+          created_at: string
+          discount: number
+          id: string
+          items: Json
+          job_id: string | null
+          notes: string | null
+          quote_number: string
+          status: string
+          subtotal: number
+          tax_rate: number
+          total: number
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          discount?: number
+          id?: string
+          items?: Json
+          job_id?: string | null
+          notes?: string | null
+          quote_number: string
+          status?: string
+          subtotal?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          discount?: number
+          id?: string
+          items?: Json
+          job_id?: string | null
+          notes?: string | null
+          quote_number?: string
+          status?: string
+          subtotal?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
