@@ -165,7 +165,7 @@ export default function QuotationFormPage() {
         user_id: user!.id,
         job_id: selectedJob!.id,
         quote_number: quoteNumber,
-        items: items.filter(i => i.description.trim()) as unknown as Record<string, unknown>[],
+        items: items.filter(i => i.description.trim()) as any,
         subtotal,
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,

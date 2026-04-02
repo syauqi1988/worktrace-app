@@ -126,7 +126,7 @@ export default function QuotationDetailPage() {
         customer_id: quotation.jobs?.customers ? undefined : undefined,
         quote_id: quotation.id,
         invoice_number: invoiceNumber,
-        items: quotation.items as unknown as Record<string, unknown>[],
+        items: quotation.items as any,
         subtotal: quotation.subtotal,
         discount: quotation.discount,
         tax_rate: quotation.tax_rate,
