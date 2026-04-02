@@ -69,7 +69,7 @@ export default function QuotationDetailPage() {
     if (!user || !id) return;
     async function fetch() {
       const { data } = await supabase.from('quotations')
-        .select('*, jobs(id, job_number, title, customers(name, phone))')
+        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone))')
         .eq('id', id)
         .single();
       if (data) {
