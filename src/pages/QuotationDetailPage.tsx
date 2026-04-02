@@ -124,7 +124,7 @@ export default function QuotationDetailPage() {
       const { data, error } = await supabase.from('invoices').insert({
         user_id: user!.id,
         job_id: quotation.job_id,
-        customer_id: quotation.jobs?.customers ? undefined : undefined,
+        customer_id: quotation.jobs?.customer_id || null,
         quote_id: quotation.id,
         invoice_number: invoiceNumber,
         items: quotation.items as any,
