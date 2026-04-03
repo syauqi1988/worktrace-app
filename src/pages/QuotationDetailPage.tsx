@@ -209,10 +209,10 @@ export default function QuotationDetailPage() {
 
       {/* Info */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        {quotation.jobs?.customers && (
+        {(quotation.jobs as any)?.customers && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">{quotation.jobs.customers.name}</span>
+            <span className="text-sm font-medium text-foreground">{(quotation.jobs as any).customers.name}</span>
             {whatsappUrl && (
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full hover:bg-green-100 ml-auto">
