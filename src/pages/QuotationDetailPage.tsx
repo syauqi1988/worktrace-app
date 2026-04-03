@@ -7,7 +7,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download } from 'lucide-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import QuotationPDF from '@/components/pdf/QuotationPDF';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -40,7 +42,6 @@ interface Quotation {
     job_number: string;
     title: string;
     customer_id: string | null;
-    customers: { name: string; phone: string | null } | null;
   } | null;
 }
 
@@ -57,7 +58,7 @@ function formatPhone(phone: string): string {
 
 export default function QuotationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +70,7 @@ export default function QuotationDetailPage() {
     if (!user || !id) return;
     async function fetch() {
       const { data } = await supabase.from('quotations')
-        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone))')
+        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone, email, address, tin_number))')
         .eq('id', id)
         .single();
       if (data) {
@@ -147,8 +148,8 @@ export default function QuotationDetailPage() {
   };
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
-  const whatsappUrl = quotation?.jobs?.customers?.phone
-    ? `https://wa.me/${formatPhone(quotation.jobs.customers.phone)}`
+  const whatsappUrl = (quotation?.jobs as any)?.customers?.phone
+    ? `https://wa.me/${formatPhone((quotation!.jobs as any).customers.phone)}`
     : null;
 
   if (loading) {
@@ -208,10 +209,10 @@ export default function QuotationDetailPage() {
 
       {/* Info */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        {quotation.jobs?.customers && (
+        {(quotation.jobs as any)?.customers && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">{quotation.jobs.customers.name}</span>
+            <span className="text-sm font-medium text-foreground">{(quotation.jobs as any).customers.name}</span>
             {whatsappUrl && (
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full hover:bg-green-100 ml-auto">
@@ -328,6 +329,54 @@ export default function QuotationDetailPage() {
         {quotation.status === 'Rejected' && (
           <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="flex-1 rounded-lg">Buat Semula</Button>
         )}
+      </div>
+
+      {/* PDF Download */}
+      <div>
+        <PDFDownloadLink
+          document={
+            <QuotationPDF
+              quotation={{
+                quote_number: quotation.quote_number,
+                created_at: quotation.created_at,
+                valid_until: quotation.valid_until,
+                status: quotation.status,
+                items: quotation.items.map(item => ({
+                  description: item.description,
+                  qty: item.qty,
+                  unit_price: Number(item.unit_price) || 0,
+                  amount: (item.qty || 0) * (Number(item.unit_price) || 0),
+                })),
+                subtotal: quotation.subtotal,
+                discount: quotation.discount,
+                tax_rate: quotation.tax_rate,
+                total: quotation.total,
+                notes: quotation.notes,
+              }}
+              job={quotation.jobs ? { job_number: quotation.jobs.job_number, title: quotation.jobs.title } : null}
+              customer={(quotation.jobs as any)?.customers ? {
+                name: (quotation.jobs as any).customers.name,
+                phone: (quotation.jobs as any).customers.phone,
+                email: (quotation.jobs as any).customers.email,
+                address: (quotation.jobs as any).customers.address,
+              } : null}
+              company={{
+                company_name: profile?.company_name || null,
+                phone: profile?.phone || null,
+                address: profile?.address || null,
+                logo_url: profile?.logo_url || null,
+              }}
+            />
+          }
+          fileName={`SebuthHarga-${quotation.quote_number}.pdf`}
+        >
+          {({ loading: pdfLoading }) => (
+            <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
+              <Download className="h-4 w-4" />
+              {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+            </Button>
+          )}
+        </PDFDownloadLink>
       </div>
 
       {/* Delete Dialog */}
