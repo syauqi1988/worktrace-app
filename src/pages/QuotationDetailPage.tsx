@@ -148,8 +148,8 @@ export default function QuotationDetailPage() {
   };
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
-  const whatsappUrl = quotation?.jobs?.customers?.phone
-    ? `https://wa.me/${formatPhone(quotation.jobs.customers.phone)}`
+  const whatsappUrl = (quotation?.jobs as any)?.customers?.phone
+    ? `https://wa.me/${formatPhone((quotation!.jobs as any).customers.phone)}`
     : null;
 
   if (loading) {
