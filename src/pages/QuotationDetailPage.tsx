@@ -58,7 +58,7 @@ function formatPhone(phone: string): string {
 
 export default function QuotationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +70,7 @@ export default function QuotationDetailPage() {
     if (!user || !id) return;
     async function fetch() {
       const { data } = await supabase.from('quotations')
-        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone))')
+        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone, email, address, tin_number))')
         .eq('id', id)
         .single();
       if (data) {
