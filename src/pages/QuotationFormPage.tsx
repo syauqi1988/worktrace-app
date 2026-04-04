@@ -54,6 +54,10 @@ export default function QuotationFormPage() {
   });
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [existingQuotation, setExistingQuotation] = useState<{ id: string } | null>(null);
+  const [jobWarning, setJobWarning] = useState<{ message: string; link: string } | null>(null);
+  const [saveDisabled, setSaveDisabled] = useState(false);
+  const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
 
   // Fetch jobs
   useEffect(() => {
