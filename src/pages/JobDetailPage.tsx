@@ -80,7 +80,8 @@ export default function JobDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [quotation, setQuotation] = useState<Quotation | null>(null);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -88,17 +89,25 @@ export default function JobDetailPage() {
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
-      const [jobRes, invRes] = await Promise.all([
+      const [jobRes, quoRes, invRes] = await Promise.all([
         supabase.from('jobs')
           .select('*, customers(id, name, phone, email, address)')
           .eq('id', id)
           .single(),
+        supabase.from('quotations')
+          .select('id, quote_number, total, status, valid_until')
+          .eq('job_id', id)
+          .eq('user_id', user!.id)
+          .maybeSingle(),
         supabase.from('invoices')
           .select('id, invoice_number, total, status, due_date')
-          .eq('job_id', id),
+          .eq('job_id', id)
+          .eq('user_id', user!.id)
+          .maybeSingle(),
       ]);
       setJob(jobRes.data as unknown as Job);
-      setInvoices((invRes.data as Invoice[]) || []);
+      setQuotation(quoRes.data as Quotation | null);
+      setInvoice(invRes.data as Invoice | null);
       setLoading(false);
     }
     fetch();
