@@ -262,7 +262,20 @@ export default function QuotationFormPage() {
                 </div>
                 <div className="overflow-y-auto max-h-40">
                   {filteredJobs.map(j => (
-                    <button key={j.id} onClick={() => { setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' })); }}
+                    <button key={j.id} onClick={async () => {
+                      setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' }));
+                      // Check for existing quotation on this job
+                      if (!isEdit && user) {
+                        const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
+                        if (existing) {
+                          setJobWarning({ message: `Kerja ini sudah ada sebut harga.`, link: `/quotations/${existing.id}` });
+                          setSaveDisabled(true);
+                        } else {
+                          setJobWarning(null);
+                          setSaveDisabled(false);
+                        }
+                      }
+                    }}
                       className="w-full px-3 py-2 text-left hover:bg-accent text-sm">
                       <span className="font-medium text-primary">{j.job_number}</span>
                       <span className="text-foreground ml-1.5">— {j.title}</span>
