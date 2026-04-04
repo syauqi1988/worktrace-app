@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Search, Plus, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Job {
@@ -54,6 +54,10 @@ export default function QuotationFormPage() {
   });
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [existingQuotation, setExistingQuotation] = useState<{ id: string } | null>(null);
+  const [jobWarning, setJobWarning] = useState<{ message: string; link: string } | null>(null);
+  const [saveDisabled, setSaveDisabled] = useState(false);
+  const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
 
   // Fetch jobs
   useEffect(() => {
@@ -71,14 +75,24 @@ export default function QuotationFormPage() {
       });
   }, [user, isEdit]);
 
-  // Auto-select job from query param
+  // Auto-select job from query param + check for existing quotation
   useEffect(() => {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
       if (found) setSelectedJob(found);
+      // Check if quotation already exists for this job
+      if (user && !isEdit) {
+        supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+          .then(({ data }) => {
+            if (data) {
+              setExistingQuotation(data);
+              setBlockedJobId(jobId);
+            }
+          });
+      }
     }
-  }, [searchParams, jobs, selectedJob]);
+  }, [searchParams, jobs, selectedJob, user, isEdit]);
 
   // Fetch existing quotation for edit
   useEffect(() => {
@@ -204,6 +218,37 @@ export default function QuotationFormPage() {
     );
   }
 
+  // If blocked by existing quotation from job_id param
+  if (!isEdit && existingQuotation && blockedJobId) {
+    return (
+      <div className="p-4 md:p-6 space-y-5 max-w-2xl">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/quotations')} className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-xl font-bold text-foreground">Sebut Harga Baru</h1>
+        </div>
+        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-[#B45309]" />
+            <h2 className="text-base font-bold text-[#B45309]">Sebut harga sudah wujud</h2>
+          </div>
+          <p className="text-sm text-[#B45309]">
+            Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">
+              Lihat Sebut Harga
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">
+              Kembali ke Kerja
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
       {/* Header */}
@@ -248,7 +293,20 @@ export default function QuotationFormPage() {
                 </div>
                 <div className="overflow-y-auto max-h-40">
                   {filteredJobs.map(j => (
-                    <button key={j.id} onClick={() => { setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' })); }}
+                    <button key={j.id} onClick={async () => {
+                      setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' }));
+                      // Check for existing quotation on this job
+                      if (!isEdit && user) {
+                        const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
+                        if (existing) {
+                          setJobWarning({ message: `Kerja ini sudah ada sebut harga.`, link: `/quotations/${existing.id}` });
+                          setSaveDisabled(true);
+                        } else {
+                          setJobWarning(null);
+                          setSaveDisabled(false);
+                        }
+                      }
+                    }}
                       className="w-full px-3 py-2 text-left hover:bg-accent text-sm">
                       <span className="font-medium text-primary">{j.job_number}</span>
                       <span className="text-foreground ml-1.5">— {j.title}</span>
@@ -262,6 +320,15 @@ export default function QuotationFormPage() {
           )}
         </div>
         {errors.job && <p className="text-xs text-destructive">{errors.job}</p>}
+        {jobWarning && (
+          <div className="flex items-start gap-2 bg-[#FEF3C7] border border-[#FDE68A] rounded-lg p-3 mt-1.5">
+            <AlertCircle className="h-4 w-4 text-[#B45309] shrink-0 mt-0.5" />
+            <div className="text-sm text-[#B45309]">
+              {jobWarning.message}{' '}
+              <Link to={jobWarning.link} className="underline font-medium hover:text-[#92400E]">Lihat sebut harga →</Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Customer display */}
@@ -389,15 +456,15 @@ export default function QuotationFormPage() {
 
       {/* Save Buttons */}
       {isEdit ? (
-        <Button onClick={() => handleSave('Draft')} disabled={submitting} className="w-full rounded-lg h-11">
+        <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
           {submitting ? 'Menyimpan...' : 'Kemaskini Sebut Harga'}
         </Button>
       ) : (
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting} className="flex-1 rounded-lg h-11">
+          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
             {submitting ? 'Menyimpan...' : 'Simpan Draft'}
           </Button>
-          <Button onClick={() => handleSave('Sent')} disabled={submitting} className="flex-1 rounded-lg h-11">
+          <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
             {submitting ? 'Menghantar...' : 'Hantar Sebut Harga'}
           </Button>
         </div>

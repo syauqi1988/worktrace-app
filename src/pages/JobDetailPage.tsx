@@ -48,6 +48,14 @@ interface Job {
   customers: { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
 }
 
+interface Quotation {
+  id: string;
+  quote_number: string;
+  total: number;
+  status: string;
+  valid_until: string | null;
+}
+
 interface Invoice {
   id: string;
   invoice_number: string;
@@ -72,7 +80,8 @@ export default function JobDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [quotation, setQuotation] = useState<Quotation | null>(null);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -80,17 +89,25 @@ export default function JobDetailPage() {
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
-      const [jobRes, invRes] = await Promise.all([
+      const [jobRes, quoRes, invRes] = await Promise.all([
         supabase.from('jobs')
           .select('*, customers(id, name, phone, email, address)')
           .eq('id', id)
           .single(),
+        supabase.from('quotations')
+          .select('id, quote_number, total, status, valid_until')
+          .eq('job_id', id)
+          .eq('user_id', user!.id)
+          .maybeSingle(),
         supabase.from('invoices')
           .select('id, invoice_number, total, status, due_date')
-          .eq('job_id', id),
+          .eq('job_id', id)
+          .eq('user_id', user!.id)
+          .maybeSingle(),
       ]);
       setJob(jobRes.data as unknown as Job);
-      setInvoices((invRes.data as Invoice[]) || []);
+      setQuotation(quoRes.data as Quotation | null);
+      setInvoice(invRes.data as Invoice | null);
       setLoading(false);
     }
     fetch();
@@ -250,43 +267,71 @@ export default function JobDetailPage() {
 
       {/* Related Quotation */}
       <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Sebut Harga</p>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
-          <Button variant="outline" size="sm" className="text-xs gap-1"
-            onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
-            <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
-          </Button>
-        </div>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <FileText className="h-3.5 w-3.5" /> Sebut Harga
+        </p>
+        {quotation ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-primary">{quotation.quote_number}</span>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                quotation.status === 'Accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
+                quotation.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
+                quotation.status === 'Rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
+                'bg-[#F1F5F9] text-[#64748B]'
+              }`}>{quotation.status}</span>
+            </div>
+            <p className="text-sm font-semibold text-foreground">RM {Number(quotation.total).toFixed(2)}</p>
+            {quotation.valid_until && (
+              <p className="text-xs text-muted-foreground">Sah hingga: {formatDate(quotation.valid_until)}</p>
+            )}
+            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
+              onClick={() => navigate(`/quotations/${quotation.id}`)}>
+              Lihat Sebut Harga →
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
+            <Button variant="outline" size="sm" className="text-xs gap-1"
+              onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
+              <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Related Invoice */}
       <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Invois</p>
-        {invoices.length === 0 ? (
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <Receipt className="h-3.5 w-3.5" /> Invois
+        </p>
+        {invoice ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-primary">{invoice.invoice_number}</span>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                invoice.status === 'Paid' ? 'bg-[#DCFCE7] text-[#15803D]' :
+                invoice.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
+                'bg-[#F1F5F9] text-[#64748B]'
+              }`}>{invoice.status}</span>
+            </div>
+            <p className="text-sm font-semibold text-foreground">RM {Number(invoice.total).toFixed(2)}</p>
+            {invoice.due_date && (
+              <p className="text-xs text-muted-foreground">Bayar sebelum: {formatDate(invoice.due_date)}</p>
+            )}
+            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
+              onClick={() => navigate(`/invoices/${invoice.id}`)}>
+              Lihat Invois →
+            </Button>
+          </div>
+        ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Belum ada invois</p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
               <Receipt className="h-3.5 w-3.5" /> Buat Invois
             </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {invoices.map(inv => (
-              <button key={inv.id} onClick={() => navigate(`/invoices/${inv.id}`)}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors text-left">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{inv.invoice_number}</p>
-                  <p className="text-xs text-muted-foreground">RM {Number(inv.total).toFixed(2)}</p>
-                </div>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                  inv.status === 'Paid' ? 'bg-green-100 text-green-700' :
-                  inv.status === 'Sent' ? 'bg-blue-100 text-blue-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>{inv.status}</span>
-              </button>
-            ))}
           </div>
         )}
       </div>
