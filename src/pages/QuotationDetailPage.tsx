@@ -7,9 +7,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download } from 'lucide-react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import QuotationPDF from '@/components/pdf/QuotationPDF';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -65,6 +66,7 @@ export default function QuotationDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -147,10 +149,95 @@ export default function QuotationDetailPage() {
     }
   };
 
+  const pdfData = quotation ? {
+    quotation: {
+      quote_number: quotation.quote_number,
+      created_at: quotation.created_at,
+      valid_until: quotation.valid_until,
+      status: quotation.status,
+      items: quotation.items.map(item => ({
+        description: item.description,
+        qty: item.qty,
+        unit_price: Number(item.unit_price) || 0,
+        amount: (item.qty || 0) * (Number(item.unit_price) || 0),
+      })),
+      subtotal: quotation.subtotal,
+      discount: quotation.discount,
+      tax_rate: quotation.tax_rate,
+      total: quotation.total,
+      notes: quotation.notes,
+    },
+    job: quotation.jobs ? { job_number: quotation.jobs.job_number, title: quotation.jobs.title } : null,
+    customer: (quotation.jobs as any)?.customers ? {
+      name: (quotation.jobs as any).customers.name,
+      phone: (quotation.jobs as any).customers.phone,
+      email: (quotation.jobs as any).customers.email,
+      address: (quotation.jobs as any).customers.address,
+    } : null,
+    company: {
+      company_name: profile?.company_name || null,
+      phone: profile?.phone || null,
+      address: profile?.address || null,
+      logo_url: profile?.logo_url || null,
+    },
+  } : null;
+
+  const customerPhone = (quotation?.jobs as any)?.customers?.phone || null;
+  const hasPhone = !!customerPhone;
+
+  const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, pdfUrl: string) => {
+    return `Assalamualaikum / Salam Sejahtera ${customerName},
+
+Terima kasih kerana berminat dengan perkhidmatan kami. 🙏
+
+Berikut adalah sebut harga daripada *${companyName}*:
+
+📋 *No. Sebut Harga:* ${quoteNumber}
+💰 *Jumlah:* RM ${total.toFixed(2)}
+
+Sila klik pautan di bawah untuk melihat dan memuat turun sebut harga anda:
+🔗 ${pdfUrl}
+
+Jika ada sebarang pertanyaan atau nak buat pengesahan, jangan segan untuk hubungi kami. 😊
+
+Terima kasih!
+*${companyName}*`;
+  };
+
+  const shareViaWhatsApp = async () => {
+    if (!quotation || !pdfData || !user || !hasPhone) return;
+    setIsSharing(true);
+    try {
+      const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+
+      const fileName = `${user.id}/${quotation.quote_number}.pdf`;
+      const { error: uploadError } = await supabase.storage
+        .from('quotation-pdfs')
+        .upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('quotation-pdfs').getPublicUrl(fileName);
+      const pdfUrl = data.publicUrl;
+
+      const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
+      const customerName = (quotation.jobs as any)?.customers?.name || '';
+      const companyName = profile?.company_name || '';
+      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, pdfUrl);
+
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank');
+      toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
+    } catch (error: any) {
+      const msg = error?.message?.includes('bucket') ? 'Ralat sistem. Hubungi sokongan.' : 'Gagal memuat naik PDF. Semak sambungan internet anda.';
+      toast.error(msg);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
-  const whatsappUrl = (quotation?.jobs as any)?.customers?.phone
-    ? `https://wa.me/${formatPhone((quotation!.jobs as any).customers.phone)}`
-    : null;
+  const whatsappUrl = hasPhone ? `https://wa.me/${formatPhone(customerPhone)}` : null;
 
   if (loading) {
     return (
@@ -213,12 +300,6 @@ export default function QuotationDetailPage() {
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">{(quotation.jobs as any).customers.name}</span>
-            {whatsappUrl && (
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full hover:bg-green-100 ml-auto">
-                <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-              </a>
-            )}
           </div>
         )}
         {quotation.jobs && (
@@ -331,52 +412,45 @@ export default function QuotationDetailPage() {
         )}
       </div>
 
-      {/* PDF Download */}
-      <div>
-        <PDFDownloadLink
-          document={
-            <QuotationPDF
-              quotation={{
-                quote_number: quotation.quote_number,
-                created_at: quotation.created_at,
-                valid_until: quotation.valid_until,
-                status: quotation.status,
-                items: quotation.items.map(item => ({
-                  description: item.description,
-                  qty: item.qty,
-                  unit_price: Number(item.unit_price) || 0,
-                  amount: (item.qty || 0) * (Number(item.unit_price) || 0),
-                })),
-                subtotal: quotation.subtotal,
-                discount: quotation.discount,
-                tax_rate: quotation.tax_rate,
-                total: quotation.total,
-                notes: quotation.notes,
-              }}
-              job={quotation.jobs ? { job_number: quotation.jobs.job_number, title: quotation.jobs.title } : null}
-              customer={(quotation.jobs as any)?.customers ? {
-                name: (quotation.jobs as any).customers.name,
-                phone: (quotation.jobs as any).customers.phone,
-                email: (quotation.jobs as any).customers.email,
-                address: (quotation.jobs as any).customers.address,
-              } : null}
-              company={{
-                company_name: profile?.company_name || null,
-                phone: profile?.phone || null,
-                address: profile?.address || null,
-                logo_url: profile?.logo_url || null,
-              }}
-            />
-          }
-          fileName={`SebuthHarga-${quotation.quote_number}.pdf`}
-        >
-          {({ loading: pdfLoading }) => (
-            <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-              <Download className="h-4 w-4" />
-              {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
-            </Button>
-          )}
-        </PDFDownloadLink>
+      {/* WhatsApp Share + PDF Download */}
+      <div className="flex flex-col gap-3">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Button
+                  onClick={shareViaWhatsApp}
+                  disabled={isSharing || !hasPhone}
+                  className="w-full rounded-lg gap-2 text-white"
+                  style={{ backgroundColor: '#25D366' }}
+                >
+                  {isSharing ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</>
+                  ) : (
+                    <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>
+                  )}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {!hasPhone && (
+              <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
+        {pdfData && (
+          <PDFDownloadLink
+            document={<QuotationPDF {...pdfData} />}
+            fileName={`SebuthHarga-${quotation.quote_number}.pdf`}
+          >
+            {({ loading: pdfLoading }) => (
+              <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
+                <Download className="h-4 w-4" />
+                {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+              </Button>
+            )}
+          </PDFDownloadLink>
+        )}
       </div>
 
       {/* Delete Dialog */}
