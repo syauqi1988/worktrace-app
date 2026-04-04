@@ -149,10 +149,95 @@ export default function QuotationDetailPage() {
     }
   };
 
+  const pdfData = quotation ? {
+    quotation: {
+      quote_number: quotation.quote_number,
+      created_at: quotation.created_at,
+      valid_until: quotation.valid_until,
+      status: quotation.status,
+      items: quotation.items.map(item => ({
+        description: item.description,
+        qty: item.qty,
+        unit_price: Number(item.unit_price) || 0,
+        amount: (item.qty || 0) * (Number(item.unit_price) || 0),
+      })),
+      subtotal: quotation.subtotal,
+      discount: quotation.discount,
+      tax_rate: quotation.tax_rate,
+      total: quotation.total,
+      notes: quotation.notes,
+    },
+    job: quotation.jobs ? { job_number: quotation.jobs.job_number, title: quotation.jobs.title } : null,
+    customer: (quotation.jobs as any)?.customers ? {
+      name: (quotation.jobs as any).customers.name,
+      phone: (quotation.jobs as any).customers.phone,
+      email: (quotation.jobs as any).customers.email,
+      address: (quotation.jobs as any).customers.address,
+    } : null,
+    company: {
+      company_name: profile?.company_name || null,
+      phone: profile?.phone || null,
+      address: profile?.address || null,
+      logo_url: profile?.logo_url || null,
+    },
+  } : null;
+
+  const customerPhone = (quotation?.jobs as any)?.customers?.phone || null;
+  const hasPhone = !!customerPhone;
+
+  const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, pdfUrl: string) => {
+    return `Assalamualaikum / Salam Sejahtera ${customerName},
+
+Terima kasih kerana berminat dengan perkhidmatan kami. 🙏
+
+Berikut adalah sebut harga daripada *${companyName}*:
+
+📋 *No. Sebut Harga:* ${quoteNumber}
+💰 *Jumlah:* RM ${total.toFixed(2)}
+
+Sila klik pautan di bawah untuk melihat dan memuat turun sebut harga anda:
+🔗 ${pdfUrl}
+
+Jika ada sebarang pertanyaan atau nak buat pengesahan, jangan segan untuk hubungi kami. 😊
+
+Terima kasih!
+*${companyName}*`;
+  };
+
+  const shareViaWhatsApp = async () => {
+    if (!quotation || !pdfData || !user || !hasPhone) return;
+    setIsSharing(true);
+    try {
+      const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+
+      const fileName = `${user.id}/${quotation.quote_number}.pdf`;
+      const { error: uploadError } = await supabase.storage
+        .from('quotation-pdfs')
+        .upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('quotation-pdfs').getPublicUrl(fileName);
+      const pdfUrl = data.publicUrl;
+
+      const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
+      const customerName = (quotation.jobs as any)?.customers?.name || '';
+      const companyName = profile?.company_name || '';
+      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, pdfUrl);
+
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank');
+      toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
+    } catch (error: any) {
+      const msg = error?.message?.includes('bucket') ? 'Ralat sistem. Hubungi sokongan.' : 'Gagal memuat naik PDF. Semak sambungan internet anda.';
+      toast.error(msg);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
-  const whatsappUrl = (quotation?.jobs as any)?.customers?.phone
-    ? `https://wa.me/${formatPhone((quotation!.jobs as any).customers.phone)}`
-    : null;
+  const whatsappUrl = hasPhone ? `https://wa.me/${formatPhone(customerPhone)}` : null;
 
   if (loading) {
     return (
