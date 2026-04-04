@@ -320,6 +320,15 @@ export default function QuotationFormPage() {
           )}
         </div>
         {errors.job && <p className="text-xs text-destructive">{errors.job}</p>}
+        {jobWarning && (
+          <div className="flex items-start gap-2 bg-[#FEF3C7] border border-[#FDE68A] rounded-lg p-3 mt-1.5">
+            <AlertCircle className="h-4 w-4 text-[#B45309] shrink-0 mt-0.5" />
+            <div className="text-sm text-[#B45309]">
+              {jobWarning.message}{' '}
+              <Link to={jobWarning.link} className="underline font-medium hover:text-[#92400E]">Lihat sebut harga →</Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Customer display */}
