@@ -218,6 +218,37 @@ export default function QuotationFormPage() {
     );
   }
 
+  // If blocked by existing quotation from job_id param
+  if (!isEdit && existingQuotation && blockedJobId) {
+    return (
+      <div className="p-4 md:p-6 space-y-5 max-w-2xl">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/quotations')} className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-xl font-bold text-foreground">Sebut Harga Baru</h1>
+        </div>
+        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-[#B45309]" />
+            <h2 className="text-base font-bold text-[#B45309]">Sebut harga sudah wujud</h2>
+          </div>
+          <p className="text-sm text-[#B45309]">
+            Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">
+              Lihat Sebut Harga
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">
+              Kembali ke Kerja
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
       {/* Header */}
