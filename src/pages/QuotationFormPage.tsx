@@ -75,14 +75,24 @@ export default function QuotationFormPage() {
       });
   }, [user, isEdit]);
 
-  // Auto-select job from query param
+  // Auto-select job from query param + check for existing quotation
   useEffect(() => {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
       if (found) setSelectedJob(found);
+      // Check if quotation already exists for this job
+      if (user && !isEdit) {
+        supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+          .then(({ data }) => {
+            if (data) {
+              setExistingQuotation(data);
+              setBlockedJobId(jobId);
+            }
+          });
+      }
     }
-  }, [searchParams, jobs, selectedJob]);
+  }, [searchParams, jobs, selectedJob, user, isEdit]);
 
   // Fetch existing quotation for edit
   useEffect(() => {
