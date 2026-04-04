@@ -48,6 +48,14 @@ interface Job {
   customers: { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
 }
 
+interface Quotation {
+  id: string;
+  quote_number: string;
+  total: number;
+  status: string;
+  valid_until: string | null;
+}
+
 interface Invoice {
   id: string;
   invoice_number: string;
