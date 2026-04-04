@@ -456,15 +456,15 @@ export default function QuotationFormPage() {
 
       {/* Save Buttons */}
       {isEdit ? (
-        <Button onClick={() => handleSave('Draft')} disabled={submitting} className="w-full rounded-lg h-11">
+        <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
           {submitting ? 'Menyimpan...' : 'Kemaskini Sebut Harga'}
         </Button>
       ) : (
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting} className="flex-1 rounded-lg h-11">
+          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
             {submitting ? 'Menyimpan...' : 'Simpan Draft'}
           </Button>
-          <Button onClick={() => handleSave('Sent')} disabled={submitting} className="flex-1 rounded-lg h-11">
+          <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
             {submitting ? 'Menghantar...' : 'Hantar Sebut Harga'}
           </Button>
         </div>
