@@ -412,52 +412,45 @@ Terima kasih!
         )}
       </div>
 
-      {/* PDF Download */}
-      <div>
-        <PDFDownloadLink
-          document={
-            <QuotationPDF
-              quotation={{
-                quote_number: quotation.quote_number,
-                created_at: quotation.created_at,
-                valid_until: quotation.valid_until,
-                status: quotation.status,
-                items: quotation.items.map(item => ({
-                  description: item.description,
-                  qty: item.qty,
-                  unit_price: Number(item.unit_price) || 0,
-                  amount: (item.qty || 0) * (Number(item.unit_price) || 0),
-                })),
-                subtotal: quotation.subtotal,
-                discount: quotation.discount,
-                tax_rate: quotation.tax_rate,
-                total: quotation.total,
-                notes: quotation.notes,
-              }}
-              job={quotation.jobs ? { job_number: quotation.jobs.job_number, title: quotation.jobs.title } : null}
-              customer={(quotation.jobs as any)?.customers ? {
-                name: (quotation.jobs as any).customers.name,
-                phone: (quotation.jobs as any).customers.phone,
-                email: (quotation.jobs as any).customers.email,
-                address: (quotation.jobs as any).customers.address,
-              } : null}
-              company={{
-                company_name: profile?.company_name || null,
-                phone: profile?.phone || null,
-                address: profile?.address || null,
-                logo_url: profile?.logo_url || null,
-              }}
-            />
-          }
-          fileName={`SebuthHarga-${quotation.quote_number}.pdf`}
-        >
-          {({ loading: pdfLoading }) => (
-            <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-              <Download className="h-4 w-4" />
-              {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
-            </Button>
-          )}
-        </PDFDownloadLink>
+      {/* WhatsApp Share + PDF Download */}
+      <div className="flex flex-col gap-3">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Button
+                  onClick={shareViaWhatsApp}
+                  disabled={isSharing || !hasPhone}
+                  className="w-full rounded-lg gap-2 text-white"
+                  style={{ backgroundColor: '#25D366' }}
+                >
+                  {isSharing ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</>
+                  ) : (
+                    <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>
+                  )}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {!hasPhone && (
+              <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
+        {pdfData && (
+          <PDFDownloadLink
+            document={<QuotationPDF {...pdfData} />}
+            fileName={`SebuthHarga-${quotation.quote_number}.pdf`}
+          >
+            {({ loading: pdfLoading }) => (
+              <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
+                <Download className="h-4 w-4" />
+                {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+              </Button>
+            )}
+          </PDFDownloadLink>
+        )}
       </div>
 
       {/* Delete Dialog */}
