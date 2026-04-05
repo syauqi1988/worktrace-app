@@ -57,8 +57,10 @@ const App = () => (
               <Route path="quotations/new" element={<QuotationFormPage />} />
               <Route path="quotations/:id" element={<QuotationDetailPage />} />
               <Route path="quotations/:id/edit" element={<QuotationFormPage />} />
-              <Route path="invoices" element={<PlaceholderPage title="Invois" />} />
-              <Route path="invoices/new" element={<PlaceholderPage title="Invois Baru" />} />
+              <Route path="invoices" element={<InvoicesListPage />} />
+              <Route path="invoices/new" element={<InvoiceFormPage />} />
+              <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+              <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
               <Route path="settings" element={<PlaceholderPage title="Tetapan" />} />
               <Route path="profile" element={<PlaceholderPage title="Profil" />} />
             </Route>
