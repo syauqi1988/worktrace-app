@@ -67,6 +67,7 @@ export type Database = {
           issued_date: string | null
           items: Json
           job_id: string | null
+          lhdn_submitted: boolean
           notes: string | null
           paid_date: string | null
           quote_id: string | null
@@ -87,6 +88,7 @@ export type Database = {
           issued_date?: string | null
           items?: Json
           job_id?: string | null
+          lhdn_submitted?: boolean
           notes?: string | null
           paid_date?: string | null
           quote_id?: string | null
@@ -107,6 +109,7 @@ export type Database = {
           issued_date?: string | null
           items?: Json
           job_id?: string | null
+          lhdn_submitted?: boolean
           notes?: string | null
           paid_date?: string | null
           quote_id?: string | null
