@@ -9,6 +9,7 @@ interface Profile {
   address: string | null;
   logo_url: string | null;
   plan: string;
+  billing_period: string;
   tin_number: string | null;
   msic_code: string | null;
   sst_registered: boolean;
