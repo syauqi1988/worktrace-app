@@ -206,6 +206,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          billing_period: string | null
           company_name: string | null
           created_at: string
           id: string
@@ -221,6 +222,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          billing_period?: string | null
           company_name?: string | null
           created_at?: string
           id: string
@@ -236,6 +238,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          billing_period?: string | null
           company_name?: string | null
           created_at?: string
           id?: string
