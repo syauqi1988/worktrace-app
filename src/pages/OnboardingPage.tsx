@@ -5,34 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Check } from 'lucide-react';
+import PlanCards from '@/components/PlanCards';
 import logo from '@/assets/logo.png';
-
-const PLANS = [
-  {
-    id: 'free',
-    name: 'Free',
-    tagline: 'Percuma Selama-lamanya',
-    features: ['Sehingga 20 kerja sebulan', 'Quotation & invois asas', '1 pengguna'],
-    cta: 'Mulakan Percuma',
-    highlight: false,
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    tagline: 'Paling Popular',
-    features: ['Kerja tanpa had', 'Eksport PDF invois', 'Template WhatsApp follow-up'],
-    cta: 'Pilih Pro — RM49/bulan',
-    highlight: true,
-  },
-  {
-    id: 'agency',
-    name: 'Agency',
-    tagline: 'Untuk Syarikat',
-    features: ['Multi-pengguna', 'White-label', 'Sokongan keutamaan'],
-    cta: 'Hubungi Kami',
-    highlight: false,
-  },
-];
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -55,8 +29,8 @@ export default function OnboardingPage() {
     setStep(3);
   };
 
-  const handlePlanSelect = async (plan: string) => {
-    await updateProfile({ plan, onboarding_complete: true });
+  const handlePlanSelect = async (planId: string, billingPeriod: string) => {
+    await updateProfile({ plan: planId, billing_period: billingPeriod, onboarding_complete: true });
     navigate('/dashboard');
   };
 
@@ -161,39 +135,7 @@ export default function OnboardingPage() {
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Pilih pelan yang sesuai</h2>
               </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {PLANS.map(plan => (
-                  <div
-                    key={plan.id}
-                    className={`rounded-xl border-2 p-5 flex flex-col transition-colors ${plan.highlight ? 'border-primary bg-primary/5' : 'border-border'}`}
-                  >
-                    <div className="mb-3">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-foreground text-lg">{plan.name}</h3>
-                        {plan.highlight && (
-                          <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Popular</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{plan.tagline}</p>
-                    </div>
-                    <ul className="space-y-2 mb-5 flex-1">
-                      {plan.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-foreground">
-                          <Check className="h-4 w-4 text-success mt-0.5 shrink-0" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button
-                      onClick={() => handlePlanSelect(plan.id)}
-                      variant={plan.highlight ? 'default' : 'outline'}
-                      className="w-full rounded-lg"
-                    >
-                      {plan.cta}
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              <PlanCards onSelect={handlePlanSelect} />
             </div>
           )}
         </div>

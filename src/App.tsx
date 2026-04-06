@@ -11,6 +11,8 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import AuthCallback from "@/pages/AuthCallback";
 import DashboardPage from "@/pages/DashboardPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
+import SettingsPage from "@/pages/SettingsPage";
+import TeamPlaceholderPage from "@/pages/TeamPlaceholderPage";
 import InvoicesListPage from "@/pages/InvoicesListPage";
 import InvoiceDetailPage from "@/pages/InvoiceDetailPage";
 import InvoiceFormPage from "@/pages/InvoiceFormPage";
@@ -61,8 +63,9 @@ const App = () => (
               <Route path="invoices/new" element={<InvoiceFormPage />} />
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
-              <Route path="settings" element={<PlaceholderPage title="Tetapan" />} />
-              <Route path="profile" element={<PlaceholderPage title="Profil" />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="settings/team" element={<TeamPlaceholderPage />} />
+              <Route path="profile" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
