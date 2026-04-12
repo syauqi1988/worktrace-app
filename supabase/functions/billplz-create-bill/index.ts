@@ -44,8 +44,32 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
     const callbackUrl = `${SUPABASE_URL}/functions/v1/billplz-callback`
-    const appUrl = redirect_base_url || Deno.env.get('APP_URL') || 'https://worktraceapp.lovable.app'
-    const redirectUrl = `${appUrl}/payment/success?plan=${plan}&period=${billing_period || 'monthly'}`
+
+    const toOrigin = (value: string | null | undefined) => {
+      if (!value) return null
+      try {
+        return new URL(value).origin
+      } catch {
+        return null
+      }
+    }
+
+    const appUrl =
+      toOrigin(redirect_base_url) ||
+      toOrigin(req.headers.get('origin')) ||
+      toOrigin(req.headers.get('referer')) ||
+      Deno.env.get('APP_URL') ||
+      'https://worktraceapp.lovable.app'
+
+    const redirectUrl = new URL('/payment/success', appUrl)
+    redirectUrl.searchParams.set('plan', plan)
+    redirectUrl.searchParams.set('period', billing_period || 'monthly')
+
+    console.log('Resolved redirect URL:', redirectUrl.toString(), 'from', JSON.stringify({
+      redirect_base_url,
+      origin: req.headers.get('origin'),
+      referer: req.headers.get('referer'),
+    }))
 
     const formData = new URLSearchParams()
     formData.append('collection_id', BILLPLZ_COLLECTION_ID)
@@ -54,7 +78,7 @@ Deno.serve(async (req) => {
     formData.append('amount', amount.toString())
     formData.append('description', description)
     formData.append('callback_url', callbackUrl)
-    formData.append('redirect_url', redirectUrl)
+    formData.append('redirect_url', redirectUrl.toString())
     formData.append('reference_1_label', 'User ID')
     formData.append('reference_1', user_id)
     formData.append('reference_2_label', 'Plan')

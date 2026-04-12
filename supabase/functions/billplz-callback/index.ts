@@ -1,51 +1,77 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { createHmac } from 'node:crypto'
+
+const PRICE_TO_PLAN: Record<string, { plan: string; billing_period: 'monthly' | 'yearly' }> = {
+  '4900': { plan: 'pro', billing_period: 'monthly' },
+  '47040': { plan: 'pro', billing_period: 'yearly' },
+  '9900': { plan: 'team', billing_period: 'monthly' },
+  '95040': { plan: 'team', billing_period: 'yearly' },
+}
 
 Deno.serve(async (req) => {
   try {
-    // BillPlz sends callback as application/x-www-form-urlencoded
-    const formData = await req.formData()
     const params: Record<string, string> = {}
 
-    for (const [key, value] of formData.entries()) {
-      params[key] = value as string
+    const rawBody = await req.text()
+    const searchParams = new URLSearchParams(rawBody)
+
+    for (const [key, value] of searchParams.entries()) {
+      params[key] = value
     }
 
     console.log('Callback params:', JSON.stringify(params))
 
-    const xSignature = params['x_signature']
-    delete params['x_signature']
+    const billId = params['id']
 
-    const XSIG_KEY = Deno.env.get('BILLPLZ_XSIGNATURE_KEY') ?? ''
-
-    // BillPlz signature: sort keys alphabetically, join as key=value pairs with |
-    const sortedKeys = Object.keys(params).sort()
-    const rawString = sortedKeys.map(k => `${k}${params[k]}`).join('|')
-
-    const expectedSig = createHmac('sha256', XSIG_KEY)
-      .update(rawString)
-      .digest('hex')
-
-    if (expectedSig !== xSignature) {
-      console.error('Invalid signature', { expected: expectedSig, got: xSignature, rawString })
-      return new Response('Invalid signature', { status: 401 })
+    if (!billId) {
+      return new Response('Missing bill id', { status: 400 })
     }
 
-    const billId = params['id']
-    const paid = params['paid']
-    const userId = params['reference_1']
-    const planPeriod = params['reference_2']
+    const BILLPLZ_API_KEY = Deno.env.get('BILLPLZ_API_KEY') ?? ''
+    const SANDBOX = Deno.env.get('BILLPLZ_SANDBOX') === 'true'
+    const baseUrl = SANDBOX
+      ? 'https://billplz-sandbox.com/api/v3'
+      : 'https://www.billplz.com/api/v3'
+    const credentials = btoa(`${BILLPLZ_API_KEY}:`)
 
-    // Only process successful payments
-    if (paid !== 'true') {
+    const billResponse = await fetch(`${baseUrl}/bills/${billId}`, {
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+      },
+    })
+
+    const bill = await billResponse.json()
+    console.log('Bill lookup status:', billResponse.status, 'body:', JSON.stringify(bill))
+
+    if (!billResponse.ok) {
+      throw new Error(bill.error?.message || JSON.stringify(bill) || 'Failed to fetch BillPlz bill')
+    }
+
+    const isPaid = bill?.paid === true || bill?.state === 'paid'
+
+    if (!isPaid) {
       console.log('Payment not paid yet, skipping update')
       return new Response('ok', { status: 200 })
     }
 
-    const [plan, billing_period] = (planPeriod || 'pro_monthly').split('_')
-
     const startDate = new Date()
     const endDate = new Date()
+
+    let userId = bill?.reference_1 || ''
+    let plan = 'pro'
+    let billing_period: 'monthly' | 'yearly' = 'monthly'
+
+    if (typeof bill?.reference_2 === 'string' && bill.reference_2.includes('_')) {
+      const [resolvedPlan, resolvedBillingPeriod] = bill.reference_2.split('_')
+      plan = resolvedPlan || plan
+      billing_period = resolvedBillingPeriod === 'yearly' ? 'yearly' : 'monthly'
+    } else {
+      const fallbackPlan = PRICE_TO_PLAN[String(bill?.amount ?? params['amount'] ?? '')]
+      if (fallbackPlan) {
+        plan = fallbackPlan.plan
+        billing_period = fallbackPlan.billing_period
+      }
+    }
+
     if (billing_period === 'yearly') {
       endDate.setFullYear(endDate.getFullYear() + 1)
     } else {
@@ -57,12 +83,37 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    if (!userId) {
+      const { data: matchedProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('billplz_bill_id', billId)
+        .maybeSingle()
+
+      userId = matchedProfile?.id || ''
+    }
+
+    if (!userId) {
+      console.error('Unable to resolve user for paid bill', { billId, bill })
+      return new Response('Unable to resolve bill owner', { status: 400 })
+    }
+
     // Check free months from referral
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('free_months_earned, free_months_used')
+      .select('free_months_earned, free_months_used, plan, billing_period, subscription_status, billplz_bill_id')
       .eq('id', userId)
       .single()
+
+    if (
+      profile?.subscription_status === 'active' &&
+      profile?.billplz_bill_id === billId &&
+      profile?.plan === plan &&
+      profile?.billing_period === billing_period
+    ) {
+      console.log('Payment already processed, skipping duplicate update')
+      return new Response('ok', { status: 200 })
+    }
 
     const freeBalance = profile
       ? (profile.free_months_earned || 0) - (profile.free_months_used || 0)
