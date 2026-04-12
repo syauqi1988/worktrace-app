@@ -384,6 +384,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_deleted_user_email: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
     }
