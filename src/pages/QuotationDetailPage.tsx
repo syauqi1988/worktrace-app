@@ -224,6 +224,7 @@ export default function QuotationDetailPage() {
       phone: profile?.phone || null,
       address: profile?.address || null,
       logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
     },
   } : null;
 
