@@ -11,10 +11,11 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { toast } from 'sonner';
 import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
-  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy
+  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown
 } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import { imageUrlToBase64 } from '@/utils/imageToBase64';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -80,7 +81,9 @@ export default function InvoiceDetailPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
-
+  const [logoBase64, setLogoBase64] = useState<string>('');
+  const [inlinePayDate, setInlinePayDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [showInlinePayDate, setShowInlinePayDate] = useState(false);
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
@@ -109,6 +112,21 @@ export default function InvoiceDetailPage() {
     }
     fetch();
   }, [user, id]);
+
+  // Fetch logo as base64 for PDF
+  useEffect(() => {
+    if (profile?.logo_url) {
+      imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    }
+  }, [profile?.logo_url]);
+
+  // ESC key to close preview
+  useEffect(() => {
+    if (!previewOpen) return;
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closePreview(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [previewOpen]);
 
   const customer = (invoice?.jobs as any)?.customers || null;
   const customerPhone = customer?.phone || null;
@@ -188,6 +206,7 @@ export default function InvoiceDetailPage() {
       phone: profile?.phone || null,
       address: profile?.address || null,
       logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
       lhdn_enabled: profile?.lhdn_enabled,
       tin_number: profile?.tin_number,
       msic_code: profile?.msic_code,
@@ -336,13 +355,58 @@ Terima kasih atas kerjasama anda. 🙏
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{invoice.invoice_number}</h1>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[displayStatus]}`}>{displayStatus}</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={displayStatus}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+                  if (newStatus === 'Paid') {
+                    setShowInlinePayDate(true);
+                    return;
+                  }
+                  setShowInlinePayDate(false);
+                  const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', invoice.id).eq('user_id', user!.id);
+                  if (!error) {
+                    setInvoice({ ...invoice, status: newStatus });
+                    toast.success('Status invois dikemaskini!');
+                  } else {
+                    toast.error('Gagal kemaskini status.');
+                  }
+                }}
+                className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[displayStatus]}`}
+                style={{ WebkitAppearance: 'none' }}
+              >
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Paid">Paid</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+              <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
+            </div>
             {invoice.lhdn_submitted && profile?.lhdn_enabled && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] flex items-center gap-1">
                 <Landmark className="h-3 w-3" /> e-Invois
               </span>
             )}
           </div>
+          {/* Inline paid date picker */}
+          {showInlinePayDate && (
+            <div className="flex items-center gap-2 mt-2">
+              <label className="text-sm text-muted-foreground">Tarikh Dibayar:</label>
+              <Input type="date" value={inlinePayDate} onChange={e => setInlinePayDate(e.target.value)} className="h-8 w-40 text-sm rounded-lg" />
+              <Button size="sm" className="h-8 rounded-lg bg-green-600 hover:bg-green-700" onClick={async () => {
+                const { error } = await supabase.from('invoices').update({ status: 'Paid', paid_date: inlinePayDate }).eq('id', invoice.id).eq('user_id', user!.id);
+                if (!error) {
+                  setInvoice({ ...invoice, status: 'Paid', paid_date: inlinePayDate });
+                  setShowInlinePayDate(false);
+                  toast.success('Invois ditandakan sebagai Dibayar!');
+                } else {
+                  toast.error('Gagal kemaskini status.');
+                }
+              }}>Sahkan</Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>Batal</Button>
+            </div>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

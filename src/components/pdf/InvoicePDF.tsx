@@ -115,6 +115,7 @@ export interface InvoicePDFProps {
     phone: string | null;
     address: string | null;
     logo_url: string | null;
+    logo_base64?: string;
     lhdn_enabled?: boolean;
     tin_number?: string | null;
     msic_code?: string | null;
@@ -147,7 +148,11 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         {/* Header */}
         <View style={s.header}>
           <View style={s.headerLeft}>
-            {company.logo_url && <Image src={company.logo_url} style={s.logo} />}
+            {company.logo_base64 ? (
+              <Image src={company.logo_base64} style={s.logo} />
+            ) : company.logo_url ? (
+              <Image src={company.logo_url} style={s.logo} />
+            ) : null}
             <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
             {company.phone && <Text style={s.companyText}>{company.phone}</Text>}
             {company.address && <Text style={s.companySmall}>{company.address}</Text>}

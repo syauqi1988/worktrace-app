@@ -7,10 +7,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2, Eye, AlertTriangle, X } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2, Eye, AlertTriangle, X, ChevronDown } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import QuotationPDF from '@/components/pdf/QuotationPDF';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { imageUrlToBase64 } from '@/utils/imageToBase64';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -71,8 +72,8 @@ export default function QuotationDetailPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
-  // Fix 3: duplicate invoice dialog
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
+  const [logoBase64, setLogoBase64] = useState<string>('');
 
   useEffect(() => {
     if (!user || !id) return;
@@ -96,6 +97,21 @@ export default function QuotationDetailPage() {
     }
     fetch();
   }, [user, id]);
+
+  // Fetch logo as base64 for PDF
+  useEffect(() => {
+    if (profile?.logo_url) {
+      imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    }
+  }, [profile?.logo_url]);
+
+  // ESC key to close preview
+  useEffect(() => {
+    if (!previewOpen) return;
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closePreview(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [previewOpen]);
 
   const updateStatus = async (newStatus: string) => {
     if (!quotation) return;
@@ -208,6 +224,7 @@ export default function QuotationDetailPage() {
       phone: profile?.phone || null,
       address: profile?.address || null,
       logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
     },
   } : null;
 
@@ -332,7 +349,29 @@ Terima kasih!
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{quotation.quote_number}</h1>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[quotation.status]}`}>{quotation.status}</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={quotation.status}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+                  const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id).eq('user_id', user!.id);
+                  if (!error) {
+                    setQuotation({ ...quotation, status: newStatus });
+                    toast.success('Status sebut harga dikemaskini!');
+                  } else {
+                    toast.error('Gagal kemaskini status.');
+                  }
+                }}
+                className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[quotation.status]}`}
+                style={{ WebkitAppearance: 'none' }}
+              >
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
+            </div>
             {isExpired && quotation.status !== 'Accepted' && quotation.status !== 'Rejected' && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">Tamat Tempoh</span>
             )}
