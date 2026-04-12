@@ -82,13 +82,13 @@ export default function CustomersListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Pelanggan</h1>
-        <Button onClick={() => navigate('/customers/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
+        <Button data-tutorial="customers-new-btn" onClick={() => navigate('/customers/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
           <Plus className="h-4 w-4" /> Pelanggan Baru
         </Button>
       </div>
 
       {/* Search */}
-      <div className="relative">
+      <div data-tutorial="customers-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={search}

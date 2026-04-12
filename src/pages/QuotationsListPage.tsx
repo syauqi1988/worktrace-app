@@ -70,7 +70,7 @@ export default function QuotationsListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Sebut Harga</h1>
-        <Button onClick={() => navigate('/quotations/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
+        <Button data-tutorial="quotations-new-btn" onClick={() => navigate('/quotations/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
           <Plus className="h-4 w-4" /> Sebut Harga Baru
         </Button>
       </div>
@@ -92,7 +92,7 @@ export default function QuotationsListPage() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+      <div data-tutorial="quotations-status-tabs" className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
         {STATUS_TABS.map(tab => (
           <button
             key={tab}

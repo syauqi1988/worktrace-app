@@ -83,13 +83,13 @@ export default function JobsListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Kerja</h1>
-        <Button onClick={() => navigate('/jobs/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
+        <Button data-tutorial="jobs-new-btn" onClick={() => navigate('/jobs/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
           <Plus className="h-4 w-4" /> Kerja Baru
         </Button>
       </div>
 
       {/* Search */}
-      <div className="relative">
+      <div data-tutorial="jobs-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={search}
@@ -105,7 +105,7 @@ export default function JobsListPage() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+      <div data-tutorial="jobs-status-tabs" className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
         {STATUS_TABS.map(tab => (
           <button
             key={tab}
