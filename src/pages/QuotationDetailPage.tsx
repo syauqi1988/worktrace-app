@@ -72,8 +72,8 @@ export default function QuotationDetailPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
-  // Fix 3: duplicate invoice dialog
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
+  const [logoBase64, setLogoBase64] = useState<string>('');
 
   useEffect(() => {
     if (!user || !id) return;
@@ -97,6 +97,21 @@ export default function QuotationDetailPage() {
     }
     fetch();
   }, [user, id]);
+
+  // Fetch logo as base64 for PDF
+  useEffect(() => {
+    if (profile?.logo_url) {
+      imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    }
+  }, [profile?.logo_url]);
+
+  // ESC key to close preview
+  useEffect(() => {
+    if (!previewOpen) return;
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closePreview(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [previewOpen]);
 
   const updateStatus = async (newStatus: string) => {
     if (!quotation) return;
