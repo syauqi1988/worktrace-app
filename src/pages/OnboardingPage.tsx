@@ -34,12 +34,12 @@ export default function OnboardingPage() {
 
   const handlePlanSelect = async (planId: string, billingPeriod: string) => {
     if (planId === 'free') {
-      // Free plan — skip payment, complete onboarding
       await supabase.rpc('set_onboarding_plan', { p_plan: 'free', p_billing_period: 'monthly' });
-      navigate('/dashboard');
+      await refreshProfile();
+      navigate('/dashboard', { replace: true });
     } else {
-      // Pro plan — set onboarding complete first, then redirect to payment
       await supabase.rpc('set_onboarding_plan', { p_plan: 'free', p_billing_period: 'monthly' });
+      await refreshProfile();
       initiatePayment(planId as 'pro', billingPeriod as 'monthly' | 'yearly');
     }
   };
