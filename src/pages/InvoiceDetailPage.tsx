@@ -11,10 +11,11 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { toast } from 'sonner';
 import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
-  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy
+  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown
 } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import { imageUrlToBase64 } from '@/utils/imageToBase64';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -80,7 +81,9 @@ export default function InvoiceDetailPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
-
+  const [logoBase64, setLogoBase64] = useState<string>('');
+  const [inlinePayDate, setInlinePayDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [showInlinePayDate, setShowInlinePayDate] = useState(false);
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
@@ -109,6 +112,21 @@ export default function InvoiceDetailPage() {
     }
     fetch();
   }, [user, id]);
+
+  // Fetch logo as base64 for PDF
+  useEffect(() => {
+    if (profile?.logo_url) {
+      imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    }
+  }, [profile?.logo_url]);
+
+  // ESC key to close preview
+  useEffect(() => {
+    if (!previewOpen) return;
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closePreview(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [previewOpen]);
 
   const customer = (invoice?.jobs as any)?.customers || null;
   const customerPhone = customer?.phone || null;
