@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { toast } from 'sonner';
 import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
-  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark
+  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy
 } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
@@ -35,6 +35,7 @@ interface Invoice {
   tax_rate: number;
   total: number;
   notes: string | null;
+  terms: string | null;
   issued_date: string | null;
   due_date: string | null;
   paid_date: string | null;
@@ -42,6 +43,7 @@ interface Invoice {
   job_id: string | null;
   quote_id: string | null;
   lhdn_submitted: boolean;
+  selected_payment_methods: any[];
   jobs: {
     id: string;
     job_number: string;
@@ -75,6 +77,9 @@ export default function InvoiceDetailPage() {
   const [paying, setPaying] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [linkedQuote, setLinkedQuote] = useState<{ id: string; quote_number: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -92,6 +97,8 @@ export default function InvoiceDetailPage() {
           tax_rate: Number(inv.tax_rate) || 0,
           total: Number(inv.total) || 0,
           lhdn_submitted: inv.lhdn_submitted || false,
+          terms: inv.terms || null,
+          selected_payment_methods: Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [],
         });
         if (inv.quote_id) {
           supabase.from('quotations').select('id, quote_number').eq('id', inv.quote_id).single()
