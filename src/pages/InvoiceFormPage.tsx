@@ -55,6 +55,8 @@ export default function InvoiceFormPage() {
     return d.toISOString().slice(0, 10);
   });
   const [notes, setNotes] = useState('');
+  const [terms, setTerms] = useState('');
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [existingInvoice, setExistingInvoice] = useState<{ id: string } | null>(null);
   const [jobWarning, setJobWarning] = useState<{ message: string; link: string } | null>(null);
@@ -116,7 +118,13 @@ export default function InvoiceFormPage() {
   // Populate LHDN defaults from profile
   useEffect(() => {
     if (profile?.msic_code) setMsicCode(profile.msic_code);
-  }, [profile]);
+    // Pre-fill terms and payment methods for new invoice
+    if (!isEdit && profile?.invoice_terms && !terms) setTerms(profile.invoice_terms);
+    if (!isEdit && profile?.payment_methods) {
+      const methods = Array.isArray(profile.payment_methods) ? profile.payment_methods : [];
+      setSelectedPaymentMethods(methods.map((m: any) => m.id));
+    }
+  }, [profile, isEdit]);
 
   // Fetch existing invoice for edit
   useEffect(() => {
@@ -132,6 +140,7 @@ export default function InvoiceFormPage() {
         setInvoiceNumber(inv.invoice_number);
         setItems(Array.isArray(inv.items) ? inv.items : [{ description: '', qty: 1, unit_price: 0 }]);
         setNotes(inv.notes || '');
+        setTerms(inv.terms || '');
         setIssuedDate(inv.issued_date || new Date().toISOString().slice(0, 10));
         setDueDate(inv.due_date || '');
         setLinkedQuoteId(inv.quote_id);
@@ -236,6 +245,8 @@ export default function InvoiceFormPage() {
         issued_date: issuedDate || null,
         due_date: dueDate || null,
         notes: notes.trim() || null,
+        terms: terms.trim() || null,
+        selected_payment_methods: selectedPaymentMethods as any,
         lhdn_submitted: lhdnSubmitted,
       };
 

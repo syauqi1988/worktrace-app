@@ -133,6 +133,13 @@ export default function QuotationFormPage() {
     fetchQuotation();
   }, [isEdit, user, id, navigate]);
 
+  // Pre-fill terms from profile for new quotation
+  useEffect(() => {
+    if (!isEdit && profile?.quotation_terms && !terms) {
+      setTerms(profile.quotation_terms);
+    }
+  }, [isEdit, profile]);
+
   // If not editing, stop loading once jobs are fetched
   useEffect(() => {
     if (!isEdit && jobs.length >= 0) setLoading(false);
