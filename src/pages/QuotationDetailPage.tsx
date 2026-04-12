@@ -233,8 +233,8 @@ export default function QuotationDetailPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_url: profile?.logo_url || null,
-      logo_base64: logoBase64,
+      logo_url: canShowLogo ? (profile?.logo_url || null) : null,
+      logo_base64: canShowLogo ? logoBase64 : '',
     },
   } : null;
 
