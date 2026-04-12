@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Gift } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
 
 export default function LoginPage() {
@@ -16,7 +16,14 @@ export default function LoginPage() {
   const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signInWithOtp, verifyOtp } = useAuth();
+  const refCode = searchParams.get('ref');
+
+  // Capture referral code
+  useEffect(() => {
+    if (refCode) localStorage.setItem('worktrace_ref', refCode);
+  }, [refCode]);
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -107,6 +114,17 @@ export default function LoginPage() {
         <div className="md:hidden mb-8">
           <img src={logo} alt="WorkTrace" className="h-10 logo-dark" style={{ background: 'transparent' }} />
         </div>
+
+        {/* Referral welcome banner */}
+        {refCode && (
+          <div className="w-full max-w-sm mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <Gift className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-700">
+              <p className="font-medium">Anda dijemput oleh rakan kontraktor WorkTrace!</p>
+              <p>Daftar sekarang dan nikmati ciri-ciri premium WorkTrace.</p>
+            </div>
+          </div>
+        )}
 
         <div className="w-full max-w-sm">
           {step === 'email' ? (

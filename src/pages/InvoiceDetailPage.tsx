@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { toast } from 'sonner';
 import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
-  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark
+  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy
 } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
@@ -35,6 +35,7 @@ interface Invoice {
   tax_rate: number;
   total: number;
   notes: string | null;
+  terms: string | null;
   issued_date: string | null;
   due_date: string | null;
   paid_date: string | null;
@@ -42,6 +43,7 @@ interface Invoice {
   job_id: string | null;
   quote_id: string | null;
   lhdn_submitted: boolean;
+  selected_payment_methods: any[];
   jobs: {
     id: string;
     job_number: string;
@@ -75,6 +77,9 @@ export default function InvoiceDetailPage() {
   const [paying, setPaying] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [linkedQuote, setLinkedQuote] = useState<{ id: string; quote_number: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -92,6 +97,8 @@ export default function InvoiceDetailPage() {
           tax_rate: Number(inv.tax_rate) || 0,
           total: Number(inv.total) || 0,
           lhdn_submitted: inv.lhdn_submitted || false,
+          terms: inv.terms || null,
+          selected_payment_methods: Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [],
         });
         if (inv.quote_id) {
           supabase.from('quotations').select('id, quote_number').eq('id', inv.quote_id).single()
@@ -143,6 +150,10 @@ export default function InvoiceDetailPage() {
     navigate('/invoices');
   };
 
+  // Get payment methods for PDF
+  const allPaymentMethods: any[] = Array.isArray(profile?.payment_methods) ? profile!.payment_methods : [];
+  const selectedPMs = invoice ? allPaymentMethods.filter((m: any) => (invoice.selected_payment_methods || []).includes(m.id)) : [];
+
   const pdfData = invoice ? {
     invoice: {
       invoice_number: invoice.invoice_number,
@@ -162,6 +173,7 @@ export default function InvoiceDetailPage() {
       tax_rate: invoice.tax_rate,
       total: invoice.total,
       notes: invoice.notes,
+      terms: invoice.terms || profile?.invoice_terms || null,
     },
     job: invoice.jobs ? { job_number: invoice.jobs.job_number, title: invoice.jobs.title } : null,
     customer: customer ? {
@@ -181,7 +193,41 @@ export default function InvoiceDetailPage() {
       msic_code: profile?.msic_code,
       sst_registered: profile?.sst_registered,
     },
+    paymentMethods: selectedPMs,
   } : null;
+
+  // PDF Preview
+  const handlePreview = async () => {
+    if (!pdfData) return;
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    try {
+      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+    } catch {
+      toast.error('Gagal menjana pratonton PDF');
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewOpen(false);
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
+  };
+
+  const handlePreviewDownload = async () => {
+    if (!pdfData || !invoice) return;
+    const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Invois-${invoice.invoice_number}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const buildWhatsAppInvoiceMessage = (pdfUrl?: string) => {
     const name = customer?.name || '';
@@ -441,7 +487,37 @@ Terima kasih atas kerjasama anda. 🙏
         )}
       </div>
 
-      {/* WhatsApp Share + PDF Download */}
+      {/* Payment Info Display */}
+      {selectedPMs.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cara Pembayaran</p>
+          {selectedPMs.filter((m: any) => m.type === 'bank_transfer').map((b: any) => (
+            <div key={b.id} className="border border-border rounded-lg p-3 space-y-1">
+              <p className="text-sm font-medium">🏦 Pindahan Bank</p>
+              <div className="grid grid-cols-[80px_1fr] gap-1 text-sm">
+                <span className="text-muted-foreground">Bank:</span><span>{b.bank_name}</span>
+                <span className="text-muted-foreground">Nama:</span><span>{b.account_name}</span>
+                <span className="text-muted-foreground">Akaun:</span>
+                <span className="flex items-center gap-1.5">
+                  {b.account_number}
+                  <button onClick={() => { navigator.clipboard.writeText(b.account_number); toast.success('Nombor akaun disalin!'); }} className="text-primary hover:text-primary/80">
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              </div>
+            </div>
+          ))}
+          {selectedPMs.filter((m: any) => m.type === 'qr_payment').map((q: any) => (
+            <div key={q.id} className="border border-border rounded-lg p-3 flex flex-col items-center gap-2">
+              <p className="text-sm font-medium">📱 {q.provider || 'QR Payment'}</p>
+              {q.qr_image_url && <img src={q.qr_image_url} alt="QR" className="h-[120px] w-[120px] object-contain" />}
+              <p className="text-xs text-muted-foreground">Imbas untuk membayar</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* WhatsApp Share + PDF Preview + PDF Download */}
       <div className="flex flex-col gap-3">
         <TooltipProvider>
           <Tooltip>
@@ -457,13 +533,18 @@ Terima kasih atas kerjasama anda. 🙏
         </TooltipProvider>
 
         {pdfData && (
-          <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
-            {({ loading: pdfLoading }) => (
-              <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
-              </Button>
-            )}
-          </PDFDownloadLink>
+          <>
+            <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
+              <Eye className="h-4 w-4" /> Pratonton PDF
+            </Button>
+            <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
+              {({ loading: pdfLoading }) => (
+                <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
+                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                </Button>
+              )}
+            </PDFDownloadLink>
+          </>
         )}
       </div>
 
@@ -500,6 +581,37 @@ Terima kasih atas kerjasama anda. 🙏
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* PDF Preview Modal */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={closePreview}>
+          <div className="absolute inset-0 bg-black/85" />
+          <div className="relative w-full h-full md:w-[min(90vw,800px)] md:h-[min(90vh,1000px)] flex flex-col bg-white md:rounded-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#0F172A] shrink-0">
+              <span className="text-white text-sm font-medium">Pratonton — {invoice.invoice_number}</span>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={handlePreviewDownload} className="text-white border-white/30 hover:bg-white/10 text-xs h-8">Muat Turun</Button>
+                <Button size="sm" onClick={() => { closePreview(); shareViaWhatsApp(); }} className="text-white text-xs h-8" style={{ backgroundColor: '#25D366' }}>
+                  <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
+                </Button>
+                <button onClick={closePreview} className="text-white/70 hover:text-white"><X className="h-5 w-5" /></button>
+              </div>
+            </div>
+            <div className="flex-1 bg-[#525659] overflow-auto p-5">
+              {previewLoading ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3">
+                  <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  <span className="text-white text-sm">Menjana pratonton...</span>
+                </div>
+              ) : previewUrl ? (
+                <iframe src={previewUrl} width="100%" height="100%" style={{ border: 'none', minHeight: '600px' }} />
+              ) : null}
+            </div>
+            <div className="flex items-center justify-center px-4 py-2 bg-[#0F172A] shrink-0">
+              <span className="text-white/70 text-xs">Halaman 1 dari 1</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

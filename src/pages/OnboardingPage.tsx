@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -31,6 +32,21 @@ export default function OnboardingPage() {
 
   const handlePlanSelect = async (planId: string, billingPeriod: string) => {
     await updateProfile({ plan: planId, billing_period: billingPeriod, onboarding_complete: true });
+    // Reward referrer
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { data: prof } = await supabase.from('profiles').select('referred_by').eq('id', currentUser.id).single();
+        if (prof?.referred_by) {
+          const { data: referral } = await supabase.from('referrals').select('*').eq('referred_id', currentUser.id).eq('status', 'pending').maybeSingle();
+          if (referral) {
+            await supabase.from('referrals').update({ status: 'rewarded', completed_at: new Date().toISOString(), rewarded_at: new Date().toISOString() } as any).eq('id', referral.id);
+            await supabase.rpc('increment_free_months', { row_id: referral.referrer_id });
+            await supabase.rpc('increment_referral_count', { row_id: referral.referrer_id });
+          }
+        }
+      }
+    } catch {}
     navigate('/dashboard');
   };
 

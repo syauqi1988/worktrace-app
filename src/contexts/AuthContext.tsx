@@ -120,7 +120,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         free_months_earned: p.free_months_earned || 0,
         free_months_used: p.free_months_used || 0,
       });
-      return { isNewUser: !profileData.onboarding_complete };
+
+      // Handle referral for new users
+      const isNew = !profileData.onboarding_complete;
+      if (isNew) {
+        const savedRef = localStorage.getItem('worktrace_ref');
+        if (savedRef) {
+          try {
+            const { data: referrer } = await supabase
+              .from('profiles').select('id').eq('referral_code', savedRef).maybeSingle();
+            if (referrer && referrer.id !== userId) {
+              await supabase.from('profiles').update({ referred_by: savedRef } as any).eq('id', userId);
+              await supabase.from('referrals').insert({
+                referrer_id: referrer.id, referred_id: userId,
+                referral_code: savedRef, status: 'pending',
+              } as any);
+            }
+          } catch {}
+          localStorage.removeItem('worktrace_ref');
+        }
+      }
+      return { isNewUser: isNew };
     }
 
     return { isNewUser: true };
