@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import UpgradeModal from '@/components/UpgradeModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -19,6 +21,7 @@ export default function CustomerFormPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const fromJobForm = searchParams.get('from') === 'jobs';
+  const { checkCustomerLimit, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
@@ -70,6 +73,12 @@ export default function CustomerFormPage() {
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
+    }
+
+    // Plan gate: check customer limit for new customers
+    if (!isEdit && user) {
+      const allowed = await checkCustomerLimit(user.id);
+      if (!allowed) return;
     }
 
     setSubmitting(true);
@@ -227,6 +236,7 @@ export default function CustomerFormPage() {
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
         {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Pelanggan' : 'Simpan Pelanggan'}
       </Button>
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }

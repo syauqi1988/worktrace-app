@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift
@@ -43,9 +45,31 @@ export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Subscription expiry check
+  useEffect(() => {
+    if (!user || !profile) return;
+    if (profile.plan === 'free') return;
+    if (profile.subscription_end_date) {
+      const endDate = new Date(profile.subscription_end_date);
+      if (endDate < new Date()) {
+        supabase
+          .from('profiles')
+          .update({ plan: 'free', subscription_status: 'expired' } as any)
+          .eq('id', user.id)
+          .then(() => {
+            refreshProfile();
+            toast.warning(
+              'Langganan Pro anda telah tamat. Akaun anda telah diturunkan ke pelan Free.',
+              { duration: 8000 }
+            );
+          });
+      }
+    }
+  }, [user, profile]);
 
   const initials = profile?.company_name
     ? profile.company_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()

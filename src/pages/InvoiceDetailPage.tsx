@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -85,6 +87,7 @@ export default function InvoiceDetailPage() {
   const [logoBase64, setLogoBase64] = useState<string>('');
   const [inlinePayDate, setInlinePayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showInlinePayDate, setShowInlinePayDate] = useState(false);
+  const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
@@ -216,8 +219,8 @@ export default function InvoiceDetailPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_url: profile?.logo_url || null,
-      logo_base64: logoBase64,
+      logo_url: canShowLogo ? (profile?.logo_url || null) : null,
+      logo_base64: canShowLogo ? logoBase64 : '',
       lhdn_enabled: profile?.lhdn_enabled,
       tin_number: profile?.tin_number,
       msic_code: profile?.msic_code,
@@ -299,6 +302,7 @@ Terima kasih atas kerjasama anda. 🙏
   };
 
   const shareViaWhatsApp = async () => {
+    if (!checkWhatsAppShare()) return;
     if (!invoice || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
@@ -321,6 +325,7 @@ Terima kasih atas kerjasama anda. 🙏
   };
 
   const sendPaymentReminder = () => {
+    if (!checkWhatsAppShare()) return;
     if (!invoice || !hasPhone) return;
     const phone = formatPhone(customerPhone);
     const message = buildWhatsAppInvoiceMessage();
@@ -670,6 +675,7 @@ Terima kasih atas kerjasama anda. 🙏
         open={previewOpen}
         title={`Pratonton — ${invoice.invoice_number}`}
       />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }

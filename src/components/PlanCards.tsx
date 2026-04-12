@@ -1,53 +1,77 @@
 import { useState } from 'react';
-import { Check, X as XIcon } from 'lucide-react';
+import { Check, X as XIcon, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useBillPlz } from '@/hooks/useBillPlz';
 
 const PLANS = [
   {
-    id: 'basic',
-    name: 'Basic',
-    monthlyPrice: 19,
+    id: 'free',
+    name: 'Free',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    tagline: 'Cuba dulu, rasa dulu',
+    note: 'Selamanya percuma',
+    badge: 'Percuma',
+    badgeColor: 'bg-muted text-muted-foreground',
     features: [
-      { text: 'Sehingga 50 kerja sebulan', included: true },
+      { text: 'Sehingga 5 kerja aktif', included: true },
+      { text: 'Sehingga 3 pelanggan', included: true },
       { text: 'Quotation & invois asas', included: true },
-      { text: 'Eksport PDF', included: true },
-      { text: 'WhatsApp follow-up', included: true },
-      { text: '1 pengguna', included: true },
-      { text: 'Sokongan emel', included: true },
-      { text: 'LHDN e-Invois', included: false },
-      { text: 'Analitik & laporan', included: false },
+      { text: 'Eksport PDF (tanpa logo)', included: true },
+      { text: 'WhatsApp share', included: false },
+      { text: 'Logo di PDF', included: false },
+      { text: 'Sistem referral', included: false },
     ],
-    cta: 'Pilih Basic',
+    cta: 'Cuba sekarang',
     highlight: false,
+    comingSoon: false,
   },
   {
     id: 'pro',
     name: 'Pro',
     monthlyPrice: 49,
+    originalMonthly: 79,
+    yearlyPrice: 470,
+    originalYearly: 588,
+    tagline: 'Untuk kontraktor yang serius',
+    note: 'Early bird — terhad masa',
+    badge: 'Paling popular',
+    badgeColor: 'bg-primary text-primary-foreground',
     features: [
-      { text: 'Kerja tanpa had', included: true },
-      { text: 'Semua ciri Basic', included: true },
-      { text: 'LHDN e-Invois', included: true },
-      { text: 'Analitik & laporan', included: true },
+      { text: 'Kerja aktif tanpa had', included: true },
+      { text: 'Pelanggan tanpa had', included: true },
+      { text: 'Semua ciri Free', included: true },
+      { text: 'WhatsApp share quotation', included: true },
+      { text: 'Logo di PDF', included: true },
+      { text: 'Kaedah pembayaran (bank + QR)', included: true },
+      { text: 'Sistem referral (1 bulan percuma)', included: true },
       { text: 'Sokongan keutamaan', included: true },
-      { text: '1 pengguna', included: true },
     ],
-    cta: 'Pilih Pro',
+    cta: 'Upgrade ke Pro',
     highlight: true,
+    comingSoon: false,
   },
   {
-    id: 'agency',
-    name: 'Agency',
-    monthlyPrice: 149,
+    id: 'team',
+    name: 'Team',
+    monthlyPrice: 99,
+    yearlyPrice: 950,
+    originalYearly: 1188,
+    tagline: 'Untuk pasukan kecil 2–10 orang',
+    note: 'Sehingga 5 pengguna termasuk',
+    badge: 'Akan datang',
+    badgeColor: 'bg-amber-100 text-amber-700',
     features: [
       { text: 'Semua ciri Pro', included: true },
-      { text: 'Sehingga 10 pengguna', included: true },
-      { text: 'White-label', included: true },
-      { text: 'Pengurus akaun dedikasi', included: true },
-      { text: 'Sokongan telefon', included: true },
+      { text: 'Akses berbilang pengguna (5 seat)', included: true },
+      { text: 'Tugaskan kerja kepada pekerja', included: true },
+      { text: 'Laporan prestasi pasukan', included: true },
+      { text: 'Kawalan akses & kebenaran', included: true },
+      { text: 'Tambah seat: RM15/pengguna', included: true },
     ],
-    cta: 'Hubungi Kami',
+    cta: 'Beritahu saya bila siap',
     highlight: false,
+    comingSoon: true,
   },
 ];
 
@@ -55,18 +79,29 @@ interface PlanCardsProps {
   currentPlan?: string;
   onSelect: (planId: string, billingPeriod: string) => void;
   showToggle?: boolean;
+  compact?: boolean;
 }
 
-export default function PlanCards({ currentPlan, onSelect, showToggle = true }: PlanCardsProps) {
+export default function PlanCards({ currentPlan, onSelect, showToggle = true, compact = false }: PlanCardsProps) {
   const [yearly, setYearly] = useState(false);
+  const { initiatePayment, isLoading } = useBillPlz();
 
-  const getPrice = (monthly: number) => {
-    if (yearly) return Math.round(monthly * 12 * 0.8);
-    return monthly;
+  const getPrice = (plan: typeof PLANS[0]) => {
+    if (plan.id === 'free') return 0;
+    return yearly ? plan.yearlyPrice : plan.monthlyPrice;
   };
 
-  const getOriginalYearly = (monthly: number) => monthly * 12;
-  const getSavings = (monthly: number) => (monthly * 12 * 0.2).toFixed(2);
+  const getOriginal = (plan: typeof PLANS[0]) => {
+    if (plan.id === 'free') return 0;
+    if (yearly) return (plan as any).originalYearly || 0;
+    return (plan as any).originalMonthly || 0;
+  };
+
+  const getSavings = (plan: typeof PLANS[0]) => {
+    const orig = getOriginal(plan);
+    const price = getPrice(plan);
+    return orig > price ? orig - price : 0;
+  };
 
   return (
     <div className="space-y-6">
@@ -95,87 +130,101 @@ export default function PlanCards({ currentPlan, onSelect, showToggle = true }: 
       <div className="grid gap-4 sm:grid-cols-3">
         {PLANS.map(plan => {
           const isCurrent = currentPlan === plan.id;
-          const price = getPrice(plan.monthlyPrice);
-          const period = yearly ? '/tahun' : '/bulan';
+          const price = getPrice(plan);
+          const original = getOriginal(plan);
+          const savings = getSavings(plan);
+          const period = plan.id === 'free' ? '' : yearly ? '/tahun' : '/bulan';
 
           return (
             <div
               key={plan.id}
-              className={`rounded-xl p-6 flex flex-col transition-all bg-card ${
+              className={`rounded-xl ${compact ? 'p-4' : 'p-6'} flex flex-col transition-all bg-card ${
                 plan.highlight
                   ? 'border-2 border-primary shadow-md'
                   : 'border border-border'
               }`}
             >
               <div className="mb-4">
-                <div className="flex items-center gap-2">
-                  <h3 className={`font-bold text-lg ${plan.highlight ? 'text-primary' : 'text-foreground'}`}>
-                    {plan.name}
-                  </h3>
-                  {plan.highlight && (
-                    <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold">
-                      Paling Popular
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${plan.badgeColor}`}>
+                    {plan.badge}
+                  </span>
+                </div>
+                <h3 className={`font-bold text-lg mt-2 ${plan.highlight ? 'text-primary' : 'text-foreground'}`}>
+                  {plan.name}
+                </h3>
+                <p className="text-xs text-muted-foreground">{plan.tagline}</p>
+                <div className="mt-2">
+                  {original > 0 && (
+                    <span className="text-sm text-muted-foreground line-through mr-2">
+                      RM{original}
                     </span>
                   )}
-                </div>
-                <div className="mt-2">
                   <span className={`text-3xl font-bold ${plan.highlight ? 'text-primary' : 'text-foreground'}`}>
                     RM{price}
                   </span>
                   <span className="text-sm text-muted-foreground">{period}</span>
                 </div>
-                {yearly && (
-                  <div className="mt-1 flex items-center gap-2 flex-wrap">
-                    <span className="text-sm text-muted-foreground line-through">
-                      RM{getOriginalYearly(plan.monthlyPrice)}/tahun
-                    </span>
-                    <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                      Jimat RM{getSavings(plan.monthlyPrice)}!
-                    </span>
-                  </div>
+                {savings > 0 && yearly && (
+                  <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                    Jimat RM{savings}!
+                  </span>
                 )}
+                <p className="text-xs text-muted-foreground mt-1">{plan.note}</p>
               </div>
 
-              <ul className="space-y-2.5 mb-6 flex-1">
-                {plan.features.map(f => (
-                  <li key={f.text} className={`flex items-start gap-2 text-sm ${f.included ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {f.included ? (
-                      <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                    ) : (
-                      <XIcon className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0" />
-                    )}
-                    {f.text}
-                  </li>
-                ))}
-              </ul>
+              {!compact && (
+                <ul className="space-y-2 mb-6 flex-1">
+                  {plan.features.map(f => (
+                    <li key={f.text} className={`flex items-start gap-2 text-sm ${f.included ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {f.included ? (
+                        <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                      ) : (
+                        <XIcon className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0" />
+                      )}
+                      {f.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {isCurrent ? (
                 <div className="w-full py-2.5 rounded-lg text-center text-sm font-medium bg-muted text-muted-foreground">
                   Pelan Semasa
                 </div>
-              ) : plan.id === 'agency' && currentPlan ? (
+              ) : plan.comingSoon ? (
+                <Button
+                  variant="outline"
+                  className="w-full rounded-lg gap-2"
+                  onClick={() => window.open('https://wa.me/60123456789?text=Saya+berminat+dengan+pelan+Team+WorkTrace', '_blank')}
+                >
+                  <Clock className="h-4 w-4" />
+                  {plan.cta}
+                </Button>
+              ) : plan.id === 'free' ? (
                 <Button
                   variant="outline"
                   className="w-full rounded-lg"
-                  onClick={() => window.open('https://wa.me/60123456789?text=Saya+nak+naik+taraf+ke+pelan+Agency+WorkTrace', '_blank')}
+                  onClick={() => onSelect('free', 'monthly')}
                 >
-                  Hubungi Kami
-                </Button>
-              ) : currentPlan ? (
-                <Button
-                  variant={plan.highlight ? 'default' : 'outline'}
-                  className="w-full rounded-lg"
-                  onClick={() => window.open(`https://wa.me/60123456789?text=Saya+nak+naik+taraf+ke+pelan+${plan.name}+WorkTrace`, '_blank')}
-                >
-                  Naik Taraf
+                  {plan.cta}
                 </Button>
               ) : (
                 <Button
                   variant={plan.highlight ? 'default' : 'outline'}
                   className="w-full rounded-lg"
-                  onClick={() => onSelect(plan.id, yearly ? 'yearly' : 'monthly')}
+                  disabled={isLoading}
+                  onClick={() => {
+                    if (currentPlan) {
+                      // Already logged in, go to BillPlz
+                      initiatePayment(plan.id as 'pro', yearly ? 'yearly' : 'monthly');
+                    } else {
+                      // Onboarding flow
+                      onSelect(plan.id, yearly ? 'yearly' : 'monthly');
+                    }
+                  }}
                 >
-                  {plan.cta}
+                  {isLoading ? 'Memproses...' : plan.cta}
                 </Button>
               )}
             </div>

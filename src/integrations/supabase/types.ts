@@ -213,6 +213,7 @@ export type Database = {
         Row: {
           address: string | null
           billing_period: string | null
+          billplz_bill_id: string | null
           company_name: string | null
           created_at: string
           free_months_earned: number | null
@@ -231,12 +232,16 @@ export type Database = {
           referral_count: number | null
           referred_by: string | null
           sst_registered: boolean
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          subscription_status: string | null
           tin_number: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
           billing_period?: string | null
+          billplz_bill_id?: string | null
           company_name?: string | null
           created_at?: string
           free_months_earned?: number | null
@@ -255,12 +260,16 @@ export type Database = {
           referral_count?: number | null
           referred_by?: string | null
           sst_registered?: boolean
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           tin_number?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
           billing_period?: string | null
+          billplz_bill_id?: string | null
           company_name?: string | null
           created_at?: string
           free_months_earned?: number | null
@@ -279,6 +288,9 @@ export type Database = {
           referral_count?: number | null
           referred_by?: string | null
           sst_registered?: boolean
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           tin_number?: string | null
           updated_at?: string
         }
@@ -386,6 +398,10 @@ export type Database = {
     Functions: {
       cleanup_deleted_user_email: {
         Args: { p_user_id: string }
+        Returns: undefined
+      }
+      complete_referral_reward: {
+        Args: { p_referred_id: string }
         Returns: undefined
       }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }

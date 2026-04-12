@@ -5,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Check } from 'lucide-react';
 import PlanCards from '@/components/PlanCards';
+import { useBillPlz } from '@/hooks/useBillPlz';
 import logo from '@/assets/logo.png';
 
 export default function OnboardingPage() {
@@ -19,6 +19,7 @@ export default function OnboardingPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const navigate = useNavigate();
   const { updateProfile } = useAuth();
+  const { initiatePayment, isLoading } = useBillPlz();
 
   const handleStep1Next = async () => {
     await updateProfile({ company_name: companyName || null, phone: phone || null, address: address || null });
@@ -31,23 +32,15 @@ export default function OnboardingPage() {
   };
 
   const handlePlanSelect = async (planId: string, billingPeriod: string) => {
-    await supabase.rpc('set_onboarding_plan', { p_plan: planId, p_billing_period: billingPeriod });
-    // Reward referrer
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser) {
-        const { data: prof } = await supabase.from('profiles').select('referred_by').eq('id', currentUser.id).single();
-        if (prof?.referred_by) {
-          const { data: referral } = await supabase.from('referrals').select('*').eq('referred_id', currentUser.id).eq('status', 'pending').maybeSingle();
-          if (referral) {
-            await supabase.from('referrals').update({ status: 'rewarded', completed_at: new Date().toISOString(), rewarded_at: new Date().toISOString() } as any).eq('id', referral.id);
-            await supabase.rpc('increment_free_months', { row_id: referral.referrer_id });
-            await supabase.rpc('increment_referral_count', { row_id: referral.referrer_id });
-          }
-        }
-      }
-    } catch {}
-    navigate('/dashboard');
+    if (planId === 'free') {
+      // Free plan — skip payment, complete onboarding
+      await supabase.rpc('set_onboarding_plan', { p_plan: 'free', p_billing_period: 'monthly' });
+      navigate('/dashboard');
+    } else {
+      // Pro plan — set onboarding complete first, then redirect to payment
+      await supabase.rpc('set_onboarding_plan', { p_plan: 'free', p_billing_period: 'monthly' });
+      initiatePayment(planId as 'pro', billingPeriod as 'monthly' | 'yearly');
+    }
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,12 +53,10 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-center py-6 border-b border-border">
         <img src={logo} alt="WorkTrace" className="h-10 logo-dark" />
       </div>
 
-      {/* Progress bar */}
       <div className="flex items-center justify-center gap-2 py-6 px-4">
         {[1, 2, 3].map(s => (
           <div key={s} className="flex items-center gap-2">
@@ -74,7 +65,6 @@ export default function OnboardingPage() {
         ))}
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex items-start justify-center px-4 pb-8">
         <div className="w-full max-w-lg">
           {step === 1 && (

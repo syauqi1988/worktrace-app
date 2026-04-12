@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import UpgradeModal from '@/components/UpgradeModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,7 @@ export default function JobFormPage() {
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { checkJobLimit, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -102,9 +105,13 @@ export default function JobFormPage() {
       setErrors(newErrors);
       return;
     }
+    // Plan gate: check job limit for new jobs
+    if (!isEdit && user) {
+      const allowed = await checkJobLimit(user.id);
+      if (!allowed) return;
+    }
 
     setSubmitting(true);
-
     try {
       if (isEdit) {
         const { error } = await supabase.from('jobs').update({
@@ -289,6 +296,7 @@ export default function JobFormPage() {
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
         {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Kerja' : 'Simpan Kerja'}
       </Button>
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }

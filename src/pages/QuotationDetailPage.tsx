@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,6 +77,7 @@ export default function QuotationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
+  const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -230,8 +233,8 @@ export default function QuotationDetailPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_url: profile?.logo_url || null,
-      logo_base64: logoBase64,
+      logo_url: canShowLogo ? (profile?.logo_url || null) : null,
+      logo_base64: canShowLogo ? logoBase64 : '',
     },
   } : null;
 
@@ -258,6 +261,7 @@ Terima kasih!
   };
 
   const shareViaWhatsApp = async () => {
+    if (!checkWhatsAppShare()) return;
     if (!quotation || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
@@ -601,6 +605,7 @@ Terima kasih!
         open={previewOpen}
         title={`Pratonton — ${quotation.quote_number}`}
       />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }
