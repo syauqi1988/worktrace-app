@@ -72,6 +72,7 @@ Deno.serve(async (req) => {
     })
 
     const bill = await response.json()
+    console.log('BillPlz response status:', response.status, 'body:', JSON.stringify(bill))
 
     if (!response.ok) {
       throw new Error(bill.error?.message || JSON.stringify(bill) || 'BillPlz error')
