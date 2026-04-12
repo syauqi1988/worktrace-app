@@ -75,6 +75,12 @@ export default function CustomerFormPage() {
       return;
     }
 
+    // Plan gate: check customer limit for new customers
+    if (!isEdit && user) {
+      const allowed = await checkCustomerLimit(user.id);
+      if (!allowed) return;
+    }
+
     setSubmitting(true);
     try {
       const payload: any = {
@@ -230,6 +236,7 @@ export default function CustomerFormPage() {
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
         {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Pelanggan' : 'Simpan Pelanggan'}
       </Button>
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }
