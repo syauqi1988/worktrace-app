@@ -3,29 +3,42 @@ import { createHmac } from 'node:crypto'
 
 Deno.serve(async (req) => {
   try {
+    // BillPlz sends callback as application/x-www-form-urlencoded
     const formData = await req.formData()
+    const params: Record<string, string> = {}
 
-    const billId = formData.get('id') as string
-    const paid = formData.get('paid') as string
-    const xSignature = formData.get('x_signature') as string
-    const userId = formData.get('reference_1') as string
-    const planPeriod = formData.get('reference_2') as string
+    for (const [key, value] of formData.entries()) {
+      params[key] = value as string
+    }
+
+    console.log('Callback params:', JSON.stringify(params))
+
+    const xSignature = params['x_signature']
+    delete params['x_signature']
 
     const XSIG_KEY = Deno.env.get('BILLPLZ_XSIGNATURE_KEY') ?? ''
 
-    // Verify X Signature
-    const rawString = `${billId}|${paid}`
+    // BillPlz signature: sort keys alphabetically, join as key=value pairs with |
+    const sortedKeys = Object.keys(params).sort()
+    const rawString = sortedKeys.map(k => `${k}${params[k]}`).join('|')
+
     const expectedSig = createHmac('sha256', XSIG_KEY)
       .update(rawString)
       .digest('hex')
 
     if (expectedSig !== xSignature) {
-      console.error('Invalid signature', { expected: expectedSig, got: xSignature })
+      console.error('Invalid signature', { expected: expectedSig, got: xSignature, rawString })
       return new Response('Invalid signature', { status: 401 })
     }
 
+    const billId = params['id']
+    const paid = params['paid']
+    const userId = params['reference_1']
+    const planPeriod = params['reference_2']
+
     // Only process successful payments
     if (paid !== 'true') {
+      console.log('Payment not paid yet, skipping update')
       return new Response('ok', { status: 200 })
     }
 
@@ -60,7 +73,7 @@ Deno.serve(async (req) => {
     }
 
     // Update profile
-    await supabaseAdmin
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         plan,
@@ -74,6 +87,13 @@ Deno.serve(async (req) => {
         billplz_bill_id: billId,
       })
       .eq('id', userId)
+
+    if (updateError) {
+      console.error('Profile update error:', updateError)
+      return new Response('Update failed', { status: 500 })
+    }
+
+    console.log(`Payment success: user ${userId} upgraded to ${plan} (${billing_period})`)
 
     // Trigger referral reward
     await supabaseAdmin.rpc('complete_referral_reward', { p_referred_id: userId })
