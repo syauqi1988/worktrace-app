@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2, Eye, AlertTriangle, X } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import QuotationPDF from '@/components/pdf/QuotationPDF';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -35,6 +35,7 @@ interface Quotation {
   tax_rate: number;
   total: number;
   notes: string | null;
+  terms: string | null;
   valid_until: string | null;
   created_at: string;
   job_id: string | null;
@@ -67,6 +68,11 @@ export default function QuotationDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [converting, setConverting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  // Fix 3: duplicate invoice dialog
+  const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -96,11 +102,7 @@ export default function QuotationDetailPage() {
     const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id);
     if (error) { toast.error(error.message); return; }
     setQuotation({ ...quotation, status: newStatus });
-    const messages: Record<string, string> = {
-      Sent: 'Sebut harga dihantar!',
-      Accepted: 'Sebut harga diterima!',
-      Rejected: 'Sebut harga ditolak',
-    };
+    const messages: Record<string, string> = { Sent: 'Sebut harga dihantar!', Accepted: 'Sebut harga diterima!', Rejected: 'Sebut harga ditolak' };
     toast.success(messages[newStatus] || 'Status dikemaskini');
   };
 
@@ -114,11 +116,37 @@ export default function QuotationDetailPage() {
     navigate('/quotations');
   };
 
+  // Fix 3: Check for existing invoice before converting
   const handleConvertToInvoice = async () => {
+    if (!quotation) return;
+
+    // Check for existing invoice on this job
+    if (quotation.job_id) {
+      const { data: existingInvoice } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, status, total')
+        .eq('job_id', quotation.job_id)
+        .eq('user_id', user!.id)
+        .maybeSingle();
+
+      if (existingInvoice) {
+        setExistingInvoiceDialog({
+          id: existingInvoice.id,
+          invoice_number: existingInvoice.invoice_number,
+          status: existingInvoice.status,
+          total: Number(existingInvoice.total) || 0,
+        });
+        return;
+      }
+    }
+
+    await createInvoiceFromQuotation();
+  };
+
+  const createInvoiceFromQuotation = async () => {
     if (!quotation) return;
     setConverting(true);
     try {
-      // Generate invoice number
       const { count } = await supabase.from('invoices').select('id', { count: 'exact', head: true });
       const invoiceNumber = `INV-${String((count ?? 0) + 1).padStart(4, '0')}`;
       const dueDate = new Date();
@@ -166,6 +194,7 @@ export default function QuotationDetailPage() {
       tax_rate: quotation.tax_rate,
       total: quotation.total,
       notes: quotation.notes,
+      terms: quotation.terms || profile?.quotation_terms || null,
     },
     job: quotation.jobs ? { job_number: quotation.jobs.job_number, title: quotation.jobs.title } : null,
     customer: (quotation.jobs as any)?.customers ? {
@@ -209,22 +238,17 @@ Terima kasih!
     setIsSharing(true);
     try {
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
-
       const fileName = `${user.id}/${quotation.quote_number}.pdf`;
       const { error: uploadError } = await supabase.storage
         .from('quotation-pdfs')
         .upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-
       if (uploadError) throw uploadError;
-
       const { data } = supabase.storage.from('quotation-pdfs').getPublicUrl(fileName);
       const pdfUrl = data.publicUrl;
-
       const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
       const customerName = (quotation.jobs as any)?.customers?.name || '';
       const companyName = profile?.company_name || '';
       const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, pdfUrl);
-
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(waUrl, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
@@ -236,8 +260,45 @@ Terima kasih!
     }
   };
 
+  // Fix 4: PDF Preview
+  const handlePreview = async () => {
+    if (!pdfData) return;
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    try {
+      const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+    } catch {
+      toast.error('Gagal menjana pratonton PDF');
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewOpen(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  const handlePreviewDownload = async () => {
+    if (!pdfData || !quotation) return;
+    const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SebuthHarga-${quotation.quote_number}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
   const whatsappUrl = hasPhone ? `https://wa.me/${formatPhone(customerPhone)}` : null;
+  const canEdit = quotation && quotation.status !== 'Rejected';
 
   if (loading) {
     return (
@@ -282,9 +343,9 @@ Terima kasih!
             <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {quotation.status === 'Draft' && (
+            {canEdit && (
               <DropdownMenuItem onClick={() => navigate(`/quotations/${quotation.id}/edit`)}>
-                <Edit className="h-4 w-4 mr-2" /> Edit
+                <Edit className="h-4 w-4 mr-2" /> Edit Sebut Harga
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
@@ -332,7 +393,6 @@ Terima kasih!
       {/* Line Items */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
-
         {/* Desktop */}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
@@ -347,7 +407,6 @@ Terima kasih!
             </div>
           ))}
         </div>
-
         {/* Mobile */}
         <div className="md:hidden space-y-2">
           {quotation.items.map((item, i) => (
@@ -360,25 +419,11 @@ Terima kasih!
             </div>
           ))}
         </div>
-
         {/* Totals */}
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span>RM {quotation.subtotal.toFixed(2)}</span>
-          </div>
-          {quotation.discount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Diskaun</span>
-              <span>− RM {quotation.discount.toFixed(2)}</span>
-            </div>
-          )}
-          {quotation.tax_rate > 0 && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">SST ({quotation.tax_rate}%)</span>
-              <span>+ RM {sstAmount.toFixed(2)}</span>
-            </div>
-          )}
+          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
+          {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
+          {quotation.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SST ({quotation.tax_rate}%)</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
             <span className="font-bold text-foreground">Jumlah Keseluruhan</span>
             <span className="text-lg font-bold text-primary">RM {quotation.total.toFixed(2)}</span>
@@ -398,58 +443,64 @@ Terima kasih!
         )}
         {quotation.status === 'Sent' && (
           <>
+            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
+              <Edit className="h-4 w-4" /> Edit
+            </Button>
             <Button onClick={() => updateStatus('Accepted')} className="flex-1 rounded-lg bg-green-600 hover:bg-green-700">Diterima</Button>
             <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">Ditolak</Button>
           </>
         )}
         {quotation.status === 'Accepted' && (
-          <Button onClick={handleConvertToInvoice} disabled={converting} className="flex-1 rounded-lg gap-2">
-            <FileText className="h-4 w-4" /> {converting ? 'Membuat invois...' : 'Tukar ke Invois'}
-          </Button>
+          <>
+            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
+              <Edit className="h-4 w-4" /> Edit
+            </Button>
+            <Button onClick={handleConvertToInvoice} disabled={converting} className="flex-1 rounded-lg gap-2">
+              <FileText className="h-4 w-4" /> {converting ? 'Membuat invois...' : 'Tukar ke Invois'}
+            </Button>
+          </>
         )}
         {quotation.status === 'Rejected' && (
-          <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="flex-1 rounded-lg">Buat Semula</Button>
+          <div className="w-full space-y-3">
+            <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-[#B45309]">Sebut harga yang ditolak tidak boleh diedit. Sila buat sebut harga baru.</p>
+              </div>
+            </div>
+            <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">Buat Sebut Harga Baru</Button>
+          </div>
         )}
       </div>
 
-      {/* WhatsApp Share + PDF Download */}
+      {/* WhatsApp Share + PDF Preview + PDF Download */}
       <div className="flex flex-col gap-3">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
-                <Button
-                  onClick={shareViaWhatsApp}
-                  disabled={isSharing || !hasPhone}
-                  className="w-full rounded-lg gap-2 text-white"
-                  style={{ backgroundColor: '#25D366' }}
-                >
-                  {isSharing ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</>
-                  ) : (
-                    <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>
-                  )}
+                <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
+                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</> : <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>}
                 </Button>
               </div>
             </TooltipTrigger>
-            {!hasPhone && (
-              <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>
-            )}
+            {!hasPhone && <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>}
           </Tooltip>
         </TooltipProvider>
 
         {pdfData && (
-          <PDFDownloadLink
-            document={<QuotationPDF {...pdfData} />}
-            fileName={`SebuthHarga-${quotation.quote_number}.pdf`}
-          >
-            {({ loading: pdfLoading }) => (
-              <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                <Download className="h-4 w-4" />
-                {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
-              </Button>
-            )}
-          </PDFDownloadLink>
+          <>
+            <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
+              <Eye className="h-4 w-4" /> Pratonton PDF
+            </Button>
+            <PDFDownloadLink document={<QuotationPDF {...pdfData} />} fileName={`SebuthHarga-${quotation.quote_number}.pdf`}>
+              {({ loading: pdfLoading }) => (
+                <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
+                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                </Button>
+              )}
+            </PDFDownloadLink>
+          </>
         )}
       </div>
 
@@ -466,6 +517,67 @@ Terima kasih!
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Fix 3: Existing Invoice Dialog */}
+      <Dialog open={!!existingInvoiceDialog} onOpenChange={() => setExistingInvoiceDialog(null)}>
+        <DialogContent className="max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Invois Sudah Wujud</DialogTitle>
+          </DialogHeader>
+          {existingInvoiceDialog && (
+            <div className="space-y-4">
+              <div className="bg-[#F8FAFC] border border-border rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-primary">{existingInvoiceDialog.invoice_number}</span>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#DBEAFE] text-[#1D4ED8]">{existingInvoiceDialog.status}</span>
+                </div>
+                <p className="text-sm font-semibold mt-1">RM {existingInvoiceDialog.total.toFixed(2)}</p>
+              </div>
+              <p className="text-sm text-muted-foreground">Kerja ini sudah mempunyai invois. Nak lihat atau buat baru?</p>
+              <div className="flex flex-col gap-2">
+                <Button onClick={() => { navigate(`/invoices/${existingInvoiceDialog.id}`); setExistingInvoiceDialog(null); }} className="rounded-lg">Lihat Invois</Button>
+                <Button variant="outline" onClick={() => { setExistingInvoiceDialog(null); createInvoiceFromQuotation(); }} className="rounded-lg">Buat Invois Baru</Button>
+                <Button variant="ghost" onClick={() => setExistingInvoiceDialog(null)} className="rounded-lg">Batal</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Fix 4: PDF Preview Modal */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={closePreview}>
+          <div className="absolute inset-0 bg-black/85" />
+          <div className="relative w-full h-full md:w-[min(90vw,800px)] md:h-[min(90vh,1000px)] flex flex-col bg-white md:rounded-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-[#0F172A] shrink-0">
+              <span className="text-white text-sm font-medium">Pratonton — {quotation.quote_number}</span>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={handlePreviewDownload} className="text-white border-white/30 hover:bg-white/10 text-xs h-8">Muat Turun</Button>
+                <Button size="sm" onClick={() => { closePreview(); shareViaWhatsApp(); }} className="text-white text-xs h-8" style={{ backgroundColor: '#25D366' }}>
+                  <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
+                </Button>
+                <button onClick={closePreview} className="text-white/70 hover:text-white"><X className="h-5 w-5" /></button>
+              </div>
+            </div>
+            {/* Modal Body */}
+            <div className="flex-1 bg-[#525659] overflow-auto p-5">
+              {previewLoading ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3">
+                  <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  <span className="text-white text-sm">Menjana pratonton...</span>
+                </div>
+              ) : previewUrl ? (
+                <iframe src={previewUrl} width="100%" height="100%" style={{ border: 'none', minHeight: '600px' }} />
+              ) : null}
+            </div>
+            {/* Modal Footer */}
+            <div className="flex items-center justify-center px-4 py-2 bg-[#0F172A] shrink-0">
+              <span className="text-white/70 text-xs">Halaman 1 dari 1</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

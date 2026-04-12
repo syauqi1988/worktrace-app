@@ -53,6 +53,8 @@ export default function QuotationFormPage() {
     return d.toISOString().slice(0, 10);
   });
   const [notes, setNotes] = useState('');
+  const [terms, setTerms] = useState('');
+  const [editStatus, setEditStatus] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [existingQuotation, setExistingQuotation] = useState<{ id: string } | null>(null);
   const [jobWarning, setJobWarning] = useState<{ message: string; link: string } | null>(null);
@@ -104,8 +106,9 @@ export default function QuotationFormPage() {
         .single();
       if (data) {
         const q = data as any;
-        // Redirect if not Draft
-        if (q.status !== 'Draft') {
+        // Block only Rejected
+        if (q.status === 'Rejected') {
+          toast.error('Sebut harga yang ditolak tidak boleh diedit.');
           navigate(`/quotations/${id}`, { replace: true });
           return;
         }
@@ -114,7 +117,7 @@ export default function QuotationFormPage() {
         setItems(Array.isArray(q.items) ? q.items : [{ description: '', qty: 1, unit_price: 0 }]);
         setNotes(q.notes || '');
         setValidUntil(q.valid_until || '');
-        // Reconstruct discount & SST from stored values
+        setTerms(q.terms || '');
         const storedDiscount = Number(q.discount) || 0;
         setDiscountMode('rm');
         setDiscountValue(storedDiscount);
@@ -123,6 +126,7 @@ export default function QuotationFormPage() {
           setSstEnabled(true);
           setSstRate(storedTaxRate);
         }
+        setEditStatus(q.status);
       }
       setLoading(false);
     }
@@ -175,6 +179,7 @@ export default function QuotationFormPage() {
 
     setSubmitting(true);
     try {
+      const saveStatus = isEdit && editStatus && editStatus !== 'Draft' ? editStatus : status;
       const payload = {
         user_id: user!.id,
         job_id: selectedJob!.id,
@@ -184,15 +189,16 @@ export default function QuotationFormPage() {
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
         total: grandTotal,
-        status,
+        status: saveStatus,
         notes: notes.trim() || null,
+        terms: terms.trim() || null,
         valid_until: validUntil || null,
       };
 
       if (isEdit) {
         const { error } = await supabase.from('quotations').update(payload).eq('id', id);
         if (error) throw error;
-        toast.success('Sebut harga dikemaskini!');
+        toast.success('Sebut harga berjaya dikemaskini!');
         navigate(`/quotations/${id}`);
       } else {
         const { data, error } = await supabase.from('quotations').insert(payload).select('id').single();
