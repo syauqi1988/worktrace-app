@@ -25,6 +25,8 @@ import JobFormPage from "@/pages/JobFormPage";
 import CustomersListPage from "@/pages/CustomersListPage";
 import CustomerDetailPage from "@/pages/CustomerDetailPage";
 import CustomerFormPage from "@/pages/CustomerFormPage";
+import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
+import PaymentFailedPage from "@/pages/PaymentFailedPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +43,12 @@ const App = () => (
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/onboarding" element={
               <ProtectedRoute><OnboardingPage /></ProtectedRoute>
+            } />
+            <Route path="/payment/success" element={
+              <ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>
+            } />
+            <Route path="/payment/failed" element={
+              <ProtectedRoute><PaymentFailedPage /></ProtectedRoute>
             } />
             <Route path="/" element={
               <ProtectedRoute><AppShell /></ProtectedRoute>
