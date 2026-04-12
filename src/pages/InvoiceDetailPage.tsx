@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -80,6 +81,7 @@ export default function InvoiceDetailPage() {
   const [linkedQuote, setLinkedQuote] = useState<{ id: string; quote_number: string } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<Uint8Array | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [logoBase64, setLogoBase64] = useState<string>('');
   const [inlinePayDate, setInlinePayDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -119,6 +121,12 @@ export default function InvoiceDetailPage() {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
     }
   }, [profile?.logo_url]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   // ESC key to close preview
   useEffect(() => {
@@ -220,9 +228,12 @@ export default function InvoiceDetailPage() {
     if (!pdfData) return;
     setPreviewOpen(true);
     setPreviewLoading(true);
+    setPreviewFile(null);
     try {
       const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
       const url = URL.createObjectURL(blob);
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      setPreviewFile(bytes);
       setPreviewUrl(url);
     } catch {
       toast.error('Gagal menjana pratonton PDF');
@@ -234,7 +245,8 @@ export default function InvoiceDetailPage() {
 
   const closePreview = () => {
     setPreviewOpen(false);
-    if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
+    setPreviewFile(null);
+    setPreviewUrl(null);
   };
 
   const handlePreviewDownload = async () => {
@@ -645,37 +657,18 @@ Terima kasih atas kerjasama anda. 🙏
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* PDF Preview Modal */}
-      {previewOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={closePreview}>
-          <div className="absolute inset-0 bg-black/85" />
-          <div className="relative w-full h-full md:w-[min(90vw,800px)] md:h-[min(90vh,1000px)] flex flex-col bg-white md:rounded-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 bg-[#0F172A] shrink-0">
-              <span className="text-white text-sm font-medium">Pratonton — {invoice.invoice_number}</span>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={handlePreviewDownload} className="text-white border-white/30 hover:bg-white/10 text-xs h-8">Muat Turun</Button>
-                <Button size="sm" onClick={() => { closePreview(); shareViaWhatsApp(); }} className="text-white text-xs h-8" style={{ backgroundColor: '#25D366' }}>
-                  <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
-                </Button>
-                <button onClick={closePreview} className="text-white/70 hover:text-white"><X className="h-5 w-5" /></button>
-              </div>
-            </div>
-            <div className="flex-1 bg-[#525659] overflow-auto p-5">
-              {previewLoading ? (
-                <div className="flex flex-col items-center justify-center h-full gap-3">
-                  <Loader2 className="h-8 w-8 text-white animate-spin" />
-                  <span className="text-white text-sm">Menjana pratonton...</span>
-                </div>
-              ) : previewUrl ? (
-                <iframe src={previewUrl} width="100%" height="100%" style={{ border: 'none', minHeight: '600px' }} />
-              ) : null}
-            </div>
-            <div className="flex items-center justify-center px-4 py-2 bg-[#0F172A] shrink-0">
-              <span className="text-white/70 text-xs">Halaman 1 dari 1</span>
-            </div>
-          </div>
-        </div>
-      )}
+      <PDFPreviewModal
+        file={previewFile}
+        loading={previewLoading}
+        onClose={closePreview}
+        onDownload={handlePreviewDownload}
+        onShare={() => {
+          closePreview();
+          shareViaWhatsApp();
+        }}
+        open={previewOpen}
+        title={`Pratonton — ${invoice.invoice_number}`}
+      />
     </div>
   );
 }
