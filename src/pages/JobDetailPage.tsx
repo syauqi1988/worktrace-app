@@ -115,7 +115,7 @@ export default function JobDetailPage() {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!job) return;
-    const updates: Record<string, unknown> = { status: newStatus };
+    const updates: { status: string; completed_date?: string } = { status: newStatus };
     if (newStatus === 'Completed') updates.completed_date = new Date().toISOString().slice(0, 10);
     const { error } = await supabase.from('jobs').update(updates).eq('id', job.id);
     if (error) {
