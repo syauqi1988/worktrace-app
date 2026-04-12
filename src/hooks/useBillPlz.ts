@@ -21,6 +21,7 @@ export function useBillPlz() {
           user_email: user.email,
           user_name: profile?.company_name || user.email,
           user_id: user.id,
+          redirect_base_url: window.location.origin,
         },
       });
 

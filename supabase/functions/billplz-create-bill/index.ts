@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan, billing_period, user_email, user_name, user_id } = await req.json()
+    const { plan, billing_period, user_email, user_name, user_id, redirect_base_url } = await req.json()
 
     if (!plan || !user_email || !user_id) {
       return new Response(
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
     const callbackUrl = `${SUPABASE_URL}/functions/v1/billplz-callback`
-    const appUrl = Deno.env.get('APP_URL') || 'https://worktraceapp.lovable.app'
+    const appUrl = redirect_base_url || Deno.env.get('APP_URL') || 'https://worktraceapp.lovable.app'
     const redirectUrl = `${appUrl}/payment/success?plan=${plan}&period=${billing_period || 'monthly'}`
 
     const formData = new URLSearchParams()
