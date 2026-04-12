@@ -1,27 +1,40 @@
 
 
-## Fix: Kaedah Bayaran Tidak Disertakan Dalam Invois
+## Add "Install App" Banner
 
-### Masalah
-Kaedah bayaran tidak dipaparkan dalam invois kerana:
-1. Invois yang sedia ada mungkin tidak mempunyai `selected_payment_methods` yang tersimpan (kosong).
-2. Semasa edit invois, kaedah bayaran yang dipilih tidak dimuat semula — jadi ia hilang jika invois disimpan semula.
+### What it does
+Shows a dismissible banner/notification prompting users to install WorkTrace as a home screen app, each time they open the app — but only if:
+- The app is NOT already installed (standalone mode)
+- The user hasn't dismissed it in the current session
+- The app is running on the published domain (not in Lovable preview/iframe)
 
-### Penyelesaian
+No service worker or `vite-plugin-pwa` is needed — just a web app manifest for installability and a UI banner.
 
-**1. Fallback pada halaman detail invois** (`InvoiceDetailPage.tsx`)
-- Jika `selected_payment_methods` kosong, gunakan SEMUA kaedah bayaran dari profil sebagai fallback.
-- Ini memastikan invois lama (sebelum ciri ini ditambah) tetap memaparkan kaedah bayaran.
+### Changes
 
-**2. Muat semula kaedah bayaran semasa edit** (`InvoiceFormPage.tsx`)  
-- Semasa edit invois, restore `selectedPaymentMethods` dari `inv.selected_payment_methods` yang tersimpan.
-- Jika tiada yang tersimpan, fallback kepada semua kaedah bayaran profil.
+**1. Create `public/manifest.json`**
+- `name`: "WorkTrace", `short_name`: "WorkTrace"
+- `display`: "standalone", `start_url`: "/", `theme_color` and `background_color` matching app branding
+- Icons: reuse existing `/logo.svg` (+ generate a 192x192 and 512x512 PNG if needed, or use SVG with `purpose: "any"`)
 
-### Fail yang diubah
-- `src/pages/InvoiceDetailPage.tsx` — fallback logic untuk `selectedPMs`
-- `src/pages/InvoiceFormPage.tsx` — restore saved payment methods on edit
+**2. Update `index.html`**
+- Add `<link rel="manifest" href="/manifest.json">`
+- Add `<meta name="apple-mobile-web-app-capable" content="yes">` and related Apple meta tags for iOS
 
-### Tiada perubahan pada
-- PDF component (`InvoicePDF.tsx`) — sudah betul, ia render apa sahaja yang diterima via `paymentMethods` prop
-- Struktur database — tiada perubahan diperlukan
+**3. Create `src/components/InstallPromptBanner.tsx`**
+- Listens for the `beforeinstallprompt` event (Chrome/Android) and stores the event
+- On Android: shows a banner with "Pasang WorkTrace" button that triggers the native install prompt
+- On iOS (Safari): shows a banner explaining "Ketik Share → Add to Home Screen"
+- Detects if already installed via `window.matchMedia('(display-mode: standalone)')` — if so, hides banner
+- Dismiss stores flag in `sessionStorage` so it only shows once per session
+- Skips rendering entirely if inside iframe or on preview domain
+
+**4. Add banner to `AppShell.tsx`**
+- Render `<InstallPromptBanner />` at the top of the layout, above the header
+
+### Technical details
+- No `vite-plugin-pwa` or service worker — keeps things simple and avoids preview issues
+- The install prompt only works on HTTPS published domain, not in the Lovable editor
+- iOS does not support `beforeinstallprompt`, so we show manual instructions for Safari users
+- Banner language in Malay to match the app
 
