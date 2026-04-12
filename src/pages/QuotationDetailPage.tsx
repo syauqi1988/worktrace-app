@@ -72,7 +72,6 @@ export default function QuotationDetailPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewFile, setPreviewFile] = useState<Uint8Array | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
@@ -290,12 +289,10 @@ Terima kasih!
     if (!pdfData) return;
     setPreviewOpen(true);
     setPreviewLoading(true);
-    setPreviewFile(null);
+    setPreviewUrl(null);
     try {
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
       const url = URL.createObjectURL(blob);
-      const bytes = new Uint8Array(await blob.arrayBuffer());
-      setPreviewFile(bytes);
       setPreviewUrl(url);
     } catch {
       toast.error('Gagal menjana pratonton PDF');
@@ -307,7 +304,7 @@ Terima kasih!
 
   const closePreview = () => {
     setPreviewOpen(false);
-    setPreviewFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
   };
 
@@ -593,7 +590,7 @@ Terima kasih!
       </Dialog>
 
       <PDFPreviewModal
-        file={previewFile}
+        fileUrl={previewUrl}
         loading={previewLoading}
         onClose={closePreview}
         onDownload={handlePreviewDownload}
