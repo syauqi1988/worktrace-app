@@ -234,7 +234,7 @@ export default function SettingsPage() {
 
   // Referral
   const referralCode = profile?.referral_code || '';
-  const referralUrl = `https://worktraceapp.lovable.app/login?ref=${referralCode}`;
+  const referralUrl = `https://app.worktrace.my/login?ref=${referralCode}`;
   const freeMonthsBalance = (profile?.free_months_earned || 0) - (profile?.free_months_used || 0);
 
   const copyReferralLink = () => {
