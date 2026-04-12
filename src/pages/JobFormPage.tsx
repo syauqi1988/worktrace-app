@@ -296,6 +296,7 @@ export default function JobFormPage() {
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
         {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Kerja' : 'Simpan Kerja'}
       </Button>
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }
