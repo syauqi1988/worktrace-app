@@ -236,6 +236,8 @@ export type Database = {
           subscription_start_date: string | null
           subscription_status: string | null
           tin_number: string | null
+          tutorial_completed: boolean | null
+          tutorial_seen_count: number | null
           updated_at: string
         }
         Insert: {
@@ -264,6 +266,8 @@ export type Database = {
           subscription_start_date?: string | null
           subscription_status?: string | null
           tin_number?: string | null
+          tutorial_completed?: boolean | null
+          tutorial_seen_count?: number | null
           updated_at?: string
         }
         Update: {
@@ -292,6 +296,8 @@ export type Database = {
           subscription_start_date?: string | null
           subscription_status?: string | null
           tin_number?: string | null
+          tutorial_completed?: boolean | null
+          tutorial_seen_count?: number | null
           updated_at?: string
         }
         Relationships: []

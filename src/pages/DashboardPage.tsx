@@ -111,7 +111,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div data-tutorial="dashboard-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {statsCards.map(card => (
           <div key={card.label} className="bg-card rounded-xl border border-border p-4 relative overflow-hidden">
             <div className={`absolute top-3 right-3 h-8 w-8 rounded-lg ${card.bg} flex items-center justify-center`}>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+      <div data-tutorial="dashboard-quick-actions" className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <Button onClick={() => navigate('/jobs/new')} className="h-10 rounded-lg gap-2">
           <Plus className="h-4 w-4" /> Kerja Baru
         </Button>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Jobs */}
-      <div>
+      <div data-tutorial="dashboard-recent-jobs">
         <h2 className="text-lg font-semibold text-foreground mb-3">Kerja Terkini</h2>
         {loading ? (
           <div className="space-y-3">

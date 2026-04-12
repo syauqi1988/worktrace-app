@@ -1,0 +1,72 @@
+/* WorkTrace Tutorial Theme */
+.worktrace-tutorial-popover {
+  background: #FFFFFF !important;
+  border: 0.5px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+  max-width: 320px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-title {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #0F172A !important;
+  margin-bottom: 8px !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-description {
+  font-size: 13px !important;
+  color: #64748B !important;
+  line-height: 1.6 !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-progress-text {
+  font-size: 11px !important;
+  color: #94A3B8 !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-footer {
+  margin-top: 14px !important;
+  gap: 8px !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-next-btn {
+  background: #2563EB !important;
+  border: none !important;
+  color: white !important;
+  border-radius: 8px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-next-btn:hover {
+  background: #1D4ED8 !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-prev-btn {
+  background: transparent !important;
+  border: 0.5px solid #E2E8F0 !important;
+  color: #64748B !important;
+  border-radius: 8px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+}
+
+.worktrace-tutorial-popover .driver-popover-close-btn {
+  color: #94A3B8 !important;
+  font-size: 18px !important;
+}
+
+.driver-overlay {
+  background: rgba(0,0,0,0.55) !important;
+}
+
+.driver-active-element {
+  outline: 2px solid #2563EB !important;
+  outline-offset: 4px !important;
+  border-radius: 8px !important;
+}
