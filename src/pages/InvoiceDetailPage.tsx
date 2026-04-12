@@ -355,13 +355,58 @@ Terima kasih atas kerjasama anda. 🙏
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{invoice.invoice_number}</h1>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[displayStatus]}`}>{displayStatus}</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={displayStatus}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+                  if (newStatus === 'Paid') {
+                    setShowInlinePayDate(true);
+                    return;
+                  }
+                  setShowInlinePayDate(false);
+                  const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', invoice.id).eq('user_id', user!.id);
+                  if (!error) {
+                    setInvoice({ ...invoice, status: newStatus });
+                    toast.success('Status invois dikemaskini!');
+                  } else {
+                    toast.error('Gagal kemaskini status.');
+                  }
+                }}
+                className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[displayStatus]}`}
+                style={{ WebkitAppearance: 'none' }}
+              >
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Paid">Paid</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+              <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
+            </div>
             {invoice.lhdn_submitted && profile?.lhdn_enabled && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] flex items-center gap-1">
                 <Landmark className="h-3 w-3" /> e-Invois
               </span>
             )}
           </div>
+          {/* Inline paid date picker */}
+          {showInlinePayDate && (
+            <div className="flex items-center gap-2 mt-2">
+              <label className="text-sm text-muted-foreground">Tarikh Dibayar:</label>
+              <Input type="date" value={inlinePayDate} onChange={e => setInlinePayDate(e.target.value)} className="h-8 w-40 text-sm rounded-lg" />
+              <Button size="sm" className="h-8 rounded-lg bg-green-600 hover:bg-green-700" onClick={async () => {
+                const { error } = await supabase.from('invoices').update({ status: 'Paid', paid_date: inlinePayDate }).eq('id', invoice.id).eq('user_id', user!.id);
+                if (!error) {
+                  setInvoice({ ...invoice, status: 'Paid', paid_date: inlinePayDate });
+                  setShowInlinePayDate(false);
+                  toast.success('Invois ditandakan sebagai Dibayar!');
+                } else {
+                  toast.error('Gagal kemaskini status.');
+                }
+              }}>Sahkan</Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>Batal</Button>
+            </div>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
