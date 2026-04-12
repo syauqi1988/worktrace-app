@@ -5,22 +5,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift
+  Menu, X, Plus, User, LogOut, Gift, HelpCircle
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
 } from '@/components/ui/sheet';
+import {
+  Tooltip, TooltipContent, TooltipTrigger,
+} from '@/components/ui/tooltip';
 import logo from '@/assets/logo.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+import TutorialController from '@/components/tutorial/TutorialController';
+import { useTutorial } from '@/hooks/useTutorial';
 
 const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Kerja', icon: Briefcase },
-  { to: '/customers', label: 'Pelanggan', icon: Users },
-  { to: '/quotations', label: 'Sebut Harga', icon: FileText },
-  { to: '/invoices', label: 'Invois', icon: Receipt },
-  { to: '/settings#referral-section', label: 'Rujukan', icon: Gift },
-  { to: '/settings', label: 'Tetapan', icon: Settings },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, tutorialId: undefined as string | undefined },
+  { to: '/jobs', label: 'Kerja', icon: Briefcase, tutorialId: 'jobs-nav' },
+  { to: '/customers', label: 'Pelanggan', icon: Users, tutorialId: 'customers-nav' },
+  { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
+  { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
+  { to: '/settings#referral-section', label: 'Rujukan', icon: Gift, tutorialId: undefined },
+  { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
 
 const BOTTOM_TABS = [
@@ -48,6 +53,7 @@ export default function AppShell() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { shouldAutoStart } = useTutorial();
 
   // Subscription expiry check
   useEffect(() => {
@@ -99,6 +105,21 @@ export default function AppShell() {
         </button>
         <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
         <div className="flex-1" />
+
+        {/* Tutorial help button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              data-tutorial="help-btn"
+              onClick={() => window.__startWorkTraceTutorial?.()}
+              className="h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground text-sm font-medium flex items-center justify-center hover:bg-accent transition-colors mr-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Tonton Tutorial</TooltipContent>
+        </Tooltip>
+
         <div className="relative">
           <button
             onClick={() => setProfileDropdown(!profileDropdown)}
@@ -132,12 +153,13 @@ export default function AppShell() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — desktop */}
-        <aside className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
+        <aside data-tutorial="sidebar" className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
           <nav className="flex-1 py-4 space-y-1">
             {NAV_ITEMS.map(item => (
               <NavLink
                 key={item.to}
                 to={item.to}
+                data-tutorial={item.tutorialId}
                 className={() => navLinkClass(item.to)}
               >
                 <item.icon className="h-4 w-4" />
@@ -228,6 +250,14 @@ export default function AppShell() {
           );
         })}
       </nav>
+
+      {/* Tutorial Controller */}
+      <TutorialController
+        autoStart={shouldAutoStart}
+        onComplete={() => {
+          toast.success('Tutorial selesai! Selamat menggunakan WorkTrace 🎉');
+        }}
+      />
     </div>
   );
 }
