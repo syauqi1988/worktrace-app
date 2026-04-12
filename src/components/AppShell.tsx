@@ -9,6 +9,7 @@ import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
 } from '@/components/ui/sheet';
 import logo from '@/assets/logo.png';
+import InstallPromptBanner from '@/components/InstallPromptBanner';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -66,6 +67,7 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <InstallPromptBanner />
       {/* Top Header */}
       <header className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 shrink-0">
         <button onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">
