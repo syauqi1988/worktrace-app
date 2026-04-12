@@ -29,7 +29,7 @@ interface LineItem {
 export default function QuotationFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -459,6 +459,24 @@ export default function QuotationFormPage() {
         <Label>Nota</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Nota tambahan untuk pelanggan..." />
       </div>
+
+      {/* Terms & Conditions */}
+      <div className="space-y-1.5">
+        <Label>Terma & Syarat</Label>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder="Terma & syarat sebut harga..." />
+        <p className="text-xs text-muted-foreground">Terma ini akan dipaparkan dalam PDF sebut harga</p>
+      </div>
+
+      {/* Edit warning banner */}
+      {isEdit && editStatus && editStatus !== 'Draft' && (
+        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
+          <div className="text-sm text-[#B45309]">
+            <p className="font-medium">Sebut harga ini telah dihantar/diterima.</p>
+            <p>Sebarang perubahan akan mengekalkan status semasa. Pastikan pelanggan dimaklumkan.</p>
+          </div>
+        </div>
+      )}
 
       {/* Save Buttons */}
       {isEdit ? (
