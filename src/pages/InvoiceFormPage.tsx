@@ -151,6 +151,14 @@ export default function InvoiceFormPage() {
         setDiscountValue(storedDiscount);
         const storedTaxRate = Number(inv.tax_rate) || 0;
         if (storedTaxRate > 0) { setSstEnabled(true); setSstRate(storedTaxRate); }
+        // Restore saved payment methods
+        const savedPMs = Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [];
+        if (savedPMs.length > 0) {
+          setSelectedPaymentMethods(savedPMs);
+        } else if (profile?.payment_methods) {
+          const methods = Array.isArray(profile.payment_methods) ? profile.payment_methods : [];
+          setSelectedPaymentMethods(methods.map((m: any) => m.id));
+        }
       }
       setLoading(false);
     }
