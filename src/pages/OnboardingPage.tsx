@@ -19,7 +19,7 @@ export default function OnboardingPage() {
   const [sstNumber, setSstNumber] = useState('');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { updateProfile } = useAuth();
+  const { updateProfile, refreshProfile } = useAuth();
   const { initiatePayment, isLoading } = useBillPlz();
 
   const handleStep1Next = async () => {
