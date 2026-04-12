@@ -71,9 +71,11 @@ export type Database = {
           notes: string | null
           paid_date: string | null
           quote_id: string | null
+          selected_payment_methods: Json | null
           status: string
           subtotal: number
           tax_rate: number
+          terms: string | null
           total: number
           updated_at: string
           user_id: string
@@ -92,9 +94,11 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           quote_id?: string | null
+          selected_payment_methods?: Json | null
           status?: string
           subtotal?: number
           tax_rate?: number
+          terms?: string | null
           total?: number
           updated_at?: string
           user_id: string
@@ -113,9 +117,11 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           quote_id?: string | null
+          selected_payment_methods?: Json | null
           status?: string
           subtotal?: number
           tax_rate?: number
+          terms?: string | null
           total?: number
           updated_at?: string
           user_id?: string
@@ -209,13 +215,21 @@ export type Database = {
           billing_period: string | null
           company_name: string | null
           created_at: string
+          free_months_earned: number | null
+          free_months_used: number | null
           id: string
+          invoice_terms: string | null
           lhdn_enabled: boolean
           logo_url: string | null
           msic_code: string | null
           onboarding_complete: boolean
+          payment_methods: Json | null
           phone: string | null
           plan: string
+          quotation_terms: string | null
+          referral_code: string | null
+          referral_count: number | null
+          referred_by: string | null
           sst_registered: boolean
           tin_number: string | null
           updated_at: string
@@ -225,13 +239,21 @@ export type Database = {
           billing_period?: string | null
           company_name?: string | null
           created_at?: string
+          free_months_earned?: number | null
+          free_months_used?: number | null
           id: string
+          invoice_terms?: string | null
           lhdn_enabled?: boolean
           logo_url?: string | null
           msic_code?: string | null
           onboarding_complete?: boolean
+          payment_methods?: Json | null
           phone?: string | null
           plan?: string
+          quotation_terms?: string | null
+          referral_code?: string | null
+          referral_count?: number | null
+          referred_by?: string | null
           sst_registered?: boolean
           tin_number?: string | null
           updated_at?: string
@@ -241,13 +263,21 @@ export type Database = {
           billing_period?: string | null
           company_name?: string | null
           created_at?: string
+          free_months_earned?: number | null
+          free_months_used?: number | null
           id?: string
+          invoice_terms?: string | null
           lhdn_enabled?: boolean
           logo_url?: string | null
           msic_code?: string | null
           onboarding_complete?: boolean
+          payment_methods?: Json | null
           phone?: string | null
           plan?: string
+          quotation_terms?: string | null
+          referral_code?: string | null
+          referral_count?: number | null
+          referred_by?: string | null
           sst_registered?: boolean
           tin_number?: string | null
           updated_at?: string
@@ -266,6 +296,7 @@ export type Database = {
           status: string
           subtotal: number
           tax_rate: number
+          terms: string | null
           total: number
           updated_at: string
           user_id: string
@@ -282,6 +313,7 @@ export type Database = {
           status?: string
           subtotal?: number
           tax_rate?: number
+          terms?: string | null
           total?: number
           updated_at?: string
           user_id: string
@@ -298,6 +330,7 @@ export type Database = {
           status?: string
           subtotal?: number
           tax_rate?: number
+          terms?: string | null
           total?: number
           updated_at?: string
           user_id?: string
@@ -313,12 +346,46 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          rewarded_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          rewarded_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+          rewarded_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_free_months: { Args: { row_id: string }; Returns: undefined }
+      increment_referral_count: { Args: { row_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
