@@ -512,67 +512,77 @@ export default function SettingsPage() {
           <h2 className="text-base font-bold text-foreground">Program Rujukan WorkTrace</h2>
         </div>
 
-        <div className="rounded-xl border border-blue-200 p-5 space-y-4" style={{ background: 'linear-gradient(135deg, #EFF6FF, #F0FDF4)' }}>
-          <p className="text-sm text-foreground">Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!</p>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Link Rujukan Anda:</p>
-            <div className="flex items-center gap-2">
-              <Input value={referralUrl} readOnly className="text-xs bg-muted font-mono" />
-              <Button variant="outline" size="sm" onClick={copyReferralLink} className="shrink-0 rounded-lg gap-1">
-                <Copy className="h-3.5 w-3.5" /> Salin
-              </Button>
-            </div>
+        {isFree ? (
+          <div className="text-center py-8 space-y-3">
+            <Gift className="h-10 w-10 text-muted-foreground/30 mx-auto" />
+            <p className="text-sm text-muted-foreground">Upgrade ke Pro untuk akses sistem referral</p>
+            <p className="text-xs text-muted-foreground">Kongsi link anda dan dapatkan 1 bulan percuma setiap kali rakan anda melanggan!</p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={shareWhatsApp} size="sm" className="rounded-lg gap-1.5 text-white" style={{ backgroundColor: '#25D366' }}>
-              <MessageCircle className="h-3.5 w-3.5" /> Kongsi via WhatsApp
-            </Button>
-            <Button onClick={shareTelegram} size="sm" variant="outline" className="rounded-lg gap-1.5">
-              <Send className="h-3.5 w-3.5" /> Telegram
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: 'Jumlah Rujukan', value: profile?.referral_count || 0 },
-            { label: 'Bulan Diperolehi', value: profile?.free_months_earned || 0 },
-            { label: 'Bulan Digunakan', value: profile?.free_months_used || 0 },
-            { label: 'Baki Tersedia', value: freeMonthsBalance },
-          ].map(s => (
-            <div key={s.label} className="border border-border rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-foreground">{s.value}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
+        ) : (
+          <>
+            <div className="rounded-xl border border-blue-200 p-5 space-y-4" style={{ background: 'linear-gradient(135deg, #EFF6FF, #F0FDF4)' }}>
+              <p className="text-sm text-foreground">Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!</p>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Link Rujukan Anda:</p>
+                <div className="flex items-center gap-2">
+                  <Input value={referralUrl} readOnly className="text-xs bg-muted font-mono" />
+                  <Button variant="outline" size="sm" onClick={copyReferralLink} className="shrink-0 rounded-lg gap-1">
+                    <Copy className="h-3.5 w-3.5" /> Salin
+                  </Button>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={shareWhatsApp} size="sm" className="rounded-lg gap-1.5 text-white" style={{ backgroundColor: '#25D366' }}>
+                  <MessageCircle className="h-3.5 w-3.5" /> Kongsi via WhatsApp
+                </Button>
+                <Button onClick={shareTelegram} size="sm" variant="outline" className="rounded-lg gap-1.5">
+                  <Send className="h-3.5 w-3.5" /> Telegram
+                </Button>
+              </div>
             </div>
-          ))}
-        </div>
 
-        {/* Referral history */}
-        <div>
-          <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
-          {referrals.length === 0 ? (
-            <div className="text-center py-6">
-              <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Belum ada rujukan</p>
-              <p className="text-xs text-muted-foreground">Kongsi link untuk mula mendapat ganjaran!</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {referrals.map(r => (
-                <div key={r.id} className="flex items-center justify-between border border-border rounded-lg p-3">
-                  <div>
-                    <p className="text-sm text-foreground">{new Date(r.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.status === 'rewarded' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                      {r.status === 'rewarded' ? '✓ Ganjaran Diterima' : 'Menunggu Langganan'}
-                    </span>
-                  </div>
-                  <span className="text-sm text-foreground">{r.status === 'rewarded' ? '1 Bulan Percuma ✓' : '—'}</span>
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Jumlah Rujukan', value: profile?.referral_count || 0 },
+                { label: 'Bulan Diperolehi', value: profile?.free_months_earned || 0 },
+                { label: 'Bulan Digunakan', value: profile?.free_months_used || 0 },
+                { label: 'Baki Tersedia', value: freeMonthsBalance },
+              ].map(s => (
+                <div key={s.label} className="border border-border rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+
+            {/* Referral history */}
+            <div>
+              <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
+              {referrals.length === 0 ? (
+                <div className="text-center py-6">
+                  <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Belum ada rujukan</p>
+                  <p className="text-xs text-muted-foreground">Kongsi link untuk mula mendapat ganjaran!</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {referrals.map(r => (
+                    <div key={r.id} className="flex items-center justify-between border border-border rounded-lg p-3">
+                      <div>
+                        <p className="text-sm text-foreground">{new Date(r.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.status === 'rewarded' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                          {r.status === 'rewarded' ? '✓ Ganjaran Diterima' : 'Menunggu Langganan'}
+                        </span>
+                      </div>
+                      <span className="text-sm text-foreground">{r.status === 'rewarded' ? '1 Bulan Percuma ✓' : '—'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </section>
 
       {/* Section 7 — Account Security */}
