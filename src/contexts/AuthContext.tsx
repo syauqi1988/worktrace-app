@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-interface Profile {
+export interface Profile {
   id: string;
   company_name: string | null;
   phone: string | null;
@@ -15,6 +15,14 @@ interface Profile {
   sst_registered: boolean;
   lhdn_enabled: boolean;
   onboarding_complete: boolean;
+  quotation_terms: string | null;
+  invoice_terms: string | null;
+  payment_methods: any[];
+  referral_code: string | null;
+  referred_by: string | null;
+  referral_count: number;
+  free_months_earned: number;
+  free_months_used: number;
 }
 
 interface AuthContextType {
@@ -48,12 +56,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('id', userId)
       .single();
     if (!error && data) {
-      setProfile(data as Profile);
+      const p = data as any;
+      setProfile({
+        ...p,
+        payment_methods: Array.isArray(p.payment_methods) ? p.payment_methods : [],
+        referral_count: p.referral_count || 0,
+        free_months_earned: p.free_months_earned || 0,
+        free_months_used: p.free_months_used || 0,
+      });
     }
   }, []);
 
   useEffect(() => {
-    // Restore session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -64,15 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Listen for auth changes — no async callback to avoid deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Wrap in setTimeout to avoid deadlock per Supabase guidance
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
+          setTimeout(() => { fetchProfile(session.user.id); }, 0);
         } else {
           setProfile(null);
         }
@@ -83,12 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchProfile]);
 
   const signInWithOtp = async (email: string): Promise<{ error?: string }> => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-      },
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     if (error) return { error: error.message };
     return {};
   };
@@ -100,7 +105,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userId = data.user?.id;
     if (!userId) return { error: 'Ralat pengesahan' };
 
-    // Fetch profile to check onboarding status
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
@@ -108,11 +112,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .single();
 
     if (profileData) {
-      setProfile(profileData as Profile);
+      const p = profileData as any;
+      setProfile({
+        ...p,
+        payment_methods: Array.isArray(p.payment_methods) ? p.payment_methods : [],
+        referral_count: p.referral_count || 0,
+        free_months_earned: p.free_months_earned || 0,
+        free_months_used: p.free_months_used || 0,
+      });
       return { isNewUser: !profileData.onboarding_complete };
     }
 
-    // Profile should be auto-created by trigger, but if not found yet, it's a new user
     return { isNewUser: true };
   };
 
@@ -126,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     const { error } = await supabase
       .from('profiles')
-      .update(data)
+      .update(data as any)
       .eq('id', user.id);
     if (!error) {
       setProfile(prev => prev ? { ...prev, ...data } : null);
