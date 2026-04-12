@@ -325,6 +325,7 @@ Terima kasih atas kerjasama anda. 🙏
   };
 
   const sendPaymentReminder = () => {
+    if (!checkWhatsAppShare()) return;
     if (!invoice || !hasPhone) return;
     const phone = formatPhone(customerPhone);
     const message = buildWhatsAppInvoiceMessage();
