@@ -302,6 +302,7 @@ Terima kasih atas kerjasama anda. 🙏
   };
 
   const shareViaWhatsApp = async () => {
+    if (!checkWhatsAppShare()) return;
     if (!invoice || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
@@ -673,6 +674,7 @@ Terima kasih atas kerjasama anda. 🙏
         open={previewOpen}
         title={`Pratonton — ${invoice.invoice_number}`}
       />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }
