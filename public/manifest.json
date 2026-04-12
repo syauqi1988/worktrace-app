@@ -1,0 +1,16 @@
+{
+  "name": "WorkTrace — Jejak Kerja, Senang Collect",
+  "short_name": "WorkTrace",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2563EB",
+  "background_color": "#F0F4F8",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
