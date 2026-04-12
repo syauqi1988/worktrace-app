@@ -105,9 +105,13 @@ export default function JobFormPage() {
       setErrors(newErrors);
       return;
     }
+    // Plan gate: check job limit for new jobs
+    if (!isEdit && user) {
+      const allowed = await checkJobLimit(user.id);
+      if (!allowed) return;
+    }
 
     setSubmitting(true);
-
     try {
       if (isEdit) {
         const { error } = await supabase.from('jobs').update({
