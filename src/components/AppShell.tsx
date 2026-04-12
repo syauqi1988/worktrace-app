@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut
+  Menu, X, Plus, User, LogOut, Gift
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/customers', label: 'Pelanggan', icon: Users },
   { to: '/quotations', label: 'Sebut Harga', icon: FileText },
   { to: '/invoices', label: 'Invois', icon: Receipt },
+  { to: '/settings#referral-section', label: 'Rujukan', icon: Gift },
   { to: '/settings', label: 'Tetapan', icon: Settings },
 ];
 
