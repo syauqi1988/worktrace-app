@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,6 +77,7 @@ export default function QuotationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
+  const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -258,6 +261,7 @@ Terima kasih!
   };
 
   const shareViaWhatsApp = async () => {
+    if (!checkWhatsAppShare()) return;
     if (!quotation || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
