@@ -27,6 +27,8 @@ export interface Profile {
   referral_count: number;
   free_months_earned: number;
   free_months_used: number;
+  tutorial_completed: boolean;
+  tutorial_seen_count: number;
 }
 
 interface AuthContextType {
