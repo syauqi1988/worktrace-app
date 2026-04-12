@@ -252,7 +252,8 @@ export default function SettingsPage() {
     window.open(`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  const planLabel = profile?.plan === 'pro' ? 'Pro' : profile?.plan === 'agency' ? 'Agency' : 'Basic';
+  const planLabel = profile?.plan === 'pro' ? 'Pro' : profile?.plan === 'team' ? 'Team' : 'Free';
+  const isFree = !profile || profile.plan === 'free';
   const banks = paymentMethods.filter(m => m.type === 'bank_transfer');
   const qrs = paymentMethods.filter(m => m.type === 'qr_payment');
 
