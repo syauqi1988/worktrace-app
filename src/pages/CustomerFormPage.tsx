@@ -21,6 +21,7 @@ export default function CustomerFormPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const fromJobForm = searchParams.get('from') === 'jobs';
+  const { checkCustomerLimit, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
