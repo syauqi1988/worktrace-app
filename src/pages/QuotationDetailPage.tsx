@@ -605,6 +605,7 @@ Terima kasih!
         open={previewOpen}
         title={`Pratonton — ${quotation.quote_number}`}
       />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
 }

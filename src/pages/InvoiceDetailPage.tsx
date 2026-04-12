@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -85,6 +87,7 @@ export default function InvoiceDetailPage() {
   const [logoBase64, setLogoBase64] = useState<string>('');
   const [inlinePayDate, setInlinePayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showInlinePayDate, setShowInlinePayDate] = useState(false);
+  const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
