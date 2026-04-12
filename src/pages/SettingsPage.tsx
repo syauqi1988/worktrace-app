@@ -10,7 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import PlanCards from '@/components/PlanCards';
-import { Building2, Shield, CreditCard, AlertTriangle, ExternalLink, FileText, Landmark, Gift, Users, Copy, MessageCircle, Send, Trash2, Plus, X, Loader2 } from 'lucide-react';
+import { Building2, Shield, CreditCard, AlertTriangle, ExternalLink, FileText, Landmark, Gift, Users, Copy, MessageCircle, Send, Trash2, Plus, X, Loader2, BookOpen, Play } from 'lucide-react';
+import { useTutorial } from '@/hooks/useTutorial';
 
 interface PaymentMethod {
   id: string;
@@ -32,6 +33,7 @@ const QR_PROVIDERS = ['DuitNow QR', 'TnG eWallet', 'ShopeePay', 'GrabPay', 'Boos
 export default function SettingsPage() {
   const { user, profile, updateProfile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { seenCount } = useTutorial();
 
   // Company profile
   const [companyName, setCompanyName] = useState('');
@@ -583,6 +585,34 @@ export default function SettingsPage() {
             </div>
           </>
         )}
+      </section>
+
+      {/* Section — Tutorial & Bantuan */}
+      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen className="h-5 w-5 text-primary" />
+          <h2 className="text-base font-bold text-foreground">Tutorial & Bantuan</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Tonton tutorial interaktif untuk belajar cara menggunakan WorkTrace dengan lebih efektif.
+        </p>
+        <p className="text-[13px] text-muted-foreground">
+          Tutorial dilihat: {seenCount === 0 ? 'Belum pernah ditonton' : `${seenCount} kali`}
+        </p>
+        <button
+          onClick={() => window.__startWorkTraceTutorial?.()}
+          className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+        >
+          <Play className="h-4 w-4" /> Mulakan Tutorial Semula
+        </button>
+        <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+          <li>Dashboard & ringkasan bisnes</li>
+          <li>Modul Kerja & pengurusan projek</li>
+          <li>Pengurusan Pelanggan</li>
+          <li>Sebut Harga profesional</li>
+          <li>Invois & rekod pembayaran</li>
+          <li>Tetapan profil syarikat</li>
+        </ul>
       </section>
 
       {/* Section 7 — Account Security */}
