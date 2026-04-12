@@ -206,6 +206,7 @@ export default function InvoiceDetailPage() {
       phone: profile?.phone || null,
       address: profile?.address || null,
       logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
       lhdn_enabled: profile?.lhdn_enabled,
       tin_number: profile?.tin_number,
       msic_code: profile?.msic_code,
