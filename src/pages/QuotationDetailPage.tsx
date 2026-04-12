@@ -349,7 +349,29 @@ Terima kasih!
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{quotation.quote_number}</h1>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[quotation.status]}`}>{quotation.status}</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={quotation.status}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+                  const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id).eq('user_id', user!.id);
+                  if (!error) {
+                    setQuotation({ ...quotation, status: newStatus });
+                    toast.success('Status sebut harga dikemaskini!');
+                  } else {
+                    toast.error('Gagal kemaskini status.');
+                  }
+                }}
+                className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[quotation.status]}`}
+                style={{ WebkitAppearance: 'none' }}
+              >
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
+            </div>
             {isExpired && quotation.status !== 'Accepted' && quotation.status !== 'Rejected' && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">Tamat Tempoh</span>
             )}
