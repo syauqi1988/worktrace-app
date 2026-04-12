@@ -177,7 +177,11 @@ export default function InvoiceDetailPage() {
 
   // Get payment methods for PDF
   const allPaymentMethods: any[] = Array.isArray(profile?.payment_methods) ? profile!.payment_methods : [];
-  const selectedPMs = invoice ? allPaymentMethods.filter((m: any) => (invoice.selected_payment_methods || []).includes(m.id)) : [];
+  const selectedPMs = invoice
+    ? (invoice.selected_payment_methods && invoice.selected_payment_methods.length > 0
+        ? allPaymentMethods.filter((m: any) => invoice.selected_payment_methods.includes(m.id))
+        : allPaymentMethods)
+    : [];
 
   const pdfData = invoice ? {
     invoice: {
