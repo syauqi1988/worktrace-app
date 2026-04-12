@@ -483,6 +483,45 @@ export default function InvoiceFormPage() {
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Nota tambahan untuk pelanggan..." />
       </div>
 
+      {/* Terms & Conditions */}
+      <div className="space-y-1.5">
+        <Label>Terma & Syarat</Label>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder="Terma & syarat invois..." />
+        <p className="text-xs text-muted-foreground">Terma ini akan dipaparkan dalam PDF invois</p>
+      </div>
+
+      {/* Payment Methods Selection */}
+      {(() => {
+        const allMethods: any[] = Array.isArray(profile?.payment_methods) ? profile!.payment_methods : [];
+        if (allMethods.length === 0) return (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+            Belum ada kaedah pembayaran. <button onClick={() => navigate('/settings')} className="underline font-medium">Tambah dalam Tetapan</button>
+          </div>
+        );
+        return (
+          <div className="space-y-2">
+            <Label>Kaedah Pembayaran dalam Invois</Label>
+            <p className="text-xs text-muted-foreground">Pilih kaedah pembayaran yang akan dipaparkan dalam invois ini</p>
+            {allMethods.map((m: any) => (
+              <div key={m.id} className="flex items-center gap-2">
+                <Checkbox
+                  id={`pm-${m.id}`}
+                  checked={selectedPaymentMethods.includes(m.id)}
+                  onCheckedChange={(v) => {
+                    if (v) setSelectedPaymentMethods(prev => [...prev, m.id]);
+                    else setSelectedPaymentMethods(prev => prev.filter(id => id !== m.id));
+                  }}
+                />
+                <label htmlFor={`pm-${m.id}`} className="text-sm cursor-pointer">
+                  {m.type === 'bank_transfer' ? `🏦 ${m.bank_name} — ${m.account_number}` : `📱 ${m.provider || 'QR'}`}
+                  {m.is_primary && <span className="text-xs text-primary ml-1">(Utama)</span>}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* LHDN Section */}
       {profile?.lhdn_enabled && (
         <Collapsible open={lhdnOpen} onOpenChange={setLhdnOpen}>
