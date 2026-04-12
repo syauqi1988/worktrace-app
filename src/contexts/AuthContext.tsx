@@ -10,6 +10,10 @@ export interface Profile {
   logo_url: string | null;
   plan: string;
   billing_period: string;
+  subscription_status: string | null;
+  subscription_start_date: string | null;
+  subscription_end_date: string | null;
+  billplz_bill_id: string | null;
   tin_number: string | null;
   msic_code: string | null;
   sst_registered: boolean;
@@ -121,7 +125,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         free_months_used: p.free_months_used || 0,
       });
 
-      // Handle referral for new users
       const isNew = !profileData.onboarding_complete;
       if (isNew) {
         const savedRef = localStorage.getItem('worktrace_ref');
