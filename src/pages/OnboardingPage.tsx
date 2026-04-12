@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,7 @@ export default function OnboardingPage() {
   const [sstNumber, setSstNumber] = useState('');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { updateProfile } = useAuth();
+  const { updateProfile, refreshProfile } = useAuth();
   const { initiatePayment, isLoading } = useBillPlz();
 
   const handleStep1Next = async () => {
@@ -33,12 +34,12 @@ export default function OnboardingPage() {
 
   const handlePlanSelect = async (planId: string, billingPeriod: string) => {
     if (planId === 'free') {
-      // Free plan — skip payment, complete onboarding
       await supabase.rpc('set_onboarding_plan', { p_plan: 'free', p_billing_period: 'monthly' });
-      navigate('/dashboard');
+      await refreshProfile();
+      navigate('/dashboard', { replace: true });
     } else {
-      // Pro plan — set onboarding complete first, then redirect to payment
       await supabase.rpc('set_onboarding_plan', { p_plan: 'free', p_billing_period: 'monthly' });
+      await refreshProfile();
       initiatePayment(planId as 'pro', billingPeriod as 'monthly' | 'yearly');
     }
   };
