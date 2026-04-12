@@ -31,7 +31,7 @@ export default function OnboardingPage() {
   };
 
   const handlePlanSelect = async (planId: string, billingPeriod: string) => {
-    await updateProfile({ plan: planId, billing_period: billingPeriod, onboarding_complete: true });
+    await supabase.rpc('set_onboarding_plan', { p_plan: planId, p_billing_period: billingPeriod });
     // Reward referrer
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
