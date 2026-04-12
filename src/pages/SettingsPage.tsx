@@ -473,17 +473,36 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <div className="rounded-lg border border-border p-4">
+        <div className="rounded-lg border border-border p-4 space-y-2">
           <p className="text-sm text-muted-foreground mb-1">Pelan Semasa</p>
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">{planLabel}</span>
             <span className="text-base font-bold text-foreground">{planLabel}</span>
+            {!isFree && <span className="text-xs text-green-600 font-medium">✓</span>}
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            RM{profile?.plan === 'pro' ? '49' : profile?.plan === 'agency' ? '149' : '19'}/bulan · {profile?.billing_period === 'yearly' ? 'Tahunan' : 'Bulanan'}
+          <p className="text-sm text-muted-foreground">
+            RM{profile?.plan === 'pro' ? '49' : profile?.plan === 'team' ? '99' : '0'}/bulan
+            {isFree ? ' · Selamanya percuma' : ' · Early bird'}
           </p>
+          {!isFree && profile?.subscription_status && (
+            <div className="space-y-1 mt-2">
+              <p className="text-sm text-foreground">
+                Status: {profile.subscription_status === 'active' ? (
+                  <span className="text-green-600">Aktif ●</span>
+                ) : (
+                  <span className="text-destructive">Tamat ●</span>
+                )}
+              </p>
+              {profile.subscription_end_date && (
+                <p className="text-sm text-muted-foreground">
+                  Tarikh Tamat: {new Date(profile.subscription_end_date).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        <PlanCards currentPlan={profile?.plan || 'basic'} onSelect={() => {}} />
+
+        <PlanCards currentPlan={profile?.plan || 'free'} onSelect={() => {}} compact />
       </section>
 
       {/* Section 6 — Referral */}
