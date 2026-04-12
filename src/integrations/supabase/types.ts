@@ -390,6 +390,10 @@ export type Database = {
       }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
+      set_onboarding_plan: {
+        Args: { p_billing_period: string; p_plan: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
