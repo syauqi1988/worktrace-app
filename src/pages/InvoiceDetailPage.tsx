@@ -150,6 +150,10 @@ export default function InvoiceDetailPage() {
     navigate('/invoices');
   };
 
+  // Get payment methods for PDF
+  const allPaymentMethods: any[] = Array.isArray(profile?.payment_methods) ? profile!.payment_methods : [];
+  const selectedPMs = invoice ? allPaymentMethods.filter((m: any) => (invoice.selected_payment_methods || []).includes(m.id)) : [];
+
   const pdfData = invoice ? {
     invoice: {
       invoice_number: invoice.invoice_number,
@@ -169,6 +173,7 @@ export default function InvoiceDetailPage() {
       tax_rate: invoice.tax_rate,
       total: invoice.total,
       notes: invoice.notes,
+      terms: invoice.terms || profile?.invoice_terms || null,
     },
     job: invoice.jobs ? { job_number: invoice.jobs.job_number, title: invoice.jobs.title } : null,
     customer: customer ? {
@@ -188,7 +193,41 @@ export default function InvoiceDetailPage() {
       msic_code: profile?.msic_code,
       sst_registered: profile?.sst_registered,
     },
+    paymentMethods: selectedPMs,
   } : null;
+
+  // PDF Preview
+  const handlePreview = async () => {
+    if (!pdfData) return;
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    try {
+      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+    } catch {
+      toast.error('Gagal menjana pratonton PDF');
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewOpen(false);
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
+  };
+
+  const handlePreviewDownload = async () => {
+    if (!pdfData || !invoice) return;
+    const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Invois-${invoice.invoice_number}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const buildWhatsAppInvoiceMessage = (pdfUrl?: string) => {
     const name = customer?.name || '';
