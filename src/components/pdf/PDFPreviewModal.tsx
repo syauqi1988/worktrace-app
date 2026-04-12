@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Document as PreviewDocument, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import { Loader2, MessageCircle, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+// Use the CDN worker that matches react-pdf's bundled pdfjs version
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFPreviewModalProps {
   open: boolean;
   title: string;
   loading: boolean;
-  file: Uint8Array | null;
+  /** Blob URL (from URL.createObjectURL) pointing to the generated PDF */
+  fileUrl: string | null;
   onClose: () => void;
   onDownload: () => void;
   onShare?: () => void;
@@ -20,7 +24,7 @@ export default function PDFPreviewModal({
   open,
   title,
   loading,
-  file,
+  fileUrl,
   onClose,
   onDownload,
   onShare,
@@ -29,7 +33,8 @@ export default function PDFPreviewModal({
   const [pageWidth, setPageWidth] = useState(720);
   const [renderError, setRenderError] = useState<string | null>(null);
 
-  const documentFile = useMemo(() => (file ? { data: file } : null), [file]);
+  // react-pdf needs a stable file reference object
+  const documentFile = useMemo(() => (fileUrl ? { url: fileUrl } : null), [fileUrl]);
 
   useEffect(() => {
     if (!open) {
@@ -39,26 +44,21 @@ export default function PDFPreviewModal({
     }
 
     const updatePageWidth = () => {
-      const viewportWidth = window.innerWidth;
-      const nextWidth = viewportWidth < 768
-        ? Math.max(260, viewportWidth - 32)
-        : Math.max(320, Math.min(760, viewportWidth - 360));
-
-      setPageWidth(nextWidth);
+      const vw = window.innerWidth;
+      setPageWidth(vw < 768 ? Math.max(260, vw - 32) : Math.max(320, Math.min(760, vw - 360)));
     };
 
     updatePageWidth();
     window.addEventListener('resize', updatePageWidth);
-
     return () => window.removeEventListener('resize', updatePageWidth);
   }, [open]);
 
   useEffect(() => {
-    if (!file) {
+    if (!fileUrl) {
       setNumPages(0);
       setRenderError(null);
     }
-  }, [file]);
+  }, [fileUrl]);
 
   if (!open) return null;
 
@@ -105,11 +105,17 @@ export default function PDFPreviewModal({
                   <span className="text-sm text-muted-foreground">Memuatkan halaman PDF...</span>
                 </div>
               }
+              error={
+                <div className="flex h-full min-h-[320px] items-center justify-center text-center text-sm text-destructive">
+                  Gagal memaparkan pratonton PDF. Sila cuba muat turun sebaliknya.
+                </div>
+              }
               onLoadSuccess={({ numPages: totalPages }) => {
                 setNumPages(totalPages);
                 setRenderError(null);
               }}
-              onLoadError={() => {
+              onLoadError={(err) => {
+                console.error('PDF load error:', err);
                 setNumPages(0);
                 setRenderError('Gagal memaparkan pratonton PDF. Sila cuba semula.');
               }}
