@@ -487,7 +487,37 @@ Terima kasih atas kerjasama anda. 🙏
         )}
       </div>
 
-      {/* WhatsApp Share + PDF Download */}
+      {/* Payment Info Display */}
+      {selectedPMs.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cara Pembayaran</p>
+          {selectedPMs.filter((m: any) => m.type === 'bank_transfer').map((b: any) => (
+            <div key={b.id} className="border border-border rounded-lg p-3 space-y-1">
+              <p className="text-sm font-medium">🏦 Pindahan Bank</p>
+              <div className="grid grid-cols-[80px_1fr] gap-1 text-sm">
+                <span className="text-muted-foreground">Bank:</span><span>{b.bank_name}</span>
+                <span className="text-muted-foreground">Nama:</span><span>{b.account_name}</span>
+                <span className="text-muted-foreground">Akaun:</span>
+                <span className="flex items-center gap-1.5">
+                  {b.account_number}
+                  <button onClick={() => { navigator.clipboard.writeText(b.account_number); toast.success('Nombor akaun disalin!'); }} className="text-primary hover:text-primary/80">
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              </div>
+            </div>
+          ))}
+          {selectedPMs.filter((m: any) => m.type === 'qr_payment').map((q: any) => (
+            <div key={q.id} className="border border-border rounded-lg p-3 flex flex-col items-center gap-2">
+              <p className="text-sm font-medium">📱 {q.provider || 'QR Payment'}</p>
+              {q.qr_image_url && <img src={q.qr_image_url} alt="QR" className="h-[120px] w-[120px] object-contain" />}
+              <p className="text-xs text-muted-foreground">Imbas untuk membayar</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* WhatsApp Share + PDF Preview + PDF Download */}
       <div className="flex flex-col gap-3">
         <TooltipProvider>
           <Tooltip>
@@ -503,13 +533,18 @@ Terima kasih atas kerjasama anda. 🙏
         </TooltipProvider>
 
         {pdfData && (
-          <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
-            {({ loading: pdfLoading }) => (
-              <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
-              </Button>
-            )}
-          </PDFDownloadLink>
+          <>
+            <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
+              <Eye className="h-4 w-4" /> Pratonton PDF
+            </Button>
+            <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
+              {({ loading: pdfLoading }) => (
+                <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
+                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                </Button>
+              )}
+            </PDFDownloadLink>
+          </>
         )}
       </div>
 
@@ -546,6 +581,37 @@ Terima kasih atas kerjasama anda. 🙏
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* PDF Preview Modal */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={closePreview}>
+          <div className="absolute inset-0 bg-black/85" />
+          <div className="relative w-full h-full md:w-[min(90vw,800px)] md:h-[min(90vh,1000px)] flex flex-col bg-white md:rounded-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#0F172A] shrink-0">
+              <span className="text-white text-sm font-medium">Pratonton — {invoice.invoice_number}</span>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={handlePreviewDownload} className="text-white border-white/30 hover:bg-white/10 text-xs h-8">Muat Turun</Button>
+                <Button size="sm" onClick={() => { closePreview(); shareViaWhatsApp(); }} className="text-white text-xs h-8" style={{ backgroundColor: '#25D366' }}>
+                  <MessageCircle className="h-3.5 w-3.5 mr-1" /> WhatsApp
+                </Button>
+                <button onClick={closePreview} className="text-white/70 hover:text-white"><X className="h-5 w-5" /></button>
+              </div>
+            </div>
+            <div className="flex-1 bg-[#525659] overflow-auto p-5">
+              {previewLoading ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3">
+                  <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  <span className="text-white text-sm">Menjana pratonton...</span>
+                </div>
+              ) : previewUrl ? (
+                <iframe src={previewUrl} width="100%" height="100%" style={{ border: 'none', minHeight: '600px' }} />
+              ) : null}
+            </div>
+            <div className="flex items-center justify-center px-4 py-2 bg-[#0F172A] shrink-0">
+              <span className="text-white/70 text-xs">Halaman 1 dari 1</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
