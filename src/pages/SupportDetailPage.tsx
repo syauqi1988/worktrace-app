@@ -62,6 +62,14 @@ export default function SupportDetailPage() {
 
   useEffect(() => { fetchData(); }, [id, user]);
 
+  // Auto-hide success banner after 10 seconds
+  useEffect(() => {
+    if (showBanner) {
+      const timer = setTimeout(() => setShowBanner(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showBanner]);
+
   const handleReply = async () => {
     if (!replyText.trim() || !user || !id) return;
     setSending(true);
