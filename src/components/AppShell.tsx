@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift, HelpCircle
+  Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import logo from '@/assets/logo.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
 import { useTutorial } from '@/hooks/useTutorial';
 
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/customers', label: 'Pelanggan', icon: Users, tutorialId: 'customers-nav' },
   { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
   { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
+  { to: '/support', label: 'Sokongan', icon: LifeBuoy, tutorialId: undefined },
   { to: '/settings#referral-section', label: 'Rujukan', icon: Gift, tutorialId: undefined },
   { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
