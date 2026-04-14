@@ -10,8 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import PlanCards from '@/components/PlanCards';
-import { Building2, Shield, CreditCard, AlertTriangle, ExternalLink, FileText, Landmark, Gift, Users, Copy, MessageCircle, Send, Trash2, Plus, X, Loader2, BookOpen, Play } from 'lucide-react';
+import { Building2, Shield, CreditCard, AlertTriangle, ExternalLink, FileText, Landmark, Gift, Users, Copy, MessageCircle, Send, Trash2, Plus, X, Loader2, BookOpen, Play, Headphones } from 'lucide-react';
 import { useTutorial } from '@/hooks/useTutorial';
+import CancellationDialog from '@/components/CancellationDialog';
+import ReactivateDialog from '@/components/ReactivateDialog';
+import { useBillPlz } from '@/hooks/useBillPlz';
 
 interface PaymentMethod {
   id: string;
@@ -74,6 +77,11 @@ export default function SettingsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
+
+  // Cancellation
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [reactivateOpen, setReactivateOpen] = useState(false);
+  const { initiatePayment, isLoading: billPlzLoading } = useBillPlz();
 
   // Referral
   const [referrals, setReferrals] = useState<any[]>([]);
