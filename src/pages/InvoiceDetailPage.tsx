@@ -13,10 +13,11 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { toast } from 'sonner';
 import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
-  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown
+  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown, Receipt as ReceiptIcon
 } from 'lucide-react';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import ReceiptPDF from '@/components/pdf/ReceiptPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 
@@ -48,6 +49,7 @@ interface Invoice {
   quote_id: string | null;
   lhdn_submitted: boolean;
   selected_payment_methods: any[];
+  receipt_number: string | null;
   jobs: {
     id: string;
     job_number: string;
@@ -87,7 +89,12 @@ export default function InvoiceDetailPage() {
   const [logoBase64, setLogoBase64] = useState<string>('');
   const [inlinePayDate, setInlinePayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showInlinePayDate, setShowInlinePayDate] = useState(false);
+  const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
+  const [receiptPreviewLoading, setReceiptPreviewLoading] = useState(false);
+  const [isSharingReceipt, setIsSharingReceipt] = useState(false);
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
@@ -106,6 +113,7 @@ export default function InvoiceDetailPage() {
           lhdn_submitted: inv.lhdn_submitted || false,
           terms: inv.terms || null,
           selected_payment_methods: Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [],
+          receipt_number: inv.receipt_number || null,
         });
         if (inv.quote_id) {
           supabase.from('quotations').select('id, quote_number').eq('id', inv.quote_id).single()
@@ -117,7 +125,6 @@ export default function InvoiceDetailPage() {
     fetch();
   }, [user, id]);
 
-  // Fetch logo as base64 for PDF
   useEffect(() => {
     if (profile?.logo_url) {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
@@ -127,16 +134,18 @@ export default function InvoiceDetailPage() {
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (receiptPreviewUrl) URL.revokeObjectURL(receiptPreviewUrl);
     };
-  }, [previewUrl]);
+  }, [previewUrl, receiptPreviewUrl]);
 
-  // ESC key to close preview
   useEffect(() => {
-    if (!previewOpen) return;
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closePreview(); };
+    if (!previewOpen && !receiptPreviewOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { closePreview(); closeReceiptPreview(); }
+    };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [previewOpen]);
+  }, [previewOpen, receiptPreviewOpen]);
 
   const customer = (invoice?.jobs as any)?.customers || null;
   const customerPhone = customer?.phone || null;
@@ -152,15 +161,33 @@ export default function InvoiceDetailPage() {
     toast.success('Invois dihantar!');
   };
 
+  const generateReceiptNumber = async (): Promise<string> => {
+    if (!user) return 'RCP-0001';
+    const { data } = await supabase.from('profiles').select('receipt_count').eq('id', user.id).single();
+    const count = ((data as any)?.receipt_count || 0) + 1;
+    await supabase.from('profiles').update({ receipt_count: count } as any).eq('id', user.id);
+    return `RCP-${String(count).padStart(4, '0')}`;
+  };
+
   const handleMarkPaid = async () => {
-    if (!invoice) return;
+    if (!invoice || !user) return;
     setPaying(true);
-    const { error } = await supabase.from('invoices').update({ status: 'Paid', paid_date: payDate }).eq('id', invoice.id);
-    setPaying(false);
-    if (error) { toast.error(error.message); return; }
-    setInvoice({ ...invoice, status: 'Paid', paid_date: payDate });
-    setPayOpen(false);
-    toast.success('Pembayaran berjaya direkodkan!');
+    try {
+      const receiptNumber = await generateReceiptNumber();
+      const { error } = await supabase.from('invoices').update({
+        status: 'Paid',
+        paid_date: payDate,
+        receipt_number: receiptNumber,
+      } as any).eq('id', invoice.id);
+      if (error) throw error;
+      setInvoice({ ...invoice, status: 'Paid', paid_date: payDate, receipt_number: receiptNumber });
+      setPayOpen(false);
+      toast.success('Pembayaran berjaya direkodkan!');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal rekod pembayaran');
+    } finally {
+      setPaying(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -178,7 +205,6 @@ export default function InvoiceDetailPage() {
     navigate('/invoices');
   };
 
-  // Get payment methods for PDF
   const allPaymentMethods: any[] = Array.isArray(profile?.payment_methods) ? profile!.payment_methods : [];
   const selectedPMs = invoice
     ? (invoice.selected_payment_methods && invoice.selected_payment_methods.length > 0
@@ -229,7 +255,20 @@ export default function InvoiceDetailPage() {
     paymentMethods: selectedPMs,
   } : null;
 
-  // PDF Preview
+  const receiptPdfData = invoice && invoice.status === 'Paid' && invoice.receipt_number ? {
+    receipt_number: invoice.receipt_number,
+    invoice,
+    job: invoice.jobs ? { job_number: invoice.jobs.job_number, title: invoice.jobs.title } : null,
+    customer: customer ? { name: customer.name, phone: customer.phone, email: customer.email, address: customer.address } : null,
+    company: {
+      company_name: profile?.company_name || null,
+      phone: profile?.phone || null,
+      address: profile?.address || null,
+      logo_base64: canShowLogo ? logoBase64 : '',
+    },
+    paymentMethods: selectedPMs,
+  } : null;
+
   const handlePreview = async () => {
     if (!pdfData) return;
     setPreviewOpen(true);
@@ -237,8 +276,7 @@ export default function InvoiceDetailPage() {
     setPreviewUrl(null);
     try {
       const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      setPreviewUrl(url);
+      setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error('Gagal menjana pratonton PDF');
       setPreviewOpen(false);
@@ -264,41 +302,67 @@ export default function InvoiceDetailPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Receipt preview
+  const handleReceiptPreview = async () => {
+    if (!receiptPdfData) return;
+    setReceiptPreviewOpen(true);
+    setReceiptPreviewLoading(true);
+    setReceiptPreviewUrl(null);
+    try {
+      const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
+      setReceiptPreviewUrl(URL.createObjectURL(blob));
+    } catch {
+      toast.error('Gagal menjana pratonton resit');
+      setReceiptPreviewOpen(false);
+    } finally {
+      setReceiptPreviewLoading(false);
+    }
+  };
+
+  const closeReceiptPreview = () => {
+    setReceiptPreviewOpen(false);
+    if (receiptPreviewUrl) URL.revokeObjectURL(receiptPreviewUrl);
+    setReceiptPreviewUrl(null);
+  };
+
+  const handleReceiptDownload = async () => {
+    if (!receiptPdfData || !invoice) return;
+    const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Resit-${invoice.receipt_number}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const shareReceiptWhatsApp = async () => {
+    if (!checkWhatsAppShare()) return;
+    if (!receiptPdfData || !invoice || !user || !hasPhone) return;
+    setIsSharingReceipt(true);
+    try {
+      const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
+      const fileName = `${user.id}/${invoice.receipt_number}.pdf`;
+      await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+      const { data } = supabase.storage.from('receipts').getPublicUrl(fileName);
+      const phone = formatPhone(customerPhone);
+      const message = `Assalamualaikum ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda! 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${data.publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. Jumpa lagi! 😊\n\n*${profile?.company_name || ''}*`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
+    } catch {
+      toast.error('Gagal kongsi resit');
+    } finally {
+      setIsSharingReceipt(false);
+    }
+  };
+
   const buildWhatsAppInvoiceMessage = (pdfUrl?: string) => {
     const name = customer?.name || '';
     const companyName = profile?.company_name || '';
     if (pdfUrl) {
-      return `Assalamualaikum ${name},
-
-Terima kasih atas kepercayaan anda kepada *${companyName}*. 🙏
-
-Berikut adalah invois untuk kerja yang telah siap:
-
-🧾 *No. Invois:* ${invoice!.invoice_number}
-💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}
-📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}
-
-Sila klik pautan di bawah untuk melihat invois anda:
-🔗 ${pdfUrl}
-
-Untuk sebarang pertanyaan, sila hubungi kami.
-
-Terima kasih! 😊
-*${companyName}*`;
+      return `Assalamualaikum ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat invois anda:\n🔗 ${pdfUrl}\n\nUntuk sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih! 😊\n*${companyName}*`;
     }
-    // Payment reminder
-    return `Assalamualaikum ${name},
-
-Ini adalah peringatan mesra daripada *${companyName}* berkenaan invois yang belum dijelaskan.
-
-🧾 *No. Invois:* ${invoice!.invoice_number}
-💰 *Jumlah Perlu Dibayar:* RM ${invoice!.total.toFixed(2)}
-📅 *Tarikh Bayaran Akhir:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}
-
-Sila hubungi kami jika ada sebarang pertanyaan atau memerlukan tempoh bayaran lanjutan.
-
-Terima kasih atas kerjasama anda. 🙏
-*${companyName}*`;
+    return `Assalamualaikum ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois yang belum dijelaskan.\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah Perlu Dibayar:* RM ${invoice!.total.toFixed(2)}\n📅 *Tarikh Bayaran Akhir:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila hubungi kami jika ada sebarang pertanyaan atau memerlukan tempoh bayaran lanjutan.\n\nTerima kasih atas kerjasama anda. 🙏\n*${companyName}*`;
   };
 
   const shareViaWhatsApp = async () => {
@@ -308,16 +372,13 @@ Terima kasih atas kerjasama anda. 🙏
     try {
       const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
       const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-      const { error: uploadError } = await supabase.storage
-        .from('invoice-pdfs')
-        .upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      if (uploadError) throw uploadError;
+      await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data } = supabase.storage.from('invoice-pdfs').getPublicUrl(fileName);
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(data.publicUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
-    } catch (error: any) {
+    } catch {
       toast.error('Gagal memuat naik PDF. Semak sambungan internet anda.');
     } finally {
       setIsSharing(false);
@@ -367,6 +428,36 @@ Terima kasih atas kerjasama anda. 🙏
         </div>
       )}
 
+      {/* Receipt Section */}
+      {invoice.status === 'Paid' && invoice.receipt_number && (
+        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-[#15803D]" />
+              <span className="text-sm font-bold text-[#15803D]">Resit Pembayaran</span>
+            </div>
+            <span className="text-xs text-[#15803D] font-medium">{invoice.receipt_number}</span>
+          </div>
+          <p className="text-sm text-[#15803D]">
+            Bayaran RM {invoice.total.toFixed(2)} diterima pada {invoice.paid_date ? formatDate(invoice.paid_date) : '-'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptPreview}>
+              <Eye className="h-3.5 w-3.5" /> Pratonton Resit
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptDownload}>
+              <Download className="h-3.5 w-3.5" /> Muat Turun Resit
+            </Button>
+            {hasPhone && (
+              <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
+                {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                Kongsi Resit via WhatsApp
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
@@ -407,20 +498,22 @@ Terima kasih atas kerjasama anda. 🙏
               </span>
             )}
           </div>
-          {/* Inline paid date picker */}
           {showInlinePayDate && (
             <div className="flex items-center gap-2 mt-2">
               <label className="text-sm text-muted-foreground">Tarikh Dibayar:</label>
               <Input type="date" value={inlinePayDate} onChange={e => setInlinePayDate(e.target.value)} className="h-8 w-40 text-sm rounded-lg" />
               <Button size="sm" className="h-8 rounded-lg bg-green-600 hover:bg-green-700" onClick={async () => {
-                const { error } = await supabase.from('invoices').update({ status: 'Paid', paid_date: inlinePayDate }).eq('id', invoice.id).eq('user_id', user!.id);
-                if (!error) {
-                  setInvoice({ ...invoice, status: 'Paid', paid_date: inlinePayDate });
-                  setShowInlinePayDate(false);
-                  toast.success('Invois ditandakan sebagai Dibayar!');
-                } else {
-                  toast.error('Gagal kemaskini status.');
-                }
+                try {
+                  const receiptNumber = await generateReceiptNumber();
+                  const { error } = await supabase.from('invoices').update({ status: 'Paid', paid_date: inlinePayDate, receipt_number: receiptNumber } as any).eq('id', invoice.id).eq('user_id', user!.id);
+                  if (!error) {
+                    setInvoice({ ...invoice, status: 'Paid', paid_date: inlinePayDate, receipt_number: receiptNumber });
+                    setShowInlinePayDate(false);
+                    toast.success('Invois ditandakan sebagai Dibayar!');
+                  } else {
+                    toast.error('Gagal kemaskini status.');
+                  }
+                } catch { toast.error('Gagal kemaskini status.'); }
               }}>Sahkan</Button>
               <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>Batal</Button>
             </div>
@@ -509,7 +602,6 @@ Terima kasih atas kerjasama anda. 🙏
       {/* Line Items */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
-        {/* Desktop */}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
             <span>Penerangan</span><span>Qty</span><span>Harga</span><span className="text-right">Jumlah</span>
@@ -523,7 +615,6 @@ Terima kasih atas kerjasama anda. 🙏
             </div>
           ))}
         </div>
-        {/* Mobile */}
         <div className="md:hidden space-y-2">
           {invoice.items.map((item, i) => (
             <div key={i} className="border border-border rounded-lg p-3 space-y-1">
@@ -535,7 +626,6 @@ Terima kasih atas kerjasama anda. 🙏
             </div>
           ))}
         </div>
-        {/* Totals */}
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {invoice.subtotal.toFixed(2)}</span></div>
           {invoice.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {invoice.discount.toFixed(2)}</span></div>}
@@ -663,18 +753,27 @@ Terima kasih atas kerjasama anda. 🙏
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       <PDFPreviewModal
         fileUrl={previewUrl}
         loading={previewLoading}
         onClose={closePreview}
         onDownload={handlePreviewDownload}
-        onShare={() => {
-          closePreview();
-          shareViaWhatsApp();
-        }}
+        onShare={() => { closePreview(); shareViaWhatsApp(); }}
         open={previewOpen}
         title={`Pratonton — ${invoice.invoice_number}`}
       />
+
+      <PDFPreviewModal
+        fileUrl={receiptPreviewUrl}
+        loading={receiptPreviewLoading}
+        onClose={closeReceiptPreview}
+        onDownload={handleReceiptDownload}
+        onShare={() => { closeReceiptPreview(); shareReceiptWhatsApp(); }}
+        open={receiptPreviewOpen}
+        title={`Pratonton — ${invoice.receipt_number || 'Resit'}`}
+      />
+
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );

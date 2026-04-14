@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Landmark } from 'lucide-react';
+import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Landmark, ClipboardCheck, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Job {
@@ -64,6 +64,10 @@ export default function InvoiceFormPage() {
   const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
   const [linkedQuoteId, setLinkedQuoteId] = useState<string | null>(null);
 
+  // Completion report gate
+  const [reportStatus, setReportStatus] = useState<'checking' | 'none' | 'draft' | 'submitted'>('checking');
+  const [reportJobId, setReportJobId] = useState<string | null>(null);
+
   // LHDN fields
   const [lhdnOpen, setLhdnOpen] = useState(false);
   const [customerTin, setCustomerTin] = useState('');
@@ -74,6 +78,26 @@ export default function InvoiceFormPage() {
   // Quotation import
   const [availableQuote, setAvailableQuote] = useState<{ id: string; quote_number: string; items: LineItem[]; subtotal: number; discount: number; tax_rate: number; total: number } | null>(null);
   const [importDismissed, setImportDismissed] = useState(false);
+
+  // Check completion report for job
+  const checkCompletionReport = async (jobId: string) => {
+    if (!user) return;
+    const { data } = await supabase.from('completion_reports')
+      .select('id, status')
+      .eq('job_id', jobId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!data) {
+      setReportStatus('none');
+      setReportJobId(jobId);
+    } else if (data.status === 'draft') {
+      setReportStatus('draft');
+      setReportJobId(jobId);
+    } else {
+      setReportStatus('submitted');
+      setReportJobId(jobId);
+    }
+  };
 
   // Fetch jobs
   useEffect(() => {
@@ -111,6 +135,8 @@ export default function InvoiceFormPage() {
           .then(({ data }) => {
             if (data) setAvailableQuote(data as any);
           });
+        // Check completion report
+        checkCompletionReport(jobId);
       }
     }
   }, [searchParams, jobs, selectedJob, user, isEdit]);
@@ -118,7 +144,6 @@ export default function InvoiceFormPage() {
   // Populate LHDN defaults from profile
   useEffect(() => {
     if (profile?.msic_code) setMsicCode(profile.msic_code);
-    // Pre-fill terms and payment methods for new invoice
     if (!isEdit && profile?.invoice_terms && !terms) setTerms(profile.invoice_terms);
     if (!isEdit && profile?.payment_methods) {
       const methods = Array.isArray(profile.payment_methods) ? profile.payment_methods : [];
@@ -151,7 +176,6 @@ export default function InvoiceFormPage() {
         setDiscountValue(storedDiscount);
         const storedTaxRate = Number(inv.tax_rate) || 0;
         if (storedTaxRate > 0) { setSstEnabled(true); setSstRate(storedTaxRate); }
-        // Restore saved payment methods
         const savedPMs = Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [];
         if (savedPMs.length > 0) {
           setSelectedPaymentMethods(savedPMs);
@@ -159,6 +183,8 @@ export default function InvoiceFormPage() {
           const methods = Array.isArray(profile.payment_methods) ? profile.payment_methods : [];
           setSelectedPaymentMethods(methods.map((m: any) => m.id));
         }
+        // For edit, set report as submitted (since invoice already exists)
+        setReportStatus('submitted');
       }
       setLoading(false);
     }
@@ -226,6 +252,8 @@ export default function InvoiceFormPage() {
         .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle();
       if (quote) { setAvailableQuote(quote as any); setImportDismissed(false); }
       else { setAvailableQuote(null); }
+      // Check completion report
+      await checkCompletionReport(j.id);
     }
   };
 
@@ -310,6 +338,33 @@ export default function InvoiceFormPage() {
     );
   }
 
+  // Blocked by missing completion report (only for new invoices with job_id)
+  if (!isEdit && selectedJob && reportStatus !== 'checking' && reportStatus !== 'submitted' && reportJobId) {
+    return (
+      <div className="p-4 md:p-6 space-y-5 max-w-2xl">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
+          <h1 className="text-xl font-bold text-foreground">Invois Baru</h1>
+        </div>
+        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="h-5 w-5 text-[#B45309]" />
+            <h2 className="text-base font-bold text-[#B45309]">Laporan Siap Kerja Diperlukan</h2>
+          </div>
+          <p className="text-sm text-[#B45309]">
+            Invois tidak boleh dijana sebelum Laporan Siap Kerja dihantar. Laporan ini membuktikan kerja telah siap dilaksanakan sebelum pembayaran dipohon.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={() => navigate(`/jobs/${reportJobId}/completion-report`)} className="rounded-lg gap-1.5">
+              <ClipboardCheck className="h-4 w-4" /> Isi Laporan Siap Kerja
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${reportJobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
       {/* Header */}
@@ -317,6 +372,14 @@ export default function InvoiceFormPage() {
         <button onClick={() => navigate(isEdit ? `/invoices/${id}` : '/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
         <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Invois' : 'Invois Baru'}</h1>
       </div>
+
+      {/* Report submitted banner */}
+      {!isEdit && reportStatus === 'submitted' && (
+        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-3 flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 text-[#15803D]" />
+          <span className="text-sm font-medium text-[#15803D]">✓ Laporan Siap Kerja telah dihantar</span>
+        </div>
+      )}
 
       {/* Invoice Number */}
       <div className="space-y-1.5">
