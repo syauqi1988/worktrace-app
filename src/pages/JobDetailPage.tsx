@@ -76,6 +76,9 @@ interface CompletionReport {
   completion_date: string | null;
   work_description: string | null;
   technician_name: string | null;
+  materials_used: string | null;
+  customer_signature: string | null;
+  notes: string | null;
   photos: any;
 }
 
@@ -185,7 +188,7 @@ export default function JobDetailPage() {
       }
       const blob = await pdf(
         <CompletionReportPDF
-          report={{ ...report, completion_date: report.completion_date || '', photos }}
+          report={{ ...report, completion_date: report.completion_date || '', photos: photoBase64s.filter(Boolean), materials_used: report.materials_used || '', customer_signature: report.customer_signature || '', notes: report.notes || '' }}
           job={{ job_number: job.job_number, title: job.title, category: job.category }}
           customer={job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
           company={{
@@ -194,7 +197,6 @@ export default function JobDetailPage() {
             address: profile?.address || null,
             logo_base64: canShowLogo ? logoBase64 : '',
           }}
-          photoBase64s={photoBase64s}
         />
       ).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
@@ -217,7 +219,7 @@ export default function JobDetailPage() {
       }
       const blob = await pdf(
         <CompletionReportPDF
-          report={{ ...report, completion_date: report.completion_date || '', photos }}
+          report={{ ...report, completion_date: report.completion_date || '', photos: photoBase64s.filter(Boolean), materials_used: report.materials_used || '', customer_signature: report.customer_signature || '', notes: report.notes || '' }}
           job={{ job_number: job.job_number, title: job.title, category: job.category }}
           customer={job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
           company={{
@@ -226,7 +228,6 @@ export default function JobDetailPage() {
             address: profile?.address || null,
             logo_base64: canShowLogo ? logoBase64 : '',
           }}
-          photoBase64s={photoBase64s}
         />
       ).toBlob();
       const fileName = `${user.id}/${report.report_number}.pdf`;
