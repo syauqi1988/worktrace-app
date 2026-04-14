@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift } from 'lucide-react';
-import logo from '@/assets/logo-new.jpg';
+import logo from '@/assets/logo-new.png';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
