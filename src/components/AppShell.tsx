@@ -136,6 +136,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <InstallPromptBanner />
+      <ExpiryBanner />
       {/* Top Header */}
       <header className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 shrink-0">
         <button data-tutorial="hamburger-menu" onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">
@@ -202,8 +203,13 @@ export default function AppShell() {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
+                {item.to === '/support' && supportNotifCount > 0 && (
+                  <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                    {supportNotifCount}
+                  </span>
+                )}
               </NavLink>
-            ))}
+            ))
           </nav>
         </aside>
 
@@ -228,6 +234,11 @@ export default function AppShell() {
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}
+                    {item.to === '/support' && supportNotifCount > 0 && (
+                      <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                        {supportNotifCount}
+                      </span>
+                    )}
                   </NavLink>
                 ))}
               </nav>
