@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      completion_reports: {
+        Row: {
+          completion_date: string | null
+          created_at: string | null
+          customer_signature: string | null
+          id: string
+          job_id: string
+          materials_used: string | null
+          notes: string | null
+          photos: Json | null
+          report_number: string
+          status: string | null
+          submitted_at: string | null
+          technician_name: string | null
+          user_id: string
+          work_description: string | null
+        }
+        Insert: {
+          completion_date?: string | null
+          created_at?: string | null
+          customer_signature?: string | null
+          id?: string
+          job_id: string
+          materials_used?: string | null
+          notes?: string | null
+          photos?: Json | null
+          report_number: string
+          status?: string | null
+          submitted_at?: string | null
+          technician_name?: string | null
+          user_id: string
+          work_description?: string | null
+        }
+        Update: {
+          completion_date?: string | null
+          created_at?: string | null
+          customer_signature?: string | null
+          id?: string
+          job_id?: string
+          materials_used?: string | null
+          notes?: string | null
+          photos?: Json | null
+          report_number?: string
+          status?: string | null
+          submitted_at?: string | null
+          technician_name?: string | null
+          user_id?: string
+          work_description?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -71,6 +122,7 @@ export type Database = {
           notes: string | null
           paid_date: string | null
           quote_id: string | null
+          receipt_number: string | null
           selected_payment_methods: Json | null
           status: string
           subtotal: number
@@ -94,6 +146,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           quote_id?: string | null
+          receipt_number?: string | null
           selected_payment_methods?: Json | null
           status?: string
           subtotal?: number
@@ -117,6 +170,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           quote_id?: string | null
+          receipt_number?: string | null
           selected_payment_methods?: Json | null
           status?: string
           subtotal?: number
@@ -228,9 +282,11 @@ export type Database = {
           phone: string | null
           plan: string
           quotation_terms: string | null
+          receipt_count: number | null
           referral_code: string | null
           referral_count: number | null
           referred_by: string | null
+          report_count: number | null
           sst_registered: boolean
           subscription_end_date: string | null
           subscription_start_date: string | null
@@ -238,6 +294,7 @@ export type Database = {
           tin_number: string | null
           tutorial_completed: boolean | null
           tutorial_seen_count: number | null
+          tutorial_state: Json | null
           updated_at: string
         }
         Insert: {
@@ -258,9 +315,11 @@ export type Database = {
           phone?: string | null
           plan?: string
           quotation_terms?: string | null
+          receipt_count?: number | null
           referral_code?: string | null
           referral_count?: number | null
           referred_by?: string | null
+          report_count?: number | null
           sst_registered?: boolean
           subscription_end_date?: string | null
           subscription_start_date?: string | null
@@ -268,6 +327,7 @@ export type Database = {
           tin_number?: string | null
           tutorial_completed?: boolean | null
           tutorial_seen_count?: number | null
+          tutorial_state?: Json | null
           updated_at?: string
         }
         Update: {
@@ -288,9 +348,11 @@ export type Database = {
           phone?: string | null
           plan?: string
           quotation_terms?: string | null
+          receipt_count?: number | null
           referral_code?: string | null
           referral_count?: number | null
           referred_by?: string | null
+          report_count?: number | null
           sst_registered?: boolean
           subscription_end_date?: string | null
           subscription_start_date?: string | null
@@ -298,6 +360,7 @@ export type Database = {
           tin_number?: string | null
           tutorial_completed?: boolean | null
           tutorial_seen_count?: number | null
+          tutorial_state?: Json | null
           updated_at?: string
         }
         Relationships: []
