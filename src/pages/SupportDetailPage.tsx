@@ -127,7 +127,28 @@ export default function SupportDetailPage() {
         </div>
       </div>
 
-      {/* Info */}
+      {/* Email confirmation banner */}
+      {showBanner && (
+        <div className="rounded-xl border p-4 flex items-start gap-3" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
+          <Mail className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#166534' }} />
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: '#166534' }}>Tiket Berjaya Dihantar!</p>
+            <p className="text-sm mt-1" style={{ color: '#166534' }}>
+              Nombor Tiket: <strong>{ticket.ticket_number}</strong>
+            </p>
+            <p className="text-xs mt-1" style={{ color: '#15803d' }}>
+              Pengesahan telah dihantar ke: {ticket.user_email}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: '#15803d' }}>
+              Kami akan balas dalam masa 24 jam (hari bekerja).
+            </p>
+          </div>
+          <button onClick={() => setShowBanner(false)} className="text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div className="bg-card rounded-xl border border-border p-4 space-y-2 text-sm">
         <p><span className="text-muted-foreground">Kategori:</span> {CATEGORY_LABELS[ticket.category] || ticket.category}</p>
         <p><span className="text-muted-foreground">Keutamaan:</span> {PRIORITY_LABELS[ticket.priority] || ticket.priority}</p>
