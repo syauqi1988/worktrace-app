@@ -209,7 +209,7 @@ export default function AppShell() {
                   </span>
                 )}
               </NavLink>
-            ))
+            ))}
           </nav>
         </aside>
 
