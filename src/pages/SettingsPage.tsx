@@ -679,6 +679,8 @@ export default function SettingsPage() {
           </a>
         </div>
         <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
+      </section>
+
       {/* Section 7 — Account Security */}
       <section className="bg-card rounded-xl border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-2">
