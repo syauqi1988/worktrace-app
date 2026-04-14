@@ -76,6 +76,9 @@ interface CompletionReport {
   completion_date: string | null;
   work_description: string | null;
   technician_name: string | null;
+  materials_used: string | null;
+  customer_signature: string | null;
+  notes: string | null;
   photos: any;
 }
 
