@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_counters: {
+        Row: {
+          key: string
+          value: number | null
+        }
+        Insert: {
+          key: string
+          value?: number | null
+        }
+        Update: {
+          key?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       completion_reports: {
         Row: {
           completion_date: string | null
@@ -268,12 +283,15 @@ export type Database = {
           address: string | null
           billing_period: string | null
           billplz_bill_id: string | null
+          cancel_reason: string | null
+          cancel_requested_at: string | null
           company_name: string | null
           created_at: string
           free_months_earned: number | null
           free_months_used: number | null
           id: string
           invoice_terms: string | null
+          last_support_visit: string | null
           lhdn_enabled: boolean
           logo_url: string | null
           msic_code: string | null
@@ -288,9 +306,11 @@ export type Database = {
           referred_by: string | null
           report_count: number | null
           sst_registered: boolean
+          subscription_cancelled: boolean | null
           subscription_end_date: string | null
           subscription_start_date: string | null
           subscription_status: string | null
+          ticket_count: number | null
           tin_number: string | null
           tutorial_completed: boolean | null
           tutorial_seen_count: number | null
@@ -301,12 +321,15 @@ export type Database = {
           address?: string | null
           billing_period?: string | null
           billplz_bill_id?: string | null
+          cancel_reason?: string | null
+          cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
           free_months_earned?: number | null
           free_months_used?: number | null
           id: string
           invoice_terms?: string | null
+          last_support_visit?: string | null
           lhdn_enabled?: boolean
           logo_url?: string | null
           msic_code?: string | null
@@ -321,9 +344,11 @@ export type Database = {
           referred_by?: string | null
           report_count?: number | null
           sst_registered?: boolean
+          subscription_cancelled?: boolean | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           subscription_status?: string | null
+          ticket_count?: number | null
           tin_number?: string | null
           tutorial_completed?: boolean | null
           tutorial_seen_count?: number | null
@@ -334,12 +359,15 @@ export type Database = {
           address?: string | null
           billing_period?: string | null
           billplz_bill_id?: string | null
+          cancel_reason?: string | null
+          cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
           free_months_earned?: number | null
           free_months_used?: number | null
           id?: string
           invoice_terms?: string | null
+          last_support_visit?: string | null
           lhdn_enabled?: boolean
           logo_url?: string | null
           msic_code?: string | null
@@ -354,9 +382,11 @@ export type Database = {
           referred_by?: string | null
           report_count?: number | null
           sst_registered?: boolean
+          subscription_cancelled?: boolean | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           subscription_status?: string | null
+          ticket_count?: number | null
           tin_number?: string | null
           tutorial_completed?: boolean | null
           tutorial_seen_count?: number | null
@@ -460,6 +490,134 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_events: {
+        Row: {
+          amount: number | null
+          billing_period: string | null
+          created_at: string | null
+          event_type: string
+          id: string
+          notes: string | null
+          plan: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          billing_period?: string | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          notes?: string | null
+          plan?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          billing_period?: string | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          notes?: string | null
+          plan?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          admin_notes: string | null
+          attachments: Json | null
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          priority: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          ticket_number: string
+          updated_at: string | null
+          user_email: string
+          user_id: string
+          user_name: string | null
+          user_plan: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          attachments?: Json | null
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          ticket_number: string
+          updated_at?: string | null
+          user_email: string
+          user_id: string
+          user_name?: string | null
+          user_plan?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          attachments?: Json | null
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          ticket_number?: string
+          updated_at?: string | null
+          user_email?: string
+          user_id?: string
+          user_name?: string | null
+          user_plan?: string | null
+        }
+        Relationships: []
+      }
+      ticket_replies: {
+        Row: {
+          attachments: Json | null
+          created_at: string | null
+          id: string
+          message: string
+          sender_type: string
+          ticket_id: string
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string | null
+          id?: string
+          message: string
+          sender_type: string
+          ticket_id: string
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          sender_type?: string
+          ticket_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_replies_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -473,6 +631,7 @@ export type Database = {
         Args: { p_referred_id: string }
         Returns: undefined
       }
+      generate_ticket_number: { Args: never; Returns: string }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
       set_onboarding_plan: {

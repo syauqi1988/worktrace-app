@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift, HelpCircle
+  Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import logo from '@/assets/logo.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
 import { useTutorial } from '@/hooks/useTutorial';
 
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/customers', label: 'Pelanggan', icon: Users, tutorialId: 'customers-nav' },
   { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
   { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
+  { to: '/support', label: 'Sokongan', icon: LifeBuoy, tutorialId: undefined },
   { to: '/settings#referral-section', label: 'Rujukan', icon: Gift, tutorialId: undefined },
   { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
@@ -50,10 +52,30 @@ export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const [supportNotifCount, setSupportNotifCount] = useState(0);
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { shouldAutoStart } = useTutorial('dashboard');
+
+  // Check for new support replies
+  useEffect(() => {
+    if (!user || !profile) return;
+    const checkSupportNotif = async () => {
+      const lastVisit = (profile as any).last_support_visit || '2000-01-01';
+      const { data: tickets } = await supabase.from('support_tickets').select('id').eq('user_id', user.id);
+      if (!tickets || tickets.length === 0) return;
+      const ticketIds = tickets.map(t => t.id);
+      const { data: newReplies } = await supabase
+        .from('ticket_replies')
+        .select('id')
+        .eq('sender_type', 'admin')
+        .gt('created_at', lastVisit)
+        .in('ticket_id', ticketIds);
+      setSupportNotifCount(newReplies?.length || 0);
+    };
+    checkSupportNotif();
+  }, [user, profile]);
 
   // Subscription expiry check
   useEffect(() => {
@@ -61,18 +83,34 @@ export default function AppShell() {
     if (profile.plan === 'free') return;
     if (profile.subscription_end_date) {
       const endDate = new Date(profile.subscription_end_date);
-      if (endDate < new Date()) {
+      const now = new Date();
+      if (endDate < now) {
+        // Expired
         supabase
           .from('profiles')
-          .update({ plan: 'free', subscription_status: 'expired' } as any)
+          .update({ plan: 'free', subscription_status: 'expired', subscription_cancelled: false } as any)
           .eq('id', user.id)
           .then(() => {
+            supabase.from('subscription_events').insert({
+              user_id: user.id, event_type: 'expired', plan: profile.plan,
+            } as any).then(() => {});
             refreshProfile();
             toast.warning(
-              'Langganan Pro anda telah tamat. Akaun anda telah diturunkan ke pelan Free.',
-              { duration: 8000 }
+              'Langganan Pro anda telah tamat. Akaun telah diturunkan ke pelan Free.',
+              { duration: 10000 }
             );
           });
+      } else {
+        // 7-day warning
+        const sevenDays = new Date();
+        sevenDays.setDate(sevenDays.getDate() + 7);
+        if (endDate < sevenDays && !(profile as any).subscription_cancelled) {
+          const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          toast.info(
+            `Langganan Pro anda akan tamat dalam ${daysLeft} hari. Perbaharui untuk kekal dengan Pro.`,
+            { duration: 8000 }
+          );
+        }
       }
     }
   }, [user, profile]);
@@ -98,6 +136,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <InstallPromptBanner />
+      <ExpiryBanner />
       {/* Top Header */}
       <header className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 shrink-0">
         <button data-tutorial="hamburger-menu" onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">
@@ -164,6 +203,11 @@ export default function AppShell() {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
+                {item.to === '/support' && supportNotifCount > 0 && (
+                  <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                    {supportNotifCount}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>
@@ -190,6 +234,11 @@ export default function AppShell() {
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}
+                    {item.to === '/support' && supportNotifCount > 0 && (
+                      <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                        {supportNotifCount}
+                      </span>
+                    )}
                   </NavLink>
                 ))}
               </nav>

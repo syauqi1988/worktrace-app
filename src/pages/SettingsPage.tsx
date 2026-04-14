@@ -10,8 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import PlanCards from '@/components/PlanCards';
-import { Building2, Shield, CreditCard, AlertTriangle, ExternalLink, FileText, Landmark, Gift, Users, Copy, MessageCircle, Send, Trash2, Plus, X, Loader2, BookOpen, Play } from 'lucide-react';
+import { Building2, Shield, CreditCard, AlertTriangle, ExternalLink, FileText, Landmark, Gift, Users, Copy, MessageCircle, Send, Trash2, Plus, X, Loader2, BookOpen, Play, Headphones } from 'lucide-react';
 import { useTutorial } from '@/hooks/useTutorial';
+import CancellationDialog from '@/components/CancellationDialog';
+import ReactivateDialog from '@/components/ReactivateDialog';
+import { useBillPlz } from '@/hooks/useBillPlz';
 
 interface PaymentMethod {
   id: string;
@@ -74,6 +77,11 @@ export default function SettingsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
+
+  // Cancellation
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [reactivateOpen, setReactivateOpen] = useState(false);
+  const { initiatePayment, isLoading: billPlzLoading } = useBillPlz();
 
   // Referral
   const [referrals, setReferrals] = useState<any[]>([]);
@@ -462,7 +470,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Section 5 — Subscription */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
+      <section className={`bg-card rounded-xl border p-5 space-y-4 ${(profile as any)?.subscription_cancelled && !isFree ? 'border-amber-300' : 'border-border'}`}>
         <div className="flex items-center gap-2 mb-2">
           <CreditCard className="h-5 w-5 text-primary" />
           <h2 className="text-base font-bold text-foreground">Langganan & Pelan</h2>
@@ -480,22 +488,30 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">{planLabel}</span>
             <span className="text-base font-bold text-foreground">{planLabel}</span>
-            {!isFree && <span className="text-xs text-green-600 font-medium">✓</span>}
+            {!isFree && !(profile as any)?.subscription_cancelled && (
+              <span className="text-xs text-green-600 font-medium">— Aktif ●</span>
+            )}
+            {!isFree && (profile as any)?.subscription_cancelled && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Akan Tamat ⚠️</span>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
             RM{profile?.plan === 'pro' ? '49' : profile?.plan === 'team' ? '99' : '0'}/bulan
-            {isFree ? ' · Selamanya percuma' : ' · Early bird'}
+            {isFree ? ' · Selamanya percuma' : ` · ${profile?.billing_period === 'yearly' ? 'Tahunan' : 'Bulanan'}`}
           </p>
-          {!isFree && profile?.subscription_status && (
+          {!isFree && (profile as any)?.subscription_cancelled && profile?.subscription_end_date && (
+            <p className="text-sm text-amber-700 mt-1">
+              Langganan dibatalkan. Masih aktif sehingga {new Date(profile.subscription_end_date).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
+          )}
+          {!isFree && !(profile as any)?.subscription_cancelled && (
             <div className="space-y-1 mt-2">
-              <p className="text-sm text-foreground">
-                Status: {profile.subscription_status === 'active' ? (
-                  <span className="text-green-600">Aktif ●</span>
-                ) : (
-                  <span className="text-destructive">Tamat ●</span>
-                )}
-              </p>
-              {profile.subscription_end_date && (
+              {profile?.subscription_start_date && (
+                <p className="text-sm text-muted-foreground">
+                  Tarikh Mula: {new Date(profile.subscription_start_date).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              )}
+              {profile?.subscription_end_date && (
                 <p className="text-sm text-muted-foreground">
                   Tarikh Tamat: {new Date(profile.subscription_end_date).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
@@ -504,7 +520,31 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <PlanCards currentPlan={profile?.plan || 'free'} onSelect={() => {}} compact />
+        {/* Action buttons */}
+        {!isFree && (profile as any)?.subscription_cancelled ? (
+          <Button onClick={() => setReactivateOpen(true)} className="w-full rounded-lg">
+            Aktifkan Semula Langganan
+          </Button>
+        ) : !isFree ? (
+          <div className="space-y-2">
+            <Button
+              onClick={() => initiatePayment(profile?.plan as 'pro' | 'team', (profile?.billing_period as 'monthly' | 'yearly') || 'monthly')}
+              disabled={billPlzLoading}
+              className="w-full rounded-lg"
+            >
+              Perbaharui Langganan
+            </Button>
+            <button
+              onClick={() => setCancelOpen(true)}
+              className="w-full text-center text-[13px] font-medium hover:underline"
+              style={{ color: '#DC2626' }}
+            >
+              Batalkan Langganan
+            </button>
+          </div>
+        ) : null}
+
+        {isFree && <PlanCards currentPlan={profile?.plan || 'free'} onSelect={() => {}} compact />}
       </section>
 
       {/* Section 6 — Referral */}
@@ -615,6 +655,32 @@ export default function SettingsPage() {
         </ul>
       </section>
 
+      {/* Section — Butuh Bantuan? */}
+      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Headphones className="h-5 w-5 text-primary" />
+          <h2 className="text-base font-bold text-foreground">Butuh Bantuan?</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">Hubungi kami melalui:</p>
+        <div className="space-y-2">
+          <button
+            onClick={() => navigate('/support/new')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            📧 Hantar Tiket Sokongan
+          </button>
+          <a
+            href="https://wa.me/601110251520"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            💬 WhatsApp Kami
+          </a>
+        </div>
+        <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
+      </section>
+
       {/* Section 7 — Account Security */}
       <section className="bg-card rounded-xl border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-2">
@@ -668,6 +734,16 @@ export default function SettingsPage() {
           )}
         </div>
       </ConfirmDialog>
+
+      <CancellationDialog
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        onCancelled={() => setCancelOpen(false)}
+      />
+      <ReactivateDialog
+        open={reactivateOpen}
+        onClose={() => setReactivateOpen(false)}
+      />
     </div>
   );
 }

@@ -29,6 +29,10 @@ export interface Profile {
   free_months_used: number;
   tutorial_completed: boolean;
   tutorial_seen_count: number;
+  subscription_cancelled: boolean;
+  cancel_requested_at: string | null;
+  cancel_reason: string | null;
+  last_support_visit: string | null;
 }
 
 interface AuthContextType {
