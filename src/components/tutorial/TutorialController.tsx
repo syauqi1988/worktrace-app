@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { driver } from 'driver.js';
-import { useTutorial } from '@/hooks/useTutorial';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { driver, type Driver } from 'driver.js';
+import { useTutorial, type TutorialPage } from '@/hooks/useTutorial';
 import WelcomeModal from './WelcomeModal';
-import { buildTutorialSteps } from './tutorialSteps';
+import { buildPageTutorialSteps } from './tutorialSteps';
 
 declare global {
   interface Window {
@@ -11,93 +11,127 @@ declare global {
   }
 }
 
+function getCurrentPage(pathname: string): TutorialPage {
+  if (pathname.startsWith('/jobs')) return 'jobs';
+  if (pathname.startsWith('/customers')) return 'customers';
+  if (pathname.startsWith('/quotations')) return 'quotations';
+  if (pathname.startsWith('/invoices')) return 'invoices';
+  if (pathname.startsWith('/settings') || pathname.startsWith('/profile')) return 'settings';
+  return 'dashboard';
+}
+
 interface TutorialControllerProps {
-  autoStart?: boolean;
+  showWelcome?: boolean;
   onComplete?: () => void;
 }
 
 export default function TutorialController({
-  autoStart = false,
+  showWelcome: showWelcomeProp = false,
   onComplete,
 }: TutorialControllerProps) {
   const [showWelcome, setShowWelcome] = useState(false);
-  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const currentPage = getCurrentPage(pathname);
   const {
-    markTutorialStarted,
-    markTutorialCompleted,
-    markTutorialSkipped,
-  } = useTutorial();
+    isLoading,
+    getPageState,
+    markCompleted,
+    markAllCompleted,
+    incrementSeenCount,
+  } = useTutorial(currentPage);
+  const driverRef = useRef<Driver | null>(null);
+  const autoStartedPages = useRef<Set<string>>(new Set());
 
+  // Show welcome modal for new users
   useEffect(() => {
-    if (autoStart) {
+    if (showWelcomeProp) {
       const timer = setTimeout(() => setShowWelcome(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, [autoStart]);
+  }, [showWelcomeProp]);
 
-  const startTour = useCallback(() => {
-    setShowWelcome(false);
-    markTutorialStarted();
+  const startTourForPage = useCallback((page: TutorialPage) => {
+    // Destroy any existing tour
+    if (driverRef.current) {
+      driverRef.current.destroy();
+      driverRef.current = null;
+    }
 
-    // Navigate to dashboard first so sidebar + dashboard elements are visible
-    navigate('/dashboard');
+    const steps = buildPageTutorialSteps(page);
+    if (steps.length === 0) return;
 
-    setTimeout(() => {
-      const steps = buildTutorialSteps(navigate);
-      const driverObj = driver({
-        showProgress: true,
-        progressText: 'Langkah {{current}} daripada {{total}}',
-        nextBtnText: 'Seterusnya →',
-        prevBtnText: '← Sebelum',
-        doneBtnText: 'Selesai! 🎉',
-        allowClose: true,
-        overlayOpacity: 0.6,
-        stagePadding: 8,
-        stageRadius: 8,
-        popoverClass: 'worktrace-tutorial-popover',
-        onDestroyStarted: () => {
-          markTutorialCompleted();
-          onComplete?.();
-          driverObj.destroy();
-        },
-        steps,
-        onNextClick: () => {
-          const activeIndex = driverObj.getActiveIndex();
-          if (activeIndex === undefined || activeIndex === null) return;
-          const step = steps[activeIndex];
-          if (step?.popover && 'onNextClick' in step.popover && typeof step.popover.onNextClick === 'function') {
-            (step.popover.onNextClick as () => void)();
-            // Wait for SPA navigation to render
-            setTimeout(() => {
-              driverObj.moveNext();
-            }, 500);
-          } else {
-            driverObj.moveNext();
-          }
-        },
-      });
+    incrementSeenCount(page);
 
-      driverObj.drive();
-    }, 300);
-  }, [navigate, markTutorialStarted, markTutorialCompleted, onComplete]);
+    const driverObj = driver({
+      showProgress: true,
+      progressText: 'Langkah {{current}} daripada {{total}}',
+      nextBtnText: 'Seterusnya →',
+      prevBtnText: '← Sebelum',
+      doneBtnText: 'Selesai! 🎉',
+      allowClose: true,
+      overlayOpacity: 0.6,
+      stagePadding: 8,
+      stageRadius: 8,
+      popoverClass: 'worktrace-tutorial-popover',
+      onDestroyStarted: () => {
+        markCompleted(page);
+        onComplete?.();
+        driverObj.destroy();
+      },
+      steps,
+    });
 
-  const handleSkip = useCallback(() => {
-    setShowWelcome(false);
-    markTutorialSkipped();
-  }, [markTutorialSkipped]);
+    driverRef.current = driverObj;
+    driverObj.drive();
+  }, [markCompleted, incrementSeenCount, onComplete]);
 
-  // Expose globally for Settings replay and header ? button
+  // Auto-start per-page tutorial on first visit
   useEffect(() => {
-    window.__startWorkTraceTutorial = startTour;
+    if (isLoading) return;
+    if (currentPage === 'settings') return;
+    const pageState = getPageState(currentPage);
+    if (!pageState.completed && !autoStartedPages.current.has(currentPage)) {
+      autoStartedPages.current.add(currentPage);
+      const timer = setTimeout(() => {
+        startTourForPage(currentPage);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, currentPage, getPageState, startTourForPage]);
+
+  // Expose globally for ? button
+  useEffect(() => {
+    window.__startWorkTraceTutorial = () => {
+      startTourForPage(currentPage);
+    };
     return () => {
       delete window.__startWorkTraceTutorial;
     };
-  }, [startTour]);
+  }, [startTourForPage, currentPage]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (driverRef.current) {
+        driverRef.current.destroy();
+      }
+    };
+  }, []);
+
+  const handleStart = useCallback(() => {
+    setShowWelcome(false);
+    startTourForPage('dashboard');
+  }, [startTourForPage]);
+
+  const handleSkip = useCallback(() => {
+    setShowWelcome(false);
+    markAllCompleted();
+  }, [markAllCompleted]);
 
   return (
     <WelcomeModal
       isOpen={showWelcome}
-      onStart={startTour}
+      onStart={handleStart}
       onSkip={handleSkip}
     />
   );

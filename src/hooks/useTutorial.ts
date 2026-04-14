@@ -2,23 +2,31 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export const useTutorial = () => {
+export type TutorialPage = 'dashboard' | 'jobs' | 'customers' | 'quotations' | 'invoices' | 'settings';
+
+interface PageTutorialState {
+  completed: boolean;
+  seen_count: number;
+}
+
+const DEFAULT_PAGE_STATE: PageTutorialState = { completed: false, seen_count: 0 };
+
+export const useTutorial = (page?: TutorialPage) => {
   const { user } = useAuth();
-  const [tutorialCompleted, setTutorialCompleted] = useState(true);
-  const [seenCount, setSeenCount] = useState(0);
+  const [tutorialState, setTutorialState] = useState<Record<string, PageTutorialState>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTutorialState = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('profiles')
-      .select('tutorial_completed, tutorial_seen_count')
+      .select('tutorial_state')
       .eq('id', user.id)
       .single();
 
     if (data) {
-      setTutorialCompleted((data as any).tutorial_completed ?? false);
-      setSeenCount((data as any).tutorial_seen_count ?? 0);
+      const state = (data as any).tutorial_state ?? {};
+      setTutorialState(state);
     }
     setIsLoading(false);
   }, [user]);
@@ -28,44 +36,93 @@ export const useTutorial = () => {
     fetchTutorialState();
   }, [user, fetchTutorialState]);
 
-  const markTutorialStarted = useCallback(async () => {
+  const getPageState = useCallback((p: TutorialPage): PageTutorialState => {
+    return tutorialState[p] ?? DEFAULT_PAGE_STATE;
+  }, [tutorialState]);
+
+  const markCompleted = useCallback(async (p: TutorialPage) => {
     if (!user) return;
-    const newCount = seenCount + 1;
-    setSeenCount(newCount);
+    const { data } = await supabase
+      .from('profiles')
+      .select('tutorial_state')
+      .eq('id', user.id)
+      .single();
+
+    const currentState = (data as any)?.tutorial_state ?? {};
+    const pageState = currentState[p] ?? DEFAULT_PAGE_STATE;
+    const updatedState = {
+      ...currentState,
+      [p]: {
+        completed: true,
+        seen_count: pageState.seen_count + 1,
+      },
+    };
+
     await supabase
       .from('profiles')
-      .update({ tutorial_seen_count: newCount } as any)
+      .update({ tutorial_state: updatedState } as any)
       .eq('id', user.id);
-  }, [user, seenCount]);
 
-  const markTutorialCompleted = useCallback(async () => {
+    setTutorialState(updatedState);
+  }, [user]);
+
+  const markAllCompleted = useCallback(async () => {
     if (!user) return;
-    setTutorialCompleted(true);
+    const allCompleted: Record<string, PageTutorialState> = {};
+    const pages: TutorialPage[] = ['dashboard', 'jobs', 'customers', 'quotations', 'invoices', 'settings'];
+    for (const p of pages) {
+      const existing = tutorialState[p] ?? DEFAULT_PAGE_STATE;
+      allCompleted[p] = { completed: true, seen_count: existing.seen_count };
+    }
+
     await supabase
       .from('profiles')
-      .update({ tutorial_completed: true, tutorial_seen_count: seenCount + 1 } as any)
+      .update({ tutorial_state: allCompleted } as any)
       .eq('id', user.id);
-  }, [user, seenCount]);
 
-  const markTutorialSkipped = useCallback(async () => {
+    setTutorialState(allCompleted);
+  }, [user, tutorialState]);
+
+  const incrementSeenCount = useCallback(async (p: TutorialPage) => {
     if (!user) return;
-    setTutorialCompleted(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('tutorial_state')
+      .eq('id', user.id)
+      .single();
+
+    const currentState = (data as any)?.tutorial_state ?? {};
+    const pageState = currentState[p] ?? DEFAULT_PAGE_STATE;
+    const updatedState = {
+      ...currentState,
+      [p]: {
+        ...pageState,
+        seen_count: pageState.seen_count + 1,
+      },
+    };
+
     await supabase
       .from('profiles')
-      .update({ tutorial_completed: true, tutorial_seen_count: seenCount + 1 } as any)
+      .update({ tutorial_state: updatedState } as any)
       .eq('id', user.id);
-  }, [user, seenCount]);
 
-  const shouldAutoStart = !isLoading && !tutorialCompleted;
+    setTutorialState(updatedState);
+  }, [user]);
+
+  const pageState = page ? getPageState(page) : DEFAULT_PAGE_STATE;
+  const shouldAutoStart = !isLoading && page ? !pageState.completed : false;
+  const totalSeenCount = Object.values(tutorialState).reduce((sum, s) => sum + s.seen_count, 0);
 
   return {
-    tutorialCompleted,
-    seenCount,
+    tutorialState,
     isLoading,
     shouldAutoStart,
-    markTutorialStarted,
-    markTutorialCompleted,
-    markTutorialSkipped,
+    seenCount: pageState.seen_count,
+    totalSeenCount,
+    getPageState,
+    markCompleted,
+    markAllCompleted,
+    incrementSeenCount,
     refetch: fetchTutorialState,
   };
 };

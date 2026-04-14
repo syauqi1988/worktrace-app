@@ -27,6 +27,7 @@ import CustomerDetailPage from "@/pages/CustomerDetailPage";
 import CustomerFormPage from "@/pages/CustomerFormPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailedPage from "@/pages/PaymentFailedPage";
+import CompletionReportPage from "@/pages/CompletionReportPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="jobs/new" element={<JobFormPage />} />
               <Route path="jobs/:id" element={<JobDetailPage />} />
               <Route path="jobs/:id/edit" element={<JobFormPage />} />
+              <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />
               <Route path="customers" element={<CustomersListPage />} />
               <Route path="customers/new" element={<CustomerFormPage />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />

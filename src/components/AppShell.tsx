@@ -53,7 +53,7 @@ export default function AppShell() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { shouldAutoStart } = useTutorial();
+  const { shouldAutoStart } = useTutorial('dashboard');
 
   // Subscription expiry check
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function AppShell() {
       <InstallPromptBanner />
       {/* Top Header */}
       <header className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 shrink-0">
-        <button onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">
+        <button data-tutorial="hamburger-menu" onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">
           <Menu className="h-5 w-5" />
         </button>
         <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
@@ -253,7 +253,7 @@ export default function AppShell() {
 
       {/* Tutorial Controller */}
       <TutorialController
-        autoStart={shouldAutoStart}
+        showWelcome={shouldAutoStart}
         onComplete={() => {
           toast.success('Tutorial selesai! Selamat menggunakan WorkTrace 🎉');
         }}
