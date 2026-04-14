@@ -52,10 +52,30 @@ export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const [supportNotifCount, setSupportNotifCount] = useState(0);
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { shouldAutoStart } = useTutorial('dashboard');
+
+  // Check for new support replies
+  useEffect(() => {
+    if (!user || !profile) return;
+    const checkSupportNotif = async () => {
+      const lastVisit = (profile as any).last_support_visit || '2000-01-01';
+      const { data: tickets } = await supabase.from('support_tickets').select('id').eq('user_id', user.id);
+      if (!tickets || tickets.length === 0) return;
+      const ticketIds = tickets.map(t => t.id);
+      const { data: newReplies } = await supabase
+        .from('ticket_replies')
+        .select('id')
+        .eq('sender_type', 'admin')
+        .gt('created_at', lastVisit)
+        .in('ticket_id', ticketIds);
+      setSupportNotifCount(newReplies?.length || 0);
+    };
+    checkSupportNotif();
+  }, [user, profile]);
 
   // Subscription expiry check
   useEffect(() => {
@@ -63,18 +83,34 @@ export default function AppShell() {
     if (profile.plan === 'free') return;
     if (profile.subscription_end_date) {
       const endDate = new Date(profile.subscription_end_date);
-      if (endDate < new Date()) {
+      const now = new Date();
+      if (endDate < now) {
+        // Expired
         supabase
           .from('profiles')
-          .update({ plan: 'free', subscription_status: 'expired' } as any)
+          .update({ plan: 'free', subscription_status: 'expired', subscription_cancelled: false } as any)
           .eq('id', user.id)
           .then(() => {
+            supabase.from('subscription_events').insert({
+              user_id: user.id, event_type: 'expired', plan: profile.plan,
+            } as any).then(() => {});
             refreshProfile();
             toast.warning(
-              'Langganan Pro anda telah tamat. Akaun anda telah diturunkan ke pelan Free.',
-              { duration: 8000 }
+              'Langganan Pro anda telah tamat. Akaun telah diturunkan ke pelan Free.',
+              { duration: 10000 }
             );
           });
+      } else {
+        // 7-day warning
+        const sevenDays = new Date();
+        sevenDays.setDate(sevenDays.getDate() + 7);
+        if (endDate < sevenDays && !(profile as any).subscription_cancelled) {
+          const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          toast.info(
+            `Langganan Pro anda akan tamat dalam ${daysLeft} hari. Perbaharui untuk kekal dengan Pro.`,
+            { duration: 8000 }
+          );
+        }
       }
     }
   }, [user, profile]);
