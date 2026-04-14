@@ -33,7 +33,7 @@ const QR_PROVIDERS = ['DuitNow QR', 'TnG eWallet', 'ShopeePay', 'GrabPay', 'Boos
 export default function SettingsPage() {
   const { user, profile, updateProfile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const { seenCount } = useTutorial();
+  const { totalSeenCount } = useTutorial('settings');
 
   // Company profile
   const [companyName, setCompanyName] = useState('');
@@ -597,7 +597,7 @@ export default function SettingsPage() {
           Tonton tutorial interaktif untuk belajar cara menggunakan WorkTrace dengan lebih efektif.
         </p>
         <p className="text-[13px] text-muted-foreground">
-          Tutorial dilihat: {seenCount === 0 ? 'Belum pernah ditonton' : `${seenCount} kali`}
+          Tutorial dilihat: {totalSeenCount === 0 ? 'Belum pernah ditonton' : `${totalSeenCount} kali`}
         </p>
         <button
           onClick={() => window.__startWorkTraceTutorial?.()}
