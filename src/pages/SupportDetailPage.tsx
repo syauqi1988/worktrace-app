@@ -38,6 +38,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function SupportDetailPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState<any>(null);
@@ -46,6 +47,7 @@ export default function SupportDetailPage() {
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [showBanner, setShowBanner] = useState(searchParams.get('new') === 'true');
 
   const fetchData = async () => {
     if (!id || !user) return;
