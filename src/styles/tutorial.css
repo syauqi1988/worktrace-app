@@ -1,9 +1,9 @@
 /* WorkTrace Tutorial Theme */
 .worktrace-tutorial-popover {
   background: #FFFFFF !important;
-  border: 0.5px solid #E2E8F0 !important;
+  border: 1px solid #E2E8F0 !important;
   border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+  box-shadow: none !important;
   max-width: 320px !important;
   font-family: 'Inter', sans-serif !important;
 }
@@ -40,6 +40,9 @@
   font-size: 13px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  text-shadow: none !important;
 }
 
 .worktrace-tutorial-popover .driver-popover-next-btn:hover {
@@ -54,11 +57,26 @@
   padding: 7px 16px !important;
   font-size: 13px !important;
   cursor: pointer !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  text-shadow: none !important;
 }
 
 .worktrace-tutorial-popover .driver-popover-close-btn {
   color: #94A3B8 !important;
   font-size: 18px !important;
+}
+
+.driver-popover-next-btn,
+.driver-popover-prev-btn,
+.driver-popover-done-btn {
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+
+.driver-popover-footer button {
+  box-shadow: none !important;
+  text-shadow: none !important;
 }
 
 .driver-overlay {
