@@ -655,6 +655,30 @@ export default function SettingsPage() {
         </ul>
       </section>
 
+      {/* Section — Butuh Bantuan? */}
+      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Headphones className="h-5 w-5 text-primary" />
+          <h2 className="text-base font-bold text-foreground">Butuh Bantuan?</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">Hubungi kami melalui:</p>
+        <div className="space-y-2">
+          <button
+            onClick={() => navigate('/support/new')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            📧 Hantar Tiket Sokongan
+          </button>
+          <a
+            href="https://wa.me/601110251520"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            💬 WhatsApp Kami
+          </a>
+        </div>
+        <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
       {/* Section 7 — Account Security */}
       <section className="bg-card rounded-xl border border-border p-5 space-y-4">
         <div className="flex items-center gap-2 mb-2">
@@ -708,6 +732,16 @@ export default function SettingsPage() {
           )}
         </div>
       </ConfirmDialog>
+
+      <CancellationDialog
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        onCancelled={() => setCancelOpen(false)}
+      />
+      <ReactivateDialog
+        open={reactivateOpen}
+        onClose={() => setReactivateOpen(false)}
+      />
     </div>
   );
 }
