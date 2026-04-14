@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Paperclip, X, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Paperclip, X, CheckCircle2, Mail } from 'lucide-react';
 
 const STATUS_STYLES: Record<string, string> = {
   open: 'bg-blue-100 text-blue-700',
@@ -38,6 +38,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function SupportDetailPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState<any>(null);
@@ -46,6 +47,7 @@ export default function SupportDetailPage() {
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [showBanner, setShowBanner] = useState(searchParams.get('new') === 'true');
 
   const fetchData = async () => {
     if (!id || !user) return;
@@ -59,6 +61,14 @@ export default function SupportDetailPage() {
   };
 
   useEffect(() => { fetchData(); }, [id, user]);
+
+  // Auto-hide success banner after 10 seconds
+  useEffect(() => {
+    if (showBanner) {
+      const timer = setTimeout(() => setShowBanner(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showBanner]);
 
   const handleReply = async () => {
     if (!replyText.trim() || !user || !id) return;
@@ -117,7 +127,28 @@ export default function SupportDetailPage() {
         </div>
       </div>
 
-      {/* Info */}
+      {/* Email confirmation banner */}
+      {showBanner && (
+        <div className="rounded-xl border p-4 flex items-start gap-3" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
+          <Mail className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#166534' }} />
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: '#166534' }}>Tiket Berjaya Dihantar!</p>
+            <p className="text-sm mt-1" style={{ color: '#166534' }}>
+              Nombor Tiket: <strong>{ticket.ticket_number}</strong>
+            </p>
+            <p className="text-xs mt-1" style={{ color: '#15803d' }}>
+              Pengesahan telah dihantar ke: {ticket.user_email}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: '#15803d' }}>
+              Kami akan balas dalam masa 24 jam (hari bekerja).
+            </p>
+          </div>
+          <button onClick={() => setShowBanner(false)} className="text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div className="bg-card rounded-xl border border-border p-4 space-y-2 text-sm">
         <p><span className="text-muted-foreground">Kategori:</span> {CATEGORY_LABELS[ticket.category] || ticket.category}</p>
         <p><span className="text-muted-foreground">Keutamaan:</span> {PRIORITY_LABELS[ticket.priority] || ticket.priority}</p>

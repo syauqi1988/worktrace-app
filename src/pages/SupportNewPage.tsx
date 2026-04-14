@@ -91,15 +91,30 @@ export default function SupportNewPage() {
 
       if (insertErr) throw insertErr;
 
-      // WhatsApp notification (open in new tab)
-      const adminPhone = "60129600016";
-      const catLabel = CATEGORIES.find((c) => c.value === category)?.label || category;
-      const priLabel = PRIORITIES.find((p) => p.value === priority)?.label || priority;
-      const msg = `🎫 *Tiket Sokongan Baru*\n\nNo. Tiket: ${ticketNumber}\nPengguna: ${profile?.company_name || "—"}\nEmel: ${user.email}\nPelan: ${profile?.plan || "free"}\nKategori: ${catLabel}\nKeutamaan: ${priLabel}\n\n*Subjek:*\n${subject}\n\n*Penerangan:*\n${description.substring(0, 200)}...\n\nSila semak tiket di Supabase Dashboard.`;
-      window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+      // Send email notifications via Edge Function
+      const { error: emailError } = await supabase.functions.invoke("send-ticket-email", {
+        body: {
+          ticket_number: ticketNumber,
+          ticket_id: ticket.id,
+          user_email: user.email,
+          user_name: profile?.company_name || user.email,
+          user_plan: profile?.plan || "free",
+          category,
+          priority,
+          subject: subject.trim(),
+          description: description.trim(),
+        },
+      });
 
-      toast.success(`Tiket ${ticketNumber} berjaya dihantar! Kami akan balas dalam masa 24 jam.`);
-      navigate(`/support/${ticket.id}`);
+      if (emailError) {
+        console.error("Email notification failed:", emailError);
+      }
+
+      toast.success(
+        `Tiket ${ticketNumber} berjaya dihantar! Semak emel anda untuk pengesahan. Kami akan balas dalam 24 jam.`,
+        { duration: 6000 }
+      );
+      navigate(`/support/${ticket.id}?new=true`);
     } catch (err) {
       console.error(err);
       toast.error("Gagal menghantar tiket. Sila cuba lagi.");
