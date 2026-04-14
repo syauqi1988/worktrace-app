@@ -4,7 +4,10 @@
 // This allows sending FROM noreply@worktrace.my
 // Without verification, use the default Resend test domain.
 
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPPORT_EMAIL = Deno.env.get("SUPPORT_EMAIL") || "customerservice@worktrace.my";
