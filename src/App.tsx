@@ -28,6 +28,9 @@ import CustomerFormPage from "@/pages/CustomerFormPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailedPage from "@/pages/PaymentFailedPage";
 import CompletionReportPage from "@/pages/CompletionReportPage";
+import SupportPage from "@/pages/SupportPage";
+import SupportNewPage from "@/pages/SupportNewPage";
+import SupportDetailPage from "@/pages/SupportDetailPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +76,9 @@ const App = () => (
               <Route path="invoices/new" element={<InvoiceFormPage />} />
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
+              <Route path="support" element={<SupportPage />} />
+              <Route path="support/new" element={<SupportNewPage />} />
+              <Route path="support/:id" element={<SupportDetailPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="settings/team" element={<TeamPlaceholderPage />} />
               <Route path="profile" element={<SettingsPage />} />
