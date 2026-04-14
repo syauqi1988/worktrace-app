@@ -27,6 +27,7 @@ import CustomerDetailPage from "@/pages/CustomerDetailPage";
 import CustomerFormPage from "@/pages/CustomerFormPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailedPage from "@/pages/PaymentFailedPage";
+import CompletionReportPage from "@/pages/CompletionReportPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
