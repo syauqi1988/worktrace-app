@@ -188,7 +188,7 @@ export default function JobDetailPage() {
       }
       const blob = await pdf(
         <CompletionReportPDF
-          report={{ ...report, completion_date: report.completion_date || '', photos, materials_used: report.materials_used || '', customer_signature: report.customer_signature || '', notes: report.notes || '' }}
+          report={{ ...report, completion_date: report.completion_date || '', photos: photoBase64s.filter(Boolean), materials_used: report.materials_used || '', customer_signature: report.customer_signature || '', notes: report.notes || '' }}
           job={{ job_number: job.job_number, title: job.title, category: job.category }}
           customer={job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
           company={{
@@ -197,7 +197,6 @@ export default function JobDetailPage() {
             address: profile?.address || null,
             logo_base64: canShowLogo ? logoBase64 : '',
           }}
-          photoBase64s={photoBase64s}
         />
       ).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
