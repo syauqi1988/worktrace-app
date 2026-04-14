@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 
 interface Job {
   id: string;
@@ -39,7 +40,6 @@ export default function QuotationFormPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [quoteNumber, setQuoteNumber] = useState('');
   const [items, setItems] = useState<LineItem[]>([{ description: '', qty: 1, unit_price: 0 }]);
@@ -48,8 +48,7 @@ export default function QuotationFormPage() {
   const [sstEnabled, setSstEnabled] = useState(false);
   const [sstRate, setSstRate] = useState(8);
   const [validUntil, setValidUntil] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
+    const d = new Date(); d.setDate(d.getDate() + 30);
     return d.toISOString().slice(0, 10);
   });
   const [notes, setNotes] = useState('');
@@ -61,14 +60,12 @@ export default function QuotationFormPage() {
   const [saveDisabled, setSaveDisabled] = useState(false);
   const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
 
-  // Fetch jobs
   useEffect(() => {
     if (!user) return;
     supabase.from('jobs').select('id, job_number, title, customer_id, customers(name, phone)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
-  // Generate quote number
   useEffect(() => {
     if (!user || isEdit) return;
     supabase.from('quotations').select('id', { count: 'exact', head: true })
@@ -77,36 +74,28 @@ export default function QuotationFormPage() {
       });
   }, [user, isEdit]);
 
-  // Auto-select job from query param + check for existing quotation
   useEffect(() => {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
       if (found) setSelectedJob(found);
-      // Check if quotation already exists for this job
       if (user && !isEdit) {
         supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
           .then(({ data }) => {
-            if (data) {
-              setExistingQuotation(data);
-              setBlockedJobId(jobId);
-            }
+            if (data) { setExistingQuotation(data); setBlockedJobId(jobId); }
           });
       }
     }
   }, [searchParams, jobs, selectedJob, user, isEdit]);
 
-  // Fetch existing quotation for edit
   useEffect(() => {
     if (!isEdit || !user || !id) return;
     async function fetchQuotation() {
       const { data } = await supabase.from('quotations')
         .select('*, jobs(id, job_number, title, customer_id, customers(name, phone))')
-        .eq('id', id)
-        .single();
+        .eq('id', id).single();
       if (data) {
         const q = data as any;
-        // Block only Rejected
         if (q.status === 'Rejected') {
           toast.error('Sebut harga yang ditolak tidak boleh diedit.');
           navigate(`/quotations/${id}`, { replace: true });
@@ -122,10 +111,7 @@ export default function QuotationFormPage() {
         setDiscountMode('rm');
         setDiscountValue(storedDiscount);
         const storedTaxRate = Number(q.tax_rate) || 0;
-        if (storedTaxRate > 0) {
-          setSstEnabled(true);
-          setSstRate(storedTaxRate);
-        }
+        if (storedTaxRate > 0) { setSstEnabled(true); setSstRate(storedTaxRate); }
         setEditStatus(q.status);
       }
       setLoading(false);
@@ -133,14 +119,12 @@ export default function QuotationFormPage() {
     fetchQuotation();
   }, [isEdit, user, id, navigate]);
 
-  // Pre-fill terms from profile for new quotation
   useEffect(() => {
     if (!isEdit && profile?.quotation_terms && !terms) {
       setTerms(profile.quotation_terms);
     }
   }, [isEdit, profile]);
 
-  // If not editing, stop loading once jobs are fetched
   useEffect(() => {
     if (!isEdit && jobs.length >= 0) setLoading(false);
   }, [isEdit, jobs]);
@@ -153,7 +137,6 @@ export default function QuotationFormPage() {
       )
     : jobs;
 
-  // Calculations
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + (item.qty || 0) * (item.unit_price || 0), 0), [items]);
   const discountAmount = useMemo(() => {
     if (discountMode === 'pct') return subtotal * ((discountValue || 0) / 100);
@@ -166,16 +149,8 @@ export default function QuotationFormPage() {
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
     setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
   };
-
-  const addItem = () => {
-    if (items.length >= 20) return;
-    setItems(prev => [...prev, { description: '', qty: 1, unit_price: 0 }]);
-  };
-
-  const removeItem = (index: number) => {
-    if (items.length <= 1) return;
-    setItems(prev => prev.filter((_, i) => i !== index));
-  };
+  const addItem = () => { if (items.length >= 20) return; setItems(prev => [...prev, { description: '', qty: 1, unit_price: 0 }]); };
+  const removeItem = (index: number) => { if (items.length <= 1) return; setItems(prev => prev.filter((_, i) => i !== index)); };
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
@@ -210,6 +185,14 @@ export default function QuotationFormPage() {
       } else {
         const { data, error } = await supabase.from('quotations').insert(payload).select('id').single();
         if (error) throw error;
+
+        // Auto-update job status
+        const trigger = status === 'Sent' ? 'quotation_sent' : 'quotation_created';
+        const newJobStatus = await autoUpdateJobStatus(supabase, selectedJob!.id, user!.id, trigger);
+        if (newJobStatus) {
+          toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
+        }
+
         toast.success(status === 'Draft' ? 'Draf disimpan!' : 'Sebut harga dihantar!');
         navigate(`/quotations/${data.id}`);
       }
@@ -231,7 +214,6 @@ export default function QuotationFormPage() {
     );
   }
 
-  // If blocked by existing quotation from job_id param
   if (!isEdit && existingQuotation && blockedJobId) {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
@@ -246,16 +228,10 @@ export default function QuotationFormPage() {
             <AlertCircle className="h-5 w-5 text-[#B45309]" />
             <h2 className="text-base font-bold text-[#B45309]">Sebut harga sudah wujud</h2>
           </div>
-          <p className="text-sm text-[#B45309]">
-            Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.
-          </p>
+          <p className="text-sm text-[#B45309]">Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.</p>
           <div className="flex gap-3 pt-2">
-            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">
-              Lihat Sebut Harga
-            </Button>
-            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">
-              Kembali ke Kerja
-            </Button>
+            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">Lihat Sebut Harga</Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
           </div>
         </div>
       </div>
@@ -264,7 +240,6 @@ export default function QuotationFormPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(isEdit ? `/quotations/${id}` : '/quotations')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
@@ -272,27 +247,17 @@ export default function QuotationFormPage() {
         <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Sebut Harga' : 'Sebut Harga Baru'}</h1>
       </div>
 
-      {/* Quote Number */}
       <div className="space-y-1.5">
         <Label>Nombor Sebut Harga</Label>
         <Input value={quoteNumber} readOnly className="bg-muted" />
       </div>
 
-      {/* Job Selector */}
       <div className="space-y-1.5">
         <Label>Kerja *</Label>
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setJobDropdownOpen(!jobDropdownOpen)}
-            className={cn(
-              "w-full flex items-center h-10 rounded-md border bg-background px-3 text-sm text-left",
-              errors.job ? 'border-destructive' : 'border-input'
-            )}
-          >
-            {selectedJob
-              ? <span>{selectedJob.job_number} — {selectedJob.title}</span>
-              : <span className="text-muted-foreground">Pilih kerja...</span>}
+          <button type="button" onClick={() => setJobDropdownOpen(!jobDropdownOpen)}
+            className={cn("w-full flex items-center h-10 rounded-md border bg-background px-3 text-sm text-left", errors.job ? 'border-destructive' : 'border-input')}>
+            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">Pilih kerja...</span>}
           </button>
           {jobDropdownOpen && (
             <>
@@ -308,7 +273,6 @@ export default function QuotationFormPage() {
                   {filteredJobs.map(j => (
                     <button key={j.id} onClick={async () => {
                       setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' }));
-                      // Check for existing quotation on this job
                       if (!isEdit && user) {
                         const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
                         if (existing) {
@@ -319,8 +283,7 @@ export default function QuotationFormPage() {
                           setSaveDisabled(false);
                         }
                       }
-                    }}
-                      className="w-full px-3 py-2 text-left hover:bg-accent text-sm">
+                    }} className="w-full px-3 py-2 text-left hover:bg-accent text-sm">
                       <span className="font-medium text-primary">{j.job_number}</span>
                       <span className="text-foreground ml-1.5">— {j.title}</span>
                       {j.customers?.name && <span className="block text-xs text-muted-foreground mt-0.5">{j.customers.name}</span>}
@@ -344,7 +307,6 @@ export default function QuotationFormPage() {
         )}
       </div>
 
-      {/* Customer display */}
       {selectedJob?.customers && (
         <div className="bg-card rounded-xl border border-border p-3">
           <p className="text-xs text-muted-foreground">Pelanggan</p>
@@ -353,12 +315,9 @@ export default function QuotationFormPage() {
         </div>
       )}
 
-      {/* Line Items */}
       <div className="space-y-3">
         <Label>Item Kerja *</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
-
-        {/* Desktop table */}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
             <span>Penerangan</span><span>Qty</span><span>Harga Seunit</span><span>Jumlah</span><span></span>
@@ -368,56 +327,31 @@ export default function QuotationFormPage() {
               <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="e.g. Pasang aircond 1.0HP" className="text-sm" />
               <Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" />
               <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" />
-              <div className="flex items-center px-3 text-sm font-medium text-foreground bg-muted rounded-md">
-                RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}
-              </div>
-              <button onClick={() => removeItem(i)} disabled={items.length <= 1} className="flex items-center justify-center text-muted-foreground hover:text-destructive disabled:opacity-30">
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <div className="flex items-center px-3 text-sm font-medium text-foreground bg-muted rounded-md">RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
+              <button onClick={() => removeItem(i)} disabled={items.length <= 1} className="flex items-center justify-center text-muted-foreground hover:text-destructive disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
         </div>
-
-        {/* Mobile cards */}
         <div className="md:hidden space-y-3">
           {items.map((item, i) => (
             <div key={i} className="bg-card rounded-xl border border-border p-3 space-y-2 relative">
               {items.length > 1 && (
-                <button onClick={() => removeItem(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive">
-                  <X className="h-4 w-4" />
-                </button>
+                <button onClick={() => removeItem(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
               )}
               <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Penerangan item" className="text-sm" />
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Qty</p>
-                  <Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Harga Seunit (RM)</p>
-                  <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" />
-                </div>
+                <div><p className="text-xs text-muted-foreground mb-1">Qty</p><Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" /></div>
+                <div><p className="text-xs text-muted-foreground mb-1">Harga Seunit (RM)</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" /></div>
               </div>
-              <div className="text-right text-sm font-medium text-foreground">
-                Jumlah: RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}
-              </div>
+              <div className="text-right text-sm font-medium text-foreground">Jumlah: RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
             </div>
           ))}
         </div>
-
-        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm">
-          <Plus className="h-4 w-4" /> Tambah Item
-        </Button>
+        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
       </div>
 
-      {/* Summary */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-medium">RM {subtotal.toFixed(2)}</span>
-        </div>
-
-        {/* Discount */}
+        <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Diskaun</span>
@@ -431,8 +365,6 @@ export default function QuotationFormPage() {
             <span className="text-sm text-muted-foreground">− RM {discountAmount.toFixed(2)}</span>
           </div>
         </div>
-
-        {/* SST */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">SST Dikenakan?</span>
@@ -448,44 +380,28 @@ export default function QuotationFormPage() {
             </div>
           )}
         </div>
-
         <div className="border-t border-border pt-3 flex justify-between items-center">
           <span className="text-base font-bold text-foreground">Jumlah Keseluruhan</span>
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
 
-      {/* Valid Until */}
       <div className="space-y-1.5">
-        <Label>Sebut harga sah hingga</Label>
+        <Label>Sah Hingga</Label>
         <Input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className="rounded-lg" />
       </div>
 
-      {/* Notes */}
       <div className="space-y-1.5">
         <Label>Nota</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Nota tambahan untuk pelanggan..." />
       </div>
 
-      {/* Terms & Conditions */}
       <div className="space-y-1.5">
         <Label>Terma & Syarat</Label>
         <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder="Terma & syarat sebut harga..." />
         <p className="text-xs text-muted-foreground">Terma ini akan dipaparkan dalam PDF sebut harga</p>
       </div>
 
-      {/* Edit warning banner */}
-      {isEdit && editStatus && editStatus !== 'Draft' && (
-        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-          <div className="text-sm text-[#B45309]">
-            <p className="font-medium">Sebut harga ini telah dihantar/diterima.</p>
-            <p>Sebarang perubahan akan mengekalkan status semasa. Pastikan pelanggan dimaklumkan.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Save Buttons */}
       {isEdit ? (
         <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
           {submitting ? 'Menyimpan...' : 'Kemaskini Sebut Harga'}

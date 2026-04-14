@@ -7,9 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
+import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
+import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
+import { pdf } from '@react-pdf/renderer';
+import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { usePlanGate } from '@/hooks/usePlanGate';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
-  CalendarDays, FileText, Receipt, MessageCircle
+  CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
 } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -64,6 +69,16 @@ interface Invoice {
   due_date: string | null;
 }
 
+interface CompletionReport {
+  id: string;
+  report_number: string;
+  status: string | null;
+  completion_date: string | null;
+  work_description: string | null;
+  technician_name: string | null;
+  photos: any;
+}
+
 function formatPhone(phone: string): string {
   let cleaned = phone.replace(/\D/g, '');
   if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
@@ -77,19 +92,26 @@ function formatDate(d: string) {
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [report, setReport] = useState<CompletionReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [logoBase64, setLogoBase64] = useState('');
+  const { checkWhatsAppShare, canShowLogo } = usePlanGate();
 
   useEffect(() => {
     if (!user || !id) return;
     async function fetch() {
-      const [jobRes, quoRes, invRes] = await Promise.all([
+      const [jobRes, quoRes, invRes, reportRes] = await Promise.all([
         supabase.from('jobs')
           .select('*, customers(id, name, phone, email, address)')
           .eq('id', id)
@@ -104,14 +126,26 @@ export default function JobDetailPage() {
           .eq('job_id', id)
           .eq('user_id', user!.id)
           .maybeSingle(),
+        supabase.from('completion_reports')
+          .select('id, report_number, status, completion_date, work_description, technician_name, photos')
+          .eq('job_id', id)
+          .eq('user_id', user!.id)
+          .maybeSingle(),
       ]);
       setJob(jobRes.data as unknown as Job);
       setQuotation(quoRes.data as Quotation | null);
       setInvoice(invRes.data as Invoice | null);
+      setReport(reportRes.data as CompletionReport | null);
       setLoading(false);
     }
     fetch();
   }, [user, id]);
+
+  useEffect(() => {
+    if (profile?.logo_url) {
+      imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    }
+  }, [profile?.logo_url]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!job) return;
@@ -136,6 +170,75 @@ export default function JobDetailPage() {
     } else {
       toast({ title: 'Kerja berjaya dipadam!' });
       navigate('/jobs');
+    }
+  };
+
+  const handleReportPreview = async () => {
+    if (!report || !job) return;
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    try {
+      const photoBase64s: string[] = [];
+      const photos = Array.isArray(report.photos) ? report.photos : [];
+      for (const url of photos) {
+        try { const b64 = await imageUrlToBase64(url as string); photoBase64s.push(b64); } catch { photoBase64s.push(''); }
+      }
+      const blob = await pdf(
+        <CompletionReportPDF
+          report={{ ...report, completion_date: report.completion_date || '', photos }}
+          job={{ job_number: job.job_number, title: job.title, category: job.category }}
+          customer={job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
+          company={{
+            company_name: profile?.company_name || null,
+            phone: profile?.phone || null,
+            address: profile?.address || null,
+            logo_base64: canShowLogo ? logoBase64 : '',
+          }}
+          photoBase64s={photoBase64s}
+        />
+      ).toBlob();
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch {
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleReportWhatsApp = async () => {
+    if (!checkWhatsAppShare()) return;
+    if (!report || !job || !user || !job.customers?.phone) return;
+    setIsSharing(true);
+    try {
+      const photoBase64s: string[] = [];
+      const photos = Array.isArray(report.photos) ? report.photos : [];
+      for (const url of photos) {
+        try { const b64 = await imageUrlToBase64(url as string); photoBase64s.push(b64); } catch { photoBase64s.push(''); }
+      }
+      const blob = await pdf(
+        <CompletionReportPDF
+          report={{ ...report, completion_date: report.completion_date || '', photos }}
+          job={{ job_number: job.job_number, title: job.title, category: job.category }}
+          customer={job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
+          company={{
+            company_name: profile?.company_name || null,
+            phone: profile?.phone || null,
+            address: profile?.address || null,
+            logo_base64: canShowLogo ? logoBase64 : '',
+          }}
+          photoBase64s={photoBase64s}
+        />
+      ).toBlob();
+      const fileName = `${user.id}/${report.report_number}.pdf`;
+      await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+      const { data } = supabase.storage.from('completion-report-pdfs').getPublicUrl(fileName);
+      const phone = formatPhone(job.customers.phone);
+      const message = `Assalamualaikum ${job.customers.name},\n\nKerja yang kami laksanakan telah siap! 🔧✅\n\nSila semak Laporan Siap Kerja kami:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\nLaporan lengkap dengan gambar kerja:\n🔗 ${data.publicUrl}\n\nTerima kasih kerana mempercayai perkhidmatan kami! 🙏\n\n*${profile?.company_name || ''}*`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    } catch {
+      toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -265,6 +368,61 @@ export default function JobDetailPage() {
         )}
       </div>
 
+      {/* Completion Report Card */}
+      <div className="bg-card rounded-xl border border-border p-4">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <ClipboardCheck className="h-3.5 w-3.5" /> Laporan Siap Kerja
+        </p>
+        {report ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-primary">{report.report_number}</span>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                report.status === 'submitted' ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F5F9] text-[#64748B]'
+              }`}>
+                {report.status === 'submitted' ? 'Submitted' : 'Draft'}
+              </span>
+            </div>
+            {report.status === 'submitted' && (
+              <div className="flex items-center gap-1.5 text-[#15803D]">
+                <CheckCircle className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Laporan telah dihantar</span>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2 mt-1">
+              {report.status === 'draft' ? (
+                <Button variant="outline" size="sm" className="text-xs gap-1"
+                  onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
+                  <Edit className="h-3.5 w-3.5" /> Edit Laporan
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" className="text-xs gap-1"
+                  onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
+                  Lihat Laporan
+                </Button>
+              )}
+              <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
+                <Eye className="h-3.5 w-3.5" /> Pratonton PDF
+              </Button>
+              {report.status === 'submitted' && job.customers?.phone && (
+                <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={handleReportWhatsApp} disabled={isSharing}>
+                  {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                  Kongsi via WhatsApp
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Belum ada laporan</p>
+            <Button variant="outline" size="sm" className="text-xs gap-1"
+              onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
+              <ClipboardCheck className="h-3.5 w-3.5" /> Isi Laporan Siap Kerja
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Related Quotation */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
@@ -363,6 +521,23 @@ export default function JobDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* PDF Preview */}
+      <PDFPreviewModal
+        fileUrl={previewUrl}
+        loading={previewLoading}
+        onClose={() => { setPreviewOpen(false); if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }}
+        onDownload={async () => {
+          if (previewUrl) {
+            const a = document.createElement('a');
+            a.href = previewUrl;
+            a.download = `Laporan-${report?.report_number || 'RPT'}.pdf`;
+            a.click();
+          }
+        }}
+        open={previewOpen}
+        title={`Pratonton — ${report?.report_number || 'Laporan'}`}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import QuotationPDF from '@/components/pdf/QuotationPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -102,7 +103,6 @@ export default function QuotationDetailPage() {
     fetch();
   }, [user, id]);
 
-  // Fetch logo as base64 for PDF
   useEffect(() => {
     if (profile?.logo_url) {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
@@ -115,7 +115,6 @@ export default function QuotationDetailPage() {
     };
   }, [previewUrl]);
 
-  // ESC key to close preview
   useEffect(() => {
     if (!previewOpen) return;
     const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') closePreview(); };
@@ -124,12 +123,26 @@ export default function QuotationDetailPage() {
   }, [previewOpen]);
 
   const updateStatus = async (newStatus: string) => {
-    if (!quotation) return;
+    if (!quotation || !user) return;
     const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id);
     if (error) { toast.error(error.message); return; }
     setQuotation({ ...quotation, status: newStatus });
     const messages: Record<string, string> = { Sent: 'Sebut harga dihantar!', Accepted: 'Sebut harga diterima!', Rejected: 'Sebut harga ditolak' };
     toast.success(messages[newStatus] || 'Status dikemaskini');
+
+    // Auto-update job status
+    if (quotation.job_id) {
+      let trigger: 'quotation_sent' | 'quotation_accepted' | 'quotation_rejected' | undefined;
+      if (newStatus === 'Sent') trigger = 'quotation_sent';
+      else if (newStatus === 'Accepted') trigger = 'quotation_accepted';
+      else if (newStatus === 'Rejected') trigger = 'quotation_rejected';
+      if (trigger) {
+        const newJobStatus = await autoUpdateJobStatus(supabase, quotation.job_id, user.id, trigger);
+        if (newJobStatus) {
+          toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
+        }
+      }
+    }
   };
 
   const handleDelete = async () => {
@@ -142,11 +155,8 @@ export default function QuotationDetailPage() {
     navigate('/quotations');
   };
 
-  // Fix 3: Check for existing invoice before converting
   const handleConvertToInvoice = async () => {
     if (!quotation) return;
-
-    // Check for existing invoice on this job
     if (quotation.job_id) {
       const { data: existingInvoice } = await supabase
         .from('invoices')
@@ -154,7 +164,6 @@ export default function QuotationDetailPage() {
         .eq('job_id', quotation.job_id)
         .eq('user_id', user!.id)
         .maybeSingle();
-
       if (existingInvoice) {
         setExistingInvoiceDialog({
           id: existingInvoice.id,
@@ -165,7 +174,6 @@ export default function QuotationDetailPage() {
         return;
       }
     }
-
     await createInvoiceFromQuotation();
   };
 
@@ -267,28 +275,21 @@ Terima kasih!
     try {
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
       const fileName = `${user.id}/${quotation.quote_number}.pdf`;
-      const { error: uploadError } = await supabase.storage
-        .from('quotation-pdfs')
-        .upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      if (uploadError) throw uploadError;
+      await supabase.storage.from('quotation-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data } = supabase.storage.from('quotation-pdfs').getPublicUrl(fileName);
-      const pdfUrl = data.publicUrl;
       const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
       const customerName = (quotation.jobs as any)?.customers?.name || '';
       const companyName = profile?.company_name || '';
-      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, pdfUrl);
-      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.open(waUrl, '_blank');
+      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, data.publicUrl);
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
-    } catch (error: any) {
-      const msg = error?.message?.includes('bucket') ? 'Ralat sistem. Hubungi sokongan.' : 'Gagal memuat naik PDF. Semak sambungan internet anda.';
-      toast.error(msg);
+    } catch {
+      toast.error('Gagal memuat naik PDF. Semak sambungan internet anda.');
     } finally {
       setIsSharing(false);
     }
   };
 
-  // Fix 4: PDF Preview
   const handlePreview = async () => {
     if (!pdfData) return;
     setPreviewOpen(true);
@@ -296,8 +297,7 @@ Terima kasih!
     setPreviewUrl(null);
     try {
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      setPreviewUrl(url);
+      setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error('Gagal menjana pratonton PDF');
       setPreviewOpen(false);
@@ -362,16 +362,7 @@ Terima kasih!
             <div className="relative inline-flex items-center">
               <select
                 value={quotation.status}
-                onChange={async (e) => {
-                  const newStatus = e.target.value;
-                  const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id).eq('user_id', user!.id);
-                  if (!error) {
-                    setQuotation({ ...quotation, status: newStatus });
-                    toast.success('Status sebut harga dikemaskini!');
-                  } else {
-                    toast.error('Gagal kemaskini status.');
-                  }
-                }}
+                onChange={(e) => updateStatus(e.target.value)}
                 className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[quotation.status]}`}
                 style={{ WebkitAppearance: 'none' }}
               >
@@ -442,7 +433,6 @@ Terima kasih!
       {/* Line Items */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
-        {/* Desktop */}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
             <span>Penerangan</span><span>Qty</span><span>Harga</span><span className="text-right">Jumlah</span>
@@ -456,7 +446,6 @@ Terima kasih!
             </div>
           ))}
         </div>
-        {/* Mobile */}
         <div className="md:hidden space-y-2">
           {quotation.items.map((item, i) => (
             <div key={i} className="border border-border rounded-lg p-3 space-y-1">
@@ -468,7 +457,6 @@ Terima kasih!
             </div>
           ))}
         </div>
-        {/* Totals */}
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
           {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
@@ -513,9 +501,7 @@ Terima kasih!
           <div className="w-full space-y-3">
             <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-[#B45309]">Sebut harga yang ditolak tidak boleh diedit. Sila buat sebut harga baru.</p>
-              </div>
+              <p className="text-sm font-medium text-[#B45309]">Sebut harga yang ditolak tidak boleh diedit. Sila buat sebut harga baru.</p>
             </div>
             <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">Buat Sebut Harga Baru</Button>
           </div>
@@ -567,7 +553,7 @@ Terima kasih!
         </DialogContent>
       </Dialog>
 
-      {/* Fix 3: Existing Invoice Dialog */}
+      {/* Existing Invoice Dialog */}
       <Dialog open={!!existingInvoiceDialog} onOpenChange={() => setExistingInvoiceDialog(null)}>
         <DialogContent className="max-w-[400px]">
           <DialogHeader>
