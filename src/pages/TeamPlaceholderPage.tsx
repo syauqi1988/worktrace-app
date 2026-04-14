@@ -1,5 +1,5 @@
-import { Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function TeamPlaceholderPage() {
   return (
@@ -10,7 +10,8 @@ export default function TeamPlaceholderPage() {
         </div>
         <h2 className="text-lg font-bold text-foreground">Pengurusan Pasukan</h2>
         <p className="text-sm text-muted-foreground">
-          Ciri multi-pengguna untuk pelan Agency akan datang tidak lama lagi. Anda akan dapat menjemput ahli pasukan, menetapkan peranan, dan mengurus akses.
+          Ciri multi-pengguna untuk pelan Agency akan datang tidak lama lagi. Anda akan dapat menjemput ahli pasukan,
+          menetapkan peranan, dan mengurus akses.
         </p>
         <span className="inline-block text-xs font-medium bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
           Akan Datang
@@ -19,7 +20,12 @@ export default function TeamPlaceholderPage() {
           <Button
             variant="outline"
             className="rounded-lg"
-            onClick={() => window.open('https://wa.me/60123456789?text=Saya+berminat+dengan+ciri+multi-pengguna+WorkTrace+Agency', '_blank')}
+            onClick={() =>
+              window.open(
+                "https://wa.me/60129600016?text=Saya+berminat+dengan+ciri+multi-pengguna+WorkTrace+Agency",
+                "_blank",
+              )
+            }
           >
             Maklumkan Saya
           </Button>
