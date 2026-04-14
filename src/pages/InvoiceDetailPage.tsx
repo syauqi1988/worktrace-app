@@ -256,8 +256,20 @@ export default function InvoiceDetailPage() {
   } : null;
 
   const receiptPdfData = invoice && invoice.status === 'Paid' && invoice.receipt_number ? {
-    receipt_number: invoice.receipt_number,
-    invoice,
+    receipt: {
+      receipt_number: invoice.receipt_number,
+      payment_date: invoice.paid_date || null,
+      amount_paid: invoice.total,
+    },
+    invoice: {
+      invoice_number: invoice.invoice_number,
+      issued_date: invoice.issued_date || null,
+      items: Array.isArray(invoice.items) ? (invoice.items as Array<{ description: string; qty: number; unit_price: number; amount: number }>) : [],
+      subtotal: invoice.subtotal,
+      discount: invoice.discount,
+      tax_rate: invoice.tax_rate,
+      total: invoice.total,
+    },
     job: invoice.jobs ? { job_number: invoice.jobs.job_number, title: invoice.jobs.title } : null,
     customer: customer ? { name: customer.name, phone: customer.phone, email: customer.email, address: customer.address } : null,
     company: {
@@ -266,7 +278,7 @@ export default function InvoiceDetailPage() {
       address: profile?.address || null,
       logo_base64: canShowLogo ? logoBase64 : '',
     },
-    paymentMethods: selectedPMs,
+    paymentMethod: selectedPMs.length > 0 ? selectedPMs.map((pm: any) => pm.label || pm.type).join(', ') : undefined,
   } : null;
 
   const handlePreview = async () => {
