@@ -12,18 +12,20 @@ export default function InstallPromptBanner() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Skip in iframe or preview domain
+    // Skip in iframe only
     try {
       if (window.self !== window.top) return;
     } catch { return; }
-    if (window.location.hostname.includes('id-preview--') || window.location.hostname.includes('lovableproject.com')) return;
+    // Only skip Lovable editor preview, NOT the published domain
+    if (window.location.hostname.includes('id-preview--')) return;
 
-    // Already installed
+    // Already installed (standalone mode)
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     if ((navigator as any).standalone === true) return;
 
-    // Already dismissed this session
-    if (sessionStorage.getItem('install-dismissed')) return;
+    // Already dismissed recently (use localStorage with 24h expiry instead of sessionStorage)
+    const dismissedAt = localStorage.getItem('install-dismissed-at');
+    if (dismissedAt && Date.now() - Number(dismissedAt) < 24 * 60 * 60 * 1000) return;
 
     // Detect iOS
     const ua = navigator.userAgent;
