@@ -61,7 +61,7 @@ export default function InstallPromptBanner() {
 
   const dismiss = () => {
     setShowBanner(false);
-    sessionStorage.setItem('install-dismissed', '1');
+    localStorage.setItem('install-dismissed-at', String(Date.now()));
   };
 
   if (!showBanner) return null;
