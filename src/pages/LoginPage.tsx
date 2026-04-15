@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
+import InstallPromptBanner from '@/components/InstallPromptBanner';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
