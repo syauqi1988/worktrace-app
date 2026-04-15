@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
+import InstallPromptBanner from '@/components/InstallPromptBanner';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -101,7 +102,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <>
+      <InstallPromptBanner />
+      <div className="min-h-screen flex">
       {/* Left panel — desktop only */}
       <div className="hidden md:flex md:w-1/2 bg-primary flex-col items-center justify-center">
         <img src={logo} alt="WorkTrace" className="h-12 mb-4 opacity-100 bg-transparent border-transparent border-0" />
@@ -195,5 +198,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
