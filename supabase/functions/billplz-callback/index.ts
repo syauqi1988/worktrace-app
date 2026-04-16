@@ -147,7 +147,21 @@ Deno.serve(async (req) => {
     console.log(`Payment success: user ${userId} upgraded to ${plan} (${billing_period})`)
 
     // Trigger referral reward
-    await supabaseAdmin.rpc('complete_referral_reward', { p_referred_id: userId })
+    const { error: refError } = await supabaseAdmin.rpc('complete_referral_reward', { p_referred_id: userId })
+    if (refError) {
+      console.error('Referral reward error:', refError)
+    } else {
+      console.log('Referral reward processed for:', userId)
+    }
+
+    // Log subscription event
+    await supabaseAdmin.from('subscription_events').insert({
+      user_id: userId,
+      event_type: 'payment_success',
+      plan,
+      billing_period,
+      amount: Number(bill?.amount || 0),
+    })
 
     return new Response('ok', { status: 200 })
   } catch (error) {

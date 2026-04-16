@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,8 +19,41 @@ export default function OnboardingPage() {
   const [sstNumber, setSstNumber] = useState('');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { updateProfile, refreshProfile } = useAuth();
+  const { user, profile, updateProfile, refreshProfile } = useAuth();
   const { initiatePayment, isLoading } = useBillPlz();
+
+  // Fallback: process referral if not yet saved
+  useEffect(() => {
+    const processReferral = async () => {
+      const savedRef = localStorage.getItem('worktrace_ref');
+      if (!savedRef || !user || profile?.referred_by) return;
+      try {
+        const { data: referrer } = await supabase
+          .from('profiles').select('id').eq('referral_code', savedRef).maybeSingle();
+        if (referrer && referrer.id !== user.id) {
+          const { error: updateErr } = await supabase
+            .from('profiles')
+            .update({ referred_by: savedRef } as any)
+            .eq('id', user.id);
+          if (!updateErr) {
+            const { error: insertErr } = await supabase.from('referrals').insert({
+              referrer_id: referrer.id, referred_id: user.id,
+              referral_code: savedRef, status: 'pending',
+            } as any);
+            if (!insertErr) {
+              console.log('Referral recorded in onboarding:', savedRef);
+              localStorage.removeItem('worktrace_ref');
+            }
+          }
+        } else {
+          localStorage.removeItem('worktrace_ref');
+        }
+      } catch (err) {
+        console.error('Onboarding referral error:', err);
+      }
+    };
+    processReferral();
+  }, [user, profile]);
 
   const handleStep1Next = async () => {
     await updateProfile({ company_name: companyName || null, phone: phone || null, address: address || null });

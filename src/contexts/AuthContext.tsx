@@ -132,23 +132,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const isNew = !profileData.onboarding_complete;
-      if (isNew) {
-        const savedRef = localStorage.getItem('worktrace_ref');
-        if (savedRef) {
-          try {
-            const { data: referrer } = await supabase
-              .from('profiles').select('id').eq('referral_code', savedRef).maybeSingle();
-            if (referrer && referrer.id !== userId) {
-              await supabase.from('profiles').update({ referred_by: savedRef } as any).eq('id', userId);
-              await supabase.from('referrals').insert({
+      
+      // Process referral if user hasn't been referred yet
+      const savedRef = localStorage.getItem('worktrace_ref');
+      if (savedRef && !profileData.referred_by) {
+        try {
+          const { data: referrer } = await supabase
+            .from('profiles').select('id').eq('referral_code', savedRef).maybeSingle();
+          if (referrer && referrer.id !== userId) {
+            const { error: updateErr } = await supabase
+              .from('profiles')
+              .update({ referred_by: savedRef } as any)
+              .eq('id', userId);
+            if (updateErr) {
+              console.error('Referral profile update failed:', updateErr);
+            } else {
+              // Only insert referral record if profile update succeeded
+              const { error: insertErr } = await supabase.from('referrals').insert({
                 referrer_id: referrer.id, referred_id: userId,
                 referral_code: savedRef, status: 'pending',
               } as any);
+              if (insertErr) {
+                console.error('Referral insert failed:', insertErr);
+              } else {
+                console.log('Referral recorded successfully:', savedRef);
+                localStorage.removeItem('worktrace_ref');
+              }
             }
-          } catch {}
-          localStorage.removeItem('worktrace_ref');
+          } else {
+            // Invalid or self-referral code, clear it
+            localStorage.removeItem('worktrace_ref');
+          }
+        } catch (err) {
+          console.error('Referral processing error:', err);
         }
+      } else if (savedRef && profileData.referred_by) {
+        // Already referred, clear localStorage
+        localStorage.removeItem('worktrace_ref');
       }
+      
       return { isNewUser: isNew };
     }
 
