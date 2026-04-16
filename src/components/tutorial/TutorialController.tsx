@@ -102,7 +102,13 @@ export default function TutorialController({
   // Expose globally for ? button
   useEffect(() => {
     window.__startWorkTraceTutorial = () => {
-      startTourForPage(currentPage);
+      const steps = buildPageTutorialSteps(currentPage);
+      if (steps.length === 0) {
+        // No tutorial for this page (e.g. settings) — start dashboard tutorial
+        startTourForPage('dashboard');
+      } else {
+        startTourForPage(currentPage);
+      }
     };
     return () => {
       delete window.__startWorkTraceTutorial;
