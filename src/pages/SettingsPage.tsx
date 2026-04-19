@@ -77,6 +77,10 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
 
+  // SSM
+  const [ssmNumberNew, setSsmNumberNew] = useState("");
+  const [ssmNumberOld, setSsmNumberOld] = useState("");
+
   // LHDN
   const [lhdnEnabled, setLhdnEnabled] = useState(false);
   const [tinNumber, setTinNumber] = useState("");
@@ -124,6 +128,8 @@ export default function SettingsPage() {
       setPhone(profile.phone || "");
       setAddress(profile.address || "");
       setLogoUrl(profile.logo_url);
+      setSsmNumberNew(profile.ssm_number_new || "");
+      setSsmNumberOld(profile.ssm_number_old || "");
       setLhdnEnabled(profile.lhdn_enabled);
       setTinNumber(profile.tin_number || "");
       setMsicCode(profile.msic_code || "");
@@ -150,12 +156,18 @@ export default function SettingsPage() {
   }, [user]);
 
   const handleSaveProfile = async () => {
+    if (ssmNumberNew && !/^\d+$/.test(ssmNumberNew)) {
+      toast.error("No. Pendaftaran SSM (Baru) mesti nombor sahaja");
+      return;
+    }
     setSavingProfile(true);
     await updateProfile({
       company_name: companyName || null,
       phone: phone || null,
       address: address || null,
       logo_url: logoUrl,
+      ssm_number_new: ssmNumberNew || null,
+      ssm_number_old: ssmNumberOld || null,
     });
     setSavingProfile(false);
     toast.success("Profil berjaya dikemaskini!");

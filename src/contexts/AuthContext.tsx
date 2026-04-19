@@ -16,6 +16,8 @@ export interface Profile {
   billplz_bill_id: string | null;
   tin_number: string | null;
   msic_code: string | null;
+  ssm_number_new: string | null;
+  ssm_number_old: string | null;
   sst_registered: boolean;
   lhdn_enabled: boolean;
   onboarding_complete: boolean;
