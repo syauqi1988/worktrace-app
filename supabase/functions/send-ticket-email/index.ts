@@ -1,8 +1,7 @@
 // IMPORTANT: Before going live,
 // add worktrace.my as a verified domain
 // in your Resend dashboard at resend.com
-// This allows sending FROM noreply@worktrace.my
-// Without verification, use the default Resend test domain.
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +11,9 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPPORT_EMAIL = Deno.env.get("SUPPORT_EMAIL") || "customerservice@worktrace.my";
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "noreply@worktrace.my";
+
+const ALLOWED_CATEGORIES = ["bug", "billing", "feature", "account", "general"] as const;
+const ALLOWED_PRIORITIES = ["low", "normal", "high", "urgent"] as const;
 
 const CATEGORY_LABELS: Record<string, string> = {
   bug: "🐛 Bug / Ralat Teknikal",
@@ -35,9 +37,20 @@ const PRIORITY_COLORS: Record<string, string> = {
   urgent: "#ef4444",
 };
 
+// Escape user-supplied text before injecting into HTML email templates
+function escapeHtml(input: unknown): string {
+  const s = String(input ?? "");
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function buildAdminEmailHtml(data: any): string {
-  const catLabel = CATEGORY_LABELS[data.category] || data.category;
-  const priLabel = PRIORITY_LABELS[data.priority] || data.priority;
+  const catLabel = CATEGORY_LABELS[data.category] || escapeHtml(data.category);
+  const priLabel = PRIORITY_LABELS[data.priority] || escapeHtml(data.priority);
   const priColor = PRIORITY_COLORS[data.priority] || "#3b82f6";
 
   return `<!DOCTYPE html>
@@ -54,19 +67,19 @@ function buildAdminEmailHtml(data: any): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;width:140px;">No. Tiket</td>
-        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;font-weight:600;color:#0f172a;">${data.ticket_number}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;font-weight:600;color:#0f172a;">${escapeHtml(data.ticket_number)}</td>
       </tr>
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;">Pengguna</td>
-        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;">${data.user_name}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;">${escapeHtml(data.user_name)}</td>
       </tr>
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;">Emel</td>
-        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;">${data.user_email}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;">${escapeHtml(data.user_email)}</td>
       </tr>
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;">Pelan</td>
-        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;text-transform:capitalize;">${data.user_plan}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#0f172a;text-transform:capitalize;">${escapeHtml(data.user_plan)}</td>
       </tr>
       <tr>
         <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;">Kategori</td>
@@ -81,15 +94,15 @@ function buildAdminEmailHtml(data: any): string {
     </table>
     <div style="margin-bottom:16px;">
       <p style="margin:0 0 6px;font-size:13px;color:#64748b;font-weight:600;">Subjek:</p>
-      <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600;">${data.subject}</p>
+      <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600;">${escapeHtml(data.subject)}</p>
     </div>
     <div style="background:#f8fafc;border-radius:8px;padding:16px;margin-bottom:20px;">
       <p style="margin:0 0 6px;font-size:13px;color:#64748b;font-weight:600;">Penerangan:</p>
-      <p style="margin:0;font-size:14px;color:#334155;line-height:1.6;white-space:pre-wrap;">${data.description}</p>
+      <p style="margin:0;font-size:14px;color:#334155;line-height:1.6;white-space:pre-wrap;">${escapeHtml(data.description)}</p>
     </div>
     <div style="background:#eff6ff;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
       <p style="margin:0;font-size:12px;color:#1e40af;">
-        <strong>Ticket ID (untuk SQL):</strong><br/>${data.ticket_id}
+        <strong>Ticket ID (untuk SQL):</strong><br/>${escapeHtml(data.ticket_id)}
       </p>
     </div>
   </td></tr>
@@ -126,15 +139,15 @@ function buildUserEmailHtml(data: any): string {
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding:6px 0;color:#64748b;font-size:13px;width:130px;">No. Tiket</td>
-          <td style="padding:6px 0;font-size:14px;font-weight:600;color:#2563eb;">${data.ticket_number}</td>
+          <td style="padding:6px 0;font-size:14px;font-weight:600;color:#2563eb;">${escapeHtml(data.ticket_number)}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#64748b;font-size:13px;">Subjek</td>
-          <td style="padding:6px 0;font-size:14px;color:#0f172a;">${data.subject}</td>
+          <td style="padding:6px 0;font-size:14px;color:#0f172a;">${escapeHtml(data.subject)}</td>
         </tr>
         <tr>
           <td style="padding:6px 0;color:#64748b;font-size:13px;">Kategori</td>
-          <td style="padding:6px 0;font-size:14px;color:#0f172a;">${CATEGORY_LABELS[data.category] || data.category}</td>
+          <td style="padding:6px 0;font-size:14px;color:#0f172a;">${CATEGORY_LABELS[data.category] || escapeHtml(data.category)}</td>
         </tr>
       </table>
     </div>
@@ -174,15 +187,83 @@ Deno.serve(async (req) => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    const data = await req.json();
-    const { ticket_number, ticket_id, user_email, user_name, user_plan, category, priority, subject, description } = data;
+    // --- Authentication: require a valid Supabase JWT ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (!ticket_number || !user_email || !subject) {
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const { ticket_number, ticket_id, user_plan, category, priority, subject, description } = body;
+
+    // --- Input validation ---
+    if (
+      typeof ticket_number !== "string" || !ticket_number.trim() ||
+      typeof subject !== "string" || !subject.trim() ||
+      typeof description !== "string" || !description.trim()
+    ) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    if (subject.length > 300 || description.length > 10000 || ticket_number.length > 50) {
+      return new Response(JSON.stringify({ error: "Field too long" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const safeCategory = ALLOWED_CATEGORIES.includes(category) ? category : "general";
+    const safePriority = ALLOWED_PRIORITIES.includes(priority) ? priority : "normal";
+    const safeUserPlan = typeof user_plan === "string" && user_plan.length <= 50 ? user_plan : "";
+    const safeTicketId = typeof ticket_id === "string" && ticket_id.length <= 100 ? ticket_id : "";
+
+    // --- Trust the JWT for the user identity, NOT caller-supplied fields ---
+    const verifiedEmail = user.email ?? "";
+    const verifiedName =
+      (user.user_metadata?.full_name as string | undefined) ||
+      (user.user_metadata?.name as string | undefined) ||
+      verifiedEmail ||
+      "User";
+
+    if (!verifiedEmail) {
+      return new Response(JSON.stringify({ error: "User email unavailable" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const safeData = {
+      ticket_number,
+      ticket_id: safeTicketId,
+      user_email: verifiedEmail,
+      user_name: verifiedName,
+      user_plan: safeUserPlan,
+      category: safeCategory,
+      priority: safePriority,
+      subject,
+      description,
+    };
 
     // Send admin notification email
     const adminRes = await fetch("https://api.resend.com/emails", {
@@ -194,8 +275,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: `WorkTrace Support <${FROM_EMAIL}>`,
         to: [SUPPORT_EMAIL],
-        subject: `[${ticket_number}] ${subject} — ${PRIORITY_LABELS[priority] || priority}`,
-        html: buildAdminEmailHtml({ ticket_number, ticket_id, user_email, user_name, user_plan, category, priority, subject, description }),
+        subject: `[${ticket_number}] ${subject} — ${PRIORITY_LABELS[safePriority]}`,
+        html: buildAdminEmailHtml(safeData),
       }),
     });
 
@@ -204,7 +285,7 @@ Deno.serve(async (req) => {
       console.error("Admin email failed:", errText);
     }
 
-    // Send user confirmation email
+    // Send user confirmation email — to verified JWT email only
     const userRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -213,9 +294,9 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: `WorkTrace <${FROM_EMAIL}>`,
-        to: [user_email],
+        to: [verifiedEmail],
         subject: `Tiket ${ticket_number} — Pengesahan Penerimaan`,
-        html: buildUserEmailHtml({ ticket_number, subject, category }),
+        html: buildUserEmailHtml(safeData),
       }),
     });
 
@@ -231,7 +312,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("send-ticket-email error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
