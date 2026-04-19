@@ -39,7 +39,7 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  signInWithOtp: (email: string) => Promise<{ error?: string }>;
+  signInWithOtp: (email: string, captchaToken?: string) => Promise<{ error?: string }>;
   verifyOtp: (email: string, token: string) => Promise<{ error?: string; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<Profile>) => Promise<void>;
@@ -112,8 +112,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  const signInWithOtp = async (email: string): Promise<{ error?: string }> => {
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  const signInWithOtp = async (email: string, captchaToken?: string): Promise<{ error?: string }> => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true, captchaToken },
+    });
     if (error) return { error: error.message };
     return {};
   };

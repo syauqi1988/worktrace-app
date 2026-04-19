@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+
+const HCAPTCHA_SITE_KEY = '71b8e45e-eee4-4054-8f94-121a300c9072';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -15,7 +18,9 @@ export default function LoginPage() {
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const captchaRef = useRef<HCaptcha>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signInWithOtp, verifyOtp } = useAuth();
@@ -39,10 +44,17 @@ export default function LoginPage() {
       setError('Sila masukkan emel yang sah');
       return;
     }
+    if (!captchaToken) {
+      setError('Sila lengkapkan captcha');
+      return;
+    }
     setError('');
     setSending(true);
-    const result = await signInWithOtp(email);
+    const result = await signInWithOtp(email, captchaToken);
     setSending(false);
+    // Reset captcha (single-use token)
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
     if (result.error) {
       setError(result.error);
     } else {
@@ -97,7 +109,10 @@ export default function LoginPage() {
 
   const handleResend = async () => {
     if (resendTimer > 0) return;
-    await signInWithOtp(email);
+    // Need a fresh captcha token for resend
+    const token = await captchaRef.current?.execute({ async: true }).catch(() => null);
+    await signInWithOtp(email, token?.response);
+    captchaRef.current?.resetCaptcha();
     setResendTimer(30);
   };
 
@@ -147,7 +162,16 @@ export default function LoginPage() {
                 />
                 {error && <p className="text-destructive text-sm mt-2">{error}</p>}
               </div>
-              <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending}>
+              <div className="flex justify-center">
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                />
+              </div>
+              <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending || !captchaToken}>
                 {sending ? 'Menghantar...' : 'Hantar Kod OTP'}
               </Button>
             </form>
