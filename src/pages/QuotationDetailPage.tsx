@@ -243,6 +243,8 @@ export default function QuotationDetailPage() {
       address: profile?.address || null,
       logo_url: canShowLogo ? (profile?.logo_url || null) : null,
       logo_base64: canShowLogo ? logoBase64 : '',
+      ssm_number_new: profile?.ssm_number_new || null,
+      ssm_number_old: profile?.ssm_number_old || null,
     },
   } : null;
 

@@ -82,7 +82,7 @@ export interface QuotationPDFProps {
   };
   job: { job_number: string; title: string } | null;
   customer: { name: string; phone: string | null; email: string | null; address: string | null } | null;
-  company: { company_name: string | null; phone: string | null; address: string | null; logo_url: string | null; logo_base64?: string };
+  company: { company_name: string | null; phone: string | null; address: string | null; logo_url: string | null; logo_base64?: string; ssm_number_new?: string | null; ssm_number_old?: string | null };
 }
 
 const DEFAULT_TERMS = `1. Sebut harga ini sah selama 30 hari dari tarikh di atas.
@@ -106,6 +106,11 @@ export default function QuotationPDF({ quotation, job, customer, company }: Quot
               <Image src={company.logo_url} style={s.logo} />
             ) : null}
             <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
+            {(company.ssm_number_new || company.ssm_number_old) && (
+              <Text style={s.companySmall}>
+                SSM: {[company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ')}
+              </Text>
+            )}
             {company.phone && <Text style={s.companyText}>{company.phone}</Text>}
             {company.address && <Text style={s.companySmall}>{company.address}</Text>}
           </View>

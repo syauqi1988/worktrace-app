@@ -84,6 +84,8 @@ export interface ReceiptPDFProps {
     phone: string | null;
     address: string | null;
     logo_base64?: string;
+    ssm_number_new?: string | null;
+    ssm_number_old?: string | null;
   };
   paymentMethod?: string;
 }
@@ -102,6 +104,11 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
               <Image src={company.logo_base64} style={s.logo} />
             ) : null}
             <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
+            {(company.ssm_number_new || company.ssm_number_old) && (
+              <Text style={s.companySmall}>
+                SSM: {[company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ')}
+              </Text>
+            )}
             {company.phone && <Text style={s.companyText}>{company.phone}</Text>}
             {company.address && <Text style={s.companySmall}>{company.address}</Text>}
           </View>
