@@ -454,6 +454,32 @@ export default function SettingsPage() {
             className="w-full min-h-[80px] px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            No. Pendaftaran SSM (Baru)
+          </label>
+          <Input
+            value={ssmNumberNew}
+            onChange={(e) => setSsmNumberNew(e.target.value.replace(/\D/g, ""))}
+            placeholder="cth: 202301012345"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            className="h-11 rounded-lg"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Format baru SSM (nombor sahaja)</p>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            No. Pendaftaran SSM (Lama)
+          </label>
+          <Input
+            value={ssmNumberOld}
+            onChange={(e) => setSsmNumberOld(e.target.value)}
+            placeholder="cth: 123456-A"
+            className="h-11 rounded-lg"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Format lama SSM (jika ada)</p>
+        </div>
         <Button onClick={handleSaveProfile} disabled={savingProfile} className="rounded-lg">
           {savingProfile ? "Menyimpan..." : "Simpan Profil"}
         </Button>
