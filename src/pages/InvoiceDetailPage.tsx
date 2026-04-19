@@ -251,6 +251,8 @@ export default function InvoiceDetailPage() {
       tin_number: profile?.tin_number,
       msic_code: profile?.msic_code,
       sst_registered: profile?.sst_registered,
+      ssm_number_new: profile?.ssm_number_new || null,
+      ssm_number_old: profile?.ssm_number_old || null,
     },
     paymentMethods: selectedPMs,
   } : null;
@@ -277,6 +279,8 @@ export default function InvoiceDetailPage() {
       phone: profile?.phone || null,
       address: profile?.address || null,
       logo_base64: canShowLogo ? logoBase64 : '',
+      ssm_number_new: profile?.ssm_number_new || null,
+      ssm_number_old: profile?.ssm_number_old || null,
     },
     paymentMethod: selectedPMs.length > 0 ? selectedPMs.map((pm: any) => pm.label || pm.type).join(', ') : undefined,
   } : null;
