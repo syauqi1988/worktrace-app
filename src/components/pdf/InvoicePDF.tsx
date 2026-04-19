@@ -120,6 +120,8 @@ export interface InvoicePDFProps {
     tin_number?: string | null;
     msic_code?: string | null;
     sst_registered?: boolean;
+    ssm_number_new?: string | null;
+    ssm_number_old?: string | null;
   };
   paymentMethods?: PaymentMethod[];
 }
@@ -154,6 +156,11 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
               <Image src={company.logo_url} style={s.logo} />
             ) : null}
             <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
+            {(company.ssm_number_new || company.ssm_number_old) && (
+              <Text style={s.companySmall}>
+                SSM: {[company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ')}
+              </Text>
+            )}
             {company.phone && <Text style={s.companyText}>{company.phone}</Text>}
             {company.address && <Text style={s.companySmall}>{company.address}</Text>}
           </View>

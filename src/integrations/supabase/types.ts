@@ -305,6 +305,8 @@ export type Database = {
           referral_count: number | null
           referred_by: string | null
           report_count: number | null
+          ssm_number_new: string | null
+          ssm_number_old: string | null
           sst_registered: boolean
           subscription_cancelled: boolean | null
           subscription_end_date: string | null
@@ -343,6 +345,8 @@ export type Database = {
           referral_count?: number | null
           referred_by?: string | null
           report_count?: number | null
+          ssm_number_new?: string | null
+          ssm_number_old?: string | null
           sst_registered?: boolean
           subscription_cancelled?: boolean | null
           subscription_end_date?: string | null
@@ -381,6 +385,8 @@ export type Database = {
           referral_count?: number | null
           referred_by?: string | null
           report_count?: number | null
+          ssm_number_new?: string | null
+          ssm_number_old?: string | null
           sst_registered?: boolean
           subscription_cancelled?: boolean | null
           subscription_end_date?: string | null
