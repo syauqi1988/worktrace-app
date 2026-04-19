@@ -162,7 +162,16 @@ export default function LoginPage() {
                 />
                 {error && <p className="text-destructive text-sm mt-2">{error}</p>}
               </div>
-              <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending}>
+              <div className="flex justify-center">
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                />
+              </div>
+              <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending || !captchaToken}>
                 {sending ? 'Menghantar...' : 'Hantar Kod OTP'}
               </Button>
             </form>
