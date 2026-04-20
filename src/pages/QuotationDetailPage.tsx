@@ -278,11 +278,12 @@ Terima kasih!
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
       const fileName = `${user.id}/${quotation.quote_number}.pdf`;
       await supabase.storage.from('quotation-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data } = supabase.storage.from('quotation-pdfs').getPublicUrl(fileName);
+      const { data: signed } = await supabase.storage.from('quotation-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const publicUrl = signed?.signedUrl ?? '';
       const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
       const customerName = (quotation.jobs as any)?.customers?.name || '';
       const companyName = profile?.company_name || '';
-      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, data.publicUrl);
+      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, publicUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
     } catch {

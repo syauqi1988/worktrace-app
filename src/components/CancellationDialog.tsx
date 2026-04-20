@@ -55,13 +55,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
         cancel_reason: finalReason,
       } as any).eq('id', user.id);
 
-      await supabase.from('subscription_events').insert({
-        user_id: user.id,
-        event_type: 'cancelled',
-        plan: profile?.plan,
-        billing_period: profile?.billing_period,
-        notes: finalReason,
-      } as any);
+      // Subscription event logging happens server-side (billplz callback / cron).
 
       await refreshProfile();
       toast.success(`Langganan anda telah dibatalkan. Anda masih boleh menggunakan Pro sehingga ${endDateStr}.`, { duration: 8000 });

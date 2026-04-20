@@ -77,41 +77,23 @@ export default function AppShell() {
     checkSupportNotif();
   }, [user, profile]);
 
-  // Subscription expiry check
+  // Subscription expiry: server-side cron job downgrades expired users daily.
+  // Client only shows a soft 7-day reminder.
   useEffect(() => {
     if (!user || !profile) return;
     if (profile.plan === 'free') return;
-    if (profile.subscription_end_date) {
-      const endDate = new Date(profile.subscription_end_date);
-      const now = new Date();
-      if (endDate < now) {
-        // Expired
-        supabase
-          .from('profiles')
-          .update({ plan: 'free', subscription_status: 'expired', subscription_cancelled: false } as any)
-          .eq('id', user.id)
-          .then(() => {
-            supabase.from('subscription_events').insert({
-              user_id: user.id, event_type: 'expired', plan: profile.plan,
-            } as any).then(() => {});
-            refreshProfile();
-            toast.warning(
-              'Langganan Pro anda telah tamat. Akaun telah diturunkan ke pelan Free.',
-              { duration: 10000 }
-            );
-          });
-      } else {
-        // 7-day warning
-        const sevenDays = new Date();
-        sevenDays.setDate(sevenDays.getDate() + 7);
-        if (endDate < sevenDays && !(profile as any).subscription_cancelled) {
-          const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          toast.info(
-            `Langganan Pro anda akan tamat dalam ${daysLeft} hari. Perbaharui untuk kekal dengan Pro.`,
-            { duration: 8000 }
-          );
-        }
-      }
+    if (!profile.subscription_end_date) return;
+    const endDate = new Date(profile.subscription_end_date);
+    const now = new Date();
+    if (endDate < now) return; // server cron handles downgrade
+    const sevenDays = new Date();
+    sevenDays.setDate(sevenDays.getDate() + 7);
+    if (endDate < sevenDays && !(profile as any).subscription_cancelled) {
+      const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      toast.info(
+        `Langganan Pro anda akan tamat dalam ${daysLeft} hari. Perbaharui untuk kekal dengan Pro.`,
+        { duration: 8000 }
+      );
     }
   }, [user, profile]);
 

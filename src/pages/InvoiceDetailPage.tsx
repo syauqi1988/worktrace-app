@@ -360,9 +360,10 @@ export default function InvoiceDetailPage() {
       const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
       const fileName = `${user.id}/${invoice.receipt_number}.pdf`;
       await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data } = supabase.storage.from('receipts').getPublicUrl(fileName);
+      const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const publicUrl = signed?.signedUrl ?? '';
       const phone = formatPhone(customerPhone);
-      const message = `Assalamualaikum ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda! 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${data.publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. Jumpa lagi! 😊\n\n*${profile?.company_name || ''}*`;
+      const message = `Assalamualaikum ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda! 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. Jumpa lagi! 😊\n\n*${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
     } catch {
@@ -389,9 +390,9 @@ export default function InvoiceDetailPage() {
       const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
       const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
       await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data } = supabase.storage.from('invoice-pdfs').getPublicUrl(fileName);
+      const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
       const phone = formatPhone(customerPhone);
-      const message = buildWhatsAppInvoiceMessage(data.publicUrl);
+      const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
     } catch {
