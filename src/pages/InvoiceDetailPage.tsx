@@ -93,6 +93,10 @@ export default function InvoiceDetailPage() {
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
   const [receiptPreviewLoading, setReceiptPreviewLoading] = useState(false);
   const [isSharingReceipt, setIsSharingReceipt] = useState(false);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [unlockText, setUnlockText] = useState('');
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   useEffect(() => {
