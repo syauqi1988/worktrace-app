@@ -129,8 +129,9 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      const { data } = supabase.storage.from('completion-photos').getPublicUrl(path);
-      setPhotos(prev => [...prev, data.publicUrl]);
+      // Store the storage path; resolve to a signed URL when displaying/embedding.
+      const { data: signed } = await supabase.storage.from('completion-photos').createSignedUrl(path, 60 * 60 * 24 * 365);
+      setPhotos(prev => [...prev, signed?.signedUrl ?? '']);
     }
     setUploadingPhoto(false);
     e.target.value = '';

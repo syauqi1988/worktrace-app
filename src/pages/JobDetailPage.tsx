@@ -232,9 +232,10 @@ export default function JobDetailPage() {
       ).toBlob();
       const fileName = `${user.id}/${report.report_number}.pdf`;
       await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data } = supabase.storage.from('completion-report-pdfs').getPublicUrl(fileName);
+      const { data: signed } = await supabase.storage.from('completion-report-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const publicUrl = signed?.signedUrl ?? '';
       const phone = formatPhone(job.customers.phone);
-      const message = `Assalamualaikum ${job.customers.name},\n\nKerja yang kami laksanakan telah siap! 🔧✅\n\nSila semak Laporan Siap Kerja kami:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\nLaporan lengkap dengan gambar kerja:\n🔗 ${data.publicUrl}\n\nTerima kasih kerana mempercayai perkhidmatan kami! 🙏\n\n*${profile?.company_name || ''}*`;
+      const message = `Assalamualaikum ${job.customers.name},\n\nKerja yang kami laksanakan telah siap! 🔧✅\n\nSila semak Laporan Siap Kerja kami:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\nLaporan lengkap dengan gambar kerja:\n🔗 ${publicUrl}\n\nTerima kasih kerana mempercayai perkhidmatan kami! 🙏\n\n*${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
       toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
