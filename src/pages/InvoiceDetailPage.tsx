@@ -93,6 +93,10 @@ export default function InvoiceDetailPage() {
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
   const [receiptPreviewLoading, setReceiptPreviewLoading] = useState(false);
   const [isSharingReceipt, setIsSharingReceipt] = useState(false);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [unlockText, setUnlockText] = useState('');
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   useEffect(() => {
@@ -486,6 +490,14 @@ export default function InvoiceDetailPage() {
                 value={displayStatus}
                 onChange={async (e) => {
                   const newStatus = e.target.value;
+                  if (newStatus === displayStatus) return;
+                  // Lock: if current status is Paid, require verification before changing.
+                  if (invoice.status === 'Paid' && newStatus !== 'Paid') {
+                    setPendingStatus(newStatus);
+                    setUnlockText('');
+                    setUnlockOpen(true);
+                    return;
+                  }
                   if (newStatus === 'Paid') {
                     setShowInlinePayDate(true);
                     return;
@@ -767,6 +779,60 @@ export default function InvoiceDetailPage() {
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? 'Memadam...' : 'Padam'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unlock Paid invoice Dialog */}
+      <Dialog open={unlockOpen} onOpenChange={(o) => { if (!o) { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Buka Kunci Invois Dibayar?</DialogTitle>
+            <DialogDescription>
+              Invois ini telah ditandakan sebagai <strong>Paid</strong>. Untuk menukar status kepada <strong>{pendingStatus}</strong>, sila taip <strong>BUKA</strong> di bawah untuk mengesahkan. Nombor resit yang dijana mungkin tidak sah selepas perubahan ini.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Taip BUKA untuk mengesahkan:</label>
+            <Input
+              value={unlockText}
+              onChange={(e) => setUnlockText(e.target.value)}
+              placeholder="Taip BUKA di sini"
+              className={`h-11 rounded-lg ${unlockText === 'BUKA' ? 'border-green-500 focus:ring-green-500' : unlockText ? 'border-destructive' : ''}`}
+            />
+            {unlockText !== '' && unlockText !== 'BUKA' && (
+              <p className="text-xs text-destructive mt-1">Sila taip "BUKA" untuk meneruskan</p>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); }} disabled={unlocking}>Batal</Button>
+            <Button
+              variant="destructive"
+              disabled={unlockText !== 'BUKA' || unlocking || !pendingStatus}
+              onClick={async () => {
+                if (!invoice || !pendingStatus) return;
+                setUnlocking(true);
+                try {
+                  const updates: any = { status: pendingStatus };
+                  // Clear paid metadata when moving away from Paid
+                  updates.paid_date = null;
+                  updates.receipt_number = null;
+                  const { error } = await supabase.from('invoices').update(updates).eq('id', invoice.id).eq('user_id', user!.id);
+                  if (error) throw error;
+                  setInvoice({ ...invoice, status: pendingStatus, paid_date: null, receipt_number: null });
+                  toast.success('Status invois dikemaskini!');
+                  setUnlockOpen(false);
+                  setUnlockText('');
+                  setPendingStatus(null);
+                } catch (err: any) {
+                  toast.error(err.message || 'Gagal kemaskini status.');
+                } finally {
+                  setUnlocking(false);
+                }
+              }}
+            >
+              {unlocking ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Mengemaskini...</> : 'Sahkan & Tukar Status'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
