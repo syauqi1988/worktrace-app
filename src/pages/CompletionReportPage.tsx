@@ -118,20 +118,30 @@ export default function CompletionReportPage() {
       }
 
       setUploadingPhoto(true);
-      const ext = file.name.split('.').pop();
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${user.id}/${jobId}/${Date.now()}_${i}.${ext}`;
-      const { error } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('completion-photos')
-        .upload(path, file, { upsert: true });
+        .upload(path, file, { upsert: true, contentType: file.type || `image/${ext}` });
 
-      if (error) {
-        toast.error('Gagal muat naik gambar');
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        toast.error(`Gagal muat naik: ${uploadError.message}`);
         continue;
       }
 
       // Store the storage path; resolve to a signed URL when displaying/embedding.
-      const { data: signed } = await supabase.storage.from('completion-photos').createSignedUrl(path, 60 * 60 * 24 * 365);
-      setPhotos(prev => [...prev, signed?.signedUrl ?? '']);
+      const { data: signed, error: signedError } = await supabase.storage
+        .from('completion-photos')
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+
+      if (signedError || !signed?.signedUrl) {
+        console.error('Signed URL error:', signedError);
+        toast.error('Gagal mendapatkan URL gambar');
+        continue;
+      }
+
+      setPhotos(prev => [...prev, signed.signedUrl]);
     }
     setUploadingPhoto(false);
     e.target.value = '';
