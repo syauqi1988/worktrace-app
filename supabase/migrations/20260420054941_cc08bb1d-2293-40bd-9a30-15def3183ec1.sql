@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Allow authenticated uploads to report-photos" ON storage.objects;
