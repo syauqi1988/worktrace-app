@@ -179,7 +179,7 @@ export default function SettingsPage() {
     setUploading(true);
     const ext = file.name.split(".").pop();
     const path = `${user.id}/logo.${ext}`;
-    const { error } = await supabase.storage.from("quotation-pdfs").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
     if (error) {
       toast.error("Gagal muat naik logo");
       setUploading(false);
@@ -187,7 +187,7 @@ export default function SettingsPage() {
     }
     const {
       data: { publicUrl },
-    } = supabase.storage.from("quotation-pdfs").getPublicUrl(path);
+    } = supabase.storage.from("logos").getPublicUrl(path);
     setLogoUrl(publicUrl);
     setUploading(false);
     toast.success("Logo dimuat naik!");
