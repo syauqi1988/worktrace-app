@@ -490,6 +490,14 @@ export default function InvoiceDetailPage() {
                 value={displayStatus}
                 onChange={async (e) => {
                   const newStatus = e.target.value;
+                  if (newStatus === displayStatus) return;
+                  // Lock: if current status is Paid, require verification before changing.
+                  if (invoice.status === 'Paid' && newStatus !== 'Paid') {
+                    setPendingStatus(newStatus);
+                    setUnlockText('');
+                    setUnlockOpen(true);
+                    return;
+                  }
                   if (newStatus === 'Paid') {
                     setShowInlinePayDate(true);
                     return;
