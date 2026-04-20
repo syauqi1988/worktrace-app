@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          last_login: string | null
+          name: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          name: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          name?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_counters: {
         Row: {
           key: string
@@ -637,6 +670,7 @@ export type Database = {
         Args: { p_referred_id: string }
         Returns: undefined
       }
+      expire_subscriptions: { Args: never; Returns: undefined }
       generate_ticket_number: { Args: never; Returns: string }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
