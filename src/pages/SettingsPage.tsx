@@ -967,14 +967,6 @@ export default function SettingsPage() {
           >
             📧 Hantar Tiket Sokongan
           </button>
-          <a
-            href="https://wa.me/60129600016"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
-          >
-            💬 WhatsApp Kami
-          </a>
         </div>
         <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
       </section>
