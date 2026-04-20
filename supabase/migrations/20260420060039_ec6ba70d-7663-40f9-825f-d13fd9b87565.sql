@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated users can read counters" ON public.app_counters;
