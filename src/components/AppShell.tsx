@@ -26,7 +26,6 @@ const NAV_ITEMS = [
   { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
   { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
   { to: '/support', label: 'Sokongan', icon: LifeBuoy, tutorialId: undefined },
-  { to: '/settings#referral-section', label: 'Rujukan', icon: Gift, tutorialId: undefined },
   { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
 
