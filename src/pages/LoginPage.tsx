@@ -104,6 +104,7 @@ export default function LoginPage() {
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } else {
+      try { await applyReferralFromUrl(); } catch (e) { console.error('applyReferral failed', e); }
       navigate(result.isNewUser ? '/onboarding' : '/dashboard');
     }
   };
