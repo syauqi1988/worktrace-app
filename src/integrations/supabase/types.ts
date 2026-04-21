@@ -674,6 +674,8 @@ export type Database = {
       generate_ticket_number: { Args: never; Returns: string }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
+      is_admin: { Args: never; Returns: boolean }
+      is_admin_user: { Args: never; Returns: boolean }
       set_onboarding_plan: {
         Args: { p_billing_period: string; p_plan: string }
         Returns: undefined
