@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+import { applyReferralFromUrl } from '@/lib/applyReferral';
 
 const HCAPTCHA_SITE_KEY = '71b8e45e-eee4-4054-8f94-121a300c9072';
 
@@ -103,6 +104,7 @@ export default function LoginPage() {
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } else {
+      try { await applyReferralFromUrl(); } catch (e) { console.error('applyReferral failed', e); }
       navigate(result.isNewUser ? '/onboarding' : '/dashboard');
     }
   };
