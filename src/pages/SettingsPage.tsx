@@ -118,6 +118,9 @@ export default function SettingsPage() {
   // Cancellation
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [renewPeriod, setRenewPeriod] = useState<'monthly' | 'yearly'>(
+    (profile?.billing_period as 'monthly' | 'yearly') || 'monthly'
+  );
   const { initiatePayment, isLoading: billPlzLoading } = useBillPlz();
 
   // Referral
