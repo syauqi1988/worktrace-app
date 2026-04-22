@@ -114,7 +114,7 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
           >
             {isLoading
               ? 'Memproses...'
-              : `Upgrade ke ${proPlan?.name ?? 'Pro'} — RM${formatPrice(price)}/${isYearly ? 'tahun' : 'bulan'}`}
+              : `Upgrade ke ${proPlan?.name ?? 'Pro'}${isYearly && discount > 0 ? ` (-${discount}%)` : ''} — RM${formatPrice(price)}/${isYearly ? 'tahun' : 'bulan'}`}
           </Button>
           <Button variant="ghost" onClick={onClose} className="w-full rounded-lg text-muted-foreground">
             Mungkin lain kali
