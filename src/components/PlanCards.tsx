@@ -91,7 +91,9 @@ export default function PlanCards({ currentPlan, onSelect, showToggle = true, co
             }`}
           >
             Tahunan
-            <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold">-20%</span>
+            {toggleDiscount > 0 && (
+              <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold">-{toggleDiscount}%</span>
+            )}
           </button>
         </div>
       )}
