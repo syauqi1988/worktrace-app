@@ -754,7 +754,15 @@ export default function SettingsPage() {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            RM{profile?.plan === "pro" ? "49" : profile?.plan === "team" ? "99" : "0"}/bulan
+            {(() => {
+              const dbPlan = getPlan(profile?.plan ?? 'free');
+              const isYearly = profile?.billing_period === 'yearly';
+              const price = dbPlan
+                ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price)
+                : 0;
+              const periodLabel = isFree ? '' : isYearly ? '/tahun' : '/bulan';
+              return `RM${price}${periodLabel}`;
+            })()}
             {isFree ? " · Selamanya percuma" : ` · ${profile?.billing_period === "yearly" ? "Tahunan" : "Bulanan"}`}
           </p>
           {!isFree && (profile as any)?.subscription_cancelled && profile?.subscription_end_date && (
