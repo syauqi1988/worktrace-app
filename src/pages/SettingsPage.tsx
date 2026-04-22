@@ -810,19 +810,53 @@ export default function SettingsPage() {
             Aktifkan Semula Langganan
           </Button>
         ) : !isFree ? (
-          <div className="space-y-2">
-            <Button
-              onClick={() =>
-                initiatePayment(
-                  profile?.plan as "pro" | "team",
-                  (profile?.billing_period as "monthly" | "yearly") || "monthly",
-                )
-              }
-              disabled={billPlzLoading}
-              className="w-full rounded-lg"
-            >
-              Perbaharui Langganan
-            </Button>
+          <div className="space-y-3">
+            {(() => {
+              const dbPlan = getPlan(profile?.plan ?? 'pro');
+              const monthly = dbPlan ? Number(dbPlan.monthly_price) : 0;
+              const yearly = dbPlan ? Number(dbPlan.yearly_price) : 0;
+              const discount = dbPlan ? Number(dbPlan.yearly_discount_pct) || 0 : 0;
+              const price = renewPeriod === 'yearly' ? yearly : monthly;
+              return (
+                <>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">Pilih tempoh pembaharuan</p>
+                    <div className="flex rounded-lg border border-border overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setRenewPeriod('monthly')}
+                        className={`flex-1 py-2 text-sm font-medium transition-colors ${renewPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}
+                      >
+                        Bulanan — RM{monthly}/bulan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRenewPeriod('yearly')}
+                        className={`flex-1 py-2 text-sm font-medium transition-colors ${renewPeriod === 'yearly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}
+                      >
+                        Tahunan — RM{yearly}/tahun
+                        {discount > 0 && (
+                          <span className="ml-1.5 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                            -{discount}%
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() =>
+                      initiatePayment(profile?.plan as 'pro' | 'team', renewPeriod)
+                    }
+                    disabled={billPlzLoading}
+                    className="w-full rounded-lg"
+                  >
+                    {billPlzLoading
+                      ? 'Memproses...'
+                      : `Perbaharui Langganan — RM${price}/${renewPeriod === 'yearly' ? 'tahun' : 'bulan'}`}
+                  </Button>
+                </>
+              );
+            })()}
             <button
               onClick={() => setCancelOpen(true)}
               className="w-full text-center text-[13px] font-medium hover:underline"
