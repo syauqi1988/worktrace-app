@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Check, Lock } from 'lucide-react';
 import { useBillPlz } from '@/hooks/useBillPlz';
+import { usePricingPlans } from '@/hooks/usePricingPlans';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -9,16 +10,15 @@ interface UpgradeModalProps {
   reason?: string;
 }
 
-const PRO_FEATURES = [
-  'Kerja aktif tanpa had',
-  'Pelanggan tanpa had',
-  'WhatsApp share',
-  'Logo di PDF',
-  'Sistem referral',
-];
-
 export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProps) {
   const { initiatePayment, isLoading } = useBillPlz();
+  const { getPlan, isLoading: plansLoading } = usePricingPlans();
+
+  const proPlan = getPlan('pro');
+  const monthlyPrice = proPlan ? Number(proPlan.monthly_price) : 0;
+  const discount = proPlan ? Number(proPlan.yearly_discount_pct) || 0 : 0;
+  const original = discount > 0 ? Math.round(monthlyPrice / (1 - discount / 100)) : 0;
+  const features = (proPlan?.features ?? []).filter(f => f.included).slice(0, 5);
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
@@ -36,28 +36,34 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
         </DialogHeader>
 
         <ul className="space-y-2 my-4">
-          {PRO_FEATURES.map(f => (
-            <li key={f} className="flex items-center gap-2 text-sm text-foreground">
+          {features.map(f => (
+            <li key={f.label} className="flex items-center gap-2 text-sm text-foreground">
               <Check className="h-4 w-4 text-green-600 shrink-0" />
-              {f}
+              {f.label}
             </li>
           ))}
         </ul>
 
         <div className="text-center mb-4">
-          <span className="text-sm text-muted-foreground line-through">RM79</span>{' '}
-          <span className="text-2xl font-bold text-primary">RM49</span>
+          {original > 0 && (
+            <>
+              <span className="text-sm text-muted-foreground line-through">RM{original}</span>{' '}
+            </>
+          )}
+          <span className="text-2xl font-bold text-primary">RM{monthlyPrice}</span>
           <span className="text-sm text-muted-foreground">/bulan</span>
-          <p className="text-xs text-green-600 font-medium mt-1">Early bird terhad masa!</p>
+          {discount > 0 && (
+            <p className="text-xs text-green-600 font-medium mt-1">Early bird terhad masa!</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
           <Button
             onClick={() => initiatePayment('pro', 'monthly')}
-            disabled={isLoading}
+            disabled={isLoading || plansLoading || !proPlan}
             className="w-full rounded-lg"
           >
-            {isLoading ? 'Memproses...' : 'Upgrade ke Pro — RM49/bulan'}
+            {isLoading ? 'Memproses...' : `Upgrade ke ${proPlan?.name ?? 'Pro'} — RM${monthlyPrice}/bulan`}
           </Button>
           <Button variant="ghost" onClick={onClose} className="w-full rounded-lg text-muted-foreground">
             Mungkin lain kali
