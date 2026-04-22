@@ -1,12 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const PRICE_TO_PLAN: Record<string, { plan: string; billing_period: 'monthly' | 'yearly' }> = {
-  '4900': { plan: 'pro', billing_period: 'monthly' },
-  '47040': { plan: 'pro', billing_period: 'yearly' },
-  '9900': { plan: 'team', billing_period: 'monthly' },
-  '95040': { plan: 'team', billing_period: 'yearly' },
-}
-
 Deno.serve(async (req) => {
   try {
     const params: Record<string, string> = {}
@@ -53,22 +46,48 @@ Deno.serve(async (req) => {
       return new Response('ok', { status: 200 })
     }
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
     const startDate = new Date()
     const endDate = new Date()
 
     let userId = bill?.reference_1 || ''
     let plan = 'pro'
     let billing_period: 'monthly' | 'yearly' = 'monthly'
+    let resolved = false
 
     if (typeof bill?.reference_2 === 'string' && bill.reference_2.includes('_')) {
       const [resolvedPlan, resolvedBillingPeriod] = bill.reference_2.split('_')
       plan = resolvedPlan || plan
       billing_period = resolvedBillingPeriod === 'yearly' ? 'yearly' : 'monthly'
-    } else {
-      const fallbackPlan = PRICE_TO_PLAN[String(bill?.amount ?? params['amount'] ?? '')]
-      if (fallbackPlan) {
-        plan = fallbackPlan.plan
-        billing_period = fallbackPlan.billing_period
+      resolved = true
+    }
+
+    // Fallback: lookup by amount in pricing_plans
+    if (!resolved) {
+      const amountSen = Number(bill?.amount ?? params['amount'] ?? 0)
+      if (amountSen > 0) {
+        const amountMyr = amountSen / 100
+        const { data: matchPlans } = await supabaseAdmin
+          .from('pricing_plans')
+          .select('plan_key, monthly_price, yearly_price')
+          .eq('is_active', true)
+
+        const match = (matchPlans ?? []).find((p: any) => {
+          return Math.round(Number(p.monthly_price) * 100) === amountSen
+            || Math.round(Number(p.yearly_price) * 100) === amountSen
+        })
+
+        if (match) {
+          plan = match.plan_key
+          billing_period = Math.round(Number(match.yearly_price) * 100) === amountSen ? 'yearly' : 'monthly'
+          console.log('Resolved plan via amount fallback:', plan, billing_period, amountMyr)
+        } else {
+          console.error('Could not resolve plan from amount:', amountSen)
+        }
       }
     }
 
@@ -77,11 +96,6 @@ Deno.serve(async (req) => {
     } else {
       endDate.setMonth(endDate.getMonth() + 1)
     }
-
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
 
     if (!userId) {
       const { data: matchedProfile } = await supabaseAdmin

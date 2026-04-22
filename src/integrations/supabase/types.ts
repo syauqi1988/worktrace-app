@@ -311,6 +311,72 @@ export type Database = {
           },
         ]
       }
+      pricing_plans: {
+        Row: {
+          badge_color: string | null
+          badge_text: string | null
+          created_at: string | null
+          currency: string
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          max_customers: number | null
+          max_jobs: number | null
+          monthly_price: number
+          name: string
+          plan_key: string
+          sort_order: number | null
+          tagline: string | null
+          updated_at: string | null
+          updated_by: string | null
+          yearly_discount_pct: number
+          yearly_price: number
+        }
+        Insert: {
+          badge_color?: string | null
+          badge_text?: string | null
+          created_at?: string | null
+          currency?: string
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          max_customers?: number | null
+          max_jobs?: number | null
+          monthly_price?: number
+          name: string
+          plan_key: string
+          sort_order?: number | null
+          tagline?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          yearly_discount_pct?: number
+          yearly_price?: number
+        }
+        Update: {
+          badge_color?: string | null
+          badge_text?: string | null
+          created_at?: string | null
+          currency?: string
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          max_customers?: number | null
+          max_jobs?: number | null
+          monthly_price?: number
+          name?: string
+          plan_key?: string
+          sort_order?: number | null
+          tagline?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          yearly_discount_pct?: number
+          yearly_price?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -320,6 +386,7 @@ export type Database = {
           cancel_requested_at: string | null
           company_name: string | null
           created_at: string
+          email: string | null
           free_months_earned: number | null
           free_months_used: number | null
           id: string
@@ -360,6 +427,7 @@ export type Database = {
           cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
+          email?: string | null
           free_months_earned?: number | null
           free_months_used?: number | null
           id: string
@@ -400,6 +468,7 @@ export type Database = {
           cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
+          email?: string | null
           free_months_earned?: number | null
           free_months_used?: number | null
           id?: string

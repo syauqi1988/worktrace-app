@@ -35,6 +35,7 @@ import { useTutorial } from "@/hooks/useTutorial";
 import CancellationDialog from "@/components/CancellationDialog";
 import ReactivateDialog from "@/components/ReactivateDialog";
 import { useBillPlz } from "@/hooks/useBillPlz";
+import { usePricingPlans } from "@/hooks/usePricingPlans";
 
 interface PaymentMethod {
   id: string;
@@ -68,6 +69,7 @@ export default function SettingsPage() {
   const { user, profile, updateProfile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { totalSeenCount } = useTutorial("settings");
+  const { getPlan } = usePricingPlans();
 
   // Company profile
   const [companyName, setCompanyName] = useState("");
@@ -752,7 +754,15 @@ export default function SettingsPage() {
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            RM{profile?.plan === "pro" ? "49" : profile?.plan === "team" ? "99" : "0"}/bulan
+            {(() => {
+              const dbPlan = getPlan(profile?.plan ?? 'free');
+              const isYearly = profile?.billing_period === 'yearly';
+              const price = dbPlan
+                ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price)
+                : 0;
+              const periodLabel = isFree ? '' : isYearly ? '/tahun' : '/bulan';
+              return `RM${price}${periodLabel}`;
+            })()}
             {isFree ? " · Selamanya percuma" : ` · ${profile?.billing_period === "yearly" ? "Tahunan" : "Bulanan"}`}
           </p>
           {!isFree && (profile as any)?.subscription_cancelled && profile?.subscription_end_date && (
