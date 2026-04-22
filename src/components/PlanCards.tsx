@@ -38,6 +38,14 @@ export default function PlanCards({ currentPlan, onSelect, showToggle = true, co
   const { initiatePayment, isLoading } = useBillPlz();
   const { plans, isLoading: plansLoading } = usePricingPlans();
 
+  // Use the highest yearly discount among paid plans for the toggle badge
+  const toggleDiscount = Math.max(
+    0,
+    ...plans
+      .filter(p => p.plan_key !== 'free')
+      .map(p => Number(p.yearly_discount_pct) || 0)
+  );
+
   const getPrice = (plan: PricingPlan) => {
     if (plan.plan_key === 'free') return 0;
     return yearly ? Number(plan.yearly_price) : Number(plan.monthly_price);
