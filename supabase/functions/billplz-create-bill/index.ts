@@ -20,6 +20,46 @@ Deno.serve(async (req) => {
       )
     }
 
+    if (plan === 'free') {
+      return new Response(
+        JSON.stringify({ error: 'Free plan does not require payment' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const period: 'monthly' | 'yearly' = billing_period === 'yearly' ? 'yearly' : 'monthly'
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Look up plan from pricing_plans table
+    const { data: planRow, error: planError } = await supabaseAdmin
+      .from('pricing_plans')
+      .select('plan_key, name, monthly_price, yearly_price, is_active')
+      .eq('plan_key', plan)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (planError || !planRow) {
+      console.error('Plan lookup failed:', planError, 'plan:', plan)
+      return new Response(
+        JSON.stringify({ error: `Plan '${plan}' not found or inactive` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const priceMyr = period === 'yearly' ? Number(planRow.yearly_price) : Number(planRow.monthly_price)
+    const amount = Math.round(priceMyr * 100) // sen
+
+    if (!amount || amount <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid plan price' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const BILLPLZ_API_KEY = Deno.env.get('BILLPLZ_API_KEY') ?? ''
     const BILLPLZ_COLLECTION_ID = Deno.env.get('BILLPLZ_COLLECTION_ID') ?? ''
     const SANDBOX = Deno.env.get('BILLPLZ_SANDBOX') === 'true'
@@ -28,19 +68,9 @@ Deno.serve(async (req) => {
       ? 'https://billplz-sandbox.com/api/v3'
       : 'https://www.billplz.com/api/v3'
 
-    const prices: Record<string, number> = {
-      pro_monthly: 4900,
-      pro_yearly: 47040,
-      team_monthly: 9900,
-      team_yearly: 95040,
-    }
-
-    const priceKey = `${plan}_${billing_period || 'monthly'}`
-    const amount = prices[priceKey] ?? 4900
-
-    const description = billing_period === 'yearly'
-      ? `WorkTrace ${plan} — Tahunan (20% diskaun)`
-      : `WorkTrace ${plan} — Bulanan`
+    const description = period === 'yearly'
+      ? `WorkTrace ${planRow.name} — Tahunan (20% diskaun)`
+      : `WorkTrace ${planRow.name} — Bulanan`
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
     const callbackUrl = `${SUPABASE_URL}/functions/v1/billplz-callback`
@@ -63,13 +93,9 @@ Deno.serve(async (req) => {
 
     const redirectUrl = new URL('/payment/success', appUrl)
     redirectUrl.searchParams.set('plan', plan)
-    redirectUrl.searchParams.set('period', billing_period || 'monthly')
+    redirectUrl.searchParams.set('period', period)
 
-    console.log('Resolved redirect URL:', redirectUrl.toString(), 'from', JSON.stringify({
-      redirect_base_url,
-      origin: req.headers.get('origin'),
-      referer: req.headers.get('referer'),
-    }))
+    console.log('Resolved redirect URL:', redirectUrl.toString(), 'amount(sen):', amount)
 
     const formData = new URLSearchParams()
     formData.append('collection_id', BILLPLZ_COLLECTION_ID)
@@ -82,7 +108,7 @@ Deno.serve(async (req) => {
     formData.append('reference_1_label', 'User ID')
     formData.append('reference_1', user_id)
     formData.append('reference_2_label', 'Plan')
-    formData.append('reference_2', `${plan}_${billing_period || 'monthly'}`)
+    formData.append('reference_2', `${plan}_${period}`)
 
     const credentials = btoa(`${BILLPLZ_API_KEY}:`)
 
@@ -101,12 +127,6 @@ Deno.serve(async (req) => {
     if (!response.ok) {
       throw new Error(bill.error?.message || JSON.stringify(bill) || 'BillPlz error')
     }
-
-    // Store bill ID
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
 
     await supabaseAdmin
       .from('profiles')
