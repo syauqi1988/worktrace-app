@@ -35,6 +35,7 @@ import { useTutorial } from "@/hooks/useTutorial";
 import CancellationDialog from "@/components/CancellationDialog";
 import ReactivateDialog from "@/components/ReactivateDialog";
 import { useBillPlz } from "@/hooks/useBillPlz";
+import { usePricingPlans } from "@/hooks/usePricingPlans";
 
 interface PaymentMethod {
   id: string;
