@@ -69,6 +69,7 @@ export default function SettingsPage() {
   const { user, profile, updateProfile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { totalSeenCount } = useTutorial("settings");
+  const { getPlan } = usePricingPlans();
 
   // Company profile
   const [companyName, setCompanyName] = useState("");
