@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          admin_notes: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          requested_at: string
+          scheduled_at: string
+          status: string
+          user_email: string
+          user_id: string
+          user_name: string | null
+          user_plan: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          scheduled_at: string
+          status?: string
+          user_email: string
+          user_id: string
+          user_name?: string | null
+          user_plan?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          scheduled_at?: string
+          status?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string | null
+          user_plan?: string | null
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string | null
@@ -379,6 +430,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string | null
           address: string | null
           billing_period: string | null
           billplz_bill_id: string | null
@@ -386,6 +438,11 @@ export type Database = {
           cancel_requested_at: string | null
           company_name: string | null
           created_at: string
+          deletion_cancelled_at: string | null
+          deletion_reason: string | null
+          deletion_requested_at: string | null
+          deletion_scheduled_at: string | null
+          doc_number_settings: Json | null
           email: string | null
           free_months_earned: number | null
           free_months_used: number | null
@@ -420,6 +477,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_status?: string | null
           address?: string | null
           billing_period?: string | null
           billplz_bill_id?: string | null
@@ -427,6 +485,11 @@ export type Database = {
           cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
+          deletion_cancelled_at?: string | null
+          deletion_reason?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
+          doc_number_settings?: Json | null
           email?: string | null
           free_months_earned?: number | null
           free_months_used?: number | null
@@ -461,6 +524,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_status?: string | null
           address?: string | null
           billing_period?: string | null
           billplz_bill_id?: string | null
@@ -468,6 +532,11 @@ export type Database = {
           cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
+          deletion_cancelled_at?: string | null
+          deletion_reason?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
+          doc_number_settings?: Json | null
           email?: string | null
           free_months_earned?: number | null
           free_months_used?: number | null
@@ -725,6 +794,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      work_orders: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          customer_signature: string | null
+          estimated_duration: string | null
+          id: string
+          items: Json | null
+          job_id: string
+          location: string | null
+          quotation_id: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
+          scheduled_end_date: string | null
+          scheduled_start_date: string | null
+          scope_of_work: string
+          special_instructions: string | null
+          status: string
+          technician_name: string | null
+          terms: string | null
+          title: string
+          total: number | null
+          updated_at: string
+          user_id: string
+          wo_number: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          customer_signature?: string | null
+          estimated_duration?: string | null
+          id?: string
+          items?: Json | null
+          job_id: string
+          location?: string | null
+          quotation_id?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          scheduled_end_date?: string | null
+          scheduled_start_date?: string | null
+          scope_of_work: string
+          special_instructions?: string | null
+          status?: string
+          technician_name?: string | null
+          terms?: string | null
+          title: string
+          total?: number | null
+          updated_at?: string
+          user_id: string
+          wo_number: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          customer_signature?: string | null
+          estimated_duration?: string | null
+          id?: string
+          items?: Json | null
+          job_id?: string
+          location?: string | null
+          quotation_id?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          scheduled_end_date?: string | null
+          scheduled_start_date?: string | null
+          scope_of_work?: string
+          special_instructions?: string | null
+          status?: string
+          technician_name?: string | null
+          terms?: string | null
+          title?: string
+          total?: number | null
+          updated_at?: string
+          user_id?: string
+          wo_number?: string
+        }
+        Relationships: []
       }
     }
     Views: {

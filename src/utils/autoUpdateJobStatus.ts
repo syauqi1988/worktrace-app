@@ -5,6 +5,8 @@ type Trigger =
   | 'quotation_sent'
   | 'quotation_accepted'
   | 'quotation_rejected'
+  | 'work_order_accepted'
+  | 'work_order_rejected'
   | 'report_submitted'
   | 'invoice_created';
 
@@ -34,9 +36,17 @@ export const autoUpdateJobStatus = async (
       if (['Lead', 'Scheduled'].includes(job.status)) newStatus = 'Scheduled';
       break;
     case 'quotation_accepted':
-      newStatus = 'In Progress';
+      // Stay at Scheduled until WO accepted
+      if (job.status === 'Lead') newStatus = 'Scheduled';
       break;
     case 'quotation_rejected':
+      // No auto change
+      break;
+    case 'work_order_accepted':
+      newStatus = 'In Progress';
+      break;
+    case 'work_order_rejected':
+      if (job.status === 'In Progress') newStatus = 'Scheduled';
       break;
     case 'report_submitted':
       newStatus = 'Completed';
