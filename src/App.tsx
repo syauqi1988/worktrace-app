@@ -28,6 +28,11 @@ import CustomerFormPage from "@/pages/CustomerFormPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailedPage from "@/pages/PaymentFailedPage";
 import CompletionReportPage from "@/pages/CompletionReportPage";
+import WorkOrderFormPage from "@/pages/WorkOrderFormPage";
+import WorkOrderDetailPage from "@/pages/WorkOrderDetailPage";
+import WorkOrdersListPage from "@/pages/WorkOrdersListPage";
+import GoodbyePage from "@/pages/GoodbyePage";
+import AccountDeletedPage from "@/pages/AccountDeletedPage";
 import SupportPage from "@/pages/SupportPage";
 import SupportNewPage from "@/pages/SupportNewPage";
 import SupportDetailPage from "@/pages/SupportDetailPage";
@@ -45,6 +50,8 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/goodbye" element={<GoodbyePage />} />
+            <Route path="/account-deleted" element={<AccountDeletedPage />} />
             <Route path="/onboarding" element={
               <ProtectedRoute><OnboardingPage /></ProtectedRoute>
             } />
@@ -64,6 +71,9 @@ const App = () => (
               <Route path="jobs/:id" element={<JobDetailPage />} />
               <Route path="jobs/:id/edit" element={<JobFormPage />} />
               <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />
+              <Route path="jobs/:id/work-order" element={<WorkOrderDetailPage />} />
+              <Route path="jobs/:id/work-order/new" element={<WorkOrderFormPage />} />
+              <Route path="work-orders" element={<WorkOrdersListPage />} />
               <Route path="customers" element={<CustomersListPage />} />
               <Route path="customers/new" element={<CustomerFormPage />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />
