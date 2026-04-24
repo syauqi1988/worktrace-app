@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
+import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 
 interface Job {
   id: string;
@@ -66,11 +67,14 @@ export default function QuotationFormPage() {
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
+  // Preview the next quote number from user's doc_number_settings (no increment)
   useEffect(() => {
     if (!user || isEdit) return;
-    supabase.from('quotations').select('id', { count: 'exact', head: true })
-      .then(({ count }) => {
-        setQuoteNumber(`QUO-${String((count ?? 0) + 1).padStart(4, '0')}`);
+    supabase.from('profiles').select('doc_number_settings').eq('id', user.id).single()
+      .then(({ data }) => {
+        const settings = (data as any)?.doc_number_settings?.quotation;
+        const merged = { ...DEFAULT_DOC_SETTINGS.quotation, ...(settings || {}) };
+        setQuoteNumber(generateDocNumber(merged));
       });
   }, [user, isEdit]);
 
@@ -162,10 +166,15 @@ export default function QuotationFormPage() {
     setSubmitting(true);
     try {
       const saveStatus = isEdit && editStatus && editStatus !== 'Draft' ? editStatus : status;
+      // For new quotations, atomically generate-and-increment to avoid duplicates
+      let finalNumber = quoteNumber;
+      if (!isEdit) {
+        finalNumber = await generateAndIncrement(supabase, user!.id, 'quotation');
+      }
       const payload = {
         user_id: user!.id,
         job_id: selectedJob!.id,
-        quote_number: quoteNumber,
+        quote_number: finalNumber,
         items: items.filter(i => i.description.trim()) as any,
         subtotal,
         discount: discountAmount,

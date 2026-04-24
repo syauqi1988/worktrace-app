@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Landmark, ClipboardCheck, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 
 interface Job {
   id: string;
@@ -106,12 +107,14 @@ export default function InvoiceFormPage() {
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
-  // Generate invoice number
+  // Preview next invoice number from doc_number_settings (no increment)
   useEffect(() => {
     if (!user || isEdit) return;
-    supabase.from('invoices').select('id', { count: 'exact', head: true })
-      .then(({ count }) => {
-        setInvoiceNumber(`INV-${String((count ?? 0) + 1).padStart(4, '0')}`);
+    supabase.from('profiles').select('doc_number_settings').eq('id', user.id).single()
+      .then(({ data }) => {
+        const settings = (data as any)?.doc_number_settings?.invoice;
+        const merged = { ...DEFAULT_DOC_SETTINGS.invoice, ...(settings || {}) };
+        setInvoiceNumber(generateDocNumber(merged));
       });
   }, [user, isEdit]);
 
@@ -266,12 +269,16 @@ export default function InvoiceFormPage() {
 
     setSubmitting(true);
     try {
+      let finalNumber = invoiceNumber;
+      if (!isEdit) {
+        finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+      }
       const payload: any = {
         user_id: user!.id,
         job_id: selectedJob!.id,
         customer_id: selectedJob!.customer_id || null,
         quote_id: linkedQuoteId,
-        invoice_number: invoiceNumber,
+        invoice_number: finalNumber,
         items: items.filter(i => i.description.trim()),
         subtotal,
         discount: discountAmount,

@@ -35,6 +35,12 @@ export interface Profile {
   cancel_requested_at: string | null;
   cancel_reason: string | null;
   last_support_visit: string | null;
+  doc_number_settings?: any;
+  account_status?: string | null;
+  deletion_requested_at?: string | null;
+  deletion_scheduled_at?: string | null;
+  deletion_reason?: string | null;
+  deletion_cancelled_at?: string | null;
 }
 
 interface AuthContextType {
