@@ -14,6 +14,7 @@ import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
+import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 
 interface Job {
   id: string;
@@ -89,14 +90,15 @@ export default function CompletionReportPage() {
         setNotes(r.notes || '');
         setIsSubmitted(r.status === 'submitted');
       } else {
-        // Generate report number
+        // Preview next report number from doc_number_settings
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('report_count')
+          .select('doc_number_settings')
           .eq('id', user!.id)
           .single();
-        const count = (profileData as any)?.report_count ?? 0;
-        setReportNumber(`RPT-${String(count + 1).padStart(4, '0')}`);
+        const settings = (profileData as any)?.doc_number_settings?.completion_report;
+        const merged = { ...DEFAULT_DOC_SETTINGS.completion_report, ...(settings || {}) };
+        setReportNumber(generateDocNumber(merged));
         // Pre-fill technician
         if (profile?.company_name) setTechnicianName(profile.company_name);
       }
@@ -188,14 +190,10 @@ export default function CompletionReportPage() {
         const { error } = await supabase.from('completion_reports').update(payload).eq('id', reportId);
         if (error) throw error;
       } else {
-        // Increment report_count
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('report_count')
-          .eq('id', user!.id)
-          .single();
-        const count = (profileData as any)?.report_count ?? 0;
-        await supabase.from('profiles').update({ report_count: count + 1 } as any).eq('id', user!.id);
+        // Atomically generate and increment doc number for completion report
+        const finalNumber = await generateAndIncrement(supabase, user!.id, 'completion_report');
+        payload.report_number = finalNumber;
+        setReportNumber(finalNumber);
 
         const { error } = await supabase.from('completion_reports').insert(payload);
         if (error) throw error;

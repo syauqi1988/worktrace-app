@@ -16,6 +16,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
+import { generateAndIncrement } from '@/utils/generateDocNumber';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -181,8 +182,7 @@ export default function QuotationDetailPage() {
     if (!quotation) return;
     setConverting(true);
     try {
-      const { count } = await supabase.from('invoices').select('id', { count: 'exact', head: true });
-      const invoiceNumber = `INV-${String((count ?? 0) + 1).padStart(4, '0')}`;
+      const invoiceNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 30);
 

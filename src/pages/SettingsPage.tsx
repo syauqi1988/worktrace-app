@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import PlanCards from "@/components/PlanCards";
+import DocNumberSettings from "@/components/DocNumberSettings";
+import AccountDeletionDialog from "@/components/AccountDeletionDialog";
 import {
   Building2,
   Shield,
@@ -867,8 +869,11 @@ export default function SettingsPage() {
           </div>
         ) : null}
 
-        {isFree && <PlanCards currentPlan={profile?.plan || "free"} onSelect={() => {}} compact />}
+      {isFree && <PlanCards currentPlan={profile?.plan || "free"} onSelect={() => {}} compact />}
       </section>
+
+      {/* Section — Nombor Dokumen */}
+      <DocNumberSettings />
 
       {/* Section 6 — Referral */}
       <section id="referral-section" className="bg-card rounded-xl border border-border p-5 space-y-4">
@@ -1056,32 +1061,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <ConfirmDialog
-        isOpen={deleteOpen}
-        onClose={() => {
-          setDeleteOpen(false);
-          setDeleteConfirmText("");
-        }}
-        onConfirm={handleDeleteAccount}
-        title="Padam Akaun Secara Kekal"
-        body="Semua data anda akan dipadam secara kekal. Tindakan ini tidak boleh dibatalkan."
-        confirmLabel="Padam Akaun Saya Secara Kekal"
-        confirmVariant="danger"
-        isLoading={deleting}
-      >
-        <div className="px-6 pb-2">
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Taip PADAM untuk mengesahkan:</label>
-          <Input
-            value={deleteConfirmText}
-            onChange={(e) => setDeleteConfirmText(e.target.value)}
-            placeholder="Taip PADAM di sini"
-            className={`h-11 rounded-lg ${deleteConfirmText === "PADAM" ? "border-green-500 focus:ring-green-500" : deleteConfirmText ? "border-destructive" : ""}`}
-          />
-          {deleteConfirmText !== "" && deleteConfirmText !== "PADAM" && (
-            <p className="text-xs text-destructive mt-1">Sila taip "PADAM" untuk meneruskan</p>
-          )}
-        </div>
-      </ConfirmDialog>
+      <AccountDeletionDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} />
 
       <CancellationDialog
         open={cancelOpen}
