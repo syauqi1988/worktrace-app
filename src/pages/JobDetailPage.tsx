@@ -379,6 +379,80 @@ export default function JobDetailPage() {
         )}
       </div>
 
+      {/* Related Quotation */}
+      <div className="bg-card rounded-xl border border-border p-4">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <FileText className="h-3.5 w-3.5" /> Sebut Harga
+        </p>
+        {quotation ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-primary">{quotation.quote_number}</span>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                quotation.status === 'Accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
+                quotation.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
+                quotation.status === 'Rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
+                'bg-[#F1F5F9] text-[#64748B]'
+              }`}>{quotation.status}</span>
+            </div>
+            <p className="text-sm font-semibold text-foreground">RM {Number(quotation.total).toFixed(2)}</p>
+            {quotation.valid_until && (
+              <p className="text-xs text-muted-foreground">Sah hingga: {formatDate(quotation.valid_until)}</p>
+            )}
+            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
+              onClick={() => navigate(`/quotations/${quotation.id}`)}>
+              Lihat Sebut Harga →
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
+            <Button variant="outline" size="sm" className="text-xs gap-1"
+              onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
+              <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Work Order Card */}
+      <div className="bg-card rounded-xl border border-border p-4">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <ClipboardCheck className="h-3.5 w-3.5" /> Work Order
+        </p>
+        {workOrder ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-primary">{workOrder.wo_number}</span>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                workOrder.status === 'Accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
+                workOrder.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
+                workOrder.status === 'Rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
+                'bg-[#F1F5F9] text-[#64748B]'
+              }`}>{workOrder.status}</span>
+            </div>
+            <p className="text-sm font-semibold text-foreground">RM {Number(workOrder.total).toFixed(2)}</p>
+            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
+              onClick={() => navigate(`/jobs/${job.id}/work-order`)}>
+              Lihat Work Order →
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {quotation?.status === 'Accepted'
+                ? 'Sedia untuk Work Order'
+                : 'Sebut harga perlu diterima dahulu'}
+            </p>
+            <Button variant="outline" size="sm" className="text-xs gap-1"
+              disabled={quotation?.status !== 'Accepted'}
+              onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>
+              <ClipboardCheck className="h-3.5 w-3.5" /> Buat Work Order
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Completion Report Card */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
@@ -425,46 +499,13 @@ export default function JobDetailPage() {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Belum ada laporan</p>
+            <p className="text-sm text-muted-foreground">
+              {workOrder?.status === 'Accepted' ? 'Sedia untuk laporan' : 'Work Order perlu diterima dahulu'}
+            </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
+              disabled={workOrder?.status !== 'Accepted'}
               onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
               <ClipboardCheck className="h-3.5 w-3.5" /> Isi Laporan Siap Kerja
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Related Quotation */}
-      <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5" /> Sebut Harga
-        </p>
-        {quotation ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-primary">{quotation.quote_number}</span>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                quotation.status === 'Accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
-                quotation.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
-                quotation.status === 'Rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
-                'bg-[#F1F5F9] text-[#64748B]'
-              }`}>{quotation.status}</span>
-            </div>
-            <p className="text-sm font-semibold text-foreground">RM {Number(quotation.total).toFixed(2)}</p>
-            {quotation.valid_until && (
-              <p className="text-xs text-muted-foreground">Sah hingga: {formatDate(quotation.valid_until)}</p>
-            )}
-            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
-              onClick={() => navigate(`/quotations/${quotation.id}`)}>
-              Lihat Sebut Harga →
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
-            <Button variant="outline" size="sm" className="text-xs gap-1"
-              onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
-              <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
             </Button>
           </div>
         )}
