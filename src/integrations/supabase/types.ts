@@ -115,6 +115,8 @@ export type Database = {
       }
       completion_reports: {
         Row: {
+          after_photos: Json | null
+          before_photos: Json | null
           completion_date: string | null
           created_at: string | null
           customer_signature: string | null
@@ -131,6 +133,8 @@ export type Database = {
           work_description: string | null
         }
         Insert: {
+          after_photos?: Json | null
+          before_photos?: Json | null
           completion_date?: string | null
           created_at?: string | null
           customer_signature?: string | null
@@ -147,6 +151,8 @@ export type Database = {
           work_description?: string | null
         }
         Update: {
+          after_photos?: Json | null
+          before_photos?: Json | null
           completion_date?: string | null
           created_at?: string | null
           customer_signature?: string | null
@@ -164,6 +170,57 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_approvals: {
+        Row: {
+          action: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          document_id: string
+          document_type: string
+          expires_at: string | null
+          id: string
+          pdf_url: string | null
+          reason: string | null
+          responded_at: string | null
+          token: string
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          document_id: string
+          document_type: string
+          expires_at?: string | null
+          id?: string
+          pdf_url?: string | null
+          reason?: string | null
+          responded_at?: string | null
+          token: string
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          document_id?: string
+          document_type?: string
+          expires_at?: string | null
+          id?: string
+          pdf_url?: string | null
+          reason?: string | null
+          responded_at?: string | null
+          token?: string
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -174,6 +231,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           tags: string[] | null
+          tags_v2: Json | null
           tin_number: string | null
           updated_at: string
           user_id: string
@@ -187,6 +245,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           tags?: string[] | null
+          tags_v2?: Json | null
           tin_number?: string | null
           updated_at?: string
           user_id: string
@@ -200,6 +259,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           tags?: string[] | null
+          tags_v2?: Json | null
           tin_number?: string | null
           updated_at?: string
           user_id?: string
@@ -220,6 +280,7 @@ export type Database = {
           lhdn_submitted: boolean
           notes: string | null
           paid_date: string | null
+          payment_proof_token: string | null
           quote_id: string | null
           receipt_number: string | null
           selected_payment_methods: Json | null
@@ -244,6 +305,7 @@ export type Database = {
           lhdn_submitted?: boolean
           notes?: string | null
           paid_date?: string | null
+          payment_proof_token?: string | null
           quote_id?: string | null
           receipt_number?: string | null
           selected_payment_methods?: Json | null
@@ -268,6 +330,7 @@ export type Database = {
           lhdn_submitted?: boolean
           notes?: string | null
           paid_date?: string | null
+          payment_proof_token?: string | null
           quote_id?: string | null
           receipt_number?: string | null
           selected_payment_methods?: Json | null
@@ -361,6 +424,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_proofs: {
+        Row: {
+          amount_paid: number | null
+          bank_name: string | null
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          payer_name: string | null
+          payment_date: string | null
+          payment_method: string | null
+          receipt_url: string | null
+          reference_number: string | null
+          rejection_reason: string | null
+          status: string
+          submitted_at: string | null
+          token: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount_paid?: number | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          payer_name?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          receipt_url?: string | null
+          reference_number?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_at?: string | null
+          token: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount_paid?: number | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          payer_name?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          receipt_url?: string | null
+          reference_number?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_at?: string | null
+          token?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
       }
       pricing_plans: {
         Row: {
@@ -475,6 +601,7 @@ export type Database = {
           tutorial_seen_count: number | null
           tutorial_state: Json | null
           updated_at: string
+          wo_terms: string | null
         }
         Insert: {
           account_status?: string | null
@@ -522,6 +649,7 @@ export type Database = {
           tutorial_seen_count?: number | null
           tutorial_state?: Json | null
           updated_at?: string
+          wo_terms?: string | null
         }
         Update: {
           account_status?: string | null
@@ -569,6 +697,7 @@ export type Database = {
           tutorial_seen_count?: number | null
           tutorial_state?: Json | null
           updated_at?: string
+          wo_terms?: string | null
         }
         Relationships: []
       }
@@ -887,6 +1016,7 @@ export type Database = {
         Returns: undefined
       }
       expire_subscriptions: { Args: never; Returns: undefined }
+      generate_approval_token: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
