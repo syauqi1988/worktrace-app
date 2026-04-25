@@ -8,16 +8,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import PlanCards from "@/components/PlanCards";
 import DocNumberSettings from "@/components/DocNumberSettings";
 import AccountDeletionDialog from "@/components/AccountDeletionDialog";
+import SettingsAccordion from "@/components/settings/SettingsAccordion";
+import WorkOrderTermsSection from "@/components/settings/WorkOrderTermsSection";
+import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
+import AiHelpButton from "@/components/settings/AiHelpButton";
 import {
   Building2,
   Shield,
   CreditCard,
   AlertTriangle,
-  ExternalLink,
   FileText,
   Landmark,
   Gift,
@@ -25,13 +27,11 @@ import {
   Copy,
   MessageCircle,
   Send,
-  Trash2,
   Plus,
-  X,
-  Loader2,
   BookOpen,
   Play,
-  Headphones,
+  Hash,
+  Link2,
 } from "lucide-react";
 import { useTutorial } from "@/hooks/useTutorial";
 import CancellationDialog from "@/components/CancellationDialog";
@@ -67,8 +67,16 @@ const BANK_OPTIONS = [
 ];
 const QR_PROVIDERS = ["DuitNow QR", "TnG eWallet", "ShopeePay", "GrabPay", "Boost", "Other"];
 
+const TERMS_TABS = [
+  { key: "quotation", label: "Sebut Harga" },
+  { key: "invoice", label: "Invois" },
+  { key: "work_order", label: "Work Order" },
+] as const;
+
+type TermsTab = (typeof TERMS_TABS)[number]["key"];
+
 export default function SettingsPage() {
-  const { user, profile, updateProfile, signOut, refreshProfile } = useAuth();
+  const { user, profile, updateProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { totalSeenCount } = useTutorial("settings");
   const { getPlan } = usePricingPlans();
@@ -78,7 +86,6 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
 
   // SSM
@@ -94,6 +101,7 @@ export default function SettingsPage() {
   const [savingLhdn, setSavingLhdn] = useState(false);
 
   // T&C
+  const [termsTab, setTermsTab] = useState<TermsTab>("quotation");
   const [quotationTerms, setQuotationTerms] = useState("");
   const [invoiceTerms, setInvoiceTerms] = useState("");
   const [savingTerms, setSavingTerms] = useState(false);
@@ -114,20 +122,17 @@ export default function SettingsPage() {
 
   // Delete account
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
-  const [deleting, setDeleting] = useState(false);
 
   // Cancellation
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
-  const [renewPeriod, setRenewPeriod] = useState<'monthly' | 'yearly'>(
-    (profile?.billing_period as 'monthly' | 'yearly') || 'monthly'
+  const [renewPeriod, setRenewPeriod] = useState<"monthly" | "yearly">(
+    (profile?.billing_period as "monthly" | "yearly") || "monthly",
   );
   const { initiatePayment, isLoading: billPlzLoading } = useBillPlz();
 
   // Referral
   const [referrals, setReferrals] = useState<any[]>([]);
-  const [loadingReferrals, setLoadingReferrals] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -150,7 +155,6 @@ export default function SettingsPage() {
   // Fetch referrals
   useEffect(() => {
     if (!user) return;
-    setLoadingReferrals(true);
     supabase
       .from("referrals")
       .select("*")
@@ -158,7 +162,6 @@ export default function SettingsPage() {
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setReferrals(data || []);
-        setLoadingReferrals(false);
       });
   }, [user]);
 
@@ -180,26 +183,6 @@ export default function SettingsPage() {
     toast.success("Profil berjaya dikemaskini!");
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/logo.${ext}`;
-    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
-    if (error) {
-      toast.error("Gagal muat naik logo");
-      setUploading(false);
-      return;
-    }
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("logos").getPublicUrl(path);
-    setLogoUrl(publicUrl);
-    setUploading(false);
-    toast.success("Logo dimuat naik!");
-  };
-
   const handleSaveLhdn = async () => {
     setSavingLhdn(true);
     await updateProfile({
@@ -214,7 +197,10 @@ export default function SettingsPage() {
 
   const handleSaveTerms = async () => {
     setSavingTerms(true);
-    await updateProfile({ quotation_terms: quotationTerms || null, invoice_terms: invoiceTerms || null });
+    await updateProfile({
+      quotation_terms: quotationTerms || null,
+      invoice_terms: invoiceTerms || null,
+    });
     setSavingTerms(false);
     toast.success("Terma & syarat berjaya disimpan!");
   };
@@ -309,7 +295,12 @@ export default function SettingsPage() {
         m.id === editingPayment.id ? { ...m, provider: qrProvider, qr_image_url: qrImageUrl } : m,
       );
     } else {
-      methods.push({ id: crypto.randomUUID(), type: "qr_payment", provider: qrProvider, qr_image_url: qrImageUrl });
+      methods.push({
+        id: crypto.randomUUID(),
+        type: "qr_payment",
+        provider: qrProvider,
+        qr_image_url: qrImageUrl,
+      });
     }
     await savePaymentMethods(methods);
     resetQrForm();
@@ -336,35 +327,6 @@ export default function SettingsPage() {
     setQrImageUrl(m.qr_image_url || "");
     setEditingPayment(m);
     setShowQrForm(true);
-  };
-
-  // Delete account
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== "PADAM") return;
-    setDeleting(true);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Sesi tamat. Sila log masuk semula.");
-        setDeleting(false);
-        return;
-      }
-      const { error } = await supabase.functions.invoke("delete-user", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error) throw error;
-      await supabase.auth.signOut();
-      localStorage.clear();
-      sessionStorage.clear();
-      navigate("/login");
-      toast.success("Akaun anda telah dipadam.");
-    } catch {
-      toast.error("Gagal memadam akaun. Sila cuba lagi atau hubungi sokongan.");
-    } finally {
-      setDeleting(false);
-    }
   };
 
   // Referral
@@ -396,50 +358,20 @@ export default function SettingsPage() {
   const qrs = paymentMethods.filter((m) => m.type === "qr_payment");
 
   return (
-    <div className="p-4 md:p-6 space-y-8 max-w-3xl">
+    <div className="p-4 md:p-6 space-y-4 max-w-3xl">
       <h1 className="text-xl font-bold text-foreground">Tetapan</h1>
 
-      {/* Section 1 — Company Profile */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Building2 className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Profil Syarikat</h2>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Logo Syarikat</label>
-          <div className="flex items-center gap-4">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt="Logo"
-                className="h-[120px] w-[120px] object-contain rounded-xl border border-border"
-              />
-            ) : (
-              <div className="h-[120px] w-[120px] rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-sm">
-                Logo
-              </div>
-            )}
-            <div className="space-y-2">
-              <label className="cursor-pointer">
-                <span className="text-sm text-primary hover:underline font-medium">
-                  {uploading ? "Memuat naik..." : "Tukar Logo"}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
-              {logoUrl && (
-                <button onClick={() => setLogoUrl(null)} className="text-sm text-destructive hover:underline block">
-                  Padam Logo
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* 1 — Profil Syarikat */}
+      <SettingsAccordion
+        id="profil-syarikat"
+        icon={<Building2 className="h-5 w-5" />}
+        title="Profil Syarikat"
+        description="Nama syarikat, telefon, alamat dan logo"
+        defaultOpen
+      >
+        {user && (
+          <CompanyLogoUpload userId={user.id} logoUrl={logoUrl} onChange={setLogoUrl} />
+        )}
         <div>
           <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Syarikat *</label>
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="h-11 rounded-lg" />
@@ -462,9 +394,7 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">
-            No. Pendaftaran SSM (Baru)
-          </label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Baru)</label>
           <Input
             value={ssmNumberNew}
             onChange={(e) => setSsmNumberNew(e.target.value.replace(/\D/g, ""))}
@@ -476,9 +406,7 @@ export default function SettingsPage() {
           <p className="text-xs text-muted-foreground mt-1">Format baru SSM (nombor sahaja)</p>
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">
-            No. Pendaftaran SSM (Lama)
-          </label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Lama)</label>
           <Input
             value={ssmNumberOld}
             onChange={(e) => setSsmNumberOld(e.target.value)}
@@ -490,15 +418,15 @@ export default function SettingsPage() {
         <Button onClick={handleSaveProfile} disabled={savingProfile} className="rounded-lg">
           {savingProfile ? "Menyimpan..." : "Simpan Profil"}
         </Button>
-      </section>
+      </SettingsAccordion>
 
-      {/* Section 2 — LHDN */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">e-Invois LHDN MyInvois</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">Tetapan untuk pematuhan e-invois LHDN Malaysia</p>
+      {/* 2 — LHDN & SST */}
+      <SettingsAccordion
+        id="lhdn-sst"
+        icon={<Shield className="h-5 w-5" />}
+        title="LHDN & SST"
+        description="Maklumat cukai dan e-Invois LHDN MyInvois"
+      >
         <div className="flex items-center justify-between py-2">
           <span className="text-sm font-medium text-foreground">Aktifkan e-Invois LHDN</span>
           <Switch checked={lhdnEnabled} onCheckedChange={setLhdnEnabled} />
@@ -543,50 +471,31 @@ export default function SettingsPage() {
             )}
           </div>
         )}
-        <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-800">
+        <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
           Integrasi automatik dengan portal MyInvois LHDN akan datang tidak lama lagi.
         </div>
         <Button onClick={handleSaveLhdn} disabled={savingLhdn} className="rounded-lg">
           {savingLhdn ? "Menyimpan..." : "Simpan Tetapan LHDN"}
         </Button>
-      </section>
+      </SettingsAccordion>
 
-      {/* Section 3 — Terms & Conditions */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <FileText className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Terma & Syarat Dokumen</h2>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Terma & Syarat Sebut Harga</label>
-          <Textarea value={quotationTerms} onChange={(e) => setQuotationTerms(e.target.value)} rows={8} />
-          <p className="text-xs text-muted-foreground mt-1">Terma ini dipaparkan dalam setiap sebut harga PDF</p>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Terma & Syarat Invois</label>
-          <Textarea value={invoiceTerms} onChange={(e) => setInvoiceTerms(e.target.value)} rows={8} />
-          <p className="text-xs text-muted-foreground mt-1">Terma ini dipaparkan dalam setiap invois PDF</p>
-        </div>
-        <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-          {savingTerms ? "Menyimpan..." : "Simpan Terma & Syarat"}
-        </Button>
-      </section>
-
-      {/* Section 4 — Payment Methods */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Landmark className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Kaedah Pembayaran</h2>
-        </div>
+      {/* 3 — Kaedah Pembayaran */}
+      <SettingsAccordion
+        id="kaedah-pembayaran"
+        icon={<Landmark className="h-5 w-5" />}
+        title="Kaedah Pembayaran"
+        description="Akaun bank dan QR bayaran untuk invois"
+      >
         <p className="text-sm text-muted-foreground">Maklumat ini akan dipaparkan dalam setiap invois anda</p>
 
-        {/* Bank accounts */}
         {banks.map((b) => (
           <div key={b.id} className="border border-border rounded-lg p-4 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">🏦 Bank Transfer</span>
               {b.is_primary && (
-                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Utama ✓</span>
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                  Utama ✓
+                </span>
               )}
             </div>
             <p className="text-sm text-foreground">{b.bank_name}</p>
@@ -596,14 +505,16 @@ export default function SettingsPage() {
               <button onClick={() => handleEditBank(b)} className="text-xs text-primary hover:underline">
                 Edit
               </button>
-              <button onClick={() => handleDeletePayment(b.id)} className="text-xs text-destructive hover:underline">
+              <button
+                onClick={() => handleDeletePayment(b.id)}
+                className="text-xs text-destructive hover:underline"
+              >
                 Padam
               </button>
             </div>
           </div>
         ))}
 
-        {/* QR payments */}
         {qrs.map((q) => (
           <div key={q.id} className="border border-border rounded-lg p-4 space-y-2">
             <span className="text-sm font-medium">📱 {q.provider || "QR Payment"}</span>
@@ -618,14 +529,16 @@ export default function SettingsPage() {
               <button onClick={() => handleEditQr(q)} className="text-xs text-primary hover:underline">
                 Edit
               </button>
-              <button onClick={() => handleDeletePayment(q.id)} className="text-xs text-destructive hover:underline">
+              <button
+                onClick={() => handleDeletePayment(q.id)}
+                className="text-xs text-destructive hover:underline"
+              >
                 Padam
               </button>
             </div>
           </div>
         ))}
 
-        {/* Add bank form */}
         {showBankForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
@@ -644,7 +557,11 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Nama Akaun *</label>
-              <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} className="h-10 rounded-lg" />
+              <Input
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                className="h-10 rounded-lg"
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Nombor Akaun *</label>
@@ -671,7 +588,6 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Add QR form */}
         {showQrForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
@@ -690,7 +606,12 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Muat Naik Imej QR</label>
-              <input type="file" accept="image/png,image/jpeg" onChange={handleQrUpload} disabled={uploadingQr} />
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={handleQrUpload}
+                disabled={uploadingQr}
+              />
               {uploadingQr && <p className="text-xs text-muted-foreground">Memuat naik...</p>}
               {qrImageUrl && (
                 <img
@@ -712,7 +633,7 @@ export default function SettingsPage() {
         )}
 
         {!showBankForm && !showQrForm && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setShowBankForm(true)} size="sm" className="rounded-lg gap-1.5">
               <Plus className="h-3.5 w-3.5" /> Tambah Akaun Bank
             </Button>
@@ -721,21 +642,76 @@ export default function SettingsPage() {
             </Button>
           </div>
         )}
-      </section>
+      </SettingsAccordion>
 
-      {/* Section 5 — Subscription */}
-      <section
-        className={`bg-card rounded-xl border p-5 space-y-4 ${(profile as any)?.subscription_cancelled && !isFree ? "border-amber-300" : "border-border"}`}
+      {/* 4 — Terma & Syarat (sub-tabs: Sebut Harga / Invois / Work Order) */}
+      <SettingsAccordion
+        id="terma-syarat"
+        icon={<FileText className="h-5 w-5" />}
+        title="Terma & Syarat"
+        description="T&C untuk Sebut Harga, Invois dan Work Order"
       >
-        <div className="flex items-center gap-2 mb-2">
-          <CreditCard className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Langganan & Pelan</h2>
+        <div className="flex gap-2 border-b border-border mb-2">
+          {TERMS_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTermsTab(t.key)}
+              className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                termsTab === t.key
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
+        {termsTab === "quotation" && (
+          <div className="space-y-3">
+            <Textarea value={quotationTerms} onChange={(e) => setQuotationTerms(e.target.value)} rows={10} />
+            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Sebut Harga PDF</p>
+            <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
+              {savingTerms ? "Menyimpan..." : "Simpan Terma Sebut Harga"}
+            </Button>
+          </div>
+        )}
+
+        {termsTab === "invoice" && (
+          <div className="space-y-3">
+            <Textarea value={invoiceTerms} onChange={(e) => setInvoiceTerms(e.target.value)} rows={10} />
+            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Invois PDF</p>
+            <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
+              {savingTerms ? "Menyimpan..." : "Simpan Terma Invois"}
+            </Button>
+          </div>
+        )}
+
+        {termsTab === "work_order" && <WorkOrderTermsSection />}
+      </SettingsAccordion>
+
+      {/* 5 — Nombor Dokumen */}
+      <SettingsAccordion
+        id="nombor-dokumen"
+        icon={<Hash className="h-5 w-5" />}
+        title="Nombor Dokumen"
+        description="Format nombor auto untuk semua jenis dokumen"
+      >
+        <DocNumberSettings />
+      </SettingsAccordion>
+
+      {/* 6 — Langganan & Pelan */}
+      <SettingsAccordion
+        id="langganan-pelan"
+        icon={<CreditCard className="h-5 w-5" />}
+        title="Langganan & Pelan"
+        description="Pelan semasa dan pengurusan langganan"
+      >
         {freeMonthsBalance > 0 && (
-          <div className="rounded-lg bg-green-50 border border-green-200 p-4 flex items-start gap-2">
-            <Gift className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-green-700">
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-2">
+            <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
               Anda ada <strong>{freeMonthsBalance} bulan percuma</strong> daripada program rujukan! Akan digunakan
               semasa pembaharuan langganan.
             </p>
@@ -744,13 +720,13 @@ export default function SettingsPage() {
 
         <div className="rounded-lg border border-border p-4 space-y-2">
           <p className="text-sm text-muted-foreground mb-1">Pelan Semasa</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
               {planLabel}
             </span>
             <span className="text-base font-bold text-foreground">{planLabel}</span>
             {!isFree && !(profile as any)?.subscription_cancelled && (
-              <span className="text-xs text-green-600 font-medium">— Aktif ●</span>
+              <span className="text-xs text-emerald-600 font-medium">— Aktif ●</span>
             )}
             {!isFree && (profile as any)?.subscription_cancelled && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
@@ -760,15 +736,15 @@ export default function SettingsPage() {
           </div>
           <p className="text-sm text-muted-foreground">
             {(() => {
-              const dbPlan = getPlan(profile?.plan ?? 'free');
-              const isYearly = profile?.billing_period === 'yearly';
-              const price = dbPlan
-                ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price)
-                : 0;
-              const periodLabel = isFree ? '' : isYearly ? '/tahun' : '/bulan';
-              return `RM${price}${periodLabel}`;
+              const dbPlan = getPlan(profile?.plan ?? "free");
+              const isYearly = profile?.billing_period === "yearly";
+              const price = dbPlan ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price) : 0;
+              const periodLabel = isFree ? "" : isYearly ? "/tahun" : "/bulan";
+              return `RM${price.toFixed(2)}${periodLabel}`;
             })()}
-            {isFree ? " · Selamanya percuma" : ` · ${profile?.billing_period === "yearly" ? "Tahunan" : "Bulanan"}`}
+            {isFree
+              ? " · Selamanya percuma"
+              : ` · ${profile?.billing_period === "yearly" ? "Tahunan" : "Bulanan"}`}
           </p>
           {!isFree && (profile as any)?.subscription_cancelled && profile?.subscription_end_date && (
             <p className="text-sm text-amber-700 mt-1">
@@ -806,7 +782,6 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* Action buttons */}
         {!isFree && (profile as any)?.subscription_cancelled ? (
           <Button onClick={() => setReactivateOpen(true)} className="w-full rounded-lg">
             Aktifkan Semula Langganan
@@ -814,11 +789,11 @@ export default function SettingsPage() {
         ) : !isFree ? (
           <div className="space-y-3">
             {(() => {
-              const dbPlan = getPlan(profile?.plan ?? 'pro');
+              const dbPlan = getPlan(profile?.plan ?? "pro");
               const monthly = dbPlan ? Number(dbPlan.monthly_price) : 0;
               const yearly = dbPlan ? Number(dbPlan.yearly_price) : 0;
               const discount = dbPlan ? Number(dbPlan.yearly_discount_pct) || 0 : 0;
-              const price = renewPeriod === 'yearly' ? yearly : monthly;
+              const price = renewPeriod === "yearly" ? yearly : monthly;
               return (
                 <>
                   <div>
@@ -826,19 +801,27 @@ export default function SettingsPage() {
                     <div className="flex rounded-lg border border-border overflow-hidden">
                       <button
                         type="button"
-                        onClick={() => setRenewPeriod('monthly')}
-                        className={`flex-1 py-2 text-sm font-medium transition-colors ${renewPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}
+                        onClick={() => setRenewPeriod("monthly")}
+                        className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                          renewPeriod === "monthly"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-accent"
+                        }`}
                       >
-                        Bulanan — RM{monthly}/bulan
+                        Bulanan — RM{monthly.toFixed(2)}/bulan
                       </button>
                       <button
                         type="button"
-                        onClick={() => setRenewPeriod('yearly')}
-                        className={`flex-1 py-2 text-sm font-medium transition-colors ${renewPeriod === 'yearly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}
+                        onClick={() => setRenewPeriod("yearly")}
+                        className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                          renewPeriod === "yearly"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-accent"
+                        }`}
                       >
-                        Tahunan — RM{yearly}/tahun
+                        Tahunan — RM{yearly.toFixed(2)}/tahun
                         {discount > 0 && (
-                          <span className="ml-1.5 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                          <span className="ml-1.5 text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">
                             -{discount}%
                           </span>
                         )}
@@ -846,42 +829,58 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <Button
-                    onClick={() =>
-                      initiatePayment(profile?.plan as 'pro' | 'team', renewPeriod)
-                    }
+                    onClick={() => initiatePayment(profile?.plan as "pro" | "team", renewPeriod)}
                     disabled={billPlzLoading}
                     className="w-full rounded-lg"
                   >
                     {billPlzLoading
-                      ? 'Memproses...'
-                      : `Perbaharui Langganan — RM${price}/${renewPeriod === 'yearly' ? 'tahun' : 'bulan'}`}
+                      ? "Memproses..."
+                      : `Perbaharui Langganan — RM${price.toFixed(2)}/${
+                          renewPeriod === "yearly" ? "tahun" : "bulan"
+                        }`}
                   </Button>
                 </>
               );
             })()}
             <button
               onClick={() => setCancelOpen(true)}
-              className="w-full text-center text-[13px] font-medium hover:underline"
-              style={{ color: "#DC2626" }}
+              className="w-full text-center text-[13px] font-medium text-destructive hover:underline"
             >
               Batalkan Langganan
             </button>
           </div>
         ) : null}
 
-      {isFree && <PlanCards currentPlan={profile?.plan || "free"} onSelect={() => {}} compact />}
-      </section>
+        {isFree && <PlanCards currentPlan={profile?.plan || "free"} onSelect={() => {}} compact />}
+      </SettingsAccordion>
 
-      {/* Section — Nombor Dokumen */}
-      <DocNumberSettings />
-
-      {/* Section 6 — Referral */}
-      <section id="referral-section" className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Gift className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Program Rujukan WorkTrace</h2>
+      {/* 7 — Integrasi & Pautan */}
+      <SettingsAccordion
+        id="integrasi-pautan"
+        icon={<Link2 className="h-5 w-5" />}
+        title="Integrasi & Pautan"
+        description="Pautan pengesahan dan bukti pembayaran"
+      >
+        <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">Pengesahan & Bukti Pembayaran Built-in</p>
+          <p className="text-sm text-muted-foreground">
+            WorkTrace menjana pautan pengesahan automatik ketika anda menghantar Sebut Harga, Work Order, atau
+            Laporan kepada pelanggan. Untuk Invois, pautan bukti pembayaran (/bayar) dijana secara automatik —
+            pelanggan boleh muat naik resit terus tanpa perlu sebarang integrasi luaran.
+          </p>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Tiada konfigurasi diperlukan — semua pautan dijana automatik.
+        </p>
+      </SettingsAccordion>
 
+      {/* 8 — Rujukan */}
+      <SettingsAccordion
+        id="rujukan"
+        icon={<Gift className="h-5 w-5" />}
+        title="Rujukan"
+        description="Kod rujukan dan ganjaran bulan percuma"
+      >
         {isFree ? (
           <div className="text-center py-8 space-y-3">
             <Gift className="h-10 w-10 text-muted-foreground/30 mx-auto" />
@@ -893,8 +892,8 @@ export default function SettingsPage() {
         ) : (
           <>
             <div
-              className="rounded-xl border border-blue-200 p-5 space-y-4"
-              style={{ background: "linear-gradient(135deg, #EFF6FF, #F0FDF4)" }}
+              className="rounded-xl border border-primary/20 p-5 space-y-4"
+              style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.5))" }}
             >
               <p className="text-sm text-foreground">
                 Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!
@@ -908,7 +907,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   onClick={shareWhatsApp}
                   size="sm"
@@ -923,7 +922,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: "Jumlah Rujukan", value: profile?.referral_count || 0 },
@@ -938,7 +936,6 @@ export default function SettingsPage() {
               ))}
             </div>
 
-            {/* Referral history */}
             <div>
               <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
               {referrals.length === 0 ? (
@@ -950,7 +947,10 @@ export default function SettingsPage() {
               ) : (
                 <div className="space-y-2">
                   {referrals.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between border border-border rounded-lg p-3">
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between border border-border rounded-lg p-3"
+                    >
                       <div>
                         <p className="text-sm text-foreground">
                           {new Date(r.created_at).toLocaleDateString("ms-MY", {
@@ -960,7 +960,11 @@ export default function SettingsPage() {
                           })}
                         </p>
                         <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.status === "rewarded" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                            r.status === "rewarded"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-muted text-muted-foreground"
+                          }`}
                         >
                           {r.status === "rewarded" ? "✓ Ganjaran Diterima" : "Menunggu Langganan"}
                         </span>
@@ -975,94 +979,85 @@ export default function SettingsPage() {
             </div>
           </>
         )}
-      </section>
+      </SettingsAccordion>
 
-      {/* Section — Tutorial & Bantuan */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <BookOpen className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Tutorial & Bantuan</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Tonton tutorial interaktif untuk belajar cara menggunakan WorkTrace dengan lebih efektif.
-        </p>
-        <p className="text-[13px] text-muted-foreground">
-          Tutorial dilihat: {totalSeenCount === 0 ? "Belum pernah ditonton" : `${totalSeenCount} kali`}
-        </p>
-        <button
-          onClick={() => window.__startWorkTraceTutorial?.()}
-          className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 transition-colors"
-        >
-          <Play className="h-4 w-4" /> Mulakan Tutorial Semula
-        </button>
-        <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Dashboard & ringkasan bisnes</li>
-          <li>Modul Kerja & pengurusan projek</li>
-          <li>Pengurusan Pelanggan</li>
-          <li>Sebut Harga profesional</li>
-          <li>Invois & rekod pembayaran</li>
-          <li>Tetapan profil syarikat</li>
-        </ul>
-      </section>
-
-      {/* Section — Perlukan Bantuan? */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Headphones className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Perlukan Bantuan?</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">Hubungi kami melalui:</p>
+      {/* 9 — Tutorial & Bantuan + AI */}
+      <SettingsAccordion
+        id="tutorial-bantuan"
+        icon={<BookOpen className="h-5 w-5" />}
+        title="Tutorial & Bantuan"
+        description="Tutorial interaktif dan bantuan AI"
+      >
         <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Tutorial Interaktif</h3>
+          </div>
+          <p className="text-[13px] text-muted-foreground">
+            Tutorial dilihat: {totalSeenCount === 0 ? "Belum pernah ditonton" : `${totalSeenCount} kali`}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Merangkumi: Dashboard, Kerja, Pelanggan, Sebut Harga, Invois, Tetapan
+          </p>
+          <button
+            onClick={() => window.__startWorkTraceTutorial?.()}
+            className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+          >
+            <Play className="h-4 w-4" /> Mulakan Tutorial Semula
+          </button>
+        </div>
+
+        <div className="border-t border-border pt-4">
+          <AiHelpButton />
+        </div>
+
+        <div className="border-t border-border pt-4 space-y-2">
+          <p className="text-sm text-muted-foreground">Perlukan bantuan manusia?</p>
           <button
             onClick={() => navigate("/support/new")}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
           >
             📧 Hantar Tiket Sokongan
           </button>
+          <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
         </div>
-        <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
-      </section>
+      </SettingsAccordion>
 
-      {/* Section 7 — Account Security */}
-      <section className="bg-card rounded-xl border border-border p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Keselamatan Akaun</h2>
-        </div>
+      {/* 10 — Zon Bahaya */}
+      <SettingsAccordion
+        id="zon-bahaya"
+        icon={<AlertTriangle className="h-5 w-5" />}
+        title="Zon Bahaya"
+        description="Padam akaun dan tindakan yang tidak boleh dibatalkan"
+        danger
+      >
         <div>
           <label className="text-sm font-medium text-foreground mb-1 block">E-mel Akaun</label>
           <p className="text-sm text-foreground">{user?.email}</p>
         </div>
-        <div className="rounded-lg border-2 border-destructive/30 p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <h3 className="text-sm font-bold text-destructive">Zon Bahaya</h3>
-          </div>
-          <div className="rounded-lg bg-red-50 border border-red-200 p-3 space-y-1">
-            <p className="text-[13px] text-red-700 font-medium flex items-center gap-1.5">
-              <AlertTriangle className="h-3.5 w-3.5" /> Tindakan Tidak Boleh Dibatalkan
-            </p>
-            <ul className="text-[13px] text-red-700 list-disc list-inside space-y-0.5">
-              <li>Semua kerja dan rekod</li>
-              <li>Semua pelanggan</li>
-              <li>Semua sebut harga dan invois</li>
-              <li>Semua fail dan dokumen</li>
-              <li>Profil dan akaun syarikat</li>
-              <li>Rekod rujukan</li>
-            </ul>
-          </div>
-          <Button
-            variant="outline"
-            className="text-destructive border-destructive hover:bg-destructive/5 rounded-lg"
-            onClick={() => setDeleteOpen(true)}
-          >
-            Padam Akaun
-          </Button>
+        <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 space-y-1">
+          <p className="text-[13px] text-destructive font-medium flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5" /> Tindakan Tidak Boleh Dibatalkan
+          </p>
+          <ul className="text-[13px] text-destructive list-disc list-inside space-y-0.5">
+            <li>Semua kerja dan rekod</li>
+            <li>Semua pelanggan</li>
+            <li>Semua sebut harga, work order dan invois</li>
+            <li>Semua fail dan dokumen</li>
+            <li>Profil dan akaun syarikat</li>
+            <li>Rekod rujukan</li>
+          </ul>
         </div>
-      </section>
+        <Button
+          variant="outline"
+          className="text-destructive border-destructive hover:bg-destructive/5 rounded-lg"
+          onClick={() => setDeleteOpen(true)}
+        >
+          Padam Akaun
+        </Button>
+      </SettingsAccordion>
 
       <AccountDeletionDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} />
-
       <CancellationDialog
         open={cancelOpen}
         onClose={() => setCancelOpen(false)}
