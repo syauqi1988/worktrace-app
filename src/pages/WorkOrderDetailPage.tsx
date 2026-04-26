@@ -17,6 +17,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -193,7 +194,17 @@ export default function WorkOrderDetailPage() {
       const fileName = `${user.id}/${wo.wo_number}.pdf`;
       await supabase.storage.from('work-order-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('work-order-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const publicUrl = signed?.signedUrl ?? '';
+      const pdfUrl = signed?.signedUrl ?? '';
+      const token = await getOrCreateApprovalToken({
+        userId: user.id,
+        documentId: wo.id,
+        documentType: 'work_order',
+        customerName: job.customers.name,
+        customerEmail: job.customers.email || null,
+        pdfUrl,
+        expiresInDays: 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
       const phone = formatPhone(job.customers.phone);
       const msg =
 `Assalamualaikum ${job.customers.name},
@@ -205,12 +216,16 @@ Berikut Work Order kami untuk pengesahan:
 📅 *Tarikh Mula:* ${formatDate(wo.scheduled_start_date)}
 📍 *Lokasi:* ${wo.location || '-'}
 
-🔗 ${publicUrl}
-
-Balas "SETUJU" untuk mengesahkan.
+Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+🔗 ${approvalUrl}
 
 *${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      // Auto-mark as Sent if Draft
+      if (wo.status === 'Draft') {
+        await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
+        await load();
+      }
     } catch {
       toast.error('Gagal kongsi');
     } finally {
