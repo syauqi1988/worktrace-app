@@ -20,6 +20,7 @@ import InvoicePDF from '@/components/pdf/InvoicePDF';
 import ReceiptPDF from '@/components/pdf/ReceiptPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { getOrCreatePaymentProofToken, buildPublicPaymentProofUrl } from '@/lib/approvals';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -97,6 +98,11 @@ export default function InvoiceDetailPage() {
   const [unlockText, setUnlockText] = useState('');
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [proof, setProof] = useState<any>(null);
+  const [requestingProof, setRequestingProof] = useState(false);
+  const [verifyingProof, setVerifyingProof] = useState(false);
+  const [rejectProofOpen, setRejectProofOpen] = useState(false);
+  const [proofRejectReason, setProofRejectReason] = useState('');
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   useEffect(() => {
@@ -134,6 +140,21 @@ export default function InvoiceDetailPage() {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
     }
   }, [profile?.logo_url]);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    (async () => {
+      const { data } = await supabase
+        .from('payment_proofs')
+        .select('*')
+        .eq('invoice_id', id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) setProof(data);
+    })();
+  }, [user, id, invoice?.status]);
 
   useEffect(() => {
     return () => {
@@ -414,6 +435,80 @@ export default function InvoiceDetailPage() {
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
+  const requestPaymentProof = async () => {
+    if (!checkWhatsAppShare()) return;
+    if (!invoice || !user || !hasPhone) return;
+    setRequestingProof(true);
+    try {
+      const token = await getOrCreatePaymentProofToken({
+        userId: user.id,
+        invoiceId: invoice.id,
+        customerName: customer?.name || null,
+      });
+      const url = buildPublicPaymentProofUrl(token);
+      // Refresh proof state
+      const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
+      if (data) setProof(data);
+      const phone = formatPhone(customerPhone);
+      const msg = `Assalamualaikum ${customer?.name || ''},\n\nMohon hantar bukti pembayaran untuk invois berikut:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n\nSila klik pautan ini untuk muat naik resit/bukti bayaran:\n🔗 ${url}\n\nTerima kasih!\n*${profile?.company_name || ''}*`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      toast.success('Pautan bukti bayaran dijana!');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal menjana pautan');
+    } finally {
+      setRequestingProof(false);
+    }
+  };
+
+  const verifyProofAndMarkPaid = async () => {
+    if (!proof || !invoice || !user) return;
+    setVerifyingProof(true);
+    try {
+      const receiptNumber = await generateReceiptNumber();
+      const paidDate = proof.payment_date || new Date().toISOString().slice(0, 10);
+      await supabase.from('payment_proofs').update({
+        status: 'verified',
+        verified_at: new Date().toISOString(),
+        verified_by: user.id,
+      } as any).eq('id', proof.id);
+      const { error } = await supabase.from('invoices').update({
+        status: 'Paid',
+        paid_date: paidDate,
+        receipt_number: receiptNumber,
+      } as any).eq('id', invoice.id);
+      if (error) throw error;
+      setInvoice({ ...invoice, status: 'Paid', paid_date: paidDate, receipt_number: receiptNumber });
+      setProof({ ...proof, status: 'verified', verified_at: new Date().toISOString() });
+      toast.success('Bukti disahkan, invois ditandakan Dibayar!');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal mengesahkan');
+    } finally {
+      setVerifyingProof(false);
+    }
+  };
+
+  const rejectProof = async () => {
+    if (!proof || !proofRejectReason.trim()) {
+      toast.error('Sila nyatakan sebab penolakan');
+      return;
+    }
+    setVerifyingProof(true);
+    try {
+      await supabase.from('payment_proofs').update({
+        status: 'rejected',
+        rejection_reason: proofRejectReason.trim(),
+      } as any).eq('id', proof.id);
+      setProof({ ...proof, status: 'rejected', rejection_reason: proofRejectReason.trim() });
+      setRejectProofOpen(false);
+      setProofRejectReason('');
+      toast.success('Bukti ditolak. Pelanggan boleh hantar semula dengan pautan baru.');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal');
+    } finally {
+      setVerifyingProof(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-6 space-y-4">
@@ -666,6 +761,45 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
+      {/* Payment Proof Section */}
+      {invoice.status !== 'Paid' && proof && proof.submitted_at && proof.status === 'pending' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-bold text-blue-900">📥 Bukti Pembayaran Diterima — Sila Sahkan</p>
+          <div className="grid grid-cols-2 gap-2 text-sm text-blue-900">
+            <div><span className="text-blue-700">Pembayar:</span> {proof.payer_name || '-'}</div>
+            <div><span className="text-blue-700">Jumlah:</span> RM {Number(proof.amount_paid || 0).toFixed(2)}</div>
+            <div><span className="text-blue-700">Tarikh:</span> {proof.payment_date || '-'}</div>
+            <div><span className="text-blue-700">Kaedah:</span> {proof.payment_method || '-'}</div>
+            {proof.bank_name && <div><span className="text-blue-700">Bank:</span> {proof.bank_name}</div>}
+            {proof.reference_number && <div><span className="text-blue-700">Rujukan:</span> {proof.reference_number}</div>}
+          </div>
+          {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">Nota:</span> {proof.notes}</p>}
+          {proof.receipt_url && (
+            <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-blue-700 underline">Lihat resit/bukti</a>
+          )}
+          <div className="flex gap-2">
+            <Button onClick={verifyProofAndMarkPaid} disabled={verifyingProof} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 flex-1">
+              <CheckCircle className="h-4 w-4" /> Sahkan & Tandakan Dibayar
+            </Button>
+            <Button onClick={() => setRejectProofOpen(true)} variant="outline" disabled={verifyingProof} className="text-destructive border-destructive/30 rounded-lg flex-1">
+              Tolak
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {invoice.status !== 'Paid' && proof && !proof.submitted_at && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-900">
+          ⏳ Menunggu pelanggan muat naik bukti pembayaran.
+        </div>
+      )}
+
+      {invoice.status !== 'Paid' && proof && proof.status === 'rejected' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-900">
+          ✕ Bukti terdahulu ditolak ({proof.rejection_reason || '-'}). Mohon bukti baru dari pelanggan.
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         {invoice.status === 'Draft' && (
@@ -676,14 +810,20 @@ export default function InvoiceDetailPage() {
         )}
         {(invoice.status === 'Sent' || isOverdue) && (
           <>
-            <Button onClick={() => setPayOpen(true)} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
-              <CheckCircle className="h-4 w-4" /> Tandakan Dibayar
-            </Button>
-            {hasPhone && (
-              <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
-                <MessageCircle className="h-4 w-4" /> Peringatan via WhatsApp
+            {hasPhone && (!proof || proof.status === 'rejected') && (
+              <Button onClick={requestPaymentProof} disabled={requestingProof} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
+                {requestingProof ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+                Mohon Bukti Bayaran (WhatsApp)
               </Button>
             )}
+            {hasPhone && (
+              <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
+                <MessageCircle className="h-4 w-4" /> Peringatan
+              </Button>
+            )}
+            <Button onClick={() => setPayOpen(true)} variant="outline" className="rounded-lg gap-2">
+              <CheckCircle className="h-4 w-4" /> Tandakan Manual
+            </Button>
           </>
         )}
       </div>
@@ -856,6 +996,21 @@ export default function InvoiceDetailPage() {
         open={receiptPreviewOpen}
         title={`Pratonton — ${invoice.receipt_number || 'Resit'}`}
       />
+
+      {/* Reject Proof Dialog */}
+      <Dialog open={rejectProofOpen} onOpenChange={setRejectProofOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tolak Bukti Pembayaran</DialogTitle>
+            <DialogDescription>Nyatakan sebab penolakan. Pelanggan perlu hantar semula.</DialogDescription>
+          </DialogHeader>
+          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder="Cth: Resit tidak jelas, jumlah salah..." />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setRejectProofOpen(false)}>Batal</Button>
+            <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? 'Memproses...' : 'Sahkan Tolak'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>

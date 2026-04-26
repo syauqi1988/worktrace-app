@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement } from '@/utils/generateDocNumber';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -251,7 +252,7 @@ export default function QuotationDetailPage() {
   const customerPhone = (quotation?.jobs as any)?.customers?.phone || null;
   const hasPhone = !!customerPhone;
 
-  const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, pdfUrl: string) => {
+  const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, approvalUrl: string) => {
     return `Assalamualaikum / Salam Sejahtera ${customerName},
 
 Terima kasih kerana berminat dengan perkhidmatan kami. 🙏
@@ -261,10 +262,10 @@ Berikut adalah sebut harga daripada *${companyName}*:
 📋 *No. Sebut Harga:* ${quoteNumber}
 💰 *Jumlah:* RM ${total.toFixed(2)}
 
-Sila klik pautan di bawah untuk melihat dan memuat turun sebut harga anda:
-🔗 ${pdfUrl}
+Sila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:
+🔗 ${approvalUrl}
 
-Jika ada sebarang pertanyaan atau nak buat pengesahan, jangan segan untuk hubungi kami. 😊
+Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
 
 Terima kasih!
 *${companyName}*`;
@@ -279,15 +280,31 @@ Terima kasih!
       const fileName = `${user.id}/${quotation.quote_number}.pdf`;
       await supabase.storage.from('quotation-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('quotation-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const publicUrl = signed?.signedUrl ?? '';
-      const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
+      const pdfUrl = signed?.signedUrl ?? '';
       const customerName = (quotation.jobs as any)?.customers?.name || '';
+      const customerEmail = (quotation.jobs as any)?.customers?.email || null;
+      const token = await getOrCreateApprovalToken({
+        userId: user.id,
+        documentId: quotation.id,
+        documentType: 'quotation',
+        customerName,
+        customerEmail,
+        pdfUrl,
+        expiresInDays: quotation.valid_until ? undefined : 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
+      const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
       const companyName = profile?.company_name || '';
-      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, publicUrl);
+      const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, approvalUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-      toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
+      // Auto-mark as Sent if currently Draft
+      if (quotation.status === 'Draft') {
+        await supabase.from('quotations').update({ status: 'Sent' }).eq('id', quotation.id);
+        setQuotation({ ...quotation, status: 'Sent' });
+      }
+      toast.success('Pautan pengesahan dijana! WhatsApp telah dibuka.');
     } catch {
-      toast.error('Gagal memuat naik PDF. Semak sambungan internet anda.');
+      toast.error('Gagal menjana pautan. Semak sambungan internet anda.');
     } finally {
       setIsSharing(false);
     }

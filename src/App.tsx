@@ -36,6 +36,8 @@ import AccountDeletedPage from "@/pages/AccountDeletedPage";
 import SupportPage from "@/pages/SupportPage";
 import SupportNewPage from "@/pages/SupportNewPage";
 import SupportDetailPage from "@/pages/SupportDetailPage";
+import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
+import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/goodbye" element={<GoodbyePage />} />
             <Route path="/account-deleted" element={<AccountDeletedPage />} />
+            <Route path="/public/approval/:token" element={<PublicApprovalPage />} />
+            <Route path="/public/payment-proof/:token" element={<PublicPaymentProofPage />} />
             <Route path="/onboarding" element={
               <ProtectedRoute><OnboardingPage /></ProtectedRoute>
             } />
