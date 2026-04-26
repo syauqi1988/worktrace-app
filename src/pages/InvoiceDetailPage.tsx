@@ -997,6 +997,21 @@ export default function InvoiceDetailPage() {
         title={`Pratonton — ${invoice.receipt_number || 'Resit'}`}
       />
 
+      {/* Reject Proof Dialog */}
+      <Dialog open={rejectProofOpen} onOpenChange={setRejectProofOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tolak Bukti Pembayaran</DialogTitle>
+            <DialogDescription>Nyatakan sebab penolakan. Pelanggan perlu hantar semula.</DialogDescription>
+          </DialogHeader>
+          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder="Cth: Resit tidak jelas, jumlah salah..." />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setRejectProofOpen(false)}>Batal</Button>
+            <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? 'Memproses...' : 'Sahkan Tolak'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
