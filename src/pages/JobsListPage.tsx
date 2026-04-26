@@ -261,12 +261,13 @@ export default function JobsListPage() {
       )}
 
       <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
         title="Padam Kerja Terpilih?"
-        description={`Adakah anda pasti ingin padam ${bulk.selected.size} kerja? Tindakan ini tidak boleh dibatalkan.`}
-        confirmText="Padam"
-        variant="destructive"
+        body={`Adakah anda pasti ingin padam ${bulk.selected.size} kerja? Tindakan ini tidak boleh dibatalkan.`}
+        confirmLabel="Padam"
+        confirmVariant="danger"
+        isLoading={deleting}
         onConfirm={handleBulkDelete}
       />
     </div>
