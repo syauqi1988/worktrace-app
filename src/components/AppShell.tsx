@@ -127,6 +127,25 @@ export default function AppShell() {
         <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
         <div className="flex-1" />
 
+        {/* Support button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => navigate('/support')}
+              className="relative h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground flex items-center justify-center hover:bg-accent transition-colors mr-2"
+              aria-label="Sokongan"
+            >
+              <LifeBuoy className="h-4 w-4" />
+              {supportNotifCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[9px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                  {supportNotifCount}
+                </span>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Sokongan</TooltipContent>
+        </Tooltip>
+
         {/* Tutorial help button */}
         <Tooltip>
           <TooltipTrigger asChild>
