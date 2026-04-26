@@ -435,6 +435,80 @@ export default function InvoiceDetailPage() {
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
+  const requestPaymentProof = async () => {
+    if (!checkWhatsAppShare()) return;
+    if (!invoice || !user || !hasPhone) return;
+    setRequestingProof(true);
+    try {
+      const token = await getOrCreatePaymentProofToken({
+        userId: user.id,
+        invoiceId: invoice.id,
+        customerName: customer?.name || null,
+      });
+      const url = buildPublicPaymentProofUrl(token);
+      // Refresh proof state
+      const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
+      if (data) setProof(data);
+      const phone = formatPhone(customerPhone);
+      const msg = `Assalamualaikum ${customer?.name || ''},\n\nMohon hantar bukti pembayaran untuk invois berikut:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n\nSila klik pautan ini untuk muat naik resit/bukti bayaran:\n🔗 ${url}\n\nTerima kasih!\n*${profile?.company_name || ''}*`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      toast.success('Pautan bukti bayaran dijana!');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal menjana pautan');
+    } finally {
+      setRequestingProof(false);
+    }
+  };
+
+  const verifyProofAndMarkPaid = async () => {
+    if (!proof || !invoice || !user) return;
+    setVerifyingProof(true);
+    try {
+      const receiptNumber = await generateReceiptNumber();
+      const paidDate = proof.payment_date || new Date().toISOString().slice(0, 10);
+      await supabase.from('payment_proofs').update({
+        status: 'verified',
+        verified_at: new Date().toISOString(),
+        verified_by: user.id,
+      } as any).eq('id', proof.id);
+      const { error } = await supabase.from('invoices').update({
+        status: 'Paid',
+        paid_date: paidDate,
+        receipt_number: receiptNumber,
+      } as any).eq('id', invoice.id);
+      if (error) throw error;
+      setInvoice({ ...invoice, status: 'Paid', paid_date: paidDate, receipt_number: receiptNumber });
+      setProof({ ...proof, status: 'verified', verified_at: new Date().toISOString() });
+      toast.success('Bukti disahkan, invois ditandakan Dibayar!');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal mengesahkan');
+    } finally {
+      setVerifyingProof(false);
+    }
+  };
+
+  const rejectProof = async () => {
+    if (!proof || !proofRejectReason.trim()) {
+      toast.error('Sila nyatakan sebab penolakan');
+      return;
+    }
+    setVerifyingProof(true);
+    try {
+      await supabase.from('payment_proofs').update({
+        status: 'rejected',
+        rejection_reason: proofRejectReason.trim(),
+      } as any).eq('id', proof.id);
+      setProof({ ...proof, status: 'rejected', rejection_reason: proofRejectReason.trim() });
+      setRejectProofOpen(false);
+      setProofRejectReason('');
+      toast.success('Bukti ditolak. Pelanggan boleh hantar semula dengan pautan baru.');
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal');
+    } finally {
+      setVerifyingProof(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-6 space-y-4">
