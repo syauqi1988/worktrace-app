@@ -761,6 +761,45 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
+      {/* Payment Proof Section */}
+      {invoice.status !== 'Paid' && proof && proof.submitted_at && proof.status === 'pending' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-bold text-blue-900">📥 Bukti Pembayaran Diterima — Sila Sahkan</p>
+          <div className="grid grid-cols-2 gap-2 text-sm text-blue-900">
+            <div><span className="text-blue-700">Pembayar:</span> {proof.payer_name || '-'}</div>
+            <div><span className="text-blue-700">Jumlah:</span> RM {Number(proof.amount_paid || 0).toFixed(2)}</div>
+            <div><span className="text-blue-700">Tarikh:</span> {proof.payment_date || '-'}</div>
+            <div><span className="text-blue-700">Kaedah:</span> {proof.payment_method || '-'}</div>
+            {proof.bank_name && <div><span className="text-blue-700">Bank:</span> {proof.bank_name}</div>}
+            {proof.reference_number && <div><span className="text-blue-700">Rujukan:</span> {proof.reference_number}</div>}
+          </div>
+          {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">Nota:</span> {proof.notes}</p>}
+          {proof.receipt_url && (
+            <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-blue-700 underline">Lihat resit/bukti</a>
+          )}
+          <div className="flex gap-2">
+            <Button onClick={verifyProofAndMarkPaid} disabled={verifyingProof} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 flex-1">
+              <CheckCircle className="h-4 w-4" /> Sahkan & Tandakan Dibayar
+            </Button>
+            <Button onClick={() => setRejectProofOpen(true)} variant="outline" disabled={verifyingProof} className="text-destructive border-destructive/30 rounded-lg flex-1">
+              Tolak
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {invoice.status !== 'Paid' && proof && !proof.submitted_at && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-900">
+          ⏳ Menunggu pelanggan muat naik bukti pembayaran.
+        </div>
+      )}
+
+      {invoice.status !== 'Paid' && proof && proof.status === 'rejected' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-900">
+          ✕ Bukti terdahulu ditolak ({proof.rejection_reason || '-'}). Mohon bukti baru dari pelanggan.
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         {invoice.status === 'Draft' && (
@@ -771,14 +810,20 @@ export default function InvoiceDetailPage() {
         )}
         {(invoice.status === 'Sent' || isOverdue) && (
           <>
-            <Button onClick={() => setPayOpen(true)} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
-              <CheckCircle className="h-4 w-4" /> Tandakan Dibayar
-            </Button>
-            {hasPhone && (
-              <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
-                <MessageCircle className="h-4 w-4" /> Peringatan via WhatsApp
+            {hasPhone && (!proof || proof.status === 'rejected') && (
+              <Button onClick={requestPaymentProof} disabled={requestingProof} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
+                {requestingProof ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+                Mohon Bukti Bayaran (WhatsApp)
               </Button>
             )}
+            {hasPhone && (
+              <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
+                <MessageCircle className="h-4 w-4" /> Peringatan
+              </Button>
+            )}
+            <Button onClick={() => setPayOpen(true)} variant="outline" className="rounded-lg gap-2">
+              <CheckCircle className="h-4 w-4" /> Tandakan Manual
+            </Button>
           </>
         )}
       </div>
