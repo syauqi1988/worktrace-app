@@ -98,6 +98,11 @@ export default function InvoiceDetailPage() {
   const [unlockText, setUnlockText] = useState('');
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [proof, setProof] = useState<any>(null);
+  const [requestingProof, setRequestingProof] = useState(false);
+  const [verifyingProof, setVerifyingProof] = useState(false);
+  const [rejectProofOpen, setRejectProofOpen] = useState(false);
+  const [proofRejectReason, setProofRejectReason] = useState('');
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   useEffect(() => {
@@ -135,6 +140,21 @@ export default function InvoiceDetailPage() {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
     }
   }, [profile?.logo_url]);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    (async () => {
+      const { data } = await supabase
+        .from('payment_proofs')
+        .select('*')
+        .eq('invoice_id', id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) setProof(data);
+    })();
+  }, [user, id, invoice?.status]);
 
   useEffect(() => {
     return () => {
