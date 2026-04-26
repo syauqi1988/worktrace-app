@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy, ClipboardList
+  Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy, ClipboardList, FileBarChart
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -26,6 +26,8 @@ const NAV_ITEMS = [
   { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
   { to: '/work-orders', label: 'Work Order', icon: ClipboardList, tutorialId: undefined },
   { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
+  { to: '/receipts', label: 'Resit', icon: Receipt, tutorialId: undefined },
+  { to: '/reports', label: 'Laporan', icon: FileBarChart, tutorialId: undefined },
   { to: '/support', label: 'Sokongan', icon: LifeBuoy, tutorialId: undefined },
   { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
@@ -126,6 +128,25 @@ export default function AppShell() {
         </button>
         <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
         <div className="flex-1" />
+
+        {/* Support button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => navigate('/support')}
+              className="relative h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground flex items-center justify-center hover:bg-accent transition-colors mr-2"
+              aria-label="Sokongan"
+            >
+              <LifeBuoy className="h-4 w-4" />
+              {supportNotifCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[9px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                  {supportNotifCount}
+                </span>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Sokongan</TooltipContent>
+        </Tooltip>
 
         {/* Tutorial help button */}
         <Tooltip>
