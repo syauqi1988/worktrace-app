@@ -35,6 +35,7 @@ import GoodbyePage from "@/pages/GoodbyePage";
 import AccountDeletedPage from "@/pages/AccountDeletedPage";
 import SupportPage from "@/pages/SupportPage";
 import ReceiptsListPage from "@/pages/ReceiptsListPage";
+import ReportsPage from "@/pages/ReportsPage";
 import SupportNewPage from "@/pages/SupportNewPage";
 import SupportDetailPage from "@/pages/SupportDetailPage";
 import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
@@ -92,6 +93,7 @@ const App = () => (
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
               <Route path="receipts" element={<ReceiptsListPage />} />
+              <Route path="reports" element={<ReportsPage />} />
               <Route path="support" element={<SupportPage />} />
               <Route path="support/new" element={<SupportNewPage />} />
               <Route path="support/:id" element={<SupportDetailPage />} />
