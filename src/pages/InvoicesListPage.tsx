@@ -5,7 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Receipt, Plus, Search, X, User, Briefcase, CalendarDays } from 'lucide-react';
+import { Receipt, Plus, Search, X, User, Briefcase, CalendarDays, CheckSquare, Square } from 'lucide-react';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
+import BulkActionBar from '@/components/BulkActionBar';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { toast } from 'sonner';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -45,6 +49,8 @@ export default function InvoicesListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -61,10 +67,7 @@ export default function InvoicesListPage() {
   const filtered = useMemo(() => {
     let result = invoices;
     if (statusFilter !== 'Semua') {
-      result = result.filter(inv => {
-        const display = getDisplayStatus(inv);
-        return display === statusFilter;
-      });
+      result = result.filter(inv => getDisplayStatus(inv) === statusFilter);
     }
     if (search.trim()) {
       const s = search.toLowerCase();
@@ -76,17 +79,57 @@ export default function InvoicesListPage() {
     return result;
   }, [invoices, statusFilter, search]);
 
+  const bulk = useBulkSelection(filtered);
+
+  async function handleBulkDelete() {
+    setDeleting(true);
+    const ids = Array.from(bulk.selected);
+    const { error } = await supabase.from('invoices').delete().in('id', ids);
+    setDeleting(false);
+    setConfirmOpen(false);
+    if (error) { toast.error(error.message); return; }
+    setInvoices(prev => prev.filter(i => !ids.includes(i.id)));
+    toast.success(`${ids.length} invois dipadam`);
+    bulk.exit();
+  }
+
+  function handleCardClick(id: string) {
+    if (bulk.selectionMode) bulk.toggle(id);
+    else navigate(`/invoices/${id}`);
+  }
+  let pressTimer: any = null;
+  function handlePressStart(id: string) { pressTimer = setTimeout(() => bulk.enter(id), 500); }
+  function handlePressEnd() { if (pressTimer) clearTimeout(pressTimer); }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      {/* Header */}
+      {bulk.selectionMode && (
+        <BulkActionBar
+          count={bulk.selected.size}
+          total={filtered.length}
+          onSelectAll={bulk.selectAll}
+          onClear={bulk.clear}
+          onDelete={() => setConfirmOpen(true)}
+          onExit={bulk.exit}
+          deleting={deleting}
+          label="invois"
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Invois</h1>
-        <Button data-tutorial="invoices-new-btn" onClick={() => navigate('/invoices/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-          <Plus className="h-4 w-4" /> Invois Baru
-        </Button>
+        <div className="flex gap-2">
+          {!bulk.selectionMode && filtered.length > 0 && (
+            <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
+              <CheckSquare className="h-4 w-4" /> Pilih
+            </Button>
+          )}
+          <Button data-tutorial="invoices-new-btn" onClick={() => navigate('/invoices/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
+            <Plus className="h-4 w-4" /> Invois Baru
+          </Button>
+        </div>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nombor atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
@@ -97,16 +140,13 @@ export default function InvoicesListPage() {
         )}
       </div>
 
-      {/* Status Tabs */}
       <div data-tutorial="invoices-status-tabs" className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
         {STATUS_TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setStatusFilter(tab)}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
-              statusFilter === tab
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent'
+              statusFilter === tab ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
             }`}
           >
             {tab}
@@ -114,7 +154,6 @@ export default function InvoicesListPage() {
         ))}
       </div>
 
-      {/* Invoice Cards */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
@@ -142,38 +181,53 @@ export default function InvoicesListPage() {
           {filtered.map(inv => {
             const displayStatus = getDisplayStatus(inv);
             const isOverdue = displayStatus === 'Overdue';
+            const isSelected = bulk.selected.has(inv.id);
             return (
               <button
                 key={inv.id}
-                onClick={() => navigate(`/invoices/${inv.id}`)}
-                className="w-full bg-card rounded-xl border border-border p-4 hover:shadow-md transition-all text-left"
+                onClick={() => handleCardClick(inv.id)}
+                onMouseDown={() => handlePressStart(inv.id)}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={handlePressEnd}
+                onTouchStart={() => handlePressStart(inv.id)}
+                onTouchEnd={handlePressEnd}
+                className={`w-full bg-card rounded-xl border p-4 hover:shadow-md transition-all text-left flex gap-3 ${
+                  isSelected ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-sm font-bold text-primary">{inv.invoice_number}</span>
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[displayStatus] || STATUS_COLORS.Draft}`}>
-                    {displayStatus}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                  <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                    <User className="h-3.5 w-3.5" />
-                    <span>{inv.jobs?.customers?.name || 'Tiada pelanggan'}</span>
+                {bulk.selectionMode && (
+                  <div className="shrink-0 pt-0.5">
+                    {isSelected ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5 text-muted-foreground" />}
                   </div>
-                  <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                    <Briefcase className="h-3.5 w-3.5" />
-                    <span>{inv.jobs?.job_number || '-'}</span>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-bold text-primary">{inv.invoice_number}</span>
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[displayStatus] || STATUS_COLORS.Draft}`}>
+                      {displayStatus}
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  {inv.due_date && (
-                    <div className="flex items-center gap-1">
-                      <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className={`text-[13px] ${isOverdue ? 'text-[#B91C1C] font-medium' : 'text-muted-foreground'}`}>
-                        Bayar sebelum {formatDate(inv.due_date)}
-                      </span>
+                  <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                    <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                      <User className="h-3.5 w-3.5" />
+                      <span>{inv.jobs?.customers?.name || 'Tiada pelanggan'}</span>
                     </div>
-                  )}
-                  <span className="text-sm font-bold text-foreground ml-auto">RM {Number(inv.total).toFixed(2)}</span>
+                    <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                      <Briefcase className="h-3.5 w-3.5" />
+                      <span>{inv.jobs?.job_number || '-'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    {inv.due_date && (
+                      <div className="flex items-center gap-1">
+                        <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className={`text-[13px] ${isOverdue ? 'text-[#B91C1C] font-medium' : 'text-muted-foreground'}`}>
+                          Bayar sebelum {formatDate(inv.due_date)}
+                        </span>
+                      </div>
+                    )}
+                    <span className="text-sm font-bold text-foreground ml-auto">RM {Number(inv.total).toFixed(2)}</span>
+                  </div>
                 </div>
               </button>
             );
@@ -181,13 +235,25 @@ export default function InvoicesListPage() {
         </div>
       )}
 
-      {/* Mobile FAB */}
-      <button
-        onClick={() => navigate('/invoices/new')}
-        className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
+      {!bulk.selectionMode && (
+        <button
+          onClick={() => navigate('/invoices/new')}
+          className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Padam Invois Terpilih?"
+        body={`Adakah anda pasti ingin padam ${bulk.selected.size} invois? Tindakan ini tidak boleh dibatalkan.`}
+        confirmLabel="Padam"
+        confirmVariant="danger"
+        isLoading={deleting}
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }

@@ -5,7 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Plus, Search, X, Phone, Briefcase } from 'lucide-react';
+import { Users, Plus, Search, X, Phone, Briefcase, CheckSquare, Square } from 'lucide-react';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
+import BulkActionBar from '@/components/BulkActionBar';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { toast } from 'sonner';
 
 interface CustomerRow {
   id: string;
@@ -33,6 +37,8 @@ export default function CustomersListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [tagFilter, setTagFilter] = useState('Semua');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -77,25 +83,63 @@ export default function CustomersListPage() {
     return result;
   }, [customers, tagFilter, search]);
 
+  const bulk = useBulkSelection(filtered);
+
+  async function handleBulkDelete() {
+    setDeleting(true);
+    const ids = Array.from(bulk.selected);
+    const { error } = await supabase.from('customers').delete().in('id', ids);
+    setDeleting(false);
+    setConfirmOpen(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setCustomers(prev => prev.filter(c => !ids.includes(c.id)));
+    toast.success(`${ids.length} pelanggan dipadam`);
+    bulk.exit();
+  }
+
+  function handleCardClick(id: string) {
+    if (bulk.selectionMode) bulk.toggle(id);
+    else navigate(`/customers/${id}`);
+  }
+  let pressTimer: any = null;
+  function handlePressStart(id: string) { pressTimer = setTimeout(() => bulk.enter(id), 500); }
+  function handlePressEnd() { if (pressTimer) clearTimeout(pressTimer); }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      {/* Header */}
+      {bulk.selectionMode && (
+        <BulkActionBar
+          count={bulk.selected.size}
+          total={filtered.length}
+          onSelectAll={bulk.selectAll}
+          onClear={bulk.clear}
+          onDelete={() => setConfirmOpen(true)}
+          onExit={bulk.exit}
+          deleting={deleting}
+          label="pelanggan"
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Pelanggan</h1>
-        <Button data-tutorial="customers-new-btn" onClick={() => navigate('/customers/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-          <Plus className="h-4 w-4" /> Pelanggan Baru
-        </Button>
+        <div className="flex gap-2">
+          {!bulk.selectionMode && filtered.length > 0 && (
+            <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
+              <CheckSquare className="h-4 w-4" /> Pilih
+            </Button>
+          )}
+          <Button data-tutorial="customers-new-btn" onClick={() => navigate('/customers/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
+            <Plus className="h-4 w-4" /> Pelanggan Baru
+          </Button>
+        </div>
       </div>
 
-      {/* Search */}
       <div data-tutorial="customers-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Cari nama atau nombor telefon..."
-          className="pl-9 pr-9 rounded-lg"
-        />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama atau nombor telefon..." className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -103,14 +147,11 @@ export default function CustomersListPage() {
         )}
       </div>
 
-      {/* Tag Filter Pills */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
         <button
           onClick={() => setTagFilter('Semua')}
           className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
-            tagFilter === 'Semua'
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-sidebar-background text-muted-foreground hover:bg-sidebar-accent'
+            tagFilter === 'Semua' ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground hover:bg-sidebar-accent'
           }`}
         >
           Semua
@@ -120,9 +161,7 @@ export default function CustomersListPage() {
             key={tag}
             onClick={() => setTagFilter(tag)}
             className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
-              tagFilter === tag
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-sidebar-background text-muted-foreground hover:bg-sidebar-accent'
+              tagFilter === tag ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground hover:bg-sidebar-accent'
             }`}
           >
             {tag}
@@ -130,7 +169,6 @@ export default function CustomersListPage() {
         ))}
       </div>
 
-      {/* Customer Cards */}
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3, 4].map(i => (
@@ -157,56 +195,78 @@ export default function CustomersListPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(c => (
-            <button
-              key={c.id}
-              onClick={() => navigate(`/customers/${c.id}`)}
-              className="w-full bg-card rounded-xl border border-border p-4 hover:bg-sidebar-background transition-colors text-left flex items-center gap-3"
-            >
-              {/* Avatar */}
-              <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[15px] font-medium shrink-0">
-                {getInitials(c.name)}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{c.name}</p>
-                {c.phone && (
-                  <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                    <Phone className="h-3 w-3" />
-                    <span>{c.phone}</span>
+          {filtered.map(c => {
+            const isSelected = bulk.selected.has(c.id);
+            return (
+              <button
+                key={c.id}
+                onClick={() => handleCardClick(c.id)}
+                onMouseDown={() => handlePressStart(c.id)}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={handlePressEnd}
+                onTouchStart={() => handlePressStart(c.id)}
+                onTouchEnd={handlePressEnd}
+                className={`w-full bg-card rounded-xl border p-4 hover:bg-sidebar-background transition-colors text-left flex items-center gap-3 ${
+                  isSelected ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+              >
+                {bulk.selectionMode && (
+                  <div className="shrink-0">
+                    {isSelected ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5 text-muted-foreground" />}
                   </div>
                 )}
-                {(c.tags || []).length > 0 && (
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    {c.tags!.map(tag => (
-                      <span key={tag} className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${TAG_COLORS[tag] || 'bg-sidebar-background text-muted-foreground'}`}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Job count */}
-              <div className="shrink-0">
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-sidebar-background text-muted-foreground flex items-center gap-1">
-                  <Briefcase className="h-3 w-3" />
-                  {c.jobCount} Kerja
-                </span>
-              </div>
-            </button>
-          ))}
+                <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[15px] font-medium shrink-0">
+                  {getInitials(c.name)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{c.name}</p>
+                  {c.phone && (
+                    <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                      <Phone className="h-3 w-3" />
+                      <span>{c.phone}</span>
+                    </div>
+                  )}
+                  {(c.tags || []).length > 0 && (
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {c.tags!.map(tag => (
+                        <span key={tag} className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${TAG_COLORS[tag] || 'bg-sidebar-background text-muted-foreground'}`}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="shrink-0">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-sidebar-background text-muted-foreground flex items-center gap-1">
+                    <Briefcase className="h-3 w-3" />
+                    {c.jobCount} Kerja
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Mobile FAB */}
-      <button
-        onClick={() => navigate('/customers/new')}
-        className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
+      {!bulk.selectionMode && (
+        <button
+          onClick={() => navigate('/customers/new')}
+          className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Padam Pelanggan Terpilih?"
+        body={`Adakah anda pasti ingin padam ${bulk.selected.size} pelanggan? Tindakan ini tidak boleh dibatalkan.`}
+        confirmLabel="Padam"
+        confirmVariant="danger"
+        isLoading={deleting}
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }
