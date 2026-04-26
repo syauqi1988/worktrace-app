@@ -5,7 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Briefcase, Plus, Search, X, CalendarDays, User } from 'lucide-react';
+import { Briefcase, Plus, Search, X, CalendarDays, User, CheckSquare, Square } from 'lucide-react';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
+import BulkActionBar from '@/components/BulkActionBar';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { toast } from 'sonner';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Renovation: 'bg-blue-100 text-blue-700',
@@ -45,6 +49,24 @@ export default function JobsListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const filtered = useMemo(() => {
+    let result = jobs;
+    if (statusFilter !== 'Semua') result = result.filter(j => j.status === statusFilter);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(j =>
+        j.job_number.toLowerCase().includes(q) ||
+        j.title.toLowerCase().includes(q) ||
+        (j.customers?.name || '').toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [jobs, statusFilter, search]);
+
+  const bulk = useBulkSelection(filtered);
 
   useEffect(() => {
     if (!user) return;
@@ -59,33 +81,66 @@ export default function JobsListPage() {
     fetch();
   }, [user]);
 
-  const filtered = useMemo(() => {
-    let result = jobs;
-    if (statusFilter !== 'Semua') {
-      result = result.filter(j => j.status === statusFilter);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(j =>
-        j.job_number.toLowerCase().includes(q) ||
-        j.title.toLowerCase().includes(q) ||
-        (j.customers?.name || '').toLowerCase().includes(q)
-      );
-    }
-    return result;
-  }, [jobs, statusFilter, search]);
-
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  async function handleBulkDelete() {
+    setDeleting(true);
+    const ids = Array.from(bulk.selected);
+    const { error } = await supabase.from('jobs').delete().in('id', ids);
+    setDeleting(false);
+    setConfirmOpen(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setJobs(prev => prev.filter(j => !ids.includes(j.id)));
+    toast.success(`${ids.length} kerja dipadam`);
+    bulk.exit();
+  }
+
+  function handleCardClick(id: string) {
+    if (bulk.selectionMode) bulk.toggle(id);
+    else navigate(`/jobs/${id}`);
+  }
+
+  // Long press for mobile
+  let pressTimer: any = null;
+  function handlePressStart(id: string) {
+    pressTimer = setTimeout(() => bulk.enter(id), 500);
+  }
+  function handlePressEnd() {
+    if (pressTimer) clearTimeout(pressTimer);
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
+      {bulk.selectionMode && (
+        <BulkActionBar
+          count={bulk.selected.size}
+          total={filtered.length}
+          onSelectAll={bulk.selectAll}
+          onClear={bulk.clear}
+          onDelete={() => setConfirmOpen(true)}
+          onExit={bulk.exit}
+          deleting={deleting}
+          label="kerja"
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Kerja</h1>
-        <Button data-tutorial="jobs-new-btn" onClick={() => navigate('/jobs/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-          <Plus className="h-4 w-4" /> Kerja Baru
-        </Button>
+        <div className="flex gap-2">
+          {!bulk.selectionMode && filtered.length > 0 && (
+            <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
+              <CheckSquare className="h-4 w-4" /> Pilih
+            </Button>
+          )}
+          <Button data-tutorial="jobs-new-btn" onClick={() => navigate('/jobs/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
+            <Plus className="h-4 w-4" /> Kerja Baru
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -146,45 +201,74 @@ export default function JobsListPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(job => (
-            <button
-              key={job.id}
-              onClick={() => navigate(`/jobs/${job.id}`)}
-              className="w-full bg-card rounded-xl border border-border p-4 hover:shadow-md transition-all text-left"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <span className="text-sm font-bold text-primary">{job.job_number}</span>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[job.status] || STATUS_COLORS.Lead}`}>
-                  {job.status}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                  <User className="h-3.5 w-3.5" />
-                  <span>{job.customers?.name || 'Tiada pelanggan'}</span>
+          {filtered.map(job => {
+            const isSelected = bulk.selected.has(job.id);
+            return (
+              <button
+                key={job.id}
+                onClick={() => handleCardClick(job.id)}
+                onMouseDown={() => handlePressStart(job.id)}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={handlePressEnd}
+                onTouchStart={() => handlePressStart(job.id)}
+                onTouchEnd={handlePressEnd}
+                className={`w-full bg-card rounded-xl border p-4 hover:shadow-md transition-all text-left flex gap-3 ${
+                  isSelected ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+              >
+                {bulk.selectionMode && (
+                  <div className="shrink-0 pt-0.5">
+                    {isSelected ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5 text-muted-foreground" />}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-bold text-primary">{job.job_number}</span>
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[job.status] || STATUS_COLORS.Lead}`}>
+                      {job.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                      <User className="h-3.5 w-3.5" />
+                      <span>{job.customers?.name || 'Tiada pelanggan'}</span>
+                    </div>
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>
+                      {job.category}
+                    </span>
+                  </div>
+                  {job.scheduled_date && (
+                    <div className="flex items-center gap-1 mt-1.5 text-muted-foreground">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      <span className="text-[13px]">{formatDate(job.scheduled_date)}</span>
+                    </div>
+                  )}
                 </div>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>
-                  {job.category}
-                </span>
-              </div>
-              {job.scheduled_date && (
-                <div className="flex items-center gap-1 mt-1.5 text-muted-foreground">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  <span className="text-[13px]">{formatDate(job.scheduled_date)}</span>
-                </div>
-              )}
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* Mobile FAB */}
-      <button
-        onClick={() => navigate('/jobs/new')}
-        className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
+      {!bulk.selectionMode && (
+        <button
+          onClick={() => navigate('/jobs/new')}
+          className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Padam Kerja Terpilih?"
+        description={`Adakah anda pasti ingin padam ${bulk.selected.size} kerja? Tindakan ini tidak boleh dibatalkan.`}
+        confirmText="Padam"
+        variant="destructive"
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }
