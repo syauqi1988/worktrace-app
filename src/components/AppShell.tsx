@@ -26,6 +26,7 @@ const NAV_ITEMS = [
   { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
   { to: '/work-orders', label: 'Work Order', icon: ClipboardList, tutorialId: undefined },
   { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
+  { to: '/receipts', label: 'Resit', icon: Receipt, tutorialId: undefined },
   { to: '/support', label: 'Sokongan', icon: LifeBuoy, tutorialId: undefined },
   { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
