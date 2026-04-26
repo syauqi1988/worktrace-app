@@ -71,7 +71,7 @@ export default function ReportsPage() {
         logo_url: profile?.logo_url,
         address: profile?.address,
         phone: profile?.phone,
-        email: profile?.email || user?.email,
+        email: user?.email,
         ssm: profile?.ssm_number_new || profile?.ssm_number_old,
       },
       periodLabel: `${MONTH_NAMES[month]} ${year}`,
