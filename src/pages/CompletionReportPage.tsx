@@ -42,7 +42,8 @@ export default function CompletionReportPage() {
   const [technicianName, setTechnicianName] = useState('');
   const [workDescription, setWorkDescription] = useState('');
   const [materialsUsed, setMaterialsUsed] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [beforePhotos, setBeforePhotos] = useState<string[]>([]);
+  const [afterPhotos, setAfterPhotos] = useState<string[]>([]);
   const [customerSignature, setCustomerSignature] = useState('');
   const [notes, setNotes] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
