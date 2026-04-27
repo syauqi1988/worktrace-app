@@ -171,7 +171,7 @@ export default function CompletionReportPage() {
       if (!completionDate) newErrors.completionDate = 'Sila pilih tarikh';
       if (!technicianName.trim()) newErrors.technicianName = 'Sila isi nama juruteknik';
       if (!workDescription.trim()) newErrors.workDescription = 'Sila isi penerangan kerja';
-      if (photos.length === 0) newErrors.photos = 'Sila muat naik sekurang-kurangnya 1 gambar';
+      if (afterPhotos.length === 0) newErrors.photos = 'Sila muat naik sekurang-kurangnya 1 gambar selepas';
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
