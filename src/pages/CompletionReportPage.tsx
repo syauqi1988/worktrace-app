@@ -113,12 +113,18 @@ export default function CompletionReportPage() {
     fetch();
   }, [user, jobId, profile]);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    kind: 'before' | 'after'
+  ) => {
     const files = e.target.files;
     if (!files || !user || !jobId) return;
 
+    const current = kind === 'before' ? beforePhotos : afterPhotos;
+    const setter = kind === 'before' ? setBeforePhotos : setAfterPhotos;
+
     for (let i = 0; i < files.length; i++) {
-      if (photos.length + i >= 10) break;
+      if (current.length + i >= 10) break;
       const file = files[i];
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`${file.name} melebihi 5MB`);
@@ -127,7 +133,7 @@ export default function CompletionReportPage() {
 
       setUploadingPhoto(true);
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${user.id}/${jobId}/${Date.now()}_${i}.${ext}`;
+      const path = `${user.id}/${jobId}/${kind}/${Date.now()}_${i}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('completion-photos')
         .upload(path, file, { upsert: true, contentType: file.type || `image/${ext}` });
@@ -138,7 +144,6 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      // Store the storage path; resolve to a signed URL when displaying/embedding.
       const { data: signed, error: signedError } = await supabase.storage
         .from('completion-photos')
         .createSignedUrl(path, 60 * 60 * 24 * 365);
@@ -149,14 +154,15 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      setPhotos(prev => [...prev, signed.signedUrl]);
+      setter(prev => [...prev, signed.signedUrl]);
     }
     setUploadingPhoto(false);
     e.target.value = '';
   };
 
-  const removePhoto = (index: number) => {
-    setPhotos(prev => prev.filter((_, i) => i !== index));
+  const removePhoto = (kind: 'before' | 'after', index: number) => {
+    const setter = kind === 'before' ? setBeforePhotos : setAfterPhotos;
+    setter(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async (status: 'draft' | 'submitted') => {
