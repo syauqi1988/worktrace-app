@@ -966,11 +966,11 @@ export default function SettingsPage() {
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {r.status === "rewarded" ? `${r.months_awarded} Bulan Percuma ✓` : "—"}
+                          {r.status === "rewarded" ? "✓ Ganjaran Diterima" : "Menunggu Langganan"}
                         </span>
                       </div>
                       <span className="text-sm text-foreground">
-                        {r.status === "rewarded" ? "1 Bulan Percuma ✓" : "—"}
+                        {r.status === "rewarded" ? `${r.months_awarded} Bulan Percuma ✓` : "—"}
                       </span>
                     </div>
                   ))}
