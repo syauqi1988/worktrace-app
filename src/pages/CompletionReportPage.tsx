@@ -429,3 +429,50 @@ export default function CompletionReportPage() {
     </div>
   );
 }
+
+interface PhotoSectionProps {
+  kind: 'before' | 'after';
+  label: string;
+  badge: { text: string; className: string };
+  helper: string;
+  photos: string[];
+  uploading: boolean;
+  disabled: boolean;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: (index: number) => void;
+  error?: string;
+}
+
+function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpload, onRemove, error }: PhotoSectionProps) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Label className="m-0">{label}</Label>
+        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+          {badge.text}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground">{helper}</p>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      <div className="grid grid-cols-3 gap-3">
+        {photos.map((url, i) => (
+          <div key={i} className="relative">
+            <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
+            {!disabled && (
+              <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        ))}
+        {photos.length < 10 && !disabled && (
+          <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
+            {uploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
+            <span className="text-[11px] text-muted-foreground mt-1">{uploading ? 'Memuat naik...' : 'Tambah'}</span>
+            <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" disabled={uploading || disabled} />
+          </label>
+        )}
+      </div>
+    </div>
+  );
+}
