@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Briefcase, Clock, CheckCircle, DollarSign, Plus, Users, Receipt, CalendarDays
+  Briefcase, Clock, CheckCircle, Plus, Users, Receipt, CalendarDays
 } from 'lucide-react';
+import RevenueRangeCard from '@/components/dashboard/RevenueRangeCard';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Renovation: 'bg-blue-100 text-blue-700',
@@ -41,7 +42,6 @@ interface Stats {
   totalThisMonth: number;
   active: number;
   completedThisMonth: number;
-  revenueThisMonth: number;
 }
 
 export default function DashboardPage() {
@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
     async function fetchData() {
       // Fetch stats in parallel
-      const [totalRes, activeRes, completedRes, revenueRes, jobsRes] = await Promise.all([
+      const [totalRes, activeRes, completedRes, jobsRes] = await Promise.all([
         supabase.from('jobs').select('id', { count: 'exact', head: true })
           .gte('created_at', startOfMonth).lte('created_at', endOfMonth),
         supabase.from('jobs').select('id', { count: 'exact', head: true })
@@ -69,20 +69,14 @@ export default function DashboardPage() {
           .eq('status', 'Completed')
           .gte('completed_date', startOfMonth.slice(0, 10))
           .lte('completed_date', endOfMonth.slice(0, 10)),
-        supabase.from('invoices').select('total')
-          .eq('status', 'Paid')
-          .gte('created_at', startOfMonth).lte('created_at', endOfMonth),
         supabase.from('jobs').select('id, job_number, title, category, status, scheduled_date, created_at, customers(name)')
           .order('created_at', { ascending: false }).limit(10),
       ]);
-
-      const revenue = (revenueRes.data || []).reduce((sum, inv) => sum + Number(inv.total || 0), 0);
 
       setStats({
         totalThisMonth: totalRes.count ?? 0,
         active: activeRes.count ?? 0,
         completedThisMonth: completedRes.count ?? 0,
-        revenueThisMonth: revenue,
       });
       setJobs((jobsRes.data as unknown as JobRow[]) || []);
       setLoading(false);
@@ -99,7 +93,6 @@ export default function DashboardPage() {
     { label: 'Total Kerja Bulan Ini', value: stats?.totalThisMonth ?? 0, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Kerja Aktif', value: stats?.active ?? 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
     { label: 'Siap Bulan Ini', value: stats?.completedThisMonth ?? 0, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Pendapatan Bulan Ini', value: `RM ${(stats?.revenueThisMonth ?? 0).toFixed(2)}`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' },
   ];
 
   return (
