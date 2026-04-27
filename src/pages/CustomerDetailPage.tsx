@@ -70,8 +70,7 @@ export default function CustomerDetailPage() {
 
   // Tag editor state
   const [editingTags, setEditingTags] = useState(false);
-  const [draftTags, setDraftTags] = useState<string[]>([]);
-  const [customTagInput, setCustomTagInput] = useState('');
+  const [draftTags, setDraftTags] = useState<ColoredTag[]>([]);
   const [savingTags, setSavingTags] = useState(false);
 
   useEffect(() => {
@@ -86,7 +85,7 @@ export default function CustomerDetailPage() {
       ]);
       if (custRes.data) {
         const c = custRes.data as any;
-        setCustomer({ ...c, tags: c.tags || [] });
+        setCustomer({ ...c, tags: normalizeTags(c.tags_v2, c.tags) });
       }
       setJobs((jobsRes.data as JobRow[]) || []);
       setLoading(false);
@@ -109,26 +108,19 @@ export default function CustomerDetailPage() {
 
   const startEditTags = () => {
     setDraftTags([...(customer?.tags || [])]);
-    setCustomTagInput('');
     setEditingTags(true);
-  };
-
-  const toggleTag = (tag: string) => {
-    setDraftTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-  };
-
-  const addCustomTag = () => {
-    const val = customTagInput.trim();
-    if (val && !draftTags.includes(val)) {
-      setDraftTags(prev => [...prev, val]);
-    }
-    setCustomTagInput('');
   };
 
   const saveTags = async () => {
     if (!customer) return;
     setSavingTags(true);
-    const { error } = await supabase.from('customers').update({ tags: draftTags } as any).eq('id', customer.id);
+    const { error } = await supabase
+      .from('customers')
+      .update({
+        tags_v2: draftTags,
+        tags: draftTags.map(t => t.label),
+      } as any)
+      .eq('id', customer.id);
     setSavingTags(false);
     if (error) {
       toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
