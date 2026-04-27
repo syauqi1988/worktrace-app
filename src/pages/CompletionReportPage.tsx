@@ -189,7 +189,9 @@ export default function CompletionReportPage() {
         work_description: workDescription.trim() || null,
         materials_used: materialsUsed.trim() || null,
         customer_signature: customerSignature.trim() || null,
-        photos,
+        photos: afterPhotos, // legacy column kept for backwards-compat
+        before_photos: beforePhotos,
+        after_photos: afterPhotos,
         notes: notes.trim() || null,
         status,
       };
