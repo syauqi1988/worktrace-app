@@ -237,9 +237,10 @@ export default function CompletionReportPage() {
     setPreviewLoading(true);
     try {
       // Convert photo URLs to base64 for PDF
-      const photoBase64s = await Promise.all(
-        photos.map(url => imageUrlToBase64(url))
-      );
+      const [beforeBase64, afterBase64] = await Promise.all([
+        Promise.all(beforePhotos.map(url => imageUrlToBase64(url))),
+        Promise.all(afterPhotos.map(url => imageUrlToBase64(url))),
+      ]);
 
       const blob = await pdf(
         <CompletionReportPDF
@@ -251,7 +252,8 @@ export default function CompletionReportPage() {
             materials_used: materialsUsed,
             customer_signature: customerSignature,
             notes,
-            photos: photoBase64s.filter(Boolean),
+            before_photos: beforeBase64.filter(Boolean),
+            after_photos: afterBase64.filter(Boolean),
           }}
           job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
           customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
