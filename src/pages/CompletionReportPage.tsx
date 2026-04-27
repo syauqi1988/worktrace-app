@@ -86,7 +86,12 @@ export default function CompletionReportPage() {
         setTechnicianName(r.technician_name || '');
         setWorkDescription(r.work_description || '');
         setMaterialsUsed(r.materials_used || '');
-        setPhotos(Array.isArray(r.photos) ? r.photos : []);
+        setBeforePhotos(Array.isArray(r.before_photos) ? r.before_photos : []);
+        setAfterPhotos(
+          Array.isArray(r.after_photos) && r.after_photos.length
+            ? r.after_photos
+            : (Array.isArray(r.photos) ? r.photos : [])
+        );
         setCustomerSignature(r.customer_signature || '');
         setNotes(r.notes || '');
         setIsSubmitted(r.status === 'submitted');
