@@ -10,9 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, X } from 'lucide-react';
-
-const PREDEFINED_TAGS = ['VIP', 'Repeat'];
+import { ArrowLeft } from 'lucide-react';
+import TagInput from '@/components/customers/TagInput';
+import { ColoredTag, normalizeTags } from '@/components/customers/TagBadge';
 
 export default function CustomerFormPage() {
   const { id } = useParams<{ id: string }>();
