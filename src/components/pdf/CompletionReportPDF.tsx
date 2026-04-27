@@ -32,6 +32,12 @@ const s = StyleSheet.create({
   photoContainer: { width: 240, height: 180, borderWidth: 0.5, borderColor: BORDER, borderRadius: 4, overflow: 'hidden' },
   photo: { width: '100%', height: '100%', objectFit: 'cover' },
   photoCaption: { fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 2 },
+  // Side-by-side before/after grid
+  comparisonRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  comparisonCell: { flex: 1 },
+  comparisonHeader: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  comparisonHeaderText: { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MID, textAlign: 'center' },
+  smallPhotoContainer: { width: '100%', height: 140, borderWidth: 0.5, borderColor: BORDER, borderRadius: 4, overflow: 'hidden' },
   confirmBox: { backgroundColor: DARK, borderRadius: 4, padding: 12, marginTop: 12 },
   confirmTitle: { color: WHITE, fontSize: 9, fontFamily: 'Helvetica-Bold', marginBottom: 6 },
   confirmRow: { flexDirection: 'row', marginBottom: 3 },
