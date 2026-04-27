@@ -9,8 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Edit, Trash2, Phone, Mail, MapPin, Hash,
-  CalendarDays, Briefcase, MessageCircle, Pencil, Plus, X
+  Briefcase, MessageCircle, Pencil, Plus,
 } from 'lucide-react';
+import TagInput from '@/components/customers/TagInput';
+import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
 
 const STATUS_COLORS: Record<string, string> = {
   Lead: 'bg-gray-100 text-gray-600',
@@ -20,13 +22,6 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelled: 'bg-red-100 text-red-700',
 };
 
-const TAG_COLORS: Record<string, string> = {
-  VIP: 'bg-amber-50 text-amber-700',
-  Repeat: 'bg-green-50 text-green-700',
-};
-
-const PREDEFINED_TAGS = ['VIP', 'Repeat'];
-
 interface Customer {
   id: string;
   name: string;
@@ -34,7 +29,7 @@ interface Customer {
   email: string | null;
   address: string | null;
   tin_number: string | null;
-  tags: string[] | null;
+  tags: ColoredTag[];
   created_at: string;
 }
 
