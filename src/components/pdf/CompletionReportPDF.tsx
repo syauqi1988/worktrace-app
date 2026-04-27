@@ -32,6 +32,12 @@ const s = StyleSheet.create({
   photoContainer: { width: 240, height: 180, borderWidth: 0.5, borderColor: BORDER, borderRadius: 4, overflow: 'hidden' },
   photo: { width: '100%', height: '100%', objectFit: 'cover' },
   photoCaption: { fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 2 },
+  // Side-by-side before/after grid
+  comparisonRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  comparisonCell: { flex: 1 },
+  comparisonHeader: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  comparisonHeaderText: { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MID, textAlign: 'center' },
+  smallPhotoContainer: { width: '100%', height: 140, borderWidth: 0.5, borderColor: BORDER, borderRadius: 4, overflow: 'hidden' },
   confirmBox: { backgroundColor: DARK, borderRadius: 4, padding: 12, marginTop: 12 },
   confirmTitle: { color: WHITE, fontSize: 9, fontFamily: 'Helvetica-Bold', marginBottom: 6 },
   confirmRow: { flexDirection: 'row', marginBottom: 3 },
@@ -57,7 +63,10 @@ export interface CompletionReportPDFProps {
     materials_used: string | null;
     customer_signature: string | null;
     notes: string | null;
-    photos: string[]; // base64 or URLs
+    /** Legacy single list (kept for compatibility). Used as "after" when before/after not provided. */
+    photos?: string[];
+    before_photos?: string[];
+    after_photos?: string[];
   };
   job: { job_number: string; title: string; category: string } | null;
   customer: { name: string; phone: string | null; address: string | null } | null;
@@ -135,22 +144,69 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
           </>
         )}
 
-        {/* Photos */}
-        {report.photos.length > 0 && (
-          <>
-            <Text style={s.sectionLabel}>GAMBAR KERJA SIAP</Text>
-            <View style={s.photoGrid}>
-              {report.photos.map((photo, i) => (
-                <View key={i}>
-                  <View style={s.photoContainer}>
-                    <Image src={photo} style={s.photo} />
+        {/* Photos: side-by-side when before exists, otherwise after-only grid */}
+        {(() => {
+          const before = report.before_photos ?? [];
+          const after = (report.after_photos && report.after_photos.length > 0)
+            ? report.after_photos
+            : (report.photos ?? []);
+
+          if (before.length === 0 && after.length === 0) return null;
+
+          if (before.length === 0) {
+            return (
+              <>
+                <Text style={s.sectionLabel}>GAMBAR SELEPAS KERJA</Text>
+                <View style={s.photoGrid}>
+                  {after.map((photo, i) => (
+                    <View key={i}>
+                      <View style={s.photoContainer}>
+                        <Image src={photo} style={s.photo} />
+                      </View>
+                      <Text style={s.photoCaption}>Selepas {i + 1}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            );
+          }
+
+          // Side-by-side layout: pair before[i] with after[i]
+          const rows = Math.max(before.length, after.length);
+          return (
+            <>
+              <Text style={s.sectionLabel}>PERBANDINGAN SEBELUM & SELEPAS</Text>
+              <View style={s.comparisonHeader}>
+                <Text style={s.comparisonHeaderText}>SEBELUM</Text>
+                <Text style={s.comparisonHeaderText}>SELEPAS</Text>
+              </View>
+              {Array.from({ length: rows }).map((_, i) => (
+                <View key={i} style={s.comparisonRow} wrap={false}>
+                  <View style={s.comparisonCell}>
+                    {before[i] ? (
+                      <>
+                        <View style={s.smallPhotoContainer}>
+                          <Image src={before[i]} style={s.photo} />
+                        </View>
+                        <Text style={s.photoCaption}>Sebelum {i + 1}</Text>
+                      </>
+                    ) : null}
                   </View>
-                  <Text style={s.photoCaption}>Gambar {i + 1}</Text>
+                  <View style={s.comparisonCell}>
+                    {after[i] ? (
+                      <>
+                        <View style={s.smallPhotoContainer}>
+                          <Image src={after[i]} style={s.photo} />
+                        </View>
+                        <Text style={s.photoCaption}>Selepas {i + 1}</Text>
+                      </>
+                    ) : null}
+                  </View>
                 </View>
               ))}
-            </View>
-          </>
-        )}
+            </>
+          );
+        })()}
 
         {/* Confirmation */}
         <View style={s.confirmBox}>

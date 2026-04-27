@@ -42,7 +42,8 @@ export default function CompletionReportPage() {
   const [technicianName, setTechnicianName] = useState('');
   const [workDescription, setWorkDescription] = useState('');
   const [materialsUsed, setMaterialsUsed] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [beforePhotos, setBeforePhotos] = useState<string[]>([]);
+  const [afterPhotos, setAfterPhotos] = useState<string[]>([]);
   const [customerSignature, setCustomerSignature] = useState('');
   const [notes, setNotes] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -85,7 +86,12 @@ export default function CompletionReportPage() {
         setTechnicianName(r.technician_name || '');
         setWorkDescription(r.work_description || '');
         setMaterialsUsed(r.materials_used || '');
-        setPhotos(Array.isArray(r.photos) ? r.photos : []);
+        setBeforePhotos(Array.isArray(r.before_photos) ? r.before_photos : []);
+        setAfterPhotos(
+          Array.isArray(r.after_photos) && r.after_photos.length
+            ? r.after_photos
+            : (Array.isArray(r.photos) ? r.photos : [])
+        );
         setCustomerSignature(r.customer_signature || '');
         setNotes(r.notes || '');
         setIsSubmitted(r.status === 'submitted');
@@ -107,12 +113,18 @@ export default function CompletionReportPage() {
     fetch();
   }, [user, jobId, profile]);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    kind: 'before' | 'after'
+  ) => {
     const files = e.target.files;
     if (!files || !user || !jobId) return;
 
+    const current = kind === 'before' ? beforePhotos : afterPhotos;
+    const setter = kind === 'before' ? setBeforePhotos : setAfterPhotos;
+
     for (let i = 0; i < files.length; i++) {
-      if (photos.length + i >= 10) break;
+      if (current.length + i >= 10) break;
       const file = files[i];
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`${file.name} melebihi 5MB`);
@@ -121,7 +133,7 @@ export default function CompletionReportPage() {
 
       setUploadingPhoto(true);
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${user.id}/${jobId}/${Date.now()}_${i}.${ext}`;
+      const path = `${user.id}/${jobId}/${kind}/${Date.now()}_${i}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('completion-photos')
         .upload(path, file, { upsert: true, contentType: file.type || `image/${ext}` });
@@ -132,7 +144,6 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      // Store the storage path; resolve to a signed URL when displaying/embedding.
       const { data: signed, error: signedError } = await supabase.storage
         .from('completion-photos')
         .createSignedUrl(path, 60 * 60 * 24 * 365);
@@ -143,14 +154,15 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      setPhotos(prev => [...prev, signed.signedUrl]);
+      setter(prev => [...prev, signed.signedUrl]);
     }
     setUploadingPhoto(false);
     e.target.value = '';
   };
 
-  const removePhoto = (index: number) => {
-    setPhotos(prev => prev.filter((_, i) => i !== index));
+  const removePhoto = (kind: 'before' | 'after', index: number) => {
+    const setter = kind === 'before' ? setBeforePhotos : setAfterPhotos;
+    setter(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async (status: 'draft' | 'submitted') => {
@@ -159,7 +171,7 @@ export default function CompletionReportPage() {
       if (!completionDate) newErrors.completionDate = 'Sila pilih tarikh';
       if (!technicianName.trim()) newErrors.technicianName = 'Sila isi nama juruteknik';
       if (!workDescription.trim()) newErrors.workDescription = 'Sila isi penerangan kerja';
-      if (photos.length === 0) newErrors.photos = 'Sila muat naik sekurang-kurangnya 1 gambar';
+      if (afterPhotos.length === 0) newErrors.photos = 'Sila muat naik sekurang-kurangnya 1 gambar selepas';
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
@@ -177,7 +189,9 @@ export default function CompletionReportPage() {
         work_description: workDescription.trim() || null,
         materials_used: materialsUsed.trim() || null,
         customer_signature: customerSignature.trim() || null,
-        photos,
+        photos: afterPhotos, // legacy column kept for backwards-compat
+        before_photos: beforePhotos,
+        after_photos: afterPhotos,
         notes: notes.trim() || null,
         status,
       };
@@ -223,9 +237,10 @@ export default function CompletionReportPage() {
     setPreviewLoading(true);
     try {
       // Convert photo URLs to base64 for PDF
-      const photoBase64s = await Promise.all(
-        photos.map(url => imageUrlToBase64(url))
-      );
+      const [beforeBase64, afterBase64] = await Promise.all([
+        Promise.all(beforePhotos.map(url => imageUrlToBase64(url))),
+        Promise.all(afterPhotos.map(url => imageUrlToBase64(url))),
+      ]);
 
       const blob = await pdf(
         <CompletionReportPDF
@@ -237,7 +252,8 @@ export default function CompletionReportPage() {
             materials_used: materialsUsed,
             customer_signature: customerSignature,
             notes,
-            photos: photoBase64s.filter(Boolean),
+            before_photos: beforeBase64.filter(Boolean),
+            after_photos: afterBase64.filter(Boolean),
           }}
           job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
           customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
@@ -333,30 +349,32 @@ export default function CompletionReportPage() {
         <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." disabled={isSubmitted} />
       </div>
 
-      {/* Photos */}
-      <div className="space-y-2">
-        <Label>Gambar Kerja Siap (min 1) *</Label>
-        {errors.photos && <p className="text-xs text-destructive">{errors.photos}</p>}
-        <div className="grid grid-cols-3 gap-3">
-          {photos.map((url, i) => (
-            <div key={i} className="relative">
-              <img src={url} alt={`Gambar ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
-              {!isSubmitted && (
-                <button onClick={() => removePhoto(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
-          ))}
-          {photos.length < 10 && !isSubmitted && (
-            <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
-              {uploadingPhoto ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
-              <span className="text-[11px] text-muted-foreground mt-1">{uploadingPhoto ? 'Memuat naik...' : 'Tambah'}</span>
-              <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto || isSubmitted} />
-            </label>
-          )}
-        </div>
-      </div>
+      {/* Before Photos */}
+      <PhotoSection
+        kind="before"
+        label="📷 Gambar Sebelum Kerja"
+        badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
+        helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
+        photos={beforePhotos}
+        uploading={uploadingPhoto}
+        disabled={isSubmitted}
+        onUpload={(e) => handlePhotoUpload(e, 'before')}
+        onRemove={(i) => removePhoto('before', i)}
+      />
+
+      {/* After Photos */}
+      <PhotoSection
+        kind="after"
+        label="📷 Gambar Selepas Kerja"
+        badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
+        helper="Gambar hasil akhir kerja yang telah disiapkan"
+        photos={afterPhotos}
+        uploading={uploadingPhoto}
+        disabled={isSubmitted}
+        onUpload={(e) => handlePhotoUpload(e, 'after')}
+        onRemove={(i) => removePhoto('after', i)}
+        error={errors.photos}
+      />
 
       {/* Customer Signature */}
       <div className="space-y-1.5">
@@ -408,6 +426,53 @@ export default function CompletionReportPage() {
           a.click();
         }}
       />
+    </div>
+  );
+}
+
+interface PhotoSectionProps {
+  kind: 'before' | 'after';
+  label: string;
+  badge: { text: string; className: string };
+  helper: string;
+  photos: string[];
+  uploading: boolean;
+  disabled: boolean;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: (index: number) => void;
+  error?: string;
+}
+
+function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpload, onRemove, error }: PhotoSectionProps) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Label className="m-0">{label}</Label>
+        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+          {badge.text}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground">{helper}</p>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      <div className="grid grid-cols-3 gap-3">
+        {photos.map((url, i) => (
+          <div key={i} className="relative">
+            <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
+            {!disabled && (
+              <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        ))}
+        {photos.length < 10 && !disabled && (
+          <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
+            {uploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
+            <span className="text-[11px] text-muted-foreground mt-1">{uploading ? 'Memuat naik...' : 'Tambah'}</span>
+            <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" disabled={uploading || disabled} />
+          </label>
+        )}
+      </div>
     </div>
   );
 }
