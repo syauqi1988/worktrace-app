@@ -123,6 +123,7 @@ export default function DashboardPage() {
             )}
           </div>
         ))}
+        {user && <RevenueRangeCard userId={user.id} />}
       </div>
 
       {/* Quick Actions */}
