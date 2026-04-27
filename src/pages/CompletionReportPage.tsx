@@ -349,30 +349,32 @@ export default function CompletionReportPage() {
         <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." disabled={isSubmitted} />
       </div>
 
-      {/* Photos */}
-      <div className="space-y-2">
-        <Label>Gambar Kerja Siap (min 1) *</Label>
-        {errors.photos && <p className="text-xs text-destructive">{errors.photos}</p>}
-        <div className="grid grid-cols-3 gap-3">
-          {photos.map((url, i) => (
-            <div key={i} className="relative">
-              <img src={url} alt={`Gambar ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
-              {!isSubmitted && (
-                <button onClick={() => removePhoto(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
-          ))}
-          {photos.length < 10 && !isSubmitted && (
-            <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
-              {uploadingPhoto ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
-              <span className="text-[11px] text-muted-foreground mt-1">{uploadingPhoto ? 'Memuat naik...' : 'Tambah'}</span>
-              <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" disabled={uploadingPhoto || isSubmitted} />
-            </label>
-          )}
-        </div>
-      </div>
+      {/* Before Photos */}
+      <PhotoSection
+        kind="before"
+        label="📷 Gambar Sebelum Kerja"
+        badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
+        helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
+        photos={beforePhotos}
+        uploading={uploadingPhoto}
+        disabled={isSubmitted}
+        onUpload={(e) => handlePhotoUpload(e, 'before')}
+        onRemove={(i) => removePhoto('before', i)}
+      />
+
+      {/* After Photos */}
+      <PhotoSection
+        kind="after"
+        label="📷 Gambar Selepas Kerja"
+        badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
+        helper="Gambar hasil akhir kerja yang telah disiapkan"
+        photos={afterPhotos}
+        uploading={uploadingPhoto}
+        disabled={isSubmitted}
+        onUpload={(e) => handlePhotoUpload(e, 'after')}
+        onRemove={(i) => removePhoto('after', i)}
+        error={errors.photos}
+      />
 
       {/* Customer Signature */}
       <div className="space-y-1.5">
