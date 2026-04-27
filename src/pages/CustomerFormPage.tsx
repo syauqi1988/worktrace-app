@@ -32,8 +32,7 @@ export default function CustomerFormPage() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [tinNumber, setTinNumber] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [customTagInput, setCustomTagInput] = useState('');
+  const [tags, setTags] = useState<ColoredTag[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -47,24 +46,12 @@ export default function CustomerFormPage() {
         setEmail(c.email || '');
         setAddress(c.address || '');
         setTinNumber(c.tin_number || '');
-        setTags(c.tags || []);
+        setTags(normalizeTags(c.tags_v2, c.tags));
       }
       setLoading(false);
     }
     fetch();
   }, [isEdit, user, id]);
-
-  const toggleTag = (tag: string) => {
-    setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-  };
-
-  const addCustomTag = () => {
-    const val = customTagInput.trim();
-    if (val && !tags.includes(val)) {
-      setTags(prev => [...prev, val]);
-    }
-    setCustomTagInput('');
-  };
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
@@ -89,7 +76,8 @@ export default function CustomerFormPage() {
         email: email.trim() || null,
         address: address.trim() || null,
         tin_number: tinNumber.trim() || null,
-        tags,
+        tags_v2: tags,
+        tags: tags.map(t => t.label),
       };
 
       if (isEdit) {
@@ -187,36 +175,7 @@ export default function CustomerFormPage() {
       {/* Tags */}
       <div className="space-y-1.5">
         <Label>Tag</Label>
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {PREDEFINED_TAGS.map(tag => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleTag(tag)}
-              className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                tags.includes(tag) ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground'
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-          {tags.filter(t => !PREDEFINED_TAGS.includes(t)).map(tag => (
-            <span key={tag} className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary text-primary-foreground flex items-center gap-1">
-              {tag}
-              <button type="button" onClick={() => toggleTag(tag)}><X className="h-3 w-3" /></button>
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Input
-            value={customTagInput}
-            onChange={e => setCustomTagInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
-            placeholder="Tag baru + Enter"
-            className="h-8 text-sm flex-1"
-          />
-          <Button size="sm" type="button" variant="outline" onClick={addCustomTag} className="h-8 px-2"><Plus className="h-3.5 w-3.5" /></Button>
-        </div>
+        <TagInput tags={tags} onChange={setTags} />
       </div>
 
       {/* TIN Number (only if LHDN enabled) */}
