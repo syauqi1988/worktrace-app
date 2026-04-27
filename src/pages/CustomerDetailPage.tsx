@@ -9,8 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Edit, Trash2, Phone, Mail, MapPin, Hash,
-  CalendarDays, Briefcase, MessageCircle, Pencil, Plus, X
+  Briefcase, MessageCircle, Pencil, Plus,
 } from 'lucide-react';
+import TagInput from '@/components/customers/TagInput';
+import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
 
 const STATUS_COLORS: Record<string, string> = {
   Lead: 'bg-gray-100 text-gray-600',
@@ -20,13 +22,6 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelled: 'bg-red-100 text-red-700',
 };
 
-const TAG_COLORS: Record<string, string> = {
-  VIP: 'bg-amber-50 text-amber-700',
-  Repeat: 'bg-green-50 text-green-700',
-};
-
-const PREDEFINED_TAGS = ['VIP', 'Repeat'];
-
 interface Customer {
   id: string;
   name: string;
@@ -34,7 +29,7 @@ interface Customer {
   email: string | null;
   address: string | null;
   tin_number: string | null;
-  tags: string[] | null;
+  tags: ColoredTag[];
   created_at: string;
 }
 
@@ -75,8 +70,7 @@ export default function CustomerDetailPage() {
 
   // Tag editor state
   const [editingTags, setEditingTags] = useState(false);
-  const [draftTags, setDraftTags] = useState<string[]>([]);
-  const [customTagInput, setCustomTagInput] = useState('');
+  const [draftTags, setDraftTags] = useState<ColoredTag[]>([]);
   const [savingTags, setSavingTags] = useState(false);
 
   useEffect(() => {
@@ -91,7 +85,7 @@ export default function CustomerDetailPage() {
       ]);
       if (custRes.data) {
         const c = custRes.data as any;
-        setCustomer({ ...c, tags: c.tags || [] });
+        setCustomer({ ...c, tags: normalizeTags(c.tags_v2, c.tags) });
       }
       setJobs((jobsRes.data as JobRow[]) || []);
       setLoading(false);
@@ -114,26 +108,19 @@ export default function CustomerDetailPage() {
 
   const startEditTags = () => {
     setDraftTags([...(customer?.tags || [])]);
-    setCustomTagInput('');
     setEditingTags(true);
-  };
-
-  const toggleTag = (tag: string) => {
-    setDraftTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-  };
-
-  const addCustomTag = () => {
-    const val = customTagInput.trim();
-    if (val && !draftTags.includes(val)) {
-      setDraftTags(prev => [...prev, val]);
-    }
-    setCustomTagInput('');
   };
 
   const saveTags = async () => {
     if (!customer) return;
     setSavingTags(true);
-    const { error } = await supabase.from('customers').update({ tags: draftTags } as any).eq('id', customer.id);
+    const { error } = await supabase
+      .from('customers')
+      .update({
+        tags_v2: draftTags,
+        tags: draftTags.map(t => t.label),
+      } as any)
+      .eq('id', customer.id);
     setSavingTags(false);
     if (error) {
       toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
@@ -241,35 +228,7 @@ export default function CustomerDetailPage() {
 
         {editingTags ? (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-1.5">
-              {PREDEFINED_TAGS.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                    draftTags.includes(tag) ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-              {draftTags.filter(t => !PREDEFINED_TAGS.includes(t)).map(tag => (
-                <span key={tag} className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary text-primary-foreground flex items-center gap-1">
-                  {tag}
-                  <button onClick={() => toggleTag(tag)}><X className="h-3 w-3" /></button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={customTagInput}
-                onChange={e => setCustomTagInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
-                placeholder="Tag baru..."
-                className="h-8 text-sm flex-1"
-              />
-              <Button size="sm" variant="outline" onClick={addCustomTag} className="h-8 px-2"><Plus className="h-3.5 w-3.5" /></Button>
-            </div>
+            <TagInput tags={draftTags} onChange={setDraftTags} />
             <div className="flex gap-2">
               <Button size="sm" onClick={saveTags} disabled={savingTags} className="rounded-lg">
                 {savingTags ? 'Menyimpan...' : 'Simpan'}
@@ -283,9 +242,7 @@ export default function CustomerDetailPage() {
               <p className="text-sm text-muted-foreground">Tiada tag</p>
             ) : (
               customer.tags!.map(tag => (
-                <span key={tag} className={`text-xs font-medium px-2.5 py-1 rounded-full ${TAG_COLORS[tag] || 'bg-sidebar-background text-muted-foreground'}`}>
-                  {tag}
-                </span>
+                <TagBadge key={tag.label} tag={tag} />
               ))
             )}
           </div>

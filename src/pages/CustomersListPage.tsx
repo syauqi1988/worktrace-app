@@ -11,11 +11,13 @@ import BulkActionBar from '@/components/BulkActionBar';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 
+import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
+
 interface CustomerRow {
   id: string;
   name: string;
   phone: string | null;
-  tags: string[] | null;
+  tags: ColoredTag[];
   jobCount: number;
 }
 
@@ -24,11 +26,6 @@ function getInitials(name: string): string {
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
-
-const TAG_COLORS: Record<string, string> = {
-  VIP: 'bg-amber-50 text-amber-700',
-  Repeat: 'bg-green-50 text-green-700',
-};
 
 export default function CustomersListPage() {
   const { user } = useAuth();
@@ -44,7 +41,7 @@ export default function CustomersListPage() {
     if (!user) return;
     async function fetch() {
       const [custRes, jobsRes] = await Promise.all([
-        supabase.from('customers').select('id, name, phone, tags').order('name'),
+        supabase.from('customers').select('id, name, phone, tags, tags_v2').order('name'),
         supabase.from('jobs').select('id, customer_id'),
       ]);
       const jobCounts: Record<string, number> = {};
@@ -52,8 +49,10 @@ export default function CustomersListPage() {
         if (j.customer_id) jobCounts[j.customer_id] = (jobCounts[j.customer_id] || 0) + 1;
       });
       const rows: CustomerRow[] = ((custRes.data as any[]) || []).map(c => ({
-        ...c,
-        tags: c.tags || [],
+        id: c.id,
+        name: c.name,
+        phone: c.phone,
+        tags: normalizeTags(c.tags_v2, c.tags),
         jobCount: jobCounts[c.id] || 0,
       }));
       setCustomers(rows);
@@ -64,14 +63,14 @@ export default function CustomersListPage() {
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    customers.forEach(c => (c.tags || []).forEach(t => set.add(t)));
+    customers.forEach(c => (c.tags || []).forEach(t => set.add(t.label)));
     return Array.from(set).sort();
   }, [customers]);
 
   const filtered = useMemo(() => {
     let result = customers;
     if (tagFilter !== 'Semua') {
-      result = result.filter(c => (c.tags || []).includes(tagFilter));
+      result = result.filter(c => (c.tags || []).some(t => t.label === tagFilter));
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -229,9 +228,7 @@ export default function CustomersListPage() {
                   {(c.tags || []).length > 0 && (
                     <div className="flex gap-1 mt-1 flex-wrap">
                       {c.tags!.map(tag => (
-                        <span key={tag} className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${TAG_COLORS[tag] || 'bg-sidebar-background text-muted-foreground'}`}>
-                          {tag}
-                        </span>
+                        <TagBadge key={tag.label} tag={tag} size="xs" />
                       ))}
                     </div>
                   )}
