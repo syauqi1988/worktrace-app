@@ -144,22 +144,69 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
           </>
         )}
 
-        {/* Photos */}
-        {report.photos.length > 0 && (
-          <>
-            <Text style={s.sectionLabel}>GAMBAR KERJA SIAP</Text>
-            <View style={s.photoGrid}>
-              {report.photos.map((photo, i) => (
-                <View key={i}>
-                  <View style={s.photoContainer}>
-                    <Image src={photo} style={s.photo} />
+        {/* Photos: side-by-side when before exists, otherwise after-only grid */}
+        {(() => {
+          const before = report.before_photos ?? [];
+          const after = (report.after_photos && report.after_photos.length > 0)
+            ? report.after_photos
+            : (report.photos ?? []);
+
+          if (before.length === 0 && after.length === 0) return null;
+
+          if (before.length === 0) {
+            return (
+              <>
+                <Text style={s.sectionLabel}>GAMBAR SELEPAS KERJA</Text>
+                <View style={s.photoGrid}>
+                  {after.map((photo, i) => (
+                    <View key={i}>
+                      <View style={s.photoContainer}>
+                        <Image src={photo} style={s.photo} />
+                      </View>
+                      <Text style={s.photoCaption}>Selepas {i + 1}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            );
+          }
+
+          // Side-by-side layout: pair before[i] with after[i]
+          const rows = Math.max(before.length, after.length);
+          return (
+            <>
+              <Text style={s.sectionLabel}>PERBANDINGAN SEBELUM & SELEPAS</Text>
+              <View style={s.comparisonHeader}>
+                <Text style={s.comparisonHeaderText}>SEBELUM</Text>
+                <Text style={s.comparisonHeaderText}>SELEPAS</Text>
+              </View>
+              {Array.from({ length: rows }).map((_, i) => (
+                <View key={i} style={s.comparisonRow} wrap={false}>
+                  <View style={s.comparisonCell}>
+                    {before[i] ? (
+                      <>
+                        <View style={s.smallPhotoContainer}>
+                          <Image src={before[i]} style={s.photo} />
+                        </View>
+                        <Text style={s.photoCaption}>Sebelum {i + 1}</Text>
+                      </>
+                    ) : null}
                   </View>
-                  <Text style={s.photoCaption}>Gambar {i + 1}</Text>
+                  <View style={s.comparisonCell}>
+                    {after[i] ? (
+                      <>
+                        <View style={s.smallPhotoContainer}>
+                          <Image src={after[i]} style={s.photo} />
+                        </View>
+                        <Text style={s.photoCaption}>Selepas {i + 1}</Text>
+                      </>
+                    ) : null}
+                  </View>
                 </View>
               ))}
-            </View>
-          </>
-        )}
+            </>
+          );
+        })()}
 
         {/* Confirmation */}
         <View style={s.confirmBox}>
