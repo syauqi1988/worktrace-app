@@ -41,6 +41,7 @@ import SupportDetailPage from "@/pages/SupportDetailPage";
 import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
 import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import NotFound from "@/pages/NotFound";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      <Analytics />
     </TooltipProvider>
   </QueryClientProvider>
 );
