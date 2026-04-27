@@ -228,35 +228,7 @@ export default function CustomerDetailPage() {
 
         {editingTags ? (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-1.5">
-              {PREDEFINED_TAGS.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                    draftTags.includes(tag) ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-              {draftTags.filter(t => !PREDEFINED_TAGS.includes(t)).map(tag => (
-                <span key={tag} className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary text-primary-foreground flex items-center gap-1">
-                  {tag}
-                  <button onClick={() => toggleTag(tag)}><X className="h-3 w-3" /></button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={customTagInput}
-                onChange={e => setCustomTagInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
-                placeholder="Tag baru..."
-                className="h-8 text-sm flex-1"
-              />
-              <Button size="sm" variant="outline" onClick={addCustomTag} className="h-8 px-2"><Plus className="h-3.5 w-3.5" /></Button>
-            </div>
+            <TagInput tags={draftTags} onChange={setDraftTags} />
             <div className="flex gap-2">
               <Button size="sm" onClick={saveTags} disabled={savingTags} className="rounded-lg">
                 {savingTags ? 'Menyimpan...' : 'Simpan'}
@@ -270,9 +242,7 @@ export default function CustomerDetailPage() {
               <p className="text-sm text-muted-foreground">Tiada tag</p>
             ) : (
               customer.tags!.map(tag => (
-                <span key={tag} className={`text-xs font-medium px-2.5 py-1 rounded-full ${TAG_COLORS[tag] || 'bg-sidebar-background text-muted-foreground'}`}>
-                  {tag}
-                </span>
+                <TagBadge key={tag.label} tag={tag} />
               ))
             )}
           </div>
