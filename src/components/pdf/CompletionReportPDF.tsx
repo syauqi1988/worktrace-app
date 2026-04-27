@@ -63,7 +63,10 @@ export interface CompletionReportPDFProps {
     materials_used: string | null;
     customer_signature: string | null;
     notes: string | null;
-    photos: string[]; // base64 or URLs
+    /** Legacy single list (kept for compatibility). Used as "after" when before/after not provided. */
+    photos?: string[];
+    before_photos?: string[];
+    after_photos?: string[];
   };
   job: { job_number: string; title: string; category: string } | null;
   customer: { name: string; phone: string | null; address: string | null } | null;
