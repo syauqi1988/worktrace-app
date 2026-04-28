@@ -50,8 +50,9 @@ export function usePlanGate() {
 
   const checkTeamFeature = (featureName = 'Work Order'): boolean => {
     if (isTeam) return true;
-    setUpgradeReason(`${featureName} hanya tersedia untuk pengguna pelan Team. Naik taraf untuk akses penuh.`);
-    setUpgradeOpen(true);
+    // Team plan is still under development — suppress the upgrade modal
+    // and just inform the user that the feature is coming soon.
+    toast.info(`${featureName} akan datang. Pelan Team masih dalam pembangunan.`);
     return false;
   };
 
