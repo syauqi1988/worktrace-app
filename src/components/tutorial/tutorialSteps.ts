@@ -456,8 +456,8 @@ function buildReceiptsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '🧾 Modul Resit',
-        description: 'Semua invois yang sudah dibayar akan muncul di sini sebagai resit. Resit dijana SECARA AUTOMATIK — tak perlu buat manual.',
+        title: '🧾 Resit (Langkah 7 — Akhir)',
+        description: 'Ini langkah TERAKHIR dalam aliran kerja. Semua invois yang sudah dibayar muncul di sini sebagai resit. Resit dijana SECARA AUTOMATIK — tak perlu buat manual.',
       },
     },
     {
