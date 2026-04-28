@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
     console.log(`Payment success: user ${userId} upgraded to ${plan} (${billing_period})`)
 
     // Trigger referral reward
-    const { error: refError } = await supabaseAdmin.rpc('complete_referral_reward', { p_referred_id: userId })
+    const { error: refError } = await supabaseAdmin.rpc('complete_referral_reward', { p_referred_id: userId, p_billing_period: billing_period })
     if (refError) {
       console.error('Referral reward error:', refError)
     } else {
