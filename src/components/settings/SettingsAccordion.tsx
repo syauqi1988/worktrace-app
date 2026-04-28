@@ -11,6 +11,7 @@ interface SettingsAccordionProps {
   defaultOpen?: boolean;
   danger?: boolean;
   rememberKey?: string; // localStorage key (defaults to id)
+  tutorialId?: string;
 }
 
 const STORAGE_PREFIX = "wt_settings_open_";
@@ -24,6 +25,7 @@ export default function SettingsAccordion({
   defaultOpen = false,
   danger = false,
   rememberKey,
+  tutorialId,
 }: SettingsAccordionProps) {
   const key = STORAGE_PREFIX + (rememberKey ?? id);
   const [open, setOpen] = useState(() => {
@@ -49,6 +51,7 @@ export default function SettingsAccordion({
   return (
     <section
       id={id}
+      data-tutorial={tutorialId}
       className={cn(
         "bg-card rounded-xl border overflow-hidden transition-colors",
         danger ? "border-destructive/30" : "border-border",
