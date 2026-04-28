@@ -40,6 +40,7 @@ import SupportNewPage from "@/pages/SupportNewPage";
 import SupportDetailPage from "@/pages/SupportDetailPage";
 import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
 import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
+import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
