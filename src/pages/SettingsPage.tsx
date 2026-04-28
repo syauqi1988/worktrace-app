@@ -917,19 +917,17 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="integrasi-pautan"
         icon={<Link2 className="h-5 w-5" />}
-        title="Integrasi & Pautan"
-        description="Pautan pengesahan dan bukti pembayaran"
+        title={t("settings.integrations.title")}
+        description={t("settings.integrations.description")}
       >
         <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-2">
-          <p className="text-sm font-medium text-foreground">Pengesahan & Bukti Pembayaran Built-in</p>
+          <p className="text-sm font-medium text-foreground">{t("settings.integrations.heading")}</p>
           <p className="text-sm text-muted-foreground">
-            WorkTrace menjana pautan pengesahan automatik ketika anda menghantar Sebut Harga, Work Order, atau
-            Laporan kepada pelanggan. Untuk Invois, pautan bukti pembayaran (/bayar) dijana secara automatik —
-            pelanggan boleh muat naik resit terus tanpa perlu sebarang integrasi luaran.
+            {t("settings.integrations.body")}
           </p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Tiada konfigurasi diperlukan — semua pautan dijana automatik.
+          {t("settings.integrations.noConfig")}
         </p>
       </SettingsAccordion>
 
