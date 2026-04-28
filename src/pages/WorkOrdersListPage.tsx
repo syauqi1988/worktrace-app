@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClipboardList, Search, X, User, Briefcase, CalendarDays } from 'lucide-react';
+import { getDateLocale } from '@/i18n';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -13,7 +15,7 @@ const STATUS_COLORS: Record<string, string> = {
   Rejected: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-const TABS = ['Semua', 'Draft', 'Sent', 'Accepted', 'Rejected'];
+const TAB_KEYS = ['all', 'Draft', 'Sent', 'Accepted', 'Rejected'] as const;
 
 interface WoRow {
   id: string;
@@ -29,10 +31,11 @@ interface WoRow {
 export default function WorkOrdersListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [rows, setRows] = useState<WoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState('Semua');
+  const [tab, setTab] = useState<string>('all');
 
   useEffect(() => {
     if (!user) return;
@@ -47,7 +50,7 @@ export default function WorkOrdersListPage() {
 
   const filtered = useMemo(() => {
     let r = rows;
-    if (tab !== 'Semua') r = r.filter(x => x.status === tab);
+    if (tab !== 'all') r = r.filter(x => x.status === tab);
     if (search.trim()) {
       const q = search.toLowerCase();
       r = r.filter(x =>
@@ -60,16 +63,16 @@ export default function WorkOrdersListPage() {
   }, [rows, tab, search]);
 
   const fmtDate = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+    d ? new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <h1 className="text-xl font-bold text-foreground">Work Order</h1>
+      <h1 className="text-xl font-bold text-foreground">{t('workOrders.title')}</h1>
 
       <div data-tutorial="workorders-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Cari nombor, tajuk, atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
+          placeholder={t('workOrders.searchPlaceholder')} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -78,12 +81,12 @@ export default function WorkOrdersListPage() {
       </div>
 
       <div data-tutorial="workorders-status-tabs" className="flex gap-1 overflow-x-auto pb-1">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {TAB_KEYS.map(key => (
+          <button key={key} onClick={() => setTab(key)}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium shrink-0 ${
-              tab === t ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
+              tab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
             }`}>
-            {t}
+            {t(`workOrders.statusTabs.${key}`)}
           </button>
         ))}
       </div>
@@ -97,8 +100,8 @@ export default function WorkOrdersListPage() {
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border p-8 flex flex-col items-center text-center bg-card">
           <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-3" />
-          <p className="text-muted-foreground">{rows.length === 0 ? 'Belum ada work order' : 'Tiada work order dijumpai'}</p>
-          <p className="text-xs text-muted-foreground mt-2">Work order dibuat dari halaman kerja selepas sebut harga diterima.</p>
+          <p className="text-muted-foreground">{rows.length === 0 ? t('workOrders.empty') : t('workOrders.notFound')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('workOrders.hint')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -123,7 +126,7 @@ export default function WorkOrdersListPage() {
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <CalendarDays className="h-3.5 w-3.5" />
-                  <span className="text-[13px]">Mula: {fmtDate(w.scheduled_start_date)}</span>
+                  <span className="text-[13px]">{t('workOrders.startDate', { date: fmtDate(w.scheduled_start_date) })}</span>
                 </div>
                 <span className="text-sm font-bold text-foreground">RM {Number(w.total || 0).toFixed(2)}</span>
               </div>

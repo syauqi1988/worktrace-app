@@ -105,38 +105,128 @@
     "addFirstJob": "Add Your First Job",
     "noCustomer": "No customer"
   },
+  "common2": {
+    "select": "Select",
+    "all": "All",
+    "noCustomer": "No customer",
+    "deleteSelected": "Delete Selected?",
+    "deleteConfirm": "Are you sure you want to delete {{count}} {{label}}? This action cannot be undone.",
+    "notFound": "No {{label}} found"
+  },
   "jobs": {
     "title": "Jobs",
     "newJob": "New Job",
     "empty": "No jobs yet",
-    "searchPlaceholder": "Search jobs...",
+    "notFound": "No jobs found",
+    "searchPlaceholder": "Search jobs, number, or customer...",
     "category": "Category",
     "scheduledDate": "Scheduled Date",
-    "completedDate": "Completed Date"
+    "completedDate": "Completed Date",
+    "addFirst": "Add Job",
+    "label": "jobs",
+    "deleteTitle": "Delete Selected Jobs?",
+    "deletedToast": "{{count}} jobs deleted",
+    "statusTabs": {
+      "all": "All",
+      "Lead": "Lead",
+      "Scheduled": "Scheduled",
+      "In Progress": "In Progress",
+      "Completed": "Completed",
+      "Cancelled": "Cancelled"
+    }
   },
   "customers": {
     "title": "Customers",
     "newCustomer": "New Customer",
     "empty": "No customers yet",
-    "searchPlaceholder": "Search customers..."
+    "notFound": "No customers found",
+    "searchPlaceholder": "Search name or phone number...",
+    "addFirst": "Add Your First Customer",
+    "label": "customers",
+    "deleteTitle": "Delete Selected Customers?",
+    "deletedToast": "{{count}} customers deleted",
+    "jobCount": "{{count}} Jobs",
+    "all": "All"
   },
   "quotations": {
     "title": "Quotations",
     "newQuotation": "New Quotation",
-    "empty": "No quotations yet"
+    "empty": "No quotations yet",
+    "notFound": "No quotations found",
+    "searchPlaceholder": "Search number or customer...",
+    "create": "Create Quotation",
+    "label": "quotations",
+    "deleteTitle": "Delete Selected Quotations?",
+    "deletedToast": "{{count}} quotations deleted",
+    "validUntil": "Valid until {{date}}",
+    "statusTabs": {
+      "all": "All",
+      "Draft": "Draft",
+      "Sent": "Sent",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected"
+    }
   },
   "invoices": {
     "title": "Invoices",
     "newInvoice": "New Invoice",
-    "empty": "No invoices yet"
+    "empty": "No invoices yet",
+    "notFound": "No invoices found",
+    "searchPlaceholder": "Search number or customer...",
+    "create": "Create Invoice",
+    "label": "invoices",
+    "deleteTitle": "Delete Selected Invoices?",
+    "deletedToast": "{{count}} invoices deleted",
+    "payBefore": "Pay before {{date}}",
+    "statusTabs": {
+      "all": "All",
+      "Draft": "Draft",
+      "Sent": "Sent",
+      "Paid": "Paid",
+      "Overdue": "Overdue"
+    }
   },
   "receipts": {
     "title": "Receipts",
-    "empty": "No receipts yet"
+    "subtitle": "List of all paid invoices",
+    "empty": "No receipts yet. Receipts are generated automatically when invoices are marked as paid.",
+    "notFound": "No receipts found",
+    "searchPlaceholder": "Search receipt number, invoice, or customer...",
+    "totalCount": "Total Receipts",
+    "totalReceived": "Total Received",
+    "noNumber": "(No number)",
+    "invoiceLabel": "Invoice: {{number}}"
   },
   "workOrders": {
     "title": "Work Orders",
-    "comingSoon": "{{label}} coming soon. The Team plan is still in development."
+    "empty": "No work orders yet",
+    "notFound": "No work orders found",
+    "hint": "Work orders are created from the job page after a quotation is accepted.",
+    "searchPlaceholder": "Search number, title, or customer...",
+    "startDate": "Start: {{date}}",
+    "comingSoon": "{{label}} coming soon. The Team plan is still in development.",
+    "statusTabs": {
+      "all": "All",
+      "Draft": "Draft",
+      "Sent": "Sent",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected"
+    }
+  },
+  "completionReports": {
+    "title": "Completion Reports",
+    "empty": "No completion reports yet",
+    "notFound": "No reports found",
+    "hint": "Completion reports are created from the job page after a quotation is accepted.",
+    "searchPlaceholder": "Search number, title, or customer...",
+    "completedOn": "Completed: {{date}}",
+    "statusTabs": {
+      "all": "All",
+      "draft": "Draft",
+      "submitted": "Awaiting Confirmation",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    }
   },
   "reports": {
     "title": "Reports"
