@@ -317,7 +317,7 @@ export default function SettingsPage() {
   const handleDeletePayment = async (id: string) => {
     const methods = paymentMethods.filter((m) => m.id !== id);
     await savePaymentMethods(methods);
-    toast.success("Kaedah pembayaran dipadam");
+    toast.success(t("settings.payment.deleted"));
   };
 
   const handleEditBank = (m: PaymentMethod) => {
