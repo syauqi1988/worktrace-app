@@ -131,8 +131,8 @@ function buildJobsSteps(): DriveStep[] {
     },
     {
       popover: {
-        title: '✅ Aliran Selepas Cipta Kerja',
-        description: 'Selepas kerja dicipta, masuk ke halaman butiran kerja untuk: hasilkan sebut harga → tukar ke invois → tandakan siap. Status kerja akan dikemaskini secara automatik.',
+        title: '✅ Selepas Cipta Kerja',
+        description: 'Masuk halaman butiran kerja dan ikut urutan:\n3️⃣ Sebut Harga → 4️⃣ Work Order → 5️⃣ Completion Report → 6️⃣ Invois → 7️⃣ Resit (auto).\n\nStatus kerja dikemaskini secara automatik mengikut dokumen yang dihasilkan.',
       },
     },
   ];
