@@ -96,8 +96,8 @@ function buildJobsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '🔨 Modul Kerja',
-        description: 'Setiap projek anda dipanggil "Kerja". Dari satu kerja, anda boleh hasilkan sebut harga, work order, invois dan resit.',
+        title: '🔨 Modul Kerja (Langkah 2)',
+        description: 'Selepas daftar pelanggan, buka "Kerja" baru untuk setiap projek. Dari satu kerja, semua dokumen lain akan terhasil: Sebut Harga → Work Order → Completion Report → Invois → Resit.',
       },
     },
     {
