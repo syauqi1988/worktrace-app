@@ -118,14 +118,18 @@ export type Database = {
           accepted_at: string | null
           after_photos: Json | null
           before_photos: Json | null
+          checklist: Json | null
           completion_date: string | null
           created_at: string | null
           customer_signature: string | null
           id: string
           job_id: string
+          location_label: string | null
           materials_used: string | null
           notes: string | null
+          photo_captions: Json | null
           photos: Json | null
+          project_ref: string | null
           rejected_at: string | null
           rejection_reason: string | null
           report_number: string
@@ -139,14 +143,18 @@ export type Database = {
           accepted_at?: string | null
           after_photos?: Json | null
           before_photos?: Json | null
+          checklist?: Json | null
           completion_date?: string | null
           created_at?: string | null
           customer_signature?: string | null
           id?: string
           job_id: string
+          location_label?: string | null
           materials_used?: string | null
           notes?: string | null
+          photo_captions?: Json | null
           photos?: Json | null
+          project_ref?: string | null
           rejected_at?: string | null
           rejection_reason?: string | null
           report_number: string
@@ -160,14 +168,18 @@ export type Database = {
           accepted_at?: string | null
           after_photos?: Json | null
           before_photos?: Json | null
+          checklist?: Json | null
           completion_date?: string | null
           created_at?: string | null
           customer_signature?: string | null
           id?: string
           job_id?: string
+          location_label?: string | null
           materials_used?: string | null
           notes?: string | null
+          photo_captions?: Json | null
           photos?: Json | null
+          project_ref?: string | null
           rejected_at?: string | null
           rejection_reason?: string | null
           report_number?: string
