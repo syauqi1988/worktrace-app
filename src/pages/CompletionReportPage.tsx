@@ -278,6 +278,22 @@ export default function CompletionReportPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!reportId) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('completion_reports').delete().eq('id', reportId);
+      if (error) throw error;
+      toast.success('Laporan dipadam');
+      navigate(`/jobs/${jobId}`);
+    } catch (e: any) {
+      toast.error(e.message || 'Gagal memadam laporan');
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  };
+
   const handlePreview = async () => {
     if (!job) return;
     setPreviewOpen(true);
