@@ -325,6 +325,8 @@ Terima kasih!
     shareViaWhatsApp();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotation, pdfData, user, hasPhone, searchParams, autoShareDone]);
+
+  const handlePreview = async () => {
     if (!pdfData) return;
     setPreviewOpen(true);
     setPreviewLoading(true);
