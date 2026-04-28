@@ -41,6 +41,7 @@ export interface Profile {
   deletion_scheduled_at?: string | null;
   deletion_reason?: string | null;
   deletion_cancelled_at?: string | null;
+  whatsapp_templates?: any;
 }
 
 interface AuthContextType {
