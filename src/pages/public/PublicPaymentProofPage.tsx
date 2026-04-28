@@ -165,9 +165,10 @@ export default function PublicPaymentProofPage() {
     );
   }
 
-  const isSubmitted = !!row.submitted_at;
   const verified = row.status === 'verified';
   const rejected = row.status === 'rejected';
+  // Locked when submitted, EXCEPT when previously rejected (allow resubmit)
+  const isSubmitted = !!row.submitted_at && !rejected;
   const paymentMethods: any[] = Array.isArray(company?.payment_methods) ? company.payment_methods : [];
 
   return (
