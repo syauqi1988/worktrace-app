@@ -327,8 +327,8 @@ function buildWorkOrdersSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '📋 Modul Work Order',
-        description: 'Work Order ialah arahan kerja rasmi untuk pekerja atau subkontraktor anda — mengandungi senarai tugas, tarikh dan terma kerja.',
+        title: '📋 Work Order (Langkah 4)',
+        description: 'Selepas sebut harga (Langkah 3) diterima pelanggan, hasilkan Work Order — arahan kerja rasmi untuk team atau subkontraktor anda. Kemudian sambung ke Completion Report (Langkah 5).',
       },
     },
     {
