@@ -296,6 +296,86 @@ export default function CompletionReportPage() {
     }
   };
 
+  const handleWhatsAppShare = async () => {
+    if (!job || !user || !reportId) return;
+    if (!job.customers?.phone) {
+      toast.error('Pelanggan tiada nombor telefon');
+      return;
+    }
+    if (!checkWhatsAppShare()) return;
+    setSharing(true);
+    try {
+      const [beforeBase64, afterBase64] = await Promise.all([
+        Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+        Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+      ]);
+      const blob = await pdf(
+        <CompletionReportPDF
+          report={{
+            report_number: reportNumber,
+            completion_date: completionDate,
+            technician_name: technicianName,
+            work_description: workDescription,
+            materials_used: materialsUsed,
+            customer_signature: customerSignature,
+            notes,
+            before_photos: beforeBase64.filter(Boolean),
+            after_photos: afterBase64.filter(Boolean),
+          }}
+          job={{ job_number: job.job_number, title: job.title, category: job.category }}
+          customer={{ name: job.customers.name, phone: job.customers.phone, address: job.customers.address }}
+          company={{
+            company_name: profile?.company_name || null,
+            phone: profile?.phone || null,
+            address: profile?.address || null,
+            logo_base64: logoBase64,
+          }}
+        />
+      ).toBlob();
+      const fileName = `${user.id}/${reportNumber}.pdf`;
+      await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, {
+        contentType: 'application/pdf',
+        upsert: true,
+      });
+      const { data: signed } = await supabase.storage
+        .from('completion-report-pdfs')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const pdfUrl = signed?.signedUrl ?? '';
+
+      const token = await getOrCreateApprovalToken({
+        userId: user.id,
+        documentId: reportId,
+        documentType: 'completion_report',
+        customerName: job.customers.name,
+        customerEmail: job.customers.email || null,
+        pdfUrl,
+        expiresInDays: 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
+      const phone = formatPhoneIntl(job.customers.phone);
+      const msg =
+`Assalamualaikum ${job.customers.name},
+
+Kerja kami telah siap! Sila semak Laporan Siap Kerja:
+
+📋 *No. Laporan:* ${reportNumber}
+🔨 *Kerja:* ${job.title}
+📅 *Tarikh Siap:* ${formatDateMs(completionDate)}
+
+Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+🔗 ${approvalUrl}
+
+Terima kasih! 🙏
+
+*${profile?.company_name || ''}*`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    } catch (e: any) {
+      toast.error(e?.message || 'Gagal kongsi laporan');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-6 space-y-4">
