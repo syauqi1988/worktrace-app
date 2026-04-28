@@ -813,7 +813,27 @@ export default function InvoiceDetailPage() {
           </div>
           {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">Nota:</span> {proof.notes}</p>}
           {proof.receipt_url && (
-            <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-blue-700 underline">Lihat resit/bukti</a>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-blue-700">Bukti Dimuat Naik:</p>
+              {/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(proof.receipt_url) ? (
+                <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="block">
+                  <img
+                    src={proof.receipt_url}
+                    alt="Bukti pembayaran"
+                    className="max-h-64 w-auto rounded-lg border border-blue-200 bg-white object-contain"
+                  />
+                </a>
+              ) : (
+                <iframe
+                  src={proof.receipt_url}
+                  title="Bukti pembayaran"
+                  className="w-full h-64 rounded-lg border border-blue-200 bg-white"
+                />
+              )}
+              <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline">
+                <Eye className="h-3.5 w-3.5" /> Buka dalam tab baru
+              </a>
+            </div>
           )}
           <div className="flex gap-2">
             <Button onClick={verifyProofAndMarkPaid} disabled={verifyingProof} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 flex-1">
