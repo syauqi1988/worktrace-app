@@ -148,8 +148,14 @@ export default function PublicApprovalPage() {
   }
 
   const expired = row.expires_at && new Date(row.expires_at) < new Date();
-  const docLabel = row.document_type === 'quotation' ? 'Sebut Harga' : 'Work Order';
-  const numberCol = row.document_type === 'quotation' ? 'quote_number' : 'wo_number';
+  const docLabel =
+    row.document_type === 'quotation' ? 'Sebut Harga'
+    : row.document_type === 'work_order' ? 'Work Order'
+    : 'Laporan Siap Kerja';
+  const numberCol =
+    row.document_type === 'quotation' ? 'quote_number'
+    : row.document_type === 'work_order' ? 'wo_number'
+    : 'report_number';
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
