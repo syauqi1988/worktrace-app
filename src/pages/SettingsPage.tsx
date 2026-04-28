@@ -293,7 +293,7 @@ export default function SettingsPage() {
 
   const handleSaveQr = async () => {
     if (!qrImageUrl) {
-      toast.error("Sila muat naik imej QR");
+      toast.error(t("settings.payment.uploadQrFirst"));
       return;
     }
     let methods = [...paymentMethods];
