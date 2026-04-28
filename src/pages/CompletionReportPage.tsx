@@ -212,6 +212,12 @@ export default function CompletionReportPage() {
     if (isSaving) setSaving(true);
     else setSubmitting(true);
 
+    // Pre-open WhatsApp tab synchronously to preserve the user gesture (avoids redirect to api.whatsapp.com landing page)
+    let waWindow: Window | null = null;
+    if (status === 'submitted' && job?.customers?.phone) {
+      waWindow = window.open('about:blank', '_blank');
+    }
+
     try {
       const payload: any = {
         user_id: user!.id,
@@ -265,12 +271,15 @@ export default function CompletionReportPage() {
         toast.success('Laporan dihantar! Membuka WhatsApp...');
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
-          await shareReportViaWhatsApp(savedId);
+          await shareReportViaWhatsApp(savedId, waWindow);
+        } else if (waWindow) {
+          waWindow.close();
         }
       } else {
         toast.success('Draf laporan disimpan!');
       }
     } catch (err: any) {
+      if (waWindow && !waWindow.closed) waWindow.close();
       toast.error(err.message || 'Ralat menyimpan');
     } finally {
       setSaving(false);
@@ -343,16 +352,25 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    await shareReportViaWhatsApp(reportId);
+    // Open the tab synchronously so mobile/desktop browsers preserve the user gesture
+    const waWindow = window.open('about:blank', '_blank');
+    await shareReportViaWhatsApp(reportId, waWindow);
   };
 
-  const shareReportViaWhatsApp = async (rid: string) => {
-    if (!job || !user) return;
-    if (!job.customers?.phone) {
-      toast.error('Pelanggan tiada nombor telefon');
+  const shareReportViaWhatsApp = async (rid: string, waWindow?: Window | null) => {
+    if (!job || !user) {
+      if (waWindow) waWindow.close();
       return;
     }
-    if (!checkWhatsAppShare()) return;
+    if (!job.customers?.phone) {
+      toast.error('Pelanggan tiada nombor telefon');
+      if (waWindow) waWindow.close();
+      return;
+    }
+    if (!checkWhatsAppShare()) {
+      if (waWindow) waWindow.close();
+      return;
+    }
     setSharing(true);
     try {
       const [beforeBase64, afterBase64] = await Promise.all([
@@ -426,8 +444,14 @@ Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
 
 Terima kasih!
 *${companyName}*`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      if (waWindow && !waWindow.closed) {
+        waWindow.location.href = waUrl;
+      } else {
+        window.open(waUrl, '_blank');
+      }
     } catch (e: any) {
+      if (waWindow && !waWindow.closed) waWindow.close();
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
