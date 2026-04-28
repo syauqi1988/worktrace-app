@@ -230,8 +230,21 @@ export default function CompletionReportPage() {
   };
 
   const removePhoto = (kind: 'before' | 'after', index: number) => {
-    const setter = kind === 'before' ? setBeforePhotos : setAfterPhotos;
-    setter(prev => prev.filter((_, i) => i !== index));
+    if (kind === 'before') {
+      setBeforePhotos(prev => prev.filter((_, i) => i !== index));
+      setBeforeCaptions(prev => prev.filter((_, i) => i !== index));
+    } else {
+      setAfterPhotos(prev => prev.filter((_, i) => i !== index));
+      setAfterCaptions(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const setCaption = (kind: 'before' | 'after', index: number, val: string) => {
+    const setter = kind === 'before' ? setBeforeCaptions : setAfterCaptions;
+    const arr = kind === 'before' ? beforeCaptions : afterCaptions;
+    const next = [...arr];
+    next[index] = val;
+    setter(next);
   };
 
   const handleSave = async (status: 'draft' | 'submitted') => {
