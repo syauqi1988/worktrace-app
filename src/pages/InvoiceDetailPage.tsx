@@ -423,7 +423,7 @@ export default function InvoiceDetailPage() {
     ];
     if (proofUrl) {
       lines.push(
-        'Lihat invois & hantar bukti bayaran 👉',
+        '👉 Tekan sini untuk lihat invois & hantar bukti bayaran:',
         proofUrl,
         '',
       );
