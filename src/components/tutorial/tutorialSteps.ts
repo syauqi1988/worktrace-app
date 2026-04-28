@@ -82,8 +82,8 @@ function buildDashboardSteps(): DriveStep[] {
     },
     {
       popover: {
-        title: '✅ Aliran Kerja Mudah',
-        description: 'Cara guna WorkTrace: 1️⃣ Daftar pelanggan → 2️⃣ Buat kerja → 3️⃣ Hantar sebut harga → 4️⃣ Tukar jadi invois → 5️⃣ Tandakan dibayar → resit auto-jana. Mari mulakan!',
+        title: '✅ Aliran Kerja Penuh WorkTrace',
+        description: 'Ikut urutan ini untuk hasil terbaik:\n\n1️⃣ Pelanggan — daftar maklumat pelanggan\n2️⃣ Kerja — buka kerja baru untuk pelanggan\n3️⃣ Sebut Harga — hantar tawaran kepada pelanggan\n4️⃣ Work Order — arahan kerja untuk team/subkon\n5️⃣ Completion Report — laporan kerja siap\n6️⃣ Invois — bil pembayaran\n7️⃣ Resit — auto-jana selepas dibayar\n\nMari mulakan! 🚀',
       },
     },
   ];
@@ -96,8 +96,8 @@ function buildJobsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '🔨 Modul Kerja',
-        description: 'Setiap projek anda dipanggil "Kerja". Dari satu kerja, anda boleh hasilkan sebut harga, work order, invois dan resit.',
+        title: '🔨 Modul Kerja (Langkah 2)',
+        description: 'Selepas daftar pelanggan, buka "Kerja" baru untuk setiap projek. Dari satu kerja, semua dokumen lain akan terhasil: Sebut Harga → Work Order → Completion Report → Invois → Resit.',
       },
     },
     {
@@ -131,8 +131,8 @@ function buildJobsSteps(): DriveStep[] {
     },
     {
       popover: {
-        title: '✅ Aliran Selepas Cipta Kerja',
-        description: 'Selepas kerja dicipta, masuk ke halaman butiran kerja untuk: hasilkan sebut harga → tukar ke invois → tandakan siap. Status kerja akan dikemaskini secara automatik.',
+        title: '✅ Selepas Cipta Kerja',
+        description: 'Masuk halaman butiran kerja dan ikut urutan:\n3️⃣ Sebut Harga → 4️⃣ Work Order → 5️⃣ Completion Report → 6️⃣ Invois → 7️⃣ Resit (auto).\n\nStatus kerja dikemaskini secara automatik mengikut dokumen yang dihasilkan.',
       },
     },
   ];
@@ -145,38 +145,56 @@ function buildJobDetailSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '📄 Halaman Butiran Kerja',
-        description: 'Inilah pusat kawalan untuk satu kerja. Di sini anda boleh urus semua dokumen berkaitan: sebut harga, work order, invois dan resit.',
+        title: '📄 Pusat Kawalan Kerja',
+        description: 'Inilah tempat anda urus SEMUA dokumen untuk satu kerja, mengikut urutan: Sebut Harga → Work Order → Completion Report → Invois → Resit.',
       },
     },
     {
       popover: {
-        title: '1️⃣ Hasilkan Sebut Harga',
-        description: 'Mulakan dengan buat sebut harga untuk pelanggan. Tambah item kerja, harga, diskaun dan SST — jumlah dikira auto.',
+        title: '1️⃣ Pelanggan ✅',
+        description: 'Pelanggan sudah dipilih semasa cipta kerja ini. Maklumat mereka akan keluar automatik dalam semua dokumen di bawah.',
       },
     },
     {
       popover: {
-        title: '2️⃣ Hantar via WhatsApp',
-        description: 'Selepas sebut harga siap, tekan butang WhatsApp untuk hantar pautan PDF terus kepada pelanggan. Cepat dan profesional.',
+        title: '2️⃣ Kerja ✅',
+        description: 'Kerja ini sudah dicipta. Sekarang masa untuk hasilkan dokumen-dokumen berkaitan dalam urutan yang betul.',
       },
     },
     {
       popover: {
-        title: '3️⃣ Tukar ke Invois',
-        description: 'Bila sebut harga diterima, tukar ke invois dengan satu klik. Item dipindah secara automatik — tak perlu taip semula.',
+        title: '3️⃣ Hasilkan Sebut Harga',
+        description: 'Mulakan dengan tawaran harga rasmi. Tambah item kerja, kuantiti, harga, diskaun & SST — total dikira auto. Hantar via WhatsApp untuk pelanggan terima/tolak.',
       },
     },
     {
       popover: {
-        title: '4️⃣ Tandakan Siap',
-        description: 'Bila kerja sudah disiapkan, kemaskini status kepada "Completed". Laporan kerja siap boleh dijana untuk pelanggan.',
+        title: '4️⃣ Hasilkan Work Order',
+        description: 'Selepas pelanggan setuju sebut harga, hasilkan Work Order — arahan kerja rasmi untuk team atau subkontraktor anda. Mengandungi senarai tugas, tarikh & terma.',
       },
     },
     {
       popover: {
-        title: '✅ Tip',
-        description: 'Tekan ikon ❓ di mana-mana halaman untuk tonton tutorial halaman tersebut. Setiap modul ada tutorial sendiri.',
+        title: '5️⃣ Completion Report',
+        description: 'Bila kerja sudah siap di lapangan, jana Completion Report. Tambah gambar before/after, catatan kerja & tandatangan pelanggan sebagai bukti kerja siap.',
+      },
+    },
+    {
+      popover: {
+        title: '6️⃣ Tukar ke Invois',
+        description: 'Bila siap, tukar sebut harga ke Invois dengan satu klik — semua item dipindah automatik. Hantar invois via WhatsApp dengan pautan ringkas (Tekan sini).',
+      },
+    },
+    {
+      popover: {
+        title: '7️⃣ Resit (Auto-Jana)',
+        description: 'Bila pelanggan upload bukti bayaran & anda sahkan (atau tandakan manual), invois jadi PAID dan resit terus dijana automatik. Tekan "Kongsi Resit via WhatsApp" untuk hantar kepada pelanggan.',
+      },
+    },
+    {
+      popover: {
+        title: '✅ Status Kerja Auto-Update',
+        description: 'Status kerja (Lead → In Progress → Completed) berubah sendiri ikut dokumen yang anda hasilkan. Anda hanya fokus pada kerja sebenar — sistem uruskan paperwork.',
       },
     },
   ];
@@ -189,8 +207,8 @@ function buildCustomersSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '👥 Modul Pelanggan',
-        description: 'Simpan semua maklumat pelanggan di sini sekali sahaja. Lepas itu, boleh guna semula untuk kerja, sebut harga dan invois.',
+        title: '👥 Modul Pelanggan (Langkah 1)',
+        description: 'Ini langkah PERTAMA dalam aliran kerja WorkTrace. Daftar pelanggan dahulu, kemudian baru boleh buka kerja, sebut harga, invois & resit untuk mereka.',
       },
     },
     {
@@ -236,8 +254,8 @@ function buildQuotationsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '📝 Modul Sebut Harga',
-        description: 'Sebut harga (quotation) ialah tawaran harga rasmi kepada pelanggan sebelum kerja dimulakan.',
+        title: '📝 Sebut Harga (Langkah 3)',
+        description: 'Lepas daftar Pelanggan (1) & buka Kerja (2), kini hantar tawaran harga rasmi kepada pelanggan. Selepas mereka setuju, baru sambung ke Work Order & Invois.',
       },
     },
     {
@@ -270,7 +288,7 @@ function buildQuotationsSteps(): DriveStep[] {
     {
       popover: {
         title: '✅ Aliran Sebut Harga',
-        description: 'Cipta → Hantar via WhatsApp → Pelanggan terima → Tukar ke Invois. Status kerja juga akan dikemaskini secara automatik.',
+        description: 'Cipta → Hantar via WhatsApp → Pelanggan terima → Hasilkan Work Order (Langkah 4) → Tukar ke Invois (Langkah 6). Status kerja akan dikemaskini secara automatik.',
       },
     },
   ];
@@ -309,8 +327,8 @@ function buildWorkOrdersSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '📋 Modul Work Order',
-        description: 'Work Order ialah arahan kerja rasmi untuk pekerja atau subkontraktor anda — mengandungi senarai tugas, tarikh dan terma kerja.',
+        title: '📋 Work Order (Langkah 4)',
+        description: 'Selepas sebut harga (Langkah 3) diterima pelanggan, hasilkan Work Order — arahan kerja rasmi untuk team atau subkontraktor anda. Kemudian sambung ke Completion Report (Langkah 5).',
       },
     },
     {
@@ -347,8 +365,8 @@ function buildInvoicesSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '🧾 Modul Invois',
-        description: 'Invois ialah bil pembayaran rasmi yang dihantar kepada pelanggan. Selepas dibayar, resit akan dijana secara automatik.',
+        title: '🧾 Invois (Langkah 6)',
+        description: 'Selepas Completion Report (Langkah 5), masa untuk minta bayaran. Invois ialah bil rasmi kepada pelanggan. Bila dibayar, Resit (Langkah 7) dijana automatik.',
       },
     },
     {
@@ -438,8 +456,8 @@ function buildReceiptsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '🧾 Modul Resit',
-        description: 'Semua invois yang sudah dibayar akan muncul di sini sebagai resit. Resit dijana SECARA AUTOMATIK — tak perlu buat manual.',
+        title: '🧾 Resit (Langkah 7 — Akhir)',
+        description: 'Ini langkah TERAKHIR dalam aliran kerja. Semua invois yang sudah dibayar muncul di sini sebagai resit. Resit dijana SECARA AUTOMATIK — tak perlu buat manual.',
       },
     },
     {
