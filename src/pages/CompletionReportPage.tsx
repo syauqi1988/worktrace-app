@@ -363,7 +363,7 @@ export default function CompletionReportPage() {
 
       const token = await getOrCreateApprovalToken({
         userId: user.id,
-        documentId: reportId,
+        documentId: rid,
         documentType: 'completion_report',
         customerName: job.customers.name,
         customerEmail: job.customers.email || null,
