@@ -133,7 +133,7 @@ export default function JobDetailPage() {
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase.from('completion_reports')
-          .select('id, report_number, status, completion_date, work_description, technician_name, photos')
+          .select('id, report_number, status, completion_date, work_description, technician_name, materials_used, customer_signature, notes, photos, accepted_at')
           .eq('job_id', id)
           .eq('user_id', user!.id)
           .maybeSingle(),
