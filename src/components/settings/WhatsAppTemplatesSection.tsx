@@ -127,72 +127,99 @@ export default function WhatsAppTemplatesSection() {
         </div>
       </div>
 
-      {/* Editable fields */}
-      <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Ucapan Pembukaan</label>
-        <Textarea
-          value={draft.greeting}
-          onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
-          rows={2}
-          placeholder="cth: Assalamualaikum {customer_name},"
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Ayat Pengenalan</label>
-        <Textarea
-          value={draft.intro}
-          onChange={(e) => setDraft({ ...draft, intro: e.target.value })}
-          rows={4}
-        />
-      </div>
-
-      {/* Locked details preview */}
-      <div>
-        <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-          Butiran Dokumen (dikunci automatik)
-        </label>
-        <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
-          <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
-            {meta.detailsPreview}
-          </pre>
+      {isWorkOrderLocked && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 flex items-start gap-2">
+          <Lock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+          <div className="text-xs text-amber-800 dark:text-amber-200">
+            Templet WhatsApp untuk <b>Work Order</b> hanya boleh diedit pada pelan <b>Team</b>.
+            Naik taraf untuk membuka kunci.
+          </div>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-1">
-          Bahagian ini dijana automatik dari data dokumen sebenar dan tidak boleh diubah.
-        </p>
-      </div>
+      )}
 
-      <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Ayat Penutup</label>
-        <Textarea
-          value={draft.closing}
-          onChange={(e) => setDraft({ ...draft, closing: e.target.value })}
-          rows={4}
-        />
-      </div>
+      {/* Editable fields */}
+      <div className={isWorkOrderLocked ? "opacity-60 pointer-events-none select-none" : ""}>
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Ucapan Pembukaan</label>
+          <Textarea
+            value={draft.greeting}
+            onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
+            rows={2}
+            placeholder="cth: Assalamualaikum {customer_name},"
+            disabled={isWorkOrderLocked}
+          />
+        </div>
 
-      {/* Live preview */}
-      <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Pratonton Mesej</label>
-        <div className="rounded-lg border border-border bg-[#E7FFD9]/30 p-3">
-          <pre className="whitespace-pre-wrap text-[13px] text-foreground font-sans leading-relaxed">
-            {previewMessage}
-          </pre>
+        <div className="mt-4">
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Ayat Pengenalan</label>
+          <Textarea
+            value={draft.intro}
+            onChange={(e) => setDraft({ ...draft, intro: e.target.value })}
+            rows={4}
+            disabled={isWorkOrderLocked}
+          />
+        </div>
+
+        {/* Locked details preview */}
+        <div className="mt-4">
+          <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+            Butiran Dokumen (dikunci automatik)
+          </label>
+          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
+            <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
+              {meta.detailsPreview}
+            </pre>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Bahagian ini dijana automatik dari data dokumen sebenar dan tidak boleh diubah.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Ayat Penutup</label>
+          <Textarea
+            value={draft.closing}
+            onChange={(e) => setDraft({ ...draft, closing: e.target.value })}
+            rows={4}
+            disabled={isWorkOrderLocked}
+          />
+        </div>
+
+        {/* Live preview */}
+        <div className="mt-4">
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Pratonton Mesej</label>
+          <div className="rounded-lg border border-border bg-[#E7FFD9]/30 p-3">
+            <pre className="whitespace-pre-wrap text-[13px] text-foreground font-sans leading-relaxed">
+              {previewMessage}
+            </pre>
+          </div>
         </div>
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <Button onClick={handleSave} disabled={saving} className="rounded-lg">
+        <Button
+          onClick={handleSave}
+          disabled={saving || isWorkOrderLocked}
+          className="rounded-lg gap-1.5"
+        >
+          {isWorkOrderLocked && <Lock className="h-3.5 w-3.5" />}
           {saving ? "Menyimpan..." : `Simpan Templet ${meta.label}`}
         </Button>
         <Button
           variant="outline"
           onClick={handleReset}
+          disabled={isWorkOrderLocked}
           className="rounded-lg gap-1.5"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Kembalikan ke Asal
         </Button>
       </div>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        reason={upgradeReason}
+      />
     </div>
   );
 }
