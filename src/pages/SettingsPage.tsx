@@ -678,22 +678,22 @@ export default function SettingsPage() {
         id="terma-syarat"
         tutorialId="settings-terms"
         icon={<FileText className="h-5 w-5" />}
-        title="Terma & Syarat"
-        description="T&C untuk Sebut Harga, Invois dan Work Order"
+        title={t("settings.terms.title")}
+        description={t("settings.terms.description")}
       >
         <div className="flex gap-2 border-b border-border mb-2">
-          {TERMS_TABS.map((t) => (
+          {TERMS_TABS.map((tab) => (
             <button
-              key={t.key}
+              key={tab.key}
               type="button"
-              onClick={() => setTermsTab(t.key)}
+              onClick={() => setTermsTab(tab.key)}
               className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                termsTab === t.key
+                termsTab === tab.key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.label}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -701,9 +701,9 @@ export default function SettingsPage() {
         {termsTab === "quotation" && (
           <div className="space-y-3">
             <Textarea value={quotationTerms} onChange={(e) => setQuotationTerms(e.target.value)} rows={10} />
-            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Sebut Harga PDF</p>
+            <p className="text-xs text-muted-foreground">{t("settings.terms.quotationHint")}</p>
             <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-              {savingTerms ? "Menyimpan..." : "Simpan Terma Sebut Harga"}
+              {savingTerms ? t("settings.saving") : t("settings.terms.saveQuotation")}
             </Button>
           </div>
         )}
@@ -711,9 +711,9 @@ export default function SettingsPage() {
         {termsTab === "invoice" && (
           <div className="space-y-3">
             <Textarea value={invoiceTerms} onChange={(e) => setInvoiceTerms(e.target.value)} rows={10} />
-            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Invois PDF</p>
+            <p className="text-xs text-muted-foreground">{t("settings.terms.invoiceHint")}</p>
             <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-              {savingTerms ? "Menyimpan..." : "Simpan Terma Invois"}
+              {savingTerms ? t("settings.saving") : t("settings.terms.saveInvoice")}
             </Button>
           </div>
         )}
