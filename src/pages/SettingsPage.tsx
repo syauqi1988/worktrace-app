@@ -16,6 +16,7 @@ import WorkOrderTermsSection from "@/components/settings/WorkOrderTermsSection";
 import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
 import AiHelpButton from "@/components/settings/AiHelpButton";
 import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
+import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
 import {
   Building2,
   Shield,
@@ -726,6 +727,16 @@ export default function SettingsPage() {
         description="Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
       >
         <WhatsAppTemplatesSection />
+      </SettingsAccordion>
+
+      {/* 4.6 — Notifikasi Peranti */}
+      <SettingsAccordion
+        id="device-notifications"
+        icon={<MessageCircle className="h-5 w-5" />}
+        title="Notifikasi Peranti"
+        description="Aktifkan notifikasi push pada telefon atau komputer anda"
+      >
+        <NotificationSettingsSection />
       </SettingsAccordion>
 
       {/* 5 — Nombor Dokumen */}

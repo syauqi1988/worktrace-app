@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import logo from '@/assets/logo.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+import NotificationBell from '@/components/NotificationBell';
 import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
 import { useTutorial } from '@/hooks/useTutorial';
@@ -156,6 +157,9 @@ export default function AppShell() {
           </TooltipTrigger>
           <TooltipContent>Sokongan</TooltipContent>
         </Tooltip>
+
+        {/* Notification bell */}
+        <NotificationBell />
 
         {/* Tutorial help button — available on every page */}
         <Tooltip>
