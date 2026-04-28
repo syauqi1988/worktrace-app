@@ -69,6 +69,8 @@ export default function QuotationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [autoShareDone, setAutoShareDone] = useState(false);
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
