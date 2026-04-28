@@ -416,8 +416,8 @@ export default function InvoiceDetailPage() {
     ];
     if (proofUrl) {
       lines.push(
-        'Sila klik pautan di bawah untuk melihat invois dan menghantar bukti pembayaran:',
-        `🔗 ${proofUrl}`,
+        'Lihat invois & hantar bukti bayaran 👉',
+        proofUrl,
         '',
       );
     }
