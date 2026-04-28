@@ -12,10 +12,19 @@ declare global {
 }
 
 function getCurrentPage(pathname: string): TutorialPage {
+  // Detail pages first (more specific)
+  if (/^\/jobs\/[^/]+/.test(pathname)) return 'job-detail';
+  if (/^\/quotations\/[^/]+/.test(pathname)) return 'quotation-detail';
+  if (/^\/invoices\/[^/]+/.test(pathname)) return 'invoice-detail';
+  // List pages
   if (pathname.startsWith('/jobs')) return 'jobs';
   if (pathname.startsWith('/customers')) return 'customers';
   if (pathname.startsWith('/quotations')) return 'quotations';
+  if (pathname.startsWith('/work-orders')) return 'work-orders';
   if (pathname.startsWith('/invoices')) return 'invoices';
+  if (pathname.startsWith('/receipts')) return 'receipts';
+  if (pathname.startsWith('/reports')) return 'reports';
+  if (pathname.startsWith('/support')) return 'support';
   if (pathname.startsWith('/settings') || pathname.startsWith('/profile')) return 'settings';
   return 'dashboard';
 }
