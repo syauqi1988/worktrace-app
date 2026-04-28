@@ -74,6 +74,8 @@ export default function CompletionReportPage() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [acceptedAt, setAcceptedAt] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { checkWhatsAppShare } = usePlanGate();
 
   // PDF Preview
