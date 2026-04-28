@@ -370,7 +370,7 @@ export default function SettingsPage() {
       const { data, error } = await supabase.functions.invoke("apply-free-months");
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success(`${(data as any).monthsApplied} bulan percuma telah digunakan!`);
+      toast.success(t("settings.referral.applied", { count: (data as any).monthsApplied }));
       await refreshProfile();
     } catch (e: any) {
       toast.error(e?.message || "Gagal menggunakan bulan percuma");
