@@ -151,6 +151,13 @@ export default function CompletionReportPage() {
         );
         setCustomerSignature(r.customer_signature || '');
         setNotes(r.notes || '');
+        setLocationLabel(r.location_label || '');
+        setProjectRef(r.project_ref || '');
+        const cl: ChecklistItem[] = Array.isArray(r.checklist) ? r.checklist : [];
+        setChecklistText(cl.length ? checklistToText(cl) : '');
+        const caps = (r.photo_captions || {}) as { before?: string[]; after?: string[] };
+        setBeforeCaptions(Array.isArray(caps.before) ? caps.before : []);
+        setAfterCaptions(Array.isArray(caps.after) ? caps.after : []);
         const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
         setReportStatus(status);
         setRejectionReason(r.rejection_reason || null);
