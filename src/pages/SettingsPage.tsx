@@ -958,8 +958,35 @@ export default function SettingsPage() {
               ))}
             </div>
 
-            <div>
-              <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
+            {freeMonthsBalance > 0 && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-start gap-2">
+                  <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Anda ada {freeMonthsBalance} bulan percuma
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Klik untuk lanjutkan tarikh tamat langganan anda sekarang.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleApplyFreeMonths}
+                  disabled={applyingFreeMonths || isFree}
+                  className="rounded-lg shrink-0"
+                >
+                  {applyingFreeMonths ? "Memproses..." : `Guna ${freeMonthsBalance} Bulan Sekarang`}
+                </Button>
+              </div>
+            )}
+            {freeMonthsBalance > 0 && isFree && (
+              <p className="text-xs text-muted-foreground -mt-1">
+                Upgrade ke Pro untuk menggunakan bulan percuma anda.
+              </p>
+            )}
+
               {referrals.length === 0 ? (
                 <div className="text-center py-6">
                   <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
