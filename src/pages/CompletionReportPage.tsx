@@ -801,14 +801,16 @@ interface PhotoSectionProps {
   badge: { text: string; className: string };
   helper: string;
   photos: string[];
+  captions?: string[];
   uploading: boolean;
   disabled: boolean;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: (index: number) => void;
+  onCaption?: (index: number, value: string) => void;
   error?: string;
 }
 
-function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpload, onRemove, error }: PhotoSectionProps) {
+function PhotoSection({ label, badge, helper, photos, captions = [], uploading, disabled, onUpload, onRemove, onCaption, error }: PhotoSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
@@ -819,14 +821,24 @@ function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpl
       </div>
       <p className="text-xs text-muted-foreground">{helper}</p>
       {error && <p className="text-xs text-destructive">{error}</p>}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {photos.map((url, i) => (
-          <div key={i} className="relative">
-            <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
-            {!disabled && (
-              <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
-                <X className="h-3 w-3" />
-              </button>
+          <div key={i} className="space-y-1.5">
+            <div className="relative">
+              <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
+              {!disabled && (
+                <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            {onCaption && !disabled && (
+              <Input
+                value={captions[i] || ''}
+                onChange={e => onCaption(i, e.target.value)}
+                placeholder="Caption (opsional)"
+                className="h-7 text-[11px] px-2"
+              />
             )}
           </div>
         ))}
