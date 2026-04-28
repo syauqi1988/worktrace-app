@@ -266,17 +266,14 @@ Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
 
       {/* Status banners */}
       {wo.status === 'Sent' && (
-        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
-          <p className="text-sm font-medium text-[#1D4ED8]">Menunggu pengesahan pelanggan</p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={handleAccept} disabled={acting} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2">
-              <CheckCircle className="h-4 w-4" /> Diterima oleh Pelanggan
-            </Button>
-            <Button variant="outline" onClick={() => setRejectOpen(true)} disabled={acting}
-              className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2">
-              <XCircle className="h-4 w-4" /> Ditolak oleh Pelanggan
-            </Button>
+        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4">
+          <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Menunggu Pengesahan Pelanggan
           </div>
+          <p className="text-xs text-[#1D4ED8]/80 mt-2">
+            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
+          </p>
         </div>
       )}
 
