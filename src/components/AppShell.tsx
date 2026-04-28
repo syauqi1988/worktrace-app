@@ -251,13 +251,20 @@ export default function AppShell() {
                 </button>
               </div>
               <nav className="flex-1 py-4 space-y-1">
-                {NAV_ITEMS.filter(item => !(item.teamOnly && profile?.plan !== 'team')).map(item => {
+                {NAV_ITEMS.map(item => {
                   const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
                   return (
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      onClick={() => setSidebarOpen(false)}
+                      onClick={(e) => {
+                        if (isTeamOnlyLocked) {
+                          e.preventDefault();
+                          toast.info(`${item.label} akan datang. Pelan Team masih dalam pembangunan.`);
+                          return;
+                        }
+                        setSidebarOpen(false);
+                      }}
                       className={() => navLinkClass(item.to)}
                     >
                       <item.icon className="h-4 w-4" />
