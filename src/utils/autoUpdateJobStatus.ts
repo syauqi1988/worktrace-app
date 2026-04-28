@@ -36,8 +36,8 @@ export const autoUpdateJobStatus = async (
       if (['Lead', 'Scheduled'].includes(job.status)) newStatus = 'Scheduled';
       break;
     case 'quotation_accepted':
-      // Stay at Scheduled until WO accepted
-      if (job.status === 'Lead') newStatus = 'Scheduled';
+      // With Work Order skipped (Team-only), move directly to In Progress
+      if (['Lead', 'Scheduled'].includes(job.status)) newStatus = 'In Progress';
       break;
     case 'quotation_rejected':
       // No auto change
