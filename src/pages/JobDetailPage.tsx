@@ -12,6 +12,7 @@ import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import { pdf } from '@react-pdf/renderer';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
