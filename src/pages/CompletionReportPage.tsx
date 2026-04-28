@@ -578,83 +578,145 @@ Terima kasih!
         </div>
       )}
 
-      {/* Job Info (read-only) */}
-      <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
-          <div><p className="text-xs text-muted-foreground">Tajuk</p><p className="text-foreground">{job.title}</p></div>
-          <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
-          <div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-foreground">{job.category}</p></div>
-        </div>
-      </div>
+      {/* SUBMITTED VIEW — polished WorkTrace-style report */}
+      {isSubmitted && (
+        <CompletionReportView
+          report={{
+            report_number: reportNumber,
+            completion_date: completionDate,
+            technician_name: technicianName,
+            work_description: workDescription,
+            materials_used: materialsUsed,
+            customer_signature: customerSignature,
+            notes,
+            status: reportStatus,
+            accepted_at: acceptedAt,
+            before_photos: beforePhotos,
+            after_photos: afterPhotos,
+            location_label: locationLabel,
+            project_ref: projectRef,
+            checklist: parseChecklist(checklistText),
+            photo_captions: { before: beforeCaptions, after: afterCaptions },
+          }}
+          job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
+          customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
+          company={{ company_name: profile?.company_name || null, logo_url: profile?.logo_url || null }}
+        />
+      )}
 
-      {/* Completion Date */}
-      <div className="space-y-1.5">
-        <Label>Tarikh Siap Kerja *</Label>
-        <Input type="date" value={completionDate} onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }} disabled={isSubmitted} />
-        {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
-      </div>
+      {/* EDIT MODE — form */}
+      {!isSubmitted && (
+        <>
+          {/* Job Info (read-only) */}
+          <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
+              <div><p className="text-xs text-muted-foreground">Tajuk</p><p className="text-foreground">{job.title}</p></div>
+              <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
+              <div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-foreground">{job.category}</p></div>
+            </div>
+          </div>
 
-      {/* Technician Name */}
-      <div className="space-y-1.5">
-        <Label>Nama Juruteknik *</Label>
-        <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder="Nama pekerja/juruteknik" disabled={isSubmitted} />
-        {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
-      </div>
+          {/* Completion Date */}
+          <div className="space-y-1.5">
+            <Label>Tarikh Siap Kerja *</Label>
+            <Input type="date" value={completionDate} onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }} />
+            {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
+          </div>
 
-      {/* Work Description */}
-      <div className="space-y-1.5">
-        <Label>Penerangan Kerja yang Dilaksanakan *</Label>
-        <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder="Huraikan kerja yang telah dilaksanakan secara terperinci..." disabled={isSubmitted} />
-        {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
-      </div>
+          {/* Technician Name */}
+          <div className="space-y-1.5">
+            <Label>Nama Juruteknik *</Label>
+            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder="Nama pekerja/juruteknik" />
+            {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
+          </div>
 
-      {/* Materials */}
-      <div className="space-y-1.5">
-        <Label>Bahan/Alatan Digunakan</Label>
-        <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." disabled={isSubmitted} />
-      </div>
+          {/* Location & Project Ref (optional) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Lokasi / Kawasan <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+              <Input value={locationLabel} onChange={e => setLocationLabel(e.target.value)} placeholder="cth: Tingkat 3, Bilik MEP" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Rujukan Projek <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+              <Input value={projectRef} onChange={e => setProjectRef(e.target.value)} placeholder="cth: PRJ-2026-001" />
+            </div>
+          </div>
 
-      {/* Before Photos */}
-      <PhotoSection
-        kind="before"
-        label="📷 Gambar Sebelum Kerja"
-        badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
-        helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
-        photos={beforePhotos}
-        uploading={uploadingPhoto}
-        disabled={isSubmitted}
-        onUpload={(e) => handlePhotoUpload(e, 'before')}
-        onRemove={(i) => removePhoto('before', i)}
-      />
+          {/* Work Description */}
+          <div className="space-y-1.5">
+            <Label>Penerangan Kerja yang Dilaksanakan *</Label>
+            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder="Huraikan kerja yang telah dilaksanakan secara terperinci..." />
+            {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
+          </div>
 
-      {/* After Photos */}
-      <PhotoSection
-        kind="after"
-        label="📷 Gambar Selepas Kerja"
-        badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
-        helper="Gambar hasil akhir kerja yang telah disiapkan"
-        photos={afterPhotos}
-        uploading={uploadingPhoto}
-        disabled={isSubmitted}
-        onUpload={(e) => handlePhotoUpload(e, 'after')}
-        onRemove={(i) => removePhoto('after', i)}
-        error={errors.photos}
-      />
+          {/* Materials */}
+          <div className="space-y-1.5">
+            <Label>Bahan/Alatan Digunakan</Label>
+            <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." />
+          </div>
 
-      {/* Customer Signature */}
-      <div className="space-y-1.5">
-        <Label>Pengesahan Pelanggan (opsional)</Label>
-        <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder="Nama pelanggan sebagai pengesahan" disabled={isSubmitted} />
-        <p className="text-[11px] text-muted-foreground">Minta pelanggan taip nama sebagai tanda pengesahan kerja siap</p>
-      </div>
+          {/* Before Photos */}
+          <PhotoSection
+            kind="before"
+            label="📷 Gambar Sebelum Kerja"
+            badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
+            helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
+            photos={beforePhotos}
+            captions={beforeCaptions}
+            uploading={uploadingPhoto}
+            disabled={false}
+            onUpload={(e) => handlePhotoUpload(e, 'before')}
+            onRemove={(i) => removePhoto('before', i)}
+            onCaption={(i, v) => setCaption('before', i, v)}
+          />
 
-      {/* Notes */}
-      <div className="space-y-1.5">
-        <Label>Nota Tambahan</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} disabled={isSubmitted} />
-      </div>
+          {/* After Photos */}
+          <PhotoSection
+            kind="after"
+            label="📷 Gambar Selepas Kerja"
+            badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
+            helper="Gambar hasil akhir kerja yang telah disiapkan"
+            photos={afterPhotos}
+            captions={afterCaptions}
+            uploading={uploadingPhoto}
+            disabled={false}
+            onUpload={(e) => handlePhotoUpload(e, 'after')}
+            onRemove={(i) => removePhoto('after', i)}
+            onCaption={(i, v) => setCaption('after', i, v)}
+            error={errors.photos}
+          />
+
+          {/* Checklist (optional) */}
+          <div className="space-y-1.5">
+            <Label>Senarai Semak Siap Kerja <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+            <Textarea
+              value={checklistText}
+              onChange={e => setChecklistText(e.target.value)}
+              rows={4}
+              placeholder={`Satu item setiap baris. Contoh:\n[x] Pemasangan disiapkan\n[x] Ujian tekanan lulus\n[ ] Lukisan as-built (pending)`}
+              className="font-mono text-sm"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Gunakan <code className="bg-muted px-1 rounded">[x]</code> untuk siap, <code className="bg-muted px-1 rounded">[ ]</code> untuk pending. Teks biasa dikira siap.
+            </p>
+          </div>
+
+          {/* Customer Signature */}
+          <div className="space-y-1.5">
+            <Label>Pengesahan Pelanggan (opsional)</Label>
+            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder="Nama pelanggan sebagai pengesahan" />
+            <p className="text-[11px] text-muted-foreground">Minta pelanggan taip nama sebagai tanda pengesahan kerja siap</p>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <Label>Nota Tambahan / Catatan Tapak</Label>
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Sebarang catatan atau nota juruteknik..." />
+          </div>
+        </>
+      )}
 
       {/* Actions */}
       {!isSubmitted && (
