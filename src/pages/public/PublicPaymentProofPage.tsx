@@ -167,9 +167,11 @@ export default function PublicPaymentProofPage() {
     );
   }
 
-  const isSubmitted = !!row.submitted_at;
   const verified = row.status === 'verified';
   const rejected = row.status === 'rejected';
+  // Customer can edit when: never submitted, or rejected (resubmit allowed). Locked once verified or pending review.
+  const canEdit = !row.submitted_at || rejected;
+  const isLocked = !canEdit;
   const paymentMethods: any[] = Array.isArray(company?.payment_methods) ? company.payment_methods : [];
 
   return (
