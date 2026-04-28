@@ -20,6 +20,7 @@ import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
+import { renderTemplate } from '@/lib/whatsappTemplates';
 
 interface Job {
   id: string;
@@ -475,24 +476,13 @@ export default function CompletionReportPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhoneIntl(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const msg =
-`Assalamualaikum / Salam Sejahtera ${job.customers.name},
-
-Alhamdulillah, kerja telah siap dilaksanakan. 🙏
-
-Berikut adalah Laporan Siap Kerja daripada *${companyName}*:
-
-📋 *No. Laporan:* ${reportNumber}
-🔨 *Kerja:* ${job.title}
-📅 *Tarikh Siap:* ${formatDateMs(completionDate)}
-
-👉 Tekan sini untuk *lihat & sahkan* laporan:
-${shortUrl}
-
-Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
-
-Terima kasih!
-*${companyName}*`;
+      const details = `📋 *No. Laporan:* ${reportNumber}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${formatDateMs(completionDate)}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}`;
+      const msg = renderTemplate(
+        (profile as any)?.whatsapp_templates,
+        'completion_report',
+        { customer_name: job.customers.name, company_name: companyName },
+        details,
+      );
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
       openWhatsAppUrl(waUrl);
     } catch (e: any) {
