@@ -187,7 +187,7 @@ export default function AppShell() {
               <HelpCircle className="h-4 w-4" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Tonton Tutorial Halaman Ini</TooltipContent>
+          <TooltipContent>{t('header.tutorial')}</TooltipContent>
         </Tooltip>
 
         <div className="relative">
@@ -202,18 +202,18 @@ export default function AppShell() {
               <div className="fixed inset-0 z-[60]" onClick={() => setProfileDropdown(false)} />
               <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl border border-border z-[70] py-1" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                 <div className="px-4 py-3 border-b border-border">
-                  <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || 'Syarikat'}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || t('common.company')}</p>
                   <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
                 <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-sidebar-background flex items-center gap-2">
-                  <User className="h-4 w-4" /> Profil
+                  <User className="h-4 w-4" /> {t('common.profile')}
                 </button>
                 <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-sidebar-background flex items-center gap-2">
-                  <Settings className="h-4 w-4" /> Tetapan
+                  <Settings className="h-4 w-4" /> {t('common.settings')}
                 </button>
                 <hr className="border-border my-1" />
                 <button onClick={handleSignOut} className="w-full px-4 py-2.5 text-left text-sm text-destructive hover:bg-sidebar-background flex items-center gap-2">
-                  <LogOut className="h-4 w-4" /> Log Keluar
+                  <LogOut className="h-4 w-4" /> {t('common.logout')}
                 </button>
               </div>
             </>
