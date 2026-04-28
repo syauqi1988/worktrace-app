@@ -19,6 +19,7 @@ import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateShortLink } from '@/lib/shortLinks';
 
 interface Job {
   id: string;
@@ -471,6 +472,7 @@ export default function CompletionReportPage() {
         expiresInDays: 30,
       });
       const approvalUrl = buildPublicApprovalUrl(token);
+      const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhoneIntl(job.customers.phone);
       const companyName = profile?.company_name || '';
       const msg =
@@ -484,8 +486,8 @@ Berikut adalah Laporan Siap Kerja daripada *${companyName}*:
 🔨 *Kerja:* ${job.title}
 📅 *Tarikh Siap:* ${formatDateMs(completionDate)}
 
-Sila klik pautan di bawah untuk *melihat & mengesahkan* laporan:
-🔗 ${approvalUrl}
+👉 Tekan sini untuk *lihat & sahkan* laporan:
+${shortUrl}
 
 Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
 

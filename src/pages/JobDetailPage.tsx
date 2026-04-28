@@ -13,6 +13,7 @@ import { pdf } from '@react-pdf/renderer';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateShortLink } from '@/lib/shortLinks';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
@@ -259,9 +260,10 @@ export default function JobDetailPage() {
         expiresInDays: 30,
       });
       const approvalUrl = buildPublicApprovalUrl(token);
+      const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const message = `Assalamualaikum / Salam Sejahtera ${job.customers.name},\n\nAlhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *${companyName}*:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* laporan:\n🔗 ${approvalUrl}\n\nAnda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*${companyName}*`;
+      const message = `Assalamualaikum / Salam Sejahtera ${job.customers.name},\n\nAlhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *${companyName}*:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}\n\nAnda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*${companyName}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
       toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
