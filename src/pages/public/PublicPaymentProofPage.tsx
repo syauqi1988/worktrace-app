@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, XCircle, Upload, Loader2, Receipt } from 'lucide-react';
+import { CheckCircle2, XCircle, Upload, Loader2, Receipt, FileText, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProofRow {
