@@ -71,15 +71,16 @@ const BANK_OPTIONS = [
 ];
 const QR_PROVIDERS = ["DuitNow QR", "TnG eWallet", "ShopeePay", "GrabPay", "Boost", "Other"];
 
-const TERMS_TABS = [
-  { key: "quotation", label: "Sebut Harga" },
-  { key: "invoice", label: "Invois" },
-  { key: "work_order", label: "Work Order" },
-] as const;
-
-type TermsTab = (typeof TERMS_TABS)[number]["key"];
+type TermsTab = "quotation" | "invoice" | "work_order";
 
 export default function SettingsPage() {
+  const { t, i18n } = useTranslation();
+  const TERMS_TABS: { key: TermsTab; label: string }[] = [
+    { key: "quotation", label: t("settings.terms.tabQuotation") },
+    { key: "invoice", label: t("settings.terms.tabInvoice") },
+    { key: "work_order", label: t("settings.terms.tabWorkOrder") },
+  ];
+  const dateLocale = getDateLocale();
   const { user, profile, updateProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { totalSeenCount } = useTutorial("settings");
