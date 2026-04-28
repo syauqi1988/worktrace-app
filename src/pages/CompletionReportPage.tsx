@@ -122,6 +122,7 @@ export default function CompletionReportPage() {
         const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
         setReportStatus(status);
         setRejectionReason(r.rejection_reason || null);
+        setAcceptedAt(r.accepted_at || null);
         // Lock fields once it's been sent (submitted/accepted). Allow edit again if rejected.
         setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
