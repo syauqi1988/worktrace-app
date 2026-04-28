@@ -340,11 +340,9 @@ Terima kasih!
             Kongsi via WhatsApp
           </Button>
         )}
-        {wo.status === 'Draft' && (
-          <Button variant="outline" onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} className="rounded-lg gap-2">
-            <Edit className="h-4 w-4" /> Edit
-          </Button>
-        )}
+        <Button variant="outline" onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} className="rounded-lg gap-2">
+          <Edit className="h-4 w-4" /> Edit
+        </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2">
           <Trash2 className="h-4 w-4" /> Padam
         </Button>
