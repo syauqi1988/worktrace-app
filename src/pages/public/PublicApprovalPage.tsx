@@ -64,11 +64,20 @@ export default function PublicApprovalPage() {
       if (profile) setCompany(profile as any);
 
       // Load doc summary (only fields needed for display)
-      const tableName = r.document_type === 'quotation' ? 'quotations' : 'work_orders';
-      const numberCol = r.document_type === 'quotation' ? 'quote_number' : 'wo_number';
+      const tableName =
+        r.document_type === 'quotation' ? 'quotations'
+        : r.document_type === 'work_order' ? 'work_orders'
+        : 'completion_reports';
+      const numberCol =
+        r.document_type === 'quotation' ? 'quote_number'
+        : r.document_type === 'work_order' ? 'wo_number'
+        : 'report_number';
+      const selectCols = r.document_type === 'completion_report'
+        ? `id, ${numberCol}, created_at, status`
+        : `id, ${numberCol}, total, created_at, status`;
       const { data: docData } = await supabase
         .from(tableName as any)
-        .select(`id, ${numberCol}, total, created_at, status`)
+        .select(selectCols)
         .eq('id', r.document_id)
         .maybeSingle();
       setDoc(docData);
