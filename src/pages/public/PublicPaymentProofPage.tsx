@@ -313,10 +313,10 @@ export default function PublicPaymentProofPage() {
             )}
           </div>
 
-          {!isSubmitted && (
+          {!isLocked && (
             <Button onClick={handleSubmit} disabled={submitting || !receiptUrl} className="w-full rounded-lg gap-2 h-12">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              {receiptUrl ? 'Hantar Bukti Pembayaran' : 'Muat naik resit dahulu'}
+              {receiptUrl ? (rejected ? 'Hantar Semula Bukti' : 'Hantar Bukti Pembayaran') : 'Muat naik resit dahulu'}
             </Button>
           )}
         </div>
