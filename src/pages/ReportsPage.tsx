@@ -7,6 +7,7 @@ import { Download, Loader2, FileBarChart } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import MonthlySummaryReportPDF, { MonthlySummaryData } from '@/components/pdf/MonthlySummaryReportPDF';
 import { toast } from 'sonner';
+import { tx } from '@/lib/tx';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, Legend,
@@ -122,7 +123,7 @@ export default function ReportsPage() {
     const s = startOfDay(new Date(customStart));
     const e = endOfDay(new Date(customEnd));
     if (isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) {
-      toast.error('Julat tarikh tidak sah');
+      toast.error(tx('Julat tarikh tidak sah'));
       return;
     }
     setPreset('custom');
@@ -199,7 +200,7 @@ export default function ReportsPage() {
       // Top customers (by paid invoice revenue in range)
       const custMap = new Map<string, { name: string; jobs: Set<string>; revenue: number; lastDeal: string | null }>();
       paid.forEach((inv: any) => {
-        const name = inv.customers?.name || 'Tanpa Nama';
+        const name = inv.customers?.name || tx('Tanpa Nama');
         const key = inv.customer_id || name;
         const cur = custMap.get(key) || { name, jobs: new Set(), revenue: 0, lastDeal: null };
         cur.revenue += Number(inv.total || 0);
@@ -265,7 +266,7 @@ export default function ReportsPage() {
     try {
       const pdfData: MonthlySummaryData = {
         company: {
-          name: profile?.company_name || 'Syarikat Anda',
+          name: profile?.company_name || tx('Syarikat Anda'),
           logo_url: profile?.logo_url,
           address: profile?.address,
           phone: profile?.phone,
@@ -298,9 +299,9 @@ export default function ReportsPage() {
       a.download = `Laporan-${periodLabel.replace(/\s+/g, '-')}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('Laporan dimuat turun');
+      toast.success(tx('Laporan dimuat turun'));
     } catch (e: any) {
-      toast.error(e.message || 'Gagal menjana laporan');
+      toast.error(e.message || tx('Gagal menjana laporan'));
     } finally {
       setGenerating(false);
     }
@@ -310,8 +311,8 @@ export default function ReportsPage() {
     <div className="p-4 md:p-6 space-y-5 max-w-6xl">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Laporan Ringkasan</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Pratonton prestasi perniagaan anda</p>
+          <h1 className="text-xl font-bold text-foreground">{tx('Laporan Ringkasan')}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{tx('Pratonton prestasi perniagaan anda')}</p>
         </div>
         <Button data-tutorial="reports-export" onClick={handleDownloadPDF} disabled={generating || loading} className="rounded-lg gap-2">
           {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -324,9 +325,9 @@ export default function ReportsPage() {
         <div data-tutorial="reports-presets" className="flex flex-wrap gap-1.5">
           {([
             ['week', 'Minggu Ini'],
-            ['month', 'Bulan Ini'],
-            ['lastMonth', 'Bulan Lepas'],
-            ['3m', '3 Bulan'],
+            ['month', tx('Bulan Ini')],
+            ['lastMonth', tx('Bulan Lepas')],
+            ['3m', tx('3 Bulan')],
             ['year', 'Tahun Ini'],
             ['custom', 'Suai Sendiri'],
           ] as [Preset, string][]).map(([p, lbl]) => (
@@ -347,7 +348,7 @@ export default function ReportsPage() {
         {preset === 'custom' && (
           <div className="flex flex-wrap items-end gap-2 pt-2 border-t border-border">
             <div>
-              <label className="text-[11px] text-muted-foreground block mb-1">Dari</label>
+              <label className="text-[11px] text-muted-foreground block mb-1">{tx('Dari')}</label>
               <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
                 className="h-9 px-2 text-sm rounded border border-input bg-background" />
             </div>
@@ -356,7 +357,7 @@ export default function ReportsPage() {
               <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
                 className="h-9 px-2 text-sm rounded border border-input bg-background" />
             </div>
-            <Button size="sm" onClick={applyCustom} className="h-9 rounded-lg">Guna Tarikh Ini</Button>
+            <Button size="sm" onClick={applyCustom} className="h-9 rounded-lg">{tx('Guna Tarikh Ini')}</Button>
           </div>
         )}
         <p className="text-xs text-muted-foreground">Tempoh: <span className="font-medium text-foreground">{periodLabel}</span></p>
@@ -371,10 +372,10 @@ export default function ReportsPage() {
           {/* Section 1: Revenue */}
           <Section title="Ringkasan Pendapatan" icon="💰">
             <StatGrid items={[
-              { label: 'Jumlah Pendapatan', value: `RM ${data.totalRevenue.toFixed(2)}` },
-              { label: 'Bil Invois Dibayar', value: data.paidCount },
-              { label: 'Invois Belum Bayar', value: `RM ${data.outstandingAmount.toFixed(2)}` },
-              { label: 'Purata Nilai Invois', value: `RM ${data.avgInvoice.toFixed(2)}` },
+              { label: tx('Jumlah Pendapatan'), value: `RM ${data.totalRevenue.toFixed(2)}` },
+              { label: tx('Bil Invois Dibayar'), value: data.paidCount },
+              { label: tx('Invois Belum Bayar'), value: `RM ${data.outstandingAmount.toFixed(2)}` },
+              { label: tx('Purata Nilai Invois'), value: `RM ${data.avgInvoice.toFixed(2)}` },
             ]} />
             {data.revenueSeries.length > 0 && (
               <div className="h-56 mt-4">
@@ -392,17 +393,17 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 2: Jobs */}
-          <Section title="Ringkasan Kerja" icon="📋">
+          <Section title=tx("Ringkasan Kerja") icon="📋">
             <StatGrid items={[
-              { label: 'Jumlah Kerja Baru', value: data.jobsTotal },
-              { label: 'Kerja Selesai', value: data.jobsCompleted },
-              { label: 'Dalam Proses', value: data.jobsInProgress },
+              { label: tx('Jumlah Kerja Baru'), value: data.jobsTotal },
+              { label: tx('Kerja Selesai'), value: data.jobsCompleted },
+              { label: tx('Dalam Proses'), value: data.jobsInProgress },
               { label: 'Kadar Penyelesaian', value: `${data.completionRate}%` },
             ]} />
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               {data.jobsByStatus.length > 0 && (
                 <div className="h-56">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Status Kerja</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">{tx('Status Kerja')}</p>
                   <ResponsiveContainer width="100%" height="90%">
                     <PieChart>
                       <Pie data={data.jobsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%"
@@ -420,7 +421,7 @@ export default function ReportsPage() {
               )}
               {data.jobsByCategory.length > 0 && (
                 <div className="h-56">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Kategori Kerja</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">{tx('Kategori Kerja')}</p>
                   <ResponsiveContainer width="100%" height="90%">
                     <BarChart data={data.jobsByCategory} layout="vertical" margin={{ left: 8, right: 8, top: 4, bottom: 4 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
@@ -436,21 +437,21 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 3: Customers */}
-          <Section title="Ringkasan Pelanggan" icon="👥">
+          <Section title=tx("Ringkasan Pelanggan") icon="👥">
             <StatGrid items={[
-              { label: 'Pelanggan Baru', value: data.newCustomers },
-              { label: 'Pelanggan Aktif', value: data.activeCustomers },
-              { label: 'Jumlah Pelanggan', value: data.totalCustomers },
+              { label: tx('Pelanggan Baru'), value: data.newCustomers },
+              { label: tx('Pelanggan Aktif'), value: data.activeCustomers },
+              { label: tx('Jumlah Pelanggan'), value: data.totalCustomers },
             ]} />
             {data.topCustomers.length > 0 && (
               <div className="mt-4 overflow-x-auto">
-                <p className="text-xs font-medium text-muted-foreground mb-2">5 Pelanggan Teratas</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">{tx('5 Pelanggan Teratas')}</p>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left border-b border-border">
-                      <th className="py-2 font-medium text-muted-foreground text-xs">Nama</th>
-                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">Bil Kerja</th>
-                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">Nilai Invois</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs">{tx('Nama')}</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">{tx('Bil Kerja')}</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">{tx('Nilai Invois')}</th>
                       <th className="py-2 font-medium text-muted-foreground text-xs text-right">Terakhir</th>
                     </tr>
                   </thead>
@@ -474,22 +475,22 @@ export default function ReportsPage() {
           {/* Section 4: Documents */}
           <Section title="Ringkasan Dokumen" icon="📄">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <StatBox label="Sebut Harga Dihantar" value={data.quotesSent} />
-              <StatBox label="Sebut Harga Diterima" value={data.quotesAccepted} />
+              <StatBox label=tx("Sebut Harga Dihantar") value={data.quotesSent} />
+              <StatBox label=tx("Sebut Harga Diterima") value={data.quotesAccepted} />
               <StatBox label="Work Order Diterima" value={data.workOrdersAccepted} />
-              <StatBox label="Laporan Dihantar" value={data.reportsSent} />
-              <StatBox label="Resit Dijana" value={data.receiptsGenerated} />
+              <StatBox label=tx("Laporan Dihantar") value={data.reportsSent} />
+              <StatBox label=tx("Resit Dijana") value={data.receiptsGenerated} />
             </div>
 
             {/* Conversion funnel */}
             <div className="mt-4 pt-4 border-t border-border">
               <p className="text-xs font-medium text-muted-foreground mb-3">Funnel Penukaran</p>
               <FunnelStages stages={[
-                { label: 'Sebut Harga', count: data.quotesSent },
+                { label: tx('Sebut Harga'), count: data.quotesSent },
                 { label: 'Diterima', count: data.quotesAccepted },
                 { label: 'Work Order', count: data.workOrdersAccepted },
-                { label: 'Laporan', count: data.reportsSent },
-                { label: 'Invois Dibayar', count: data.paidCount },
+                { label: tx('Laporan'), count: data.reportsSent },
+                { label: tx('Invois Dibayar'), count: data.paidCount },
               ]} />
             </div>
           </Section>

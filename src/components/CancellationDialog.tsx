@@ -6,22 +6,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, X, AlertTriangle } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 const REASONS = [
   'Terlalu mahal',
   'Tidak guna aplikasi ini',
-  'Hilang ciri yang diperlukan',
+  tx('Hilang ciri yang diperlukan'),
   'Berpindah ke aplikasi lain',
   'Perniagaan ditutup sementara',
   'Lain-lain (nyatakan)',
 ];
 
 const LOSE_ITEMS = [
-  'Kerja aktif tanpa had',
-  'Pelanggan tanpa had',
-  'Kongsi quotation via WhatsApp',
-  'Logo syarikat di PDF',
-  'Kaedah bayaran di invois',
+  tx('Kerja aktif tanpa had'),
+  tx('Pelanggan tanpa had'),
+  tx('Kongsi quotation via WhatsApp'),
+  tx('Logo syarikat di PDF'),
+  tx('Kaedah bayaran di invois'),
   'Sistem referral',
 ];
 
@@ -46,7 +47,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
   const finalReason = reason === 'Lain-lain (nyatakan)' ? otherReason : reason;
 
   const handleConfirm = async () => {
-    if (confirmText !== 'BATAL' || !user) return;
+    if (confirmText !== tx('BATAL') || !user) return;
     setLoading(true);
     try {
       await supabase.from('profiles').update({
@@ -62,7 +63,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
       onCancelled();
       resetAndClose();
     } catch {
-      toast.error('Gagal membatalkan langganan. Sila cuba lagi.');
+      toast.error(tx('Gagal membatalkan langganan. Sila cuba lagi.'));
     } finally {
       setLoading(false);
     }
@@ -81,7 +82,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
       <DialogContent className="max-w-[420px] rounded-xl p-0 gap-0">
         {step === 1 && (
           <div className="p-6 space-y-4">
-            <h3 className="text-base font-bold text-foreground">Kenapa anda ingin membatalkan?</h3>
+            <h3 className="text-base font-bold text-foreground">{tx('Kenapa anda ingin membatalkan?')}</h3>
             <div className="flex flex-wrap gap-2">
               {REASONS.map(r => (
                 <button
@@ -106,13 +107,13 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
               />
             )}
             <div className="flex gap-2 justify-end pt-2">
-              <Button variant="ghost" onClick={resetAndClose} className="text-sm">Batal</Button>
+              <Button variant="ghost" onClick={resetAndClose} className="text-sm">{tx('Batal')}</Button>
               <Button
                 onClick={() => setStep(2)}
                 disabled={!reason || (reason === 'Lain-lain (nyatakan)' && !otherReason.trim())}
                 className="rounded-lg"
               >
-                Seterusnya
+                {tx('Seterusnya')}
               </Button>
             </div>
           </div>
@@ -122,7 +123,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
           <div className="p-6 space-y-4">
             <h3 className="text-base font-bold text-foreground">Jangan pergi dulu! 🙏</h3>
             <div className="rounded-lg border border-border p-4 space-y-2">
-              <p className="text-sm text-muted-foreground mb-2">Selepas pembatalan, anda akan kehilangan:</p>
+              <p className="text-sm text-muted-foreground mb-2">{tx('Selepas pembatalan, anda akan kehilangan:')}</p>
               {LOSE_ITEMS.map(item => (
                 <div key={item} className="flex items-center gap-2 text-sm text-foreground">
                   <X className="h-3.5 w-3.5 text-destructive shrink-0" />
@@ -132,10 +133,10 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
             </div>
             <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
               <p className="text-sm text-blue-800">
-                Langganan anda masih aktif sehingga <strong>{endDateStr}</strong>. Anda masih boleh menggunakan semua ciri Pro sehingga tarikh tersebut.
+                {tx('Langganan anda masih aktif sehingga')} <strong>{endDateStr}</strong>{tx('. Anda masih boleh menggunakan semua ciri Pro sehingga tarikh tersebut.')}
               </p>
             </div>
-            <Button onClick={resetAndClose} className="w-full rounded-lg">Kekal dengan Pro</Button>
+            <Button onClick={resetAndClose} className="w-full rounded-lg">{tx('Kekal dengan Pro')}</Button>
             <Button
               variant="outline"
               onClick={() => setStep(3)}
@@ -150,25 +151,25 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
           <div className="p-6 space-y-4">
             <h3 className="text-base font-bold text-foreground">Pengesahan Pembatalan</h3>
             <p className="text-sm text-muted-foreground">
-              Dengan membatalkan, langganan Pro anda akan tamat pada <strong>{endDateStr}</strong>. Selepas itu, akaun anda akan kembali ke pelan Free secara automatik.
+              {tx('Dengan membatalkan, langganan Pro anda akan tamat pada')} <strong>{endDateStr}</strong>{tx('. Selepas itu, akaun anda akan kembali ke pelan Free secara automatik.')}
             </p>
             <p className="text-sm text-muted-foreground">
-              Data anda (kerja, pelanggan, invois) akan <strong>DISIMPAN</strong> dan tidak akan dipadam.
+              {tx('Data anda (kerja, pelanggan, invois) akan')} <strong>{tx('DISIMPAN')}</strong> dan tidak akan dipadam.
             </p>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Taip BATAL untuk mengesahkan:</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Taip BATAL untuk mengesahkan:')}</label>
               <Input
                 value={confirmText}
                 onChange={e => setConfirmText(e.target.value)}
-                placeholder="Taip BATAL di sini"
-                className={`h-11 rounded-lg ${confirmText === 'BATAL' ? 'border-green-500 focus-visible:ring-green-500' : confirmText ? 'border-destructive' : ''}`}
+                placeholder=tx("Taip BATAL di sini")
+                className={`h-11 rounded-lg ${confirmText === tx('BATAL') ? 'border-green-500 focus-visible:ring-green-500' : confirmText ? 'border-destructive' : ''}`}
               />
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(2)} className="flex-1 rounded-lg">Kembali</Button>
               <Button
                 onClick={handleConfirm}
-                disabled={confirmText !== 'BATAL' || loading}
+                disabled={confirmText !== tx('BATAL') || loading}
                 className="flex-1 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

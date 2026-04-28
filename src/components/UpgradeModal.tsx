@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Check, Lock } from 'lucide-react';
 import { useBillPlz } from '@/hooks/useBillPlz';
 import { usePricingPlans } from '@/hooks/usePricingPlans';
+import { tx } from '@/lib/tx';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -83,7 +84,7 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
                 <span className="text-sm text-muted-foreground line-through mr-1">RM{originalYearly}</span>
               )}
               <span className="text-2xl font-bold text-primary">RM{formatPrice(yearlyPrice)}</span>
-              <span className="text-sm text-muted-foreground">/tahun</span>
+              <span className="text-sm text-muted-foreground">{tx('/tahun')}</span>
               {yearlyMonthly > 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Setara RM{formatPrice(yearlyMonthly)}/bulan
@@ -96,7 +97,7 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
           ) : (
             <>
               <span className="text-2xl font-bold text-primary">RM{formatPrice(monthlyPrice)}</span>
-              <span className="text-sm text-muted-foreground">/bulan</span>
+              <span className="text-sm text-muted-foreground">{tx('/bulan')}</span>
               {discount > 0 && (
                 <p className="text-xs text-green-600 font-medium mt-1">
                   Tukar ke tahunan dan jimat {discount}%
@@ -114,7 +115,7 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
           >
             {isLoading
               ? 'Memproses...'
-              : `Upgrade ke ${proPlan?.name ?? 'Pro'}${isYearly && discount > 0 ? ` (-${discount}%)` : ''} — RM${formatPrice(price)}/${isYearly ? 'tahun' : 'bulan'}`}
+              : `Upgrade ke ${proPlan?.name ?? 'Pro'}${isYearly && discount > 0 ? ` (-${discount}%)` : ''} — RM${formatPrice(price)}/${isYearly ? 'tahun' : tx('bulan')}`}
           </Button>
           <Button variant="ghost" onClick={onClose} className="w-full rounded-lg text-muted-foreground">
             Mungkin lain kali

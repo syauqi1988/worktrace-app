@@ -40,6 +40,7 @@ import CancellationDialog from "@/components/CancellationDialog";
 import ReactivateDialog from "@/components/ReactivateDialog";
 import { useBillPlz } from "@/hooks/useBillPlz";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
+import { tx } from '@/lib/tx';
 
 interface PaymentMethod {
   id: string;
@@ -70,8 +71,8 @@ const BANK_OPTIONS = [
 const QR_PROVIDERS = ["DuitNow QR", "TnG eWallet", "ShopeePay", "GrabPay", "Boost", "Other"];
 
 const TERMS_TABS = [
-  { key: "quotation", label: "Sebut Harga" },
-  { key: "invoice", label: "Invois" },
+  { key: "quotation", label: tx("Sebut Harga") },
+  { key: "invoice", label: tx("Invois") },
   { key: "work_order", label: "Work Order" },
 ] as const;
 
@@ -171,7 +172,7 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     if (ssmNumberNew && !/^\d+$/.test(ssmNumberNew)) {
-      toast.error("No. Pendaftaran SSM (Baru) mesti nombor sahaja");
+      toast.error(tx("No. Pendaftaran SSM (Baru) mesti nombor sahaja"));
       return;
     }
     setSavingProfile(true);
@@ -184,7 +185,7 @@ export default function SettingsPage() {
       ssm_number_old: ssmNumberOld || null,
     });
     setSavingProfile(false);
-    toast.success("Profil berjaya dikemaskini!");
+    toast.success(tx("Profil berjaya dikemaskini!"));
   };
 
   const handleSaveLhdn = async () => {
@@ -196,7 +197,7 @@ export default function SettingsPage() {
       sst_registered: sstRegistered,
     });
     setSavingLhdn(false);
-    toast.success("Tetapan LHDN disimpan!");
+    toast.success(tx("Tetapan LHDN disimpan!"));
   };
 
   const handleSaveTerms = async () => {
@@ -206,7 +207,7 @@ export default function SettingsPage() {
       invoice_terms: invoiceTerms || null,
     });
     setSavingTerms(false);
-    toast.success("Terma & syarat berjaya disimpan!");
+    toast.success(tx("Terma & syarat berjaya disimpan!"));
   };
 
   // Payment methods
@@ -234,7 +235,7 @@ export default function SettingsPage() {
 
   const handleSaveBank = async () => {
     if (!accountName.trim() || !accountNumber.trim()) {
-      toast.error("Sila isi semua medan");
+      toast.error(tx("Sila isi semua medan"));
       return;
     }
     let methods = [...paymentMethods];
@@ -263,7 +264,7 @@ export default function SettingsPage() {
     }
     await savePaymentMethods(methods);
     resetBankForm();
-    toast.success("Akaun bank disimpan!");
+    toast.success(tx("Akaun bank disimpan!"));
   };
 
   const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -277,7 +278,7 @@ export default function SettingsPage() {
     const path = `${user.id}/${Date.now()}.png`;
     const { error } = await supabase.storage.from("payment-qr").upload(path, file, { upsert: true });
     if (error) {
-      toast.error("Gagal muat naik QR");
+      toast.error(tx("Gagal muat naik QR"));
       setUploadingQr(false);
       return;
     }
@@ -290,7 +291,7 @@ export default function SettingsPage() {
 
   const handleSaveQr = async () => {
     if (!qrImageUrl) {
-      toast.error("Sila muat naik imej QR");
+      toast.error(tx("Sila muat naik imej QR"));
       return;
     }
     let methods = [...paymentMethods];
@@ -308,13 +309,13 @@ export default function SettingsPage() {
     }
     await savePaymentMethods(methods);
     resetQrForm();
-    toast.success("QR payment disimpan!");
+    toast.success(tx("QR payment disimpan!"));
   };
 
   const handleDeletePayment = async (id: string) => {
     const methods = paymentMethods.filter((m) => m.id !== id);
     await savePaymentMethods(methods);
-    toast.success("Kaedah pembayaran dipadam");
+    toast.success(tx("Kaedah pembayaran dipadam"));
   };
 
   const handleEditBank = (m: PaymentMethod) => {
@@ -340,7 +341,7 @@ export default function SettingsPage() {
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralUrl);
-    toast.success("Link rujukan disalin! Kongsi dengan rakan kontraktor anda.");
+    toast.success(tx("Link rujukan disalin! Kongsi dengan rakan kontraktor anda."));
   };
 
   const shareWhatsApp = () => {
@@ -370,7 +371,7 @@ export default function SettingsPage() {
       toast.success(`${(data as any).monthsApplied} bulan percuma telah digunakan!`);
       await refreshProfile();
     } catch (e: any) {
-      toast.error(e?.message || "Gagal menggunakan bulan percuma");
+      toast.error(e?.message || tx("Gagal menggunakan bulan percuma"));
     } finally {
       setApplyingFreeMonths(false);
     }
@@ -383,26 +384,26 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl">
-      <h1 className="text-xl font-bold text-foreground">Tetapan</h1>
+      <h1 className="text-xl font-bold text-foreground">{tx('Tetapan')}</h1>
 
       {/* 1 — Profil Syarikat */}
       <SettingsAccordion
         id="profil-syarikat"
         tutorialId="settings-profile"
         icon={<Building2 className="h-5 w-5" />}
-        title="Profil Syarikat"
-        description="Nama syarikat, telefon, alamat dan logo"
+        title=tx("Profil Syarikat")
+        description=tx("Nama syarikat, telefon, alamat dan logo")
         defaultOpen
       >
         {user && (
           <CompanyLogoUpload userId={user.id} logoUrl={logoUrl} onChange={setLogoUrl} />
         )}
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Syarikat *</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Nama Syarikat *')}</label>
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="h-11 rounded-lg" />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Nombor Telefon</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Nombor Telefon')}</label>
           <Input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -411,7 +412,7 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Alamat</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Alamat')}</label>
           <textarea
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -419,7 +420,7 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Baru)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('No. Pendaftaran SSM (Baru)')}</label>
           <Input
             value={ssmNumberNew}
             onChange={(e) => setSsmNumberNew(e.target.value.replace(/\D/g, ""))}
@@ -428,20 +429,20 @@ export default function SettingsPage() {
             pattern="[0-9]*"
             className="h-11 rounded-lg"
           />
-          <p className="text-xs text-muted-foreground mt-1">Format baru SSM (nombor sahaja)</p>
+          <p className="text-xs text-muted-foreground mt-1">{tx('Format baru SSM (nombor sahaja)')}</p>
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Lama)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('No. Pendaftaran SSM (Lama)')}</label>
           <Input
             value={ssmNumberOld}
             onChange={(e) => setSsmNumberOld(e.target.value)}
             placeholder="cth: 123456-A"
             className="h-11 rounded-lg"
           />
-          <p className="text-xs text-muted-foreground mt-1">Format lama SSM (jika ada)</p>
+          <p className="text-xs text-muted-foreground mt-1">{tx('Format lama SSM (jika ada)')}</p>
         </div>
         <Button onClick={handleSaveProfile} disabled={savingProfile} className="rounded-lg">
-          {savingProfile ? "Menyimpan..." : "Simpan Profil"}
+          {savingProfile ? "Menyimpan..." : tx("Simpan Profil")}
         </Button>
       </SettingsAccordion>
 
@@ -450,19 +451,19 @@ export default function SettingsPage() {
         id="lhdn-sst"
         icon={<Shield className="h-5 w-5" />}
         title="LHDN & SST"
-        description="Maklumat cukai dan e-Invois LHDN MyInvois"
+        description=tx("Maklumat cukai dan e-Invois LHDN MyInvois")
       >
         <div className="flex items-center justify-between py-2">
-          <span className="text-sm font-medium text-foreground">Aktifkan e-Invois LHDN</span>
+          <span className="text-sm font-medium text-foreground">{tx('Aktifkan e-Invois LHDN')}</span>
           <Switch checked={lhdnEnabled} onCheckedChange={setLhdnEnabled} />
         </div>
         {!lhdnEnabled && (
-          <p className="text-sm text-muted-foreground">Aktifkan untuk memaparkan medan LHDN pada invois anda</p>
+          <p className="text-sm text-muted-foreground">{tx('Aktifkan untuk memaparkan medan LHDN pada invois anda')}</p>
         )}
         {lhdnEnabled && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">No. TIN Syarikat</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{tx('No. TIN Syarikat')}</label>
               <Input
                 value={tinNumber}
                 onChange={(e) => setTinNumber(e.target.value)}
@@ -497,10 +498,10 @@ export default function SettingsPage() {
           </div>
         )}
         <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
-          Integrasi automatik dengan portal MyInvois LHDN akan datang tidak lama lagi.
+          {tx('Integrasi automatik dengan portal MyInvois LHDN akan datang tidak lama lagi.')}
         </div>
         <Button onClick={handleSaveLhdn} disabled={savingLhdn} className="rounded-lg">
-          {savingLhdn ? "Menyimpan..." : "Simpan Tetapan LHDN"}
+          {savingLhdn ? "Menyimpan..." : tx("Simpan Tetapan LHDN")}
         </Button>
       </SettingsAccordion>
 
@@ -510,9 +511,9 @@ export default function SettingsPage() {
         tutorialId="settings-payment"
         icon={<Landmark className="h-5 w-5" />}
         title="Kaedah Pembayaran"
-        description="Akaun bank dan QR bayaran untuk invois"
+        description=tx("Akaun bank dan QR bayaran untuk invois")
       >
-        <p className="text-sm text-muted-foreground">Maklumat ini akan dipaparkan dalam setiap invois anda</p>
+        <p className="text-sm text-muted-foreground">{tx('Maklumat ini akan dipaparkan dalam setiap invois anda')}</p>
 
         {banks.map((b) => (
           <div key={b.id} className="border border-border rounded-lg p-4 space-y-1">
@@ -529,13 +530,13 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground font-mono">{b.account_number}</p>
             <div className="flex gap-2 pt-1">
               <button onClick={() => handleEditBank(b)} className="text-xs text-primary hover:underline">
-                Edit
+                {tx('Edit')}
               </button>
               <button
                 onClick={() => handleDeletePayment(b.id)}
                 className="text-xs text-destructive hover:underline"
               >
-                Padam
+                {tx('Padam')}
               </button>
             </div>
           </div>
@@ -553,13 +554,13 @@ export default function SettingsPage() {
             )}
             <div className="flex gap-2">
               <button onClick={() => handleEditQr(q)} className="text-xs text-primary hover:underline">
-                Edit
+                {tx('Edit')}
               </button>
               <button
                 onClick={() => handleDeletePayment(q.id)}
                 className="text-xs text-destructive hover:underline"
               >
-                Padam
+                {tx('Padam')}
               </button>
             </div>
           </div>
@@ -568,7 +569,7 @@ export default function SettingsPage() {
         {showBankForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nama Bank</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{tx('Nama Bank')}</label>
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
@@ -582,7 +583,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nama Akaun *</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{tx('Nama Akaun *')}</label>
               <Input
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
@@ -590,7 +591,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nombor Akaun *</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{tx('Nombor Akaun *')}</label>
               <Input
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
@@ -605,10 +606,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSaveBank} disabled={savingPayment} size="sm" className="rounded-lg">
-                Simpan Akaun
+                {tx('Simpan Akaun')}
               </Button>
               <Button variant="outline" onClick={resetBankForm} size="sm" className="rounded-lg">
-                Batal
+                {tx('Batal')}
               </Button>
             </div>
           </div>
@@ -631,7 +632,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Muat Naik Imej QR</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{tx('Muat Naik Imej QR')}</label>
               <input
                 type="file"
                 accept="image/png,image/jpeg"
@@ -649,10 +650,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSaveQr} disabled={savingPayment} size="sm" className="rounded-lg">
-                Simpan QR
+                {tx('Simpan QR')}
               </Button>
               <Button variant="outline" onClick={resetQrForm} size="sm" className="rounded-lg">
-                Batal
+                {tx('Batal')}
               </Button>
             </div>
           </div>
@@ -661,10 +662,10 @@ export default function SettingsPage() {
         {!showBankForm && !showQrForm && (
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setShowBankForm(true)} size="sm" className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Tambah Akaun Bank
+              <Plus className="h-3.5 w-3.5" /> {tx('Tambah Akaun Bank')}
             </Button>
             <Button variant="outline" onClick={() => setShowQrForm(true)} size="sm" className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Tambah QR Payment
+              <Plus className="h-3.5 w-3.5" /> {tx('Tambah QR Payment')}
             </Button>
           </div>
         )}
@@ -676,7 +677,7 @@ export default function SettingsPage() {
         tutorialId="settings-terms"
         icon={<FileText className="h-5 w-5" />}
         title="Terma & Syarat"
-        description="T&C untuk Sebut Harga, Invois dan Work Order"
+        description=tx("T&C untuk Sebut Harga, Invois dan Work Order")
       >
         <div className="flex gap-2 border-b border-border mb-2">
           {TERMS_TABS.map((t) => (
@@ -698,9 +699,9 @@ export default function SettingsPage() {
         {termsTab === "quotation" && (
           <div className="space-y-3">
             <Textarea value={quotationTerms} onChange={(e) => setQuotationTerms(e.target.value)} rows={10} />
-            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Sebut Harga PDF</p>
+            <p className="text-xs text-muted-foreground">{tx('Terma ini dipaparkan dalam setiap Sebut Harga PDF')}</p>
             <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-              {savingTerms ? "Menyimpan..." : "Simpan Terma Sebut Harga"}
+              {savingTerms ? "Menyimpan..." : tx("Simpan Terma Sebut Harga")}
             </Button>
           </div>
         )}
@@ -708,9 +709,9 @@ export default function SettingsPage() {
         {termsTab === "invoice" && (
           <div className="space-y-3">
             <Textarea value={invoiceTerms} onChange={(e) => setInvoiceTerms(e.target.value)} rows={10} />
-            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Invois PDF</p>
+            <p className="text-xs text-muted-foreground">{tx('Terma ini dipaparkan dalam setiap Invois PDF')}</p>
             <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-              {savingTerms ? "Menyimpan..." : "Simpan Terma Invois"}
+              {savingTerms ? "Menyimpan..." : tx("Simpan Terma Invois")}
             </Button>
           </div>
         )}
@@ -724,7 +725,7 @@ export default function SettingsPage() {
         tutorialId="settings-whatsapp"
         icon={<MessageCircle className="h-5 w-5" />}
         title="Templet WhatsApp"
-        description="Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
+        description=tx("Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp")
       >
         <WhatsAppTemplatesSection />
       </SettingsAccordion>
@@ -734,7 +735,7 @@ export default function SettingsPage() {
         id="device-notifications"
         icon={<MessageCircle className="h-5 w-5" />}
         title="Notifikasi Peranti"
-        description="Aktifkan notifikasi push pada telefon atau komputer anda"
+        description=tx("Aktifkan notifikasi push pada telefon atau komputer anda")
       >
         <NotificationSettingsSection />
       </SettingsAccordion>
@@ -745,7 +746,7 @@ export default function SettingsPage() {
         tutorialId="settings-docnum"
         icon={<Hash className="h-5 w-5" />}
         title="Nombor Dokumen"
-        description="Format nombor auto untuk semua jenis dokumen"
+        description=tx("Format nombor auto untuk semua jenis dokumen")
       >
         <DocNumberSettings />
       </SettingsAccordion>
@@ -761,7 +762,7 @@ export default function SettingsPage() {
           <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-2">
             <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="text-sm text-foreground">
-              Anda ada <strong>{freeMonthsBalance} bulan percuma</strong> daripada program rujukan! Akan digunakan
+              {tx('Anda ada')} <strong>{freeMonthsBalance} bulan percuma</strong> daripada program rujukan! Akan digunakan
               semasa pembaharuan langganan.
             </p>
           </div>
@@ -788,7 +789,7 @@ export default function SettingsPage() {
               const dbPlan = getPlan(profile?.plan ?? "free");
               const isYearly = profile?.billing_period === "yearly";
               const price = dbPlan ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price) : 0;
-              const periodLabel = isFree ? "" : isYearly ? "/tahun" : "/bulan";
+              const periodLabel = isFree ? "" : isYearly ? tx("/tahun") : tx("/bulan");
               return `RM${price.toFixed(2)}${periodLabel}`;
             })()}
             {isFree
@@ -833,7 +834,7 @@ export default function SettingsPage() {
 
         {!isFree && (profile as any)?.subscription_cancelled ? (
           <Button onClick={() => setReactivateOpen(true)} className="w-full rounded-lg">
-            Aktifkan Semula Langganan
+            {tx('Aktifkan Semula Langganan')}
           </Button>
         ) : !isFree ? (
           <div className="space-y-3">
@@ -846,7 +847,7 @@ export default function SettingsPage() {
               return (
                 <>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">Pilih tempoh pembaharuan</p>
+                    <p className="text-xs text-muted-foreground mb-1.5">{tx('Pilih tempoh pembaharuan')}</p>
                     <div className="flex rounded-lg border border-border overflow-hidden">
                       <button
                         type="button"
@@ -885,7 +886,7 @@ export default function SettingsPage() {
                     {billPlzLoading
                       ? "Memproses..."
                       : `Perbaharui Langganan — RM${price.toFixed(2)}/${
-                          renewPeriod === "yearly" ? "tahun" : "bulan"
+                          renewPeriod === "yearly" ? "tahun" : tx("bulan")
                         }`}
                   </Button>
                 </>
@@ -928,14 +929,14 @@ export default function SettingsPage() {
         id="rujukan"
         icon={<Gift className="h-5 w-5" />}
         title="Rujukan"
-        description="Kod rujukan dan ganjaran bulan percuma"
+        description=tx("Kod rujukan dan ganjaran bulan percuma")
       >
         {isFree ? (
           <div className="text-center py-8 space-y-3">
             <Gift className="h-10 w-10 text-muted-foreground/30 mx-auto" />
-            <p className="text-sm text-muted-foreground">Upgrade ke Pro untuk akses sistem referral</p>
+            <p className="text-sm text-muted-foreground">{tx('Upgrade ke Pro untuk akses sistem referral')}</p>
             <p className="text-xs text-muted-foreground">
-              Kongsi link anda dan dapatkan 1 bulan percuma setiap kali rakan anda melanggan!
+              {tx('Kongsi link anda dan dapatkan 1 bulan percuma setiap kali rakan anda melanggan!')}
             </p>
           </div>
         ) : (
@@ -945,14 +946,14 @@ export default function SettingsPage() {
               style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.5))" }}
             >
               <p className="text-sm text-foreground">
-                Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!
+                {tx('Kongsi link anda dan dapatkan')} <strong>{tx('1 bulan percuma')}</strong> setiap kali rakan anda melanggan!
               </p>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Link Rujukan Anda:</p>
+                <p className="text-xs text-muted-foreground mb-1">{tx('Link Rujukan Anda:')}</p>
                 <div className="flex items-center gap-2">
                   <Input value={referralUrl} readOnly className="text-xs bg-muted font-mono" />
                   <Button variant="outline" size="sm" onClick={copyReferralLink} className="shrink-0 rounded-lg gap-1">
-                    <Copy className="h-3.5 w-3.5" /> Salin
+                    <Copy className="h-3.5 w-3.5" /> {tx('Salin')}
                   </Button>
                 </div>
               </div>
@@ -963,7 +964,7 @@ export default function SettingsPage() {
                   className="rounded-lg gap-1.5 text-white"
                   style={{ backgroundColor: "#25D366" }}
                 >
-                  <MessageCircle className="h-3.5 w-3.5" /> Kongsi via WhatsApp
+                  <MessageCircle className="h-3.5 w-3.5" /> {tx('Kongsi via WhatsApp')}
                 </Button>
                 <Button onClick={shareTelegram} size="sm" variant="outline" className="rounded-lg gap-1.5">
                   <Send className="h-3.5 w-3.5" /> Telegram
@@ -973,9 +974,9 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Jumlah Rujukan", value: profile?.referral_count || 0 },
-                { label: "Bulan Diperolehi", value: profile?.free_months_earned || 0 },
-                { label: "Bulan Digunakan", value: profile?.free_months_used || 0 },
+                { label: tx("Jumlah Rujukan"), value: profile?.referral_count || 0 },
+                { label: tx("Bulan Diperolehi"), value: profile?.free_months_earned || 0 },
+                { label: tx("Bulan Digunakan"), value: profile?.free_months_used || 0 },
                 { label: "Baki Tersedia", value: freeMonthsBalance },
               ].map((s) => (
                 <div key={s.label} className="border border-border rounded-lg p-3 text-center">
@@ -994,7 +995,7 @@ export default function SettingsPage() {
                       Anda ada {freeMonthsBalance} bulan percuma
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Klik untuk lanjutkan tarikh tamat langganan anda sekarang.
+                      {tx('Klik untuk lanjutkan tarikh tamat langganan anda sekarang.')}
                     </p>
                   </div>
                 </div>
@@ -1010,7 +1011,7 @@ export default function SettingsPage() {
             )}
             {freeMonthsBalance > 0 && isFree && (
               <p className="text-xs text-muted-foreground -mt-1">
-                Upgrade ke Pro untuk menggunakan bulan percuma anda.
+                {tx('Upgrade ke Pro untuk menggunakan bulan percuma anda.')}
               </p>
             )}
 
@@ -1019,8 +1020,8 @@ export default function SettingsPage() {
               {referrals.length === 0 ? (
                 <div className="text-center py-6">
                   <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Belum ada rujukan</p>
-                  <p className="text-xs text-muted-foreground">Kongsi link untuk mula mendapat ganjaran!</p>
+                  <p className="text-sm text-muted-foreground">{tx('Belum ada rujukan')}</p>
+                  <p className="text-xs text-muted-foreground">{tx('Kongsi link untuk mula mendapat ganjaran!')}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1064,7 +1065,7 @@ export default function SettingsPage() {
         id="tutorial-bantuan"
         icon={<BookOpen className="h-5 w-5" />}
         title="Bantuan"
-        description="Bantuan AI dan sokongan"
+        description=tx("Bantuan AI dan sokongan")
       >
         <div>
           <AiHelpButton />
@@ -1078,7 +1079,7 @@ export default function SettingsPage() {
           >
             📧 Hantar Tiket Sokongan
           </button>
-          <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
+          <p className="text-xs text-muted-foreground">{tx('Masa respons: &lt; 24 jam (hari bekerja)')}</p>
         </div>
       </SettingsAccordion>
 
@@ -1087,23 +1088,23 @@ export default function SettingsPage() {
         id="zon-bahaya"
         icon={<AlertTriangle className="h-5 w-5" />}
         title="Zon Bahaya"
-        description="Padam akaun dan tindakan yang tidak boleh dibatalkan"
+        description=tx("Padam akaun dan tindakan yang tidak boleh dibatalkan")
         danger
       >
         <div>
-          <label className="text-sm font-medium text-foreground mb-1 block">E-mel Akaun</label>
+          <label className="text-sm font-medium text-foreground mb-1 block">{tx('E-mel Akaun')}</label>
           <p className="text-sm text-foreground">{user?.email}</p>
         </div>
         <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 space-y-1">
           <p className="text-[13px] text-destructive font-medium flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5" /> Tindakan Tidak Boleh Dibatalkan
+            <AlertTriangle className="h-3.5 w-3.5" /> {tx('Tindakan Tidak Boleh Dibatalkan')}
           </p>
           <ul className="text-[13px] text-destructive list-disc list-inside space-y-0.5">
-            <li>Semua kerja dan rekod</li>
-            <li>Semua pelanggan</li>
-            <li>Semua sebut harga, work order dan invois</li>
+            <li>{tx('Semua kerja dan rekod')}</li>
+            <li>{tx('Semua pelanggan')}</li>
+            <li>{tx('Semua sebut harga, work order dan invois')}</li>
             <li>Semua fail dan dokumen</li>
-            <li>Profil dan akaun syarikat</li>
+            <li>{tx('Profil dan akaun syarikat')}</li>
             <li>Rekod rujukan</li>
           </ul>
         </div>
@@ -1112,7 +1113,7 @@ export default function SettingsPage() {
           className="text-destructive border-destructive hover:bg-destructive/5 rounded-lg"
           onClick={() => setDeleteOpen(true)}
         >
-          Padam Akaun
+          {tx('Padam Akaun')}
         </Button>
       </SettingsAccordion>
 

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 interface Props {
   open: boolean;
@@ -47,11 +48,11 @@ export default function ReactivateDialog({ open, onClose }: Props) {
         if (error) throw error;
 
         await refreshProfile();
-        toast.success('Langganan berjaya diaktifkan semula!');
+        toast.success(tx('Langganan berjaya diaktifkan semula!'));
         onClose();
       } catch (error) {
         console.error('Reactivate error:', error);
-        toast.error('Gagal mengaktifkan semula langganan');
+        toast.error(tx('Gagal mengaktifkan semula langganan'));
       } finally {
         setIsReactivating(false);
       }
@@ -76,7 +77,7 @@ export default function ReactivateDialog({ open, onClose }: Props) {
               })}
             </p>
             <p className="text-sm text-foreground font-medium">
-              Klik butang di bawah untuk aktifkan semula tanpa perlu bayar.
+              {tx('Klik butang di bawah untuk aktifkan semula tanpa perlu bayar.')}
             </p>
             <Button
               onClick={handleReactivate}
@@ -112,12 +113,12 @@ export default function ReactivateDialog({ open, onClose }: Props) {
               className="w-full rounded-lg"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Bayar RM{price.toFixed(2)}/{period === 'monthly' ? 'bulan' : 'tahun'}
+              Bayar RM{price.toFixed(2)}/{period === 'monthly' ? tx('bulan') : 'tahun'}
             </Button>
           </div>
         )}
         
-        <Button variant="outline" onClick={onClose} className="w-full rounded-lg">Batal</Button>
+        <Button variant="outline" onClick={onClose} className="w-full rounded-lg">{tx('Batal')}</Button>
       </DialogContent>
     </Dialog>
   );

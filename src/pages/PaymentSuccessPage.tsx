@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { tx } from '@/lib/tx';
 
 export default function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -83,13 +84,13 @@ export default function PaymentSuccessPage() {
         )}
 
         <h1 className="text-2xl font-bold text-foreground">
-          {isPlanSynced ? 'Pembayaran Berjaya!' : 'Sedang sync pembayaran...'}
+          {isPlanSynced ? tx('Pembayaran Berjaya!') : 'Sedang sync pembayaran...'}
         </h1>
 
         <p className="text-muted-foreground">
           {isPlanSynced
             ? `Selamat datang ke WorkTrace ${planLabel}!`
-            : 'Kami sedang tunggu pengesahan BillPlz dan kemas kini pelan anda.'}
+            : tx('Kami sedang tunggu pengesahan BillPlz dan kemas kini pelan anda.')}
         </p>
 
         <div className="space-y-2 text-sm text-foreground">
@@ -117,7 +118,7 @@ export default function PaymentSuccessPage() {
           </Button>
           {!isPlanSynced && (
             <Button variant="outline" onClick={() => refreshProfile()} className="w-full rounded-lg">
-              Semak Semula Status
+              {tx('Semak Semula Status')}
             </Button>
           )}
         </div>

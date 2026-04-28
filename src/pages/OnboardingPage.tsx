@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import PlanCards from '@/components/PlanCards';
 import { useBillPlz } from '@/hooks/useBillPlz';
 import logo from '@/assets/logo.png';
+import { tx } from '@/lib/tx';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -104,30 +105,30 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Cerita sikit pasal syarikat anda</h2>
+                <h2 className="text-2xl font-bold text-foreground">{tx('Cerita sikit pasal syarikat anda')}</h2>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Syarikat *</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Nama Syarikat *')}</label>
                   <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Contoh: Ali Aircond Services" className="h-11 rounded-lg" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">No. Telefon</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('No. Telefon')}</label>
                   <Input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0123456789" className="h-11 rounded-lg" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Alamat</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Alamat')}</label>
                   <textarea
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    placeholder="Alamat syarikat (pilihan)"
+                    placeholder=tx("Alamat syarikat (pilihan)")
                     className="w-full min-h-[80px] px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                <Button onClick={handleStep1Next} className="w-full h-11 rounded-lg" disabled={!companyName.trim()}>Seterusnya</Button>
-                <button onClick={() => setStep(2)} className="text-sm text-muted-foreground hover:text-foreground">Langkau buat masa ni</button>
+                <Button onClick={handleStep1Next} className="w-full h-11 rounded-lg" disabled={!companyName.trim()}>{tx('Seterusnya')}</Button>
+                <button onClick={() => setStep(2)} className="text-sm text-muted-foreground hover:text-foreground">{tx('Langkau buat masa ni')}</button>
               </div>
             </div>
           )}
@@ -135,11 +136,11 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Siapkan profil anda</h2>
+                <h2 className="text-2xl font-bold text-foreground">{tx('Siapkan profil anda')}</h2>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Logo Syarikat (pilihan)</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Logo Syarikat (pilihan)')}</label>
                   <div className="flex items-center gap-4">
                     {logoPreview ? (
                       <img src={logoPreview} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
@@ -147,7 +148,7 @@ export default function OnboardingPage() {
                       <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs">Logo</div>
                     )}
                     <label className="cursor-pointer">
-                      <span className="text-sm text-primary hover:underline">Muat naik logo</span>
+                      <span className="text-sm text-primary hover:underline">{tx('Muat naik logo')}</span>
                       <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                     </label>
                   </div>
@@ -159,13 +160,13 @@ export default function OnboardingPage() {
                 {sstRegistered && (
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">No. SST</label>
-                    <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} placeholder="No. pendaftaran SST" className="h-11 rounded-lg" />
+                    <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} placeholder=tx("No. pendaftaran SST") className="h-11 rounded-lg" />
                   </div>
                 )}
               </div>
               <div className="flex flex-col gap-3">
-                <Button onClick={handleStep2Next} className="w-full h-11 rounded-lg">Seterusnya</Button>
-                <button onClick={() => setStep(3)} className="text-sm text-muted-foreground hover:text-foreground">Langkau buat masa ni</button>
+                <Button onClick={handleStep2Next} className="w-full h-11 rounded-lg">{tx('Seterusnya')}</Button>
+                <button onClick={() => setStep(3)} className="text-sm text-muted-foreground hover:text-foreground">{tx('Langkau buat masa ni')}</button>
               </div>
             </div>
           )}
@@ -173,7 +174,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Pilih pelan yang sesuai</h2>
+                <h2 className="text-2xl font-bold text-foreground">{tx('Pilih pelan yang sesuai')}</h2>
               </div>
               <PlanCards onSelect={handlePlanSelect} />
             </div>

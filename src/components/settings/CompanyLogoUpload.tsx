@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { tx } from '@/lib/tx';
 
 interface Props {
   userId: string;
@@ -63,7 +64,7 @@ export default function CompanyLogoUpload({ userId, logoUrl, onChange }: Props) 
       .from("logos")
       .upload(path, file, { upsert: true, contentType: file.type });
     if (error) {
-      toast.error("Gagal muat naik logo");
+      toast.error(tx("Gagal muat naik logo"));
       setUploading(false);
       return;
     }
@@ -77,19 +78,19 @@ export default function CompanyLogoUpload({ userId, logoUrl, onChange }: Props) 
 
   return (
     <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">Logo Syarikat</label>
+      <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Logo Syarikat')}</label>
       <div className="flex items-center gap-4">
         <div className="w-24 h-24 rounded-xl border-2 border-dashed border-border overflow-hidden bg-muted/40 flex items-center justify-center">
           {preview ? (
             <img
               src={preview}
-              alt="Logo Syarikat"
+              alt=tx("Logo Syarikat")
               className="w-full h-full object-contain p-2"
             />
           ) : (
             <div className="text-center text-muted-foreground">
               <ImageIcon className="mx-auto mb-1 h-6 w-6" />
-              <p className="text-[10px]">Tiada Logo</p>
+              <p className="text-[10px]">{tx('Tiada Logo')}</p>
             </div>
           )}
         </div>
@@ -112,7 +113,7 @@ export default function CompanyLogoUpload({ userId, logoUrl, onChange }: Props) 
               onClick={() => onChange(null)}
               className="text-sm text-destructive hover:underline block"
             >
-              Padam Logo
+              {tx('Padam Logo')}
             </button>
           )}
         </div>

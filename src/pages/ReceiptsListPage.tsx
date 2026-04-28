@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Receipt, Search, X, User, CalendarDays } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 interface ReceiptRow {
   id: string;
@@ -56,18 +57,18 @@ export default function ReceiptsListPage() {
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div>
-        <h1 className="text-xl font-bold text-foreground">Resit</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Senarai semua invois yang telah dibayar</p>
+        <h1 className="text-xl font-bold text-foreground">{tx('Resit')}</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">{tx('Senarai semua invois yang telah dibayar')}</p>
       </div>
 
       {/* Summary */}
       <div data-tutorial="receipts-summary" className="bg-card rounded-xl border border-border p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">Jumlah Resit</p>
+          <p className="text-xs text-muted-foreground">{tx('Jumlah Resit')}</p>
           <p className="text-lg font-semibold text-foreground">{filtered.length}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">Jumlah Diterima</p>
+          <p className="text-xs text-muted-foreground">{tx('Jumlah Diterima')}</p>
           <p className="text-lg font-semibold text-foreground">RM {totalPaid.toFixed(2)}</p>
         </div>
       </div>
@@ -78,7 +79,7 @@ export default function ReceiptsListPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Cari nombor resit, invois, atau pelanggan..."
+          placeholder=tx("Cari nombor resit, invois, atau pelanggan...")
           className="pl-9 pr-9 rounded-lg"
         />
         {search && (
@@ -101,7 +102,7 @@ export default function ReceiptsListPage() {
         <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
           <Receipt className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground">
-            {rows.length === 0 ? 'Belum ada resit. Resit dijana automatik bila invois ditandakan dibayar.' : 'Tiada resit dijumpai'}
+            {rows.length === 0 ? tx('Belum ada resit. Resit dijana automatik bila invois ditandakan dibayar.') : tx('Tiada resit dijumpai')}
           </p>
         </div>
       ) : (
@@ -114,7 +115,7 @@ export default function ReceiptsListPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="text-sm font-bold text-primary">{r.receipt_number || '(Tiada nombor)'}</span>
+                  <span className="text-sm font-bold text-primary">{r.receipt_number || tx('(Tiada nombor)')}</span>
                   <p className="text-[12px] text-muted-foreground mt-0.5">Invois: {r.invoice_number}</p>
                 </div>
                 <span className="text-sm font-bold text-foreground shrink-0">RM {Number(r.total).toFixed(2)}</span>
@@ -122,7 +123,7 @@ export default function ReceiptsListPage() {
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
                   <User className="h-3.5 w-3.5" />
-                  <span>{r.jobs?.customers?.name || 'Tiada pelanggan'}</span>
+                  <span>{r.jobs?.customers?.name || tx('Tiada pelanggan')}</span>
                 </div>
                 <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
                   <CalendarDays className="h-3.5 w-3.5" />

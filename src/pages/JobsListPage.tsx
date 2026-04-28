@@ -10,6 +10,7 @@ import { useBulkSelection } from '@/hooks/useBulkSelection';
 import BulkActionBar from '@/components/BulkActionBar';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { tx } from '@/lib/tx';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Renovation: 'bg-blue-100 text-blue-700',
@@ -124,21 +125,21 @@ export default function JobsListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label="kerja"
+          label=tx("kerja")
         />
       )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Kerja</h1>
+        <h1 className="text-xl font-bold text-foreground">{tx('Kerja')}</h1>
         <div className="flex gap-2">
           {!bulk.selectionMode && filtered.length > 0 && (
             <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
-              <CheckSquare className="h-4 w-4" /> Pilih
+              <CheckSquare className="h-4 w-4" /> {tx('Pilih')}
             </Button>
           )}
           <Button data-tutorial="jobs-new-btn" onClick={() => navigate('/jobs/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-            <Plus className="h-4 w-4" /> Kerja Baru
+            <Plus className="h-4 w-4" /> {tx('Kerja Baru')}
           </Button>
         </div>
       </div>
@@ -149,7 +150,7 @@ export default function JobsListPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Cari kerja, nombor, atau pelanggan..."
+          placeholder=tx("Cari kerja, nombor, atau pelanggan...")
           className="pl-9 pr-9 rounded-lg"
         />
         {search && (
@@ -191,11 +192,11 @@ export default function JobsListPage() {
         <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
           <Briefcase className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground mb-4">
-            {jobs.length === 0 ? 'Belum ada kerja' : 'Tiada kerja dijumpai'}
+            {jobs.length === 0 ? tx('Belum ada kerja') : tx('Tiada kerja dijumpai')}
           </p>
           {jobs.length === 0 && (
             <Button onClick={() => navigate('/jobs/new')} className="rounded-lg gap-2">
-              <Plus className="h-4 w-4" /> Tambah Kerja
+              <Plus className="h-4 w-4" /> {tx('Tambah Kerja')}
             </Button>
           )}
         </div>
@@ -231,7 +232,7 @@ export default function JobsListPage() {
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
                       <User className="h-3.5 w-3.5" />
-                      <span>{job.customers?.name || 'Tiada pelanggan'}</span>
+                      <span>{job.customers?.name || tx('Tiada pelanggan')}</span>
                     </div>
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>
                       {job.category}
@@ -264,9 +265,9 @@ export default function JobsListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Padam Kerja Terpilih?"
+        title=tx("Padam Kerja Terpilih?")
         body={`Adakah anda pasti ingin padam ${bulk.selected.size} kerja? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel="Padam"
+        confirmLabel=tx("Padam")
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

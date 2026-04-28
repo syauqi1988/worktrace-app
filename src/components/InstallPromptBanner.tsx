@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Download, Share } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -78,7 +79,7 @@ export default function InstallPromptBanner() {
       ) : (
         <>
           <Download className="h-5 w-5 shrink-0" />
-          <p className="flex-1">Pasang WorkTrace untuk akses pantas dari skrin utama.</p>
+          <p className="flex-1">{tx('Pasang WorkTrace untuk akses pantas dari skrin utama.')}</p>
           <button
             onClick={handleInstall}
             className="shrink-0 px-3 py-1 rounded-md bg-primary-foreground text-primary text-xs font-semibold hover:opacity-90 transition-opacity"
