@@ -386,7 +386,7 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl">
-      <h1 className="text-xl font-bold text-foreground">Tetapan</h1>
+      <h1 className="text-xl font-bold text-foreground">{t("settings.title")}</h1>
 
       {/* 1 — Profil Syarikat */}
       <SettingsAccordion
