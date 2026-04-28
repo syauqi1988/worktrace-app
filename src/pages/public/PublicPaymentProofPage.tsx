@@ -119,6 +119,10 @@ export default function PublicPaymentProofPage() {
       toast.error('Sila lengkapkan nama, jumlah dan tarikh');
       return;
     }
+    if (!receiptUrl) {
+      toast.error('Sila muat naik resit / bukti bayaran terlebih dahulu');
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase
       .from('payment_proofs')
