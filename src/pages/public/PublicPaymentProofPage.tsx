@@ -258,7 +258,7 @@ export default function PublicPaymentProofPage() {
 
         {/* Form */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold">{isSubmitted ? 'Maklumat Bayaran Anda' : 'Hantar Bukti Pembayaran'}</p>
+          <p className="text-sm font-bold">{isLocked ? 'Maklumat Bayaran Anda' : (rejected ? 'Hantar Semula Bukti Pembayaran' : 'Hantar Bukti Pembayaran')}</p>
 
           <div>
             <Label>Nama Pembayar *</Label>
