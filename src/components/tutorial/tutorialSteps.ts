@@ -145,38 +145,56 @@ function buildJobDetailSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '📄 Halaman Butiran Kerja',
-        description: 'Inilah pusat kawalan untuk satu kerja. Di sini anda boleh urus semua dokumen berkaitan: sebut harga, work order, invois dan resit.',
+        title: '📄 Pusat Kawalan Kerja',
+        description: 'Inilah tempat anda urus SEMUA dokumen untuk satu kerja, mengikut urutan: Sebut Harga → Work Order → Completion Report → Invois → Resit.',
       },
     },
     {
       popover: {
-        title: '1️⃣ Hasilkan Sebut Harga',
-        description: 'Mulakan dengan buat sebut harga untuk pelanggan. Tambah item kerja, harga, diskaun dan SST — jumlah dikira auto.',
+        title: '1️⃣ Pelanggan ✅',
+        description: 'Pelanggan sudah dipilih semasa cipta kerja ini. Maklumat mereka akan keluar automatik dalam semua dokumen di bawah.',
       },
     },
     {
       popover: {
-        title: '2️⃣ Hantar via WhatsApp',
-        description: 'Selepas sebut harga siap, tekan butang WhatsApp untuk hantar pautan PDF terus kepada pelanggan. Cepat dan profesional.',
+        title: '2️⃣ Kerja ✅',
+        description: 'Kerja ini sudah dicipta. Sekarang masa untuk hasilkan dokumen-dokumen berkaitan dalam urutan yang betul.',
       },
     },
     {
       popover: {
-        title: '3️⃣ Tukar ke Invois',
-        description: 'Bila sebut harga diterima, tukar ke invois dengan satu klik. Item dipindah secara automatik — tak perlu taip semula.',
+        title: '3️⃣ Hasilkan Sebut Harga',
+        description: 'Mulakan dengan tawaran harga rasmi. Tambah item kerja, kuantiti, harga, diskaun & SST — total dikira auto. Hantar via WhatsApp untuk pelanggan terima/tolak.',
       },
     },
     {
       popover: {
-        title: '4️⃣ Tandakan Siap',
-        description: 'Bila kerja sudah disiapkan, kemaskini status kepada "Completed". Laporan kerja siap boleh dijana untuk pelanggan.',
+        title: '4️⃣ Hasilkan Work Order',
+        description: 'Selepas pelanggan setuju sebut harga, hasilkan Work Order — arahan kerja rasmi untuk team atau subkontraktor anda. Mengandungi senarai tugas, tarikh & terma.',
       },
     },
     {
       popover: {
-        title: '✅ Tip',
-        description: 'Tekan ikon ❓ di mana-mana halaman untuk tonton tutorial halaman tersebut. Setiap modul ada tutorial sendiri.',
+        title: '5️⃣ Completion Report',
+        description: 'Bila kerja sudah siap di lapangan, jana Completion Report. Tambah gambar before/after, catatan kerja & tandatangan pelanggan sebagai bukti kerja siap.',
+      },
+    },
+    {
+      popover: {
+        title: '6️⃣ Tukar ke Invois',
+        description: 'Bila siap, tukar sebut harga ke Invois dengan satu klik — semua item dipindah automatik. Hantar invois via WhatsApp dengan pautan ringkas (Tekan sini).',
+      },
+    },
+    {
+      popover: {
+        title: '7️⃣ Resit (Auto-Jana)',
+        description: 'Bila pelanggan upload bukti bayaran & anda sahkan (atau tandakan manual), invois jadi PAID dan resit terus dijana automatik. Tekan "Kongsi Resit via WhatsApp" untuk hantar kepada pelanggan.',
+      },
+    },
+    {
+      popover: {
+        title: '✅ Status Kerja Auto-Update',
+        description: 'Status kerja (Lead → In Progress → Completed) berubah sendiri ikut dokumen yang anda hasilkan. Anda hanya fokus pada kerja sebenar — sistem uruskan paperwork.',
       },
     },
   ];
