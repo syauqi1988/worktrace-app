@@ -1,103 +1,93 @@
-## Goal
+# Dual-Language Support (BM / EN) with Header Toggle
 
-Build an in-app notification system with a bell icon dropdown in the header, plus device-level web push so users get notified about important events even when the app isn't open.
+Add an English translation alongside the existing Bahasa Malaysia UI, with a toggle button in the header to switch between them. Selection is persisted per device.
 
-## Events that create a notification
+## What the user will see
 
-1. **Customer approves a document** (Quotation / Invoice / Work Order / Completion Report) — via `customer_approvals.action = 'accepted'`
-2. **Customer rejects a document** — `customer_approvals.action = 'rejected'`
-3. **Customer submits payment proof** — `payment_proofs.submitted_at IS NOT NULL`
-4. **Admin replies to a support ticket** — new row in `ticket_replies` with `sender_type = 'admin'`
+- A new compact toggle in the top header (next to the support / notification / help buttons) showing **BM | EN**. Tapping it instantly switches all UI text.
+- Language preference is saved in `localStorage` and restored on next visit.
+- Default language: **Bahasa Malaysia** (current behavior preserved for existing users).
+- All in-app screens translate: navigation, dashboard, jobs, customers, quotations, invoices, receipts, work orders, completion reports, reports, support, settings, login/onboarding, dialogs, toasts, empty states, expiry banner, tutorial modal.
 
-## Database
+## What stays in Bahasa only (out of scope, called out so there's no surprise)
 
-New table `notifications`:
+- **Generated PDFs** (invoices, quotations, receipts, work orders, completion reports) — these are customer-facing documents printed for end customers; switching their language needs a separate decision (per-document? follow user pref? follow customer pref?). Left as Bahasa for now.
+- **Database content** the user typed themselves (customer names, job descriptions, ticket bodies, etc.).
+- **Email templates** sent from edge functions (support replies, deletion notices) — server-side, separate task.
+- **Admin notification messages** stored in the `notifications` table (already written in Bahasa by triggers/edge functions).
 
-| column | type | notes |
-|---|---|---|
-| id | uuid pk | |
-| user_id | uuid | owner who receives it |
-| type | text | `approval_accepted`, `approval_rejected`, `payment_proof`, `ticket_reply` |
-| title | text | short headline (Malay) |
-| body | text | one-line detail |
-| link | text | in-app route to open on click |
-| ref_id | uuid | source row id (approval/proof/ticket) |
-| read_at | timestamptz null | |
-| created_at | timestamptz default now() | |
+If you want any of the above translated too, say so and I'll add a follow-up.
 
-RLS: owner can SELECT/UPDATE own rows; INSERT allowed by service role / DB triggers.
+## Approach
 
-New table `push_subscriptions`:
+Use **react-i18next** (the standard React i18n library, ~30KB, well-supported).
 
-| column | type |
-|---|---|
-| id, user_id, endpoint (unique), p256dh, auth, user_agent, created_at |
+1. Install `i18next` + `react-i18next` + `i18next-browser-languagedetector`.
+2. Create `src/i18n/index.ts` to initialize i18next with `ms` (default) and `en`, detecting from localStorage key `worktrace_lang`.
+3. Create translation files:
+   - `src/i18n/locales/ms.json` — extracted from current hardcoded Bahasa strings
+   - `src/i18n/locales/en.json` — English equivalents
+   Organized by namespace: `common`, `nav`, `auth`, `dashboard`, `jobs`, `customers`, `quotations`, `invoices`, `receipts`, `workOrders`, `reports`, `support`, `settings`, `tutorial`, `notifications`.
+4. Import `./i18n` once in `src/main.tsx` so it boots before React.
+5. Add `<LanguageToggle />` component to `AppShell.tsx` header (also on `LoginPage` and `OnboardingPage` since those render outside `AppShell`).
+6. Replace hardcoded strings page-by-page using the `useTranslation()` hook: `t('jobs.title')` instead of `'Kerja'`.
 
-RLS: user manages own rows.
+## Header toggle design
 
-### DB triggers (auto-create notifications)
+Compact pill button matching the existing circular header buttons:
 
-- `customer_approvals` AFTER UPDATE → when `action` changes from NULL to `accepted`/`rejected`, insert a `notifications` row for `user_id` and call edge function `send-push` via `pg_net`.
-- `payment_proofs` AFTER UPDATE → when `submitted_at` becomes non-null, same.
-- `ticket_replies` AFTER INSERT → when `sender_type = 'admin'`, look up `support_tickets.user_id`, insert notification + push.
+```text
+[ BM | EN ]   ← active side highlighted with bg-primary text-primary-foreground
+```
 
-## Frontend
+Single click toggles between the two languages. Uses the same height (h-8) and rounded styling as neighboring buttons.
 
-### Bell dropdown in `AppShell` header
-- New `<NotificationBell />` next to the support / help buttons.
-- Shows unread count badge (red dot with number).
-- Click → dropdown panel listing latest 20 notifications, newest first.
-- Each item: icon by type, title, body, relative time, click navigates to `link` and marks as read.
-- "Tandakan semua sebagai dibaca" action at top.
-- Realtime: subscribe to `notifications` inserts via Supabase Realtime so the bell updates live.
+## File-by-file scope
 
-### Push subscription flow
-- New hook `usePushNotifications()` registers a service worker (`/sw.js`) and asks for permission on first visit to Settings (or via a "Enable notifications" button in the new Settings tutorial).
-- On grant, call `pushManager.subscribe()` with VAPID public key, store in `push_subscriptions`.
-- Show toggle in Settings → "Notifikasi Peranti" so user can enable/disable.
+**New files**
+- `src/i18n/index.ts` — i18next config
+- `src/i18n/locales/ms.json` — Bahasa strings (extracted)
+- `src/i18n/locales/en.json` — English strings
+- `src/components/LanguageToggle.tsx` — header button
 
-### Service worker
-- `public/sw.js` — handles `push` event, shows native OS notification with title + body, click opens the link.
+**Edited files (high-traffic, full translation)**
+- `src/main.tsx` — import i18n
+- `src/components/AppShell.tsx` — mount toggle, translate nav labels & quick actions
+- `src/pages/LoginPage.tsx`, `OnboardingPage.tsx` — toggle + translate
+- `src/pages/DashboardPage.tsx`
+- `src/pages/JobsListPage.tsx`, `JobFormPage.tsx`, `JobDetailPage.tsx`
+- `src/pages/CustomersListPage.tsx`, `CustomerFormPage.tsx`, `CustomerDetailPage.tsx`
+- `src/pages/QuotationsListPage.tsx`, `QuotationFormPage.tsx`, `QuotationDetailPage.tsx`
+- `src/pages/InvoicesListPage.tsx`, `InvoiceFormPage.tsx`, `InvoiceDetailPage.tsx`
+- `src/pages/ReceiptsListPage.tsx`
+- `src/pages/WorkOrdersListPage.tsx`, `WorkOrderFormPage.tsx`, `WorkOrderDetailPage.tsx`
+- `src/pages/CompletionReportsListPage.tsx`, `CompletionReportPage.tsx`
+- `src/pages/ReportsPage.tsx`
+- `src/pages/SupportPage.tsx`, `SupportNewPage.tsx`, `SupportDetailPage.tsx`
+- `src/pages/SettingsPage.tsx`
+- `src/pages/AccountDeletedPage.tsx`, `GoodbyePage.tsx`, `PaymentSuccessPage.tsx`, `PaymentFailedPage.tsx`, `NotFound.tsx`
+- All `src/components/settings/*`, `NotificationBell`, `ExpiryBanner`, `InstallPromptBanner`, `AccountDeletionDialog`, `CancellationDialog`, `ReactivateDialog`, `UpgradeModal`, `PlanCards`, `BulkActionBar`, `EmptyState`
+- `src/components/tutorial/tutorialSteps.ts`, `WelcomeModal.tsx`
 
-## Edge function: `send-push`
+**Not edited**
+- PDF components in `src/components/pdf/*` (out of scope as noted)
+- Public pages (`PublicApprovalPage`, `PublicPaymentProofPage`) — these are customer-facing; will translate UI chrome but keep document-context Bahasa
+- Edge functions
+- shadcn/ui primitives in `src/components/ui/*` (no user-facing copy there)
 
-- Triggered by DB trigger via `pg_net` after a notification row is inserted (or called from a trigger function).
-- Reads all `push_subscriptions` for the recipient `user_id`.
-- Sends Web Push using VAPID keys (`web-push` Deno port).
-- Removes subscriptions that return 410/404 (expired).
+## Technical notes
 
-### Required secrets (will be added)
-- `VAPID_PUBLIC_KEY`
-- `VAPID_PRIVATE_KEY`
-- `VAPID_SUBJECT` (e.g. `mailto:support@worktrace.app`)
+- Translation key style: `namespace.key` (e.g. `nav.jobs`, `jobs.list.empty.title`, `common.save`).
+- Use `Trans` component for strings with embedded React (links, bold).
+- For pluralization (e.g. "1 day left" / "3 days left"), use i18next's built-in `count` interpolation.
+- Date/number formatting: keep `toLocaleDateString('ms-MY' | 'en-MY', ...)` driven by current language. Currency stays MYR/RM.
+- `last_support_visit` and similar DB fields: unchanged.
+- No DB migration needed.
+- Bundle impact: ~35KB gzipped for i18next + locale JSON.
 
-The user will be asked to confirm generation; we generate keys and store them as Supabase secrets. Public key is also exposed via a small public edge function or hard-coded in client config.
+## Out of scope (ask if you want these)
 
-## Files to create
-
-- `supabase/migrations/<ts>_notifications.sql` — tables, RLS, triggers, trigger functions
-- `supabase/functions/send-push/index.ts`
-- `src/components/NotificationBell.tsx`
-- `src/hooks/useNotifications.ts` (fetch + realtime + mark read)
-- `src/hooks/usePushNotifications.ts`
-- `src/components/settings/NotificationSettingsSection.tsx` (toggle in Settings accordion)
-- `public/sw.js`
-
-## Files to edit
-
-- `src/components/AppShell.tsx` — mount `<NotificationBell />` in header
-- `src/components/settings/SettingsAccordion.tsx` — add Notifications section
-- `src/main.tsx` — register service worker (production only, guarded against iframe/preview per Lovable PWA rules)
-- `src/integrations/supabase/types.ts` — auto-regenerated after migration
-
-## Behavior summary
-
-- Customer accepts/rejects a quote → owner instantly sees red dot on bell + (if enabled) a system push notification on phone/desktop. Clicking opens that document.
-- Admin replies to ticket → same flow, opens that ticket.
-- All notifications persist; user can browse history in the dropdown.
-- Push works even when the app is closed (PWA installed) or the tab is in background (desktop) — standard Web Push behavior. iOS requires the app to be added to Home Screen first.
-
-## Out of scope
-
-- Email notifications (already handled separately for tickets).
-- Native iOS/Android app push (would require Capacitor — can be added later).
+- Translating PDFs, emails, and server-generated notification messages
+- Adding more languages (Mandarin, Tamil) — easy to add later, same structure
+- Translating user-entered data
+- RTL layout (not needed for EN/BM)
