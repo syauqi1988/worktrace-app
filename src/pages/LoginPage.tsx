@@ -37,19 +37,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (resendTimer > 0) {
-      const t = setTimeout(() => setResendTimer(r => r - 1), 1000);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setResendTimer(r => r - 1), 1000);
+      return () => clearTimeout(timer);
     }
   }, [resendTimer]);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Sila masukkan emel yang sah');
+      setError(t('login.invalidEmail'));
       return;
     }
     if (!captchaToken) {
-      setError('Sila lengkapkan captcha');
+      setError(t('login.captchaRequired'));
       return;
     }
     setError('');
@@ -124,11 +124,14 @@ export default function LoginPage() {
   return (
     <>
       <InstallPromptBanner />
-      <div className="min-h-screen flex">
+      <div className="min-h-screen flex relative">
+      <div className="absolute top-3 right-3 z-10">
+        <LanguageToggle />
+      </div>
       {/* Left panel — desktop only */}
       <div className="hidden md:flex md:w-1/2 bg-primary flex-col items-center justify-center">
         <img src={logo} alt="WorkTrace" className="h-12 mb-4 opacity-100 bg-transparent border-transparent border-0" />
-        <p className="text-primary-foreground/80 text-lg">Jejak Kerja. Senang Collect.</p>
+        <p className="text-primary-foreground/80 text-lg">{t('login.tagline')}</p>
       </div>
 
       {/* Right panel / mobile full */}
@@ -143,8 +146,8 @@ export default function LoginPage() {
           <div className="w-full max-w-sm mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
             <Gift className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
             <div className="text-sm text-blue-700">
-              <p className="font-medium">Anda dijemput oleh rakan kontraktor WorkTrace!</p>
-              <p>Daftar sekarang dan nikmati ciri-ciri premium WorkTrace.</p>
+              <p className="font-medium">{t('login.referralTitle')}</p>
+              <p>{t('login.referralBody')}</p>
             </div>
           </div>
         )}
@@ -153,13 +156,13 @@ export default function LoginPage() {
           {step === 'email' ? (
             <form onSubmit={handleSendOtp} className="space-y-6">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Masuk atau Daftar</h1>
-                <p className="text-muted-foreground mt-1">Kami akan hantar kod OTP ke emel anda</p>
+                <h1 className="text-2xl font-bold text-foreground">{t('login.title')}</h1>
+                <p className="text-muted-foreground mt-1">{t('login.subtitle')}</p>
               </div>
               <div>
                 <Input
                   type="email"
-                  placeholder="emel@contoh.com"
+                  placeholder={t('login.emailPlaceholder')}
                   value={email}
                   onChange={e => { setEmail(e.target.value); setError(''); }}
                   className="h-11 rounded-lg"
@@ -177,7 +180,7 @@ export default function LoginPage() {
                 />
               </div>
               <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending || !captchaToken}>
-                {sending ? 'Menghantar...' : 'Hantar Kod OTP'}
+                {sending ? t('login.sending') : t('login.sendOtp')}
               </Button>
             </form>
           ) : (
@@ -186,11 +189,11 @@ export default function LoginPage() {
                 onClick={() => { setStep('email'); setOtp(['', '', '', '', '', '']); setError(''); }}
                 className="flex items-center text-muted-foreground hover:text-foreground text-sm mb-2"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" /> Kembali
+                <ArrowLeft className="h-4 w-4 mr-1" /> {t('login.back')}
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Semak emel anda</h1>
-                <p className="text-muted-foreground mt-1">Kod 6-digit telah dihantar ke <span className="font-medium text-foreground">{email}</span></p>
+                <h1 className="text-2xl font-bold text-foreground">{t('login.checkEmail')}</h1>
+                <p className="text-muted-foreground mt-1">{t('login.sentTo')} <span className="font-medium text-foreground">{email}</span></p>
               </div>
               <div className="flex gap-2 justify-center" onPaste={handleOtpPaste}>
                 {otp.map((digit, i) => (
@@ -213,13 +216,13 @@ export default function LoginPage() {
                 className="w-full h-11 rounded-lg"
                 disabled={verifying || otp.some(d => !d)}
               >
-                {verifying ? 'Mengesahkan...' : 'Sahkan Kod'}
+                {verifying ? t('login.verifying') : t('login.verify')}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 {resendTimer > 0 ? (
-                  <>Hantar semula dalam {resendTimer}s</>
+                  <>{t('login.resendIn', { seconds: resendTimer })}</>
                 ) : (
-                  <button onClick={handleResend} className="text-primary hover:underline">Hantar semula kod</button>
+                  <button onClick={handleResend} className="text-primary hover:underline">{t('login.resend')}</button>
                 )}
               </p>
             </div>
