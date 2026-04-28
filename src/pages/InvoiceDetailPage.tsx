@@ -435,8 +435,9 @@ export default function InvoiceDetailPage() {
       const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
       await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const proofUrl = invoice.status !== 'Paid' ? await ensureProofUrl() : '';
       const phone = formatPhone(customerPhone);
-      const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
+      const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '', proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
     } catch {
@@ -446,11 +447,12 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const sendPaymentReminder = () => {
+  const sendPaymentReminder = async () => {
     if (!checkWhatsAppShare()) return;
     if (!invoice || !hasPhone) return;
+    const proofUrl = invoice.status !== 'Paid' ? await ensureProofUrl() : '';
     const phone = formatPhone(customerPhone);
-    const message = buildWhatsAppInvoiceMessage();
+    const message = buildWhatsAppInvoiceMessage(undefined, proofUrl);
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
