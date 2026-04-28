@@ -365,8 +365,8 @@ function buildInvoicesSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '🧾 Modul Invois',
-        description: 'Invois ialah bil pembayaran rasmi yang dihantar kepada pelanggan. Selepas dibayar, resit akan dijana secara automatik.',
+        title: '🧾 Invois (Langkah 6)',
+        description: 'Selepas Completion Report (Langkah 5), masa untuk minta bayaran. Invois ialah bil rasmi kepada pelanggan. Bila dibayar, Resit (Langkah 7) dijana automatik.',
       },
     },
     {
