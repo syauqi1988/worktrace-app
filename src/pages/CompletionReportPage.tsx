@@ -30,9 +30,16 @@ interface Job {
 
 function formatPhoneIntl(phone: string): string {
   let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('0060')) cleaned = cleaned.slice(2);
+  if (cleaned.startsWith('600')) cleaned = '60' + cleaned.slice(3);
   if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
   if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
   return cleaned;
+}
+
+function openWhatsAppUrl(waUrl: string) {
+  const opened = window.open(waUrl, '_blank', 'noopener,noreferrer');
+  if (!opened) window.location.href = waUrl;
 }
 
 function formatDateMs(d: string | null) {
@@ -212,12 +219,6 @@ export default function CompletionReportPage() {
     if (isSaving) setSaving(true);
     else setSubmitting(true);
 
-    // Pre-open WhatsApp tab synchronously to preserve the user gesture (avoids redirect to api.whatsapp.com landing page)
-    let waWindow: Window | null = null;
-    if (status === 'submitted' && job?.customers?.phone) {
-      waWindow = window.open('about:blank', '_blank');
-    }
-
     try {
       const payload: any = {
         user_id: user!.id,
@@ -271,15 +272,12 @@ export default function CompletionReportPage() {
         toast.success('Laporan dihantar! Membuka WhatsApp...');
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
-          await shareReportViaWhatsApp(savedId, waWindow);
-        } else if (waWindow) {
-          waWindow.close();
+          await shareReportViaWhatsApp(savedId);
         }
       } else {
         toast.success('Draf laporan disimpan!');
       }
     } catch (err: any) {
-      if (waWindow && !waWindow.closed) waWindow.close();
       toast.error(err.message || 'Ralat menyimpan');
     } finally {
       setSaving(false);
