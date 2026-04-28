@@ -27,6 +27,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signInWithOtp, verifyOtp } = useAuth();
+  const { t } = useTranslation();
   const refCode = searchParams.get('ref');
 
   // Capture referral code
