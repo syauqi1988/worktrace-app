@@ -54,6 +54,22 @@ function formatDateTimeMs(d: string | null) {
   return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
+function parseChecklist(raw: string): ChecklistItem[] {
+  return raw
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(line => {
+      const m = line.match(/^\[([ xX])\]\s*(.+)$/);
+      if (m) return { title: m[2].trim(), done: m[1].toLowerCase() === 'x' };
+      return { title: line, done: true };
+    });
+}
+
+function checklistToText(items: ChecklistItem[]): string {
+  return items.map(i => `[${i.done === false ? ' ' : 'x'}] ${i.title}`).join('\n');
+}
+
 export default function CompletionReportPage() {
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
