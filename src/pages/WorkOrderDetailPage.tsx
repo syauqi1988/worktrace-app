@@ -17,6 +17,7 @@ import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -172,25 +173,13 @@ export default function WorkOrderDetailPage() {
       const approvalUrl = buildPublicApprovalUrl(token);
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const msg =
-`Assalamualaikum / Salam Sejahtera ${job.customers.name},
-
-Terima kasih atas kepercayaan anda. 🙏
-
-Berikut adalah Work Order daripada *${companyName}*:
-
-📋 *No. Work Order:* ${wo.wo_number}
-🔨 *Tajuk Kerja:* ${wo.title}
-📅 *Tarikh Mula:* ${formatDate(wo.scheduled_start_date)}
-📍 *Lokasi:* ${wo.location || '-'}
-
-Sila klik pautan di bawah untuk *melihat & mengesahkan* work order:
-🔗 ${approvalUrl}
-
-Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
-
-Terima kasih!
-*${companyName}*`;
+      const details = `📋 *No. Work Order:* ${wo.wo_number}\n🔨 *Tajuk Kerja:* ${wo.title}\n📅 *Tarikh Mula:* ${formatDate(wo.scheduled_start_date)}\n📍 *Lokasi:* ${wo.location || '-'}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 ${approvalUrl}`;
+      const msg = renderTemplate(
+        (profile as any)?.whatsapp_templates,
+        'work_order',
+        { customer_name: job.customers.name, company_name: companyName },
+        details,
+      );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
       // Auto-mark as Sent if Draft
       if (wo.status === 'Draft') {
