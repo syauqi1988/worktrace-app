@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,8 @@ export default function QuotationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [autoShareDone, setAutoShareDone] = useState(false);
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -309,6 +311,20 @@ Terima kasih!
       setIsSharing(false);
     }
   };
+
+  // Auto-trigger WhatsApp share when arriving with ?share=1 (e.g. from Sent action in form)
+  useEffect(() => {
+    if (autoShareDone) return;
+    if (searchParams.get('share') !== '1') return;
+    if (!quotation || !pdfData || !user || !hasPhone) return;
+    setAutoShareDone(true);
+    // Clear the param so it doesn't re-trigger on refresh
+    const next = new URLSearchParams(searchParams);
+    next.delete('share');
+    setSearchParams(next, { replace: true });
+    shareViaWhatsApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotation, pdfData, user, hasPhone, searchParams, autoShareDone]);
 
   const handlePreview = async () => {
     if (!pdfData) return;
