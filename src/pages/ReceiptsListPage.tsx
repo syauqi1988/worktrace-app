@@ -61,7 +61,7 @@ export default function ReceiptsListPage() {
       </div>
 
       {/* Summary */}
-      <div className="bg-card rounded-xl border border-border p-4 flex items-center justify-between">
+      <div data-tutorial="receipts-summary" className="bg-card rounded-xl border border-border p-4 flex items-center justify-between">
         <div>
           <p className="text-xs text-muted-foreground">Jumlah Resit</p>
           <p className="text-lg font-semibold text-foreground">{filtered.length}</p>
@@ -73,7 +73,7 @@ export default function ReceiptsListPage() {
       </div>
 
       {/* Search */}
-      <div className="relative">
+      <div data-tutorial="receipts-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={search}
