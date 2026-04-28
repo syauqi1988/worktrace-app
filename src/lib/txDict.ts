@@ -231,7 +231,7 @@ export const TX_DICT: Record<string, string> = {
     'Describe the work performed in detail...',
   'Huraikan skop kerja secara terperinci...': 'Describe the scope of work in detail...',
   'Huraikan skop kerja...': 'Describe the scope of work...',
-  'Pelanggan': 'Customer',
+  // 'Pelanggan' duplicated above (line ~56) — picked the dominant translation.
   'Pelanggan *': 'Customer *',
   'Kerja *': 'Job *',
   'Nama Pelanggan *': 'Customer Name *',
@@ -497,7 +497,7 @@ export const TX_DICT: Record<string, string> = {
   'Draf invois disimpan!': 'Invoice draft saved!',
   'Draf laporan disimpan!': 'Report draft saved!',
   'Export / screenshot invois penting': 'Export / screenshot important invoices',
-  'Format baru SSM (nombor sahaja)': 'New SSM format (numbers only)',
+  // 'Format baru SSM' duplicated above
   'Gambar hasil akhir kerja yang telah disiapkan': 'Photo of the finished work',
   'Gambar keadaan sebelum kerja bermula untuk perbandingan':
     'Photo of conditions before work began (for comparison)',
