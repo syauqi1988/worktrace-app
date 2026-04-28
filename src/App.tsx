@@ -40,6 +40,7 @@ import SupportNewPage from "@/pages/SupportNewPage";
 import SupportDetailPage from "@/pages/SupportDetailPage";
 import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
 import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
+import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/account-deleted" element={<AccountDeletedPage />} />
             <Route path="/public/approval/:token" element={<PublicApprovalPage />} />
             <Route path="/public/payment-proof/:token" element={<PublicPaymentProofPage />} />
+            <Route path="/r/:code" element={<ShortLinkRedirectPage />} />
             <Route path="/onboarding" element={
               <ProtectedRoute><OnboardingPage /></ProtectedRoute>
             } />

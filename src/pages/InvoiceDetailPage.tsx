@@ -21,6 +21,7 @@ import ReceiptPDF from '@/components/pdf/ReceiptPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreatePaymentProofToken, buildPublicPaymentProofUrl } from '@/lib/approvals';
+import { getOrCreateShortLink } from '@/lib/shortLinks';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -384,8 +385,9 @@ export default function InvoiceDetailPage() {
     await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
     const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
     const publicUrl = signed?.signedUrl ?? '';
+    const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: publicUrl, kind: 'receipt' });
     const phone = formatPhone(customerPhone);
-    const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\nMuat turun resit 👉 ${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
+    const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\n👉 Tekan sini untuk muat turun resit:\n${shortUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -421,7 +423,7 @@ export default function InvoiceDetailPage() {
     ];
     if (proofUrl) {
       lines.push(
-        'Lihat invois & hantar bukti bayaran 👉',
+        '👉 Tekan sini untuk lihat invois & hantar bukti bayaran:',
         proofUrl,
         '',
       );
@@ -445,7 +447,8 @@ export default function InvoiceDetailPage() {
       invoiceId: invoice.id,
       customerName: customer?.name || null,
     });
-    const proofUrl = buildPublicPaymentProofUrl(token);
+    const fullProofUrl = buildPublicPaymentProofUrl(token);
+    const proofUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullProofUrl, kind: 'proof' });
 
     // Persist invoice PDF link on the proof so the public page can show it
     await supabase.from('payment_proofs').update({ invoice_pdf_url: pdfUrl } as any).eq('token', token);
