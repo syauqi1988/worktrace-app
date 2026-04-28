@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClipboardCheck, Search, X, User, Briefcase, CalendarDays } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -71,12 +72,12 @@ export default function CompletionReportsListPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <h1 className="text-xl font-bold text-foreground">Laporan Siap Kerja</h1>
+      <h1 className="text-xl font-bold text-foreground">{tx('Laporan Siap Kerja')}</h1>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Cari nombor, tajuk, atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
+          placeholder={tx("Cari nombor, tajuk, atau pelanggan...")} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -104,8 +105,8 @@ export default function CompletionReportsListPage() {
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border p-8 flex flex-col items-center text-center bg-card">
           <ClipboardCheck className="h-12 w-12 text-muted-foreground/30 mb-3" />
-          <p className="text-muted-foreground">{rows.length === 0 ? 'Belum ada laporan siap kerja' : 'Tiada laporan dijumpai'}</p>
-          <p className="text-xs text-muted-foreground mt-2">Laporan siap kerja dibuat dari halaman kerja selepas sebut harga diterima.</p>
+          <p className="text-muted-foreground">{rows.length === 0 ? tx('Belum ada laporan siap kerja') : tx('Tiada laporan dijumpai')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{tx('Laporan siap kerja dibuat dari halaman kerja selepas sebut harga diterima.')}</p>
         </div>
       ) : (
         <div className="space-y-2">

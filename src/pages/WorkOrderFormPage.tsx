@@ -17,6 +17,7 @@ import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { renderTemplate } from '@/lib/whatsappTemplates';
+import { tx } from '@/lib/tx';
 
 interface JobRow {
   id: string;
@@ -215,8 +216,8 @@ export default function WorkOrderFormPage() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!title.trim()) e.title = 'Tajuk diperlukan';
-    if (!scope.trim()) e.scope = 'Skop kerja diperlukan';
+    if (!title.trim()) e.title={tx('Tajuk diperlukan')};
+    if (!scope.trim()) e.scope={tx('Skop kerja diperlukan')};
     return e;
   };
 
@@ -262,10 +263,10 @@ export default function WorkOrderFormPage() {
         await shareViaWhatsApp(savedId);
       }
 
-      toast.success(status === 'Draft' ? 'Draf disimpan!' : 'Work Order dihantar!');
+      toast.success(status === 'Draft' ? tx('Draf disimpan!') : 'Work Order dihantar!');
       navigate(`/jobs/${jobId}`);
     } catch (err: any) {
-      toast.error(err.message || 'Ralat menyimpan');
+      toast.error(err.message || tx('Ralat menyimpan'));
     } finally {
       setSaving(false);
     }
@@ -303,7 +304,7 @@ export default function WorkOrderFormPage() {
       );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } catch {
-      toast.error('Gagal kongsi PDF');
+      toast.error(tx('Gagal kongsi PDF'));
     } finally {
       setSharing(false);
     }
@@ -335,7 +336,7 @@ export default function WorkOrderFormPage() {
   if (!job) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Kerja tidak dijumpai.</p>
+        <p className="text-muted-foreground">{tx('Kerja tidak dijumpai.')}</p>
         <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">Kembali</Button>
       </div>
     );
@@ -348,15 +349,15 @@ export default function WorkOrderFormPage() {
           <button onClick={() => navigate(`/jobs/${jobId}`)} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-foreground">Work Order Baru</h1>
+          <h1 className="text-xl font-bold text-foreground">{tx('Work Order Baru')}</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-[#B45309]" />
-            <h2 className="text-base font-bold text-[#B45309]">Work Order aktif sudah wujud</h2>
+            <h2 className="text-base font-bold text-[#B45309]">{tx('Work Order aktif sudah wujud')}</h2>
           </div>
-          <p className="text-sm text-[#B45309]">Kerja ini sudah ada Work Order yang aktif. Padam atau tolak yang sedia ada sebelum buat baru.</p>
-          <Button onClick={() => navigate(`/jobs/${jobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
+          <p className="text-sm text-[#B45309]">{tx('Kerja ini sudah ada Work Order yang aktif. Padam atau tolak yang sedia ada sebelum buat baru.')}</p>
+          <Button onClick={() => navigate(`/jobs/${jobId}`)} className="rounded-lg">{tx('Kembali ke Kerja')}</Button>
         </div>
       </div>
     );
@@ -369,19 +370,19 @@ export default function WorkOrderFormPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-foreground">{editWoId ? 'Edit Work Order' : 'Work Order Baru'}</h1>
+          <h1 className="text-xl font-bold text-foreground">{editWoId ? tx('Edit Work Order') : tx('Work Order Baru')}</h1>
           <p className="text-sm text-muted-foreground">{woNumber}</p>
         </div>
       </div>
 
       {/* Job context */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tx('Maklumat Kerja')}</p>
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
-          <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
+          <div><p className="text-xs text-muted-foreground">{tx('Nombor Kerja')}</p><p className="font-medium text-foreground">{job.job_number}</p></div>
+          <div><p className="text-xs text-muted-foreground">{tx('Pelanggan')}</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
           {quotation && (
-            <div className="col-span-2"><p className="text-xs text-muted-foreground">No. Sebut Harga</p><p className="text-primary font-medium">{quotation.quote_number}</p></div>
+            <div className="col-span-2"><p className="text-xs text-muted-foreground">{tx('No. Sebut Harga')}</p><p className="text-primary font-medium">{quotation.quote_number}</p></div>
           )}
         </div>
       </div>
@@ -393,35 +394,35 @@ export default function WorkOrderFormPage() {
       </div>
 
       <div className="space-y-1.5">
-        <Label>Skop Kerja *</Label>
+        <Label>{tx('Skop Kerja *')}</Label>
         <Textarea rows={6} value={scope} onChange={e => { setScope(e.target.value); setErrors(p => ({ ...p, scope: '' })); }}
-          placeholder="Huraikan skop kerja secara terperinci..." />
+          placeholder={tx("Huraikan skop kerja secara terperinci...")} />
         {errors.scope && <p className="text-xs text-destructive">{errors.scope}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label>Tarikh Mula</Label>
+          <Label>{tx('Tarikh Mula')}</Label>
           <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label>Tarikh Siap Anggaran</Label>
+          <Label>{tx('Tarikh Siap Anggaran')}</Label>
           <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
         </div>
       </div>
 
       <div className="space-y-1.5">
         <Label>Tempoh Anggaran</Label>
-        <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder="e.g. 2 hari, 1 minggu" />
+        <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder={tx("e.g. 2 hari, 1 minggu")} />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Lokasi Kerja</Label>
+        <Label>{tx('Lokasi Kerja')}</Label>
         <Input value={location} onChange={e => setLocation(e.target.value)} />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nama Juruteknik</Label>
+        <Label>{tx('Nama Juruteknik')}</Label>
         <Input value={technician} onChange={e => setTechnician(e.target.value)} />
       </div>
 
@@ -432,7 +433,7 @@ export default function WorkOrderFormPage() {
 
       {/* Items */}
       <div className="space-y-3">
-        <Label>Item Kerja</Label>
+        <Label>{tx('Item Kerja')}</Label>
         {items.map((item, i) => (
           <div key={i} className="bg-card rounded-xl border border-border p-3 space-y-2">
             <div className="flex items-start gap-2">
@@ -447,9 +448,9 @@ export default function WorkOrderFormPage() {
             </div>
           </div>
         ))}
-        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
+        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> {tx('Tambah Item')}</Button>
         <div className="flex justify-between items-center pt-2 border-t border-border">
-          <span className="text-sm font-medium">Jumlah</span>
+          <span className="text-sm font-medium">{tx('Jumlah')}</span>
           <span className="text-base font-bold text-primary">RM {total.toFixed(2)}</span>
         </div>
       </div>
@@ -467,7 +468,7 @@ export default function WorkOrderFormPage() {
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => handleSave('Draft')} disabled={saving} className="flex-1 rounded-lg">
-            Simpan Draf
+            {tx('Simpan Draf')}
           </Button>
           <Button variant="outline" onClick={handlePreview} className="flex-1 rounded-lg gap-2">
             <Eye className="h-4 w-4" /> Pratonton PDF

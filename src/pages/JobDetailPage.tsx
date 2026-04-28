@@ -15,6 +15,7 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
+import { tx } from '@/lib/tx';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
@@ -169,7 +170,7 @@ export default function JobDetailPage() {
     if (newStatus === 'Completed') updates.completed_date = new Date().toISOString().slice(0, 10);
     const { error } = await supabase.from('jobs').update(updates).eq('id', job.id);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: tx('Ralat'), description: error.message, variant: 'destructive' });
     } else {
       setJob({ ...job, status: newStatus, completed_date: updates.completed_date as string || job.completed_date });
       toast({ title: 'Status dikemaskini!' });
@@ -182,9 +183,9 @@ export default function JobDetailPage() {
     const { error } = await supabase.from('jobs').delete().eq('id', job.id);
     setDeleting(false);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: tx('Ralat'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Kerja berjaya dipadam!' });
+      toast({ title: tx('Kerja berjaya dipadam!') });
       navigate('/jobs');
     }
   };
@@ -273,7 +274,7 @@ export default function JobDetailPage() {
       );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
-      toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
+      toast({ title: tx('Gagal kongsi laporan'), variant: 'destructive' });
     } finally {
       setIsSharing(false);
     }
@@ -296,7 +297,7 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Kerja tidak dijumpai.</p>
+        <p className="text-muted-foreground">{tx('Kerja tidak dijumpai.')}</p>
         <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">Kembali</Button>
       </div>
     );
@@ -317,14 +318,14 @@ export default function JobDetailPage() {
           <p className="text-sm text-muted-foreground truncate">{job.title}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate(`/jobs/${job.id}/edit`)} className="gap-1.5 shrink-0">
-          <Edit className="h-3.5 w-3.5" /> Edit
+          <Edit className="h-3.5 w-3.5" /> {tx('Edit')}
         </Button>
       </div>
 
       {/* Customer Card */}
       {job.customers && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pelanggan</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tx('Pelanggan')}</p>
           <p className="text-base font-semibold text-foreground">{job.customers.name}</p>
           {job.customers.phone && (
             <div className="flex items-center gap-2">
@@ -355,10 +356,10 @@ export default function JobDetailPage() {
 
       {/* Job Info Card */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tx('Maklumat Kerja')}</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">Kategori</p>
+            <p className="text-xs text-muted-foreground">{tx('Kategori')}</p>
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full inline-block mt-0.5 ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>{job.category}</span>
           </div>
           <div>
@@ -376,13 +377,13 @@ export default function JobDetailPage() {
           </div>
           {job.scheduled_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Tarikh Dijadualkan</p>
+              <p className="text-xs text-muted-foreground">{tx('Tarikh Dijadualkan')}</p>
               <p className="text-sm text-foreground mt-0.5">{formatDate(job.scheduled_date)}</p>
             </div>
           )}
           {job.completed_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Tarikh Siap</p>
+              <p className="text-xs text-muted-foreground">{tx('Tarikh Siap')}</p>
               <p className="text-sm text-foreground mt-0.5">{formatDate(job.completed_date)}</p>
             </div>
           )}
@@ -399,7 +400,7 @@ export default function JobDetailPage() {
         )}
         {job.notes && (
           <div>
-            <p className="text-xs text-muted-foreground">Nota</p>
+            <p className="text-xs text-muted-foreground">{tx('Nota')}</p>
             <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">{job.notes}</p>
           </div>
         )}
@@ -408,7 +409,7 @@ export default function JobDetailPage() {
       {/* Related Quotation */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5" /> Sebut Harga
+          <FileText className="h-3.5 w-3.5" /> {tx('Sebut Harga')}
         </p>
         {quotation ? (
           <div className="space-y-2">
@@ -432,10 +433,10 @@ export default function JobDetailPage() {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
+            <p className="text-sm text-muted-foreground">{tx('Belum ada sebut harga')}</p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
-              <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
+              <FileText className="h-3.5 w-3.5" /> {tx('Buat Sebut Harga')}
             </Button>
           </div>
         )}
@@ -468,13 +469,13 @@ export default function JobDetailPage() {
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
                 {quotation?.status === 'Accepted'
-                  ? 'Sedia untuk Work Order (pilihan)'
-                  : 'Sebut harga perlu diterima dahulu'}
+                  ? tx('Sedia untuk Work Order (pilihan)')
+                  : tx('Sebut harga perlu diterima dahulu')}
               </p>
               <Button variant="outline" size="sm" className="text-xs gap-1"
                 disabled={quotation?.status !== 'Accepted'}
                 onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>
-                <ClipboardCheck className="h-3.5 w-3.5" /> Buat Work Order
+                <ClipboardCheck className="h-3.5 w-3.5" /> {tx('Buat Work Order')}
               </Button>
             </div>
           )}
@@ -484,7 +485,7 @@ export default function JobDetailPage() {
       {/* Completion Report Card */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <ClipboardCheck className="h-3.5 w-3.5" /> Laporan Siap Kerja
+          <ClipboardCheck className="h-3.5 w-3.5" /> {tx('Laporan Siap Kerja')}
         </p>
         {report ? (
           <div className="space-y-2">
@@ -504,25 +505,25 @@ export default function JobDetailPage() {
             {report.status === 'submitted' && (
               <div className="flex items-center gap-1.5 text-[#1D4ED8]">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span className="text-xs font-medium">Menunggu pengesahan pelanggan</span>
+                <span className="text-xs font-medium">{tx('Menunggu pengesahan pelanggan')}</span>
               </div>
             )}
             {report.status === 'accepted' && (
               <div className="flex items-center gap-1.5 text-[#15803D]">
                 <CheckCircle className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">Disahkan oleh pelanggan</span>
+                <span className="text-xs font-medium">{tx('Disahkan oleh pelanggan')}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-2 mt-1">
               {report.status === 'draft' ? (
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  <Edit className="h-3.5 w-3.5" /> Edit Laporan
+                  <Edit className="h-3.5 w-3.5" /> {tx('Edit Laporan')}
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  Lihat Laporan
+                  {tx('Lihat Laporan')}
                 </Button>
               )}
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
@@ -539,12 +540,12 @@ export default function JobDetailPage() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {quotation?.status === 'Accepted' ? 'Sedia untuk laporan' : 'Sebut harga perlu diterima dahulu'}
+              {quotation?.status === 'Accepted' ? tx('Sedia untuk laporan') : tx('Sebut harga perlu diterima dahulu')}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               disabled={quotation?.status !== 'Accepted'}
               onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-              <ClipboardCheck className="h-3.5 w-3.5" /> Isi Laporan Siap Kerja
+              <ClipboardCheck className="h-3.5 w-3.5" /> {tx('Isi Laporan Siap Kerja')}
             </Button>
           </div>
         )}
@@ -553,7 +554,7 @@ export default function JobDetailPage() {
       {/* Related Invoice */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <Receipt className="h-3.5 w-3.5" /> Invois
+          <Receipt className="h-3.5 w-3.5" /> {tx('Invois')}
         </p>
         {invoice ? (
           <div className="space-y-2">
@@ -577,12 +578,12 @@ export default function JobDetailPage() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'accepted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu'}
+              {report?.status === 'accepted' ? tx('Belum ada invois') : tx('Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu')}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               disabled={report?.status !== 'accepted'}
               onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
-              <Receipt className="h-3.5 w-3.5" /> Buat Invois
+              <Receipt className="h-3.5 w-3.5" /> {tx('Buat Invois')}
             </Button>
           </div>
         )}
@@ -591,10 +592,10 @@ export default function JobDetailPage() {
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button onClick={() => navigate(`/jobs/${job.id}/edit`)} className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> Edit Kerja
+          <Edit className="h-4 w-4" /> {tx('Edit Kerja')}
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="rounded-lg gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" /> Padam
+          <Trash2 className="h-4 w-4" /> {tx('Padam')}
         </Button>
       </div>
 
@@ -602,15 +603,15 @@ export default function JobDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Kerja?</DialogTitle>
+            <DialogTitle>{tx('Padam Kerja?')}</DialogTitle>
             <DialogDescription>
-              Tindakan ini tidak boleh dibatalkan. Sebut harga dan invois berkaitan tidak akan dipadam.
+              {tx('Tindakan ini tidak boleh dibatalkan. Sebut harga dan invois berkaitan tidak akan dipadam.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{tx('Batal')}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Memadam...' : 'Padam'}
+              {deleting ? 'Memadam...' : tx('Padam')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -630,7 +631,7 @@ export default function JobDetailPage() {
           }
         }}
         open={previewOpen}
-        title={`Pratonton — ${report?.report_number || 'Laporan'}`}
+        title={`Pratonton — ${report?.report_number || tx('Laporan')}`}
       />
     </div>
   );

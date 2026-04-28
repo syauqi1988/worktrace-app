@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Hash, Eye } from 'lucide-react';
+import { tx } from '@/lib/tx';
 import {
   DEFAULT_DOC_SETTINGS,
   DOC_TYPE_LABELS,
@@ -90,8 +91,8 @@ export default function DocNumberSettings() {
 
   const handleSave = async () => {
     if (!user) return;
-    if (!current.prefix.trim()) { toast.error('Awalan diperlukan'); return; }
-    if (current.next_number < 1) { toast.error('Nombor seterusnya mestilah 1 atau lebih'); return; }
+    if (!current.prefix.trim()) { toast.error(tx('Awalan diperlukan')); return; }
+    if (current.next_number < 1) { toast.error(tx('Nombor seterusnya mestilah 1 atau lebih')); return; }
     setSaving(true);
     try {
       const { error } = await supabase.from('profiles').update({
@@ -101,7 +102,7 @@ export default function DocNumberSettings() {
       await refreshProfile();
       toast.success(`Tetapan ${DOC_TYPE_LABELS[activeTab]} disimpan! Seterusnya: ${previewNext}`);
     } catch (e: any) {
-      toast.error(e.message || 'Gagal simpan');
+      toast.error(e.message || tx('Gagal simpan'));
     } finally {
       setSaving(false);
     }
@@ -115,7 +116,7 @@ export default function DocNumberSettings() {
       separator: DEFAULT_DOC_SETTINGS[activeTab].separator,
       suffix: DEFAULT_DOC_SETTINGS[activeTab].suffix,
     });
-    toast.info('Format dipulihkan ke lalai (nombor seterusnya tidak diubah)');
+    toast.info(tx('Format dipulihkan ke lalai (nombor seterusnya tidak diubah)'));
   };
 
   const lowered = current.next_number < originalNext;
@@ -127,7 +128,7 @@ export default function DocNumberSettings() {
         <h2 className="text-base font-bold text-foreground">Nombor Dokumen</h2>
       </div>
       <p className="text-sm text-muted-foreground">
-        Sesuaikan format nombor dokumen mengikut standard syarikat anda.
+        {tx('Sesuaikan format nombor dokumen mengikut standard syarikat anda.')}
       </p>
 
       {/* Pill tabs */}
@@ -149,7 +150,7 @@ export default function DocNumberSettings() {
           <Input value={current.prefix} maxLength={15}
             onChange={e => update({ prefix: e.target.value.toUpperCase() })}
             placeholder="QUO" />
-          <p className="text-xs text-muted-foreground">Huruf atau kod sebelum nombor</p>
+          <p className="text-xs text-muted-foreground">{tx('Huruf atau kod sebelum nombor')}</p>
         </div>
 
         <div className="space-y-1.5">
@@ -190,10 +191,10 @@ export default function DocNumberSettings() {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Nombor Seterusnya</Label>
+          <Label>{tx('Nombor Seterusnya')}</Label>
           <Input type="number" min={1} max={999999} value={current.next_number}
             onChange={e => update({ next_number: Math.max(1, Number(e.target.value) || 1) })} />
-          <p className="text-xs text-muted-foreground">Nombor untuk dokumen seterusnya. Ubah jika ada dokumen luar sistem.</p>
+          <p className="text-xs text-muted-foreground">{tx('Nombor untuk dokumen seterusnya. Ubah jika ada dokumen luar sistem.')}</p>
           {lowered && (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
               ⚠️ Menurunkan nombor boleh menyebabkan nombor berganda.
@@ -207,21 +208,21 @@ export default function DocNumberSettings() {
             <Eye className="h-3.5 w-3.5" /> Pratonton
           </div>
           <div>
-            <p className="text-xs text-blue-700">Nombor seterusnya:</p>
+            <p className="text-xs text-blue-700">{tx('Nombor seterusnya:')}</p>
             <p className="text-2xl font-bold text-blue-700">{previewNext}</p>
           </div>
           <p className="text-xs text-blue-700">Nombor selepasnya: {previewN1}, {previewN2}, ...</p>
         </div>
 
         <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-          <p className="font-medium">Contoh format syarikat lain:</p>
+          <p className="font-medium">{tx('Contoh format syarikat lain:')}</p>
           <p>• Klasik: <span className="font-mono">INV-0001</span> (Prefix=INV, Sep=-, Pad=4)</p>
           <p>• Dengan tahun: <span className="font-mono">INV/2025/001</span> (Prefix=INV/2025, Sep=/, Pad=3)</p>
           <p>• Kod area: <span className="font-mono">KL-INV-0001</span> (Prefix=KL-INV, Sep=-, Pad=4)</p>
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full rounded-lg">
-          {saving ? 'Menyimpan...' : 'Simpan Tetapan Nombor'}
+          {saving ? 'Menyimpan...' : tx('Simpan Tetapan Nombor')}
         </Button>
         <button onClick={handleReset} className="w-full text-xs text-muted-foreground hover:underline">
           Pulihkan Lalai

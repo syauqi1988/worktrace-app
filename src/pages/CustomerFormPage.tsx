@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import TagInput from '@/components/customers/TagInput';
 import { ColoredTag, normalizeTags } from '@/components/customers/TagBadge';
+import { tx } from '@/lib/tx';
 
 export default function CustomerFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,8 +56,8 @@ export default function CustomerFormPage() {
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = 'Sila masukkan nama pelanggan';
-    if (!phone.trim()) newErrors.phone = 'Sila masukkan nombor telefon';
+    if (!name.trim()) newErrors.name={tx('Sila masukkan nama pelanggan')};
+    if (!phone.trim()) newErrors.phone={tx('Sila masukkan nombor telefon')};
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
@@ -83,13 +84,13 @@ export default function CustomerFormPage() {
       if (isEdit) {
         const { error } = await supabase.from('customers').update(payload).eq('id', id);
         if (error) throw error;
-        toast({ title: 'Pelanggan berjaya dikemaskini!' });
+        toast({ title: tx('Pelanggan berjaya dikemaskini!') });
         navigate(`/customers/${id}`);
       } else {
         payload.user_id = user!.id;
         const { data, error } = await supabase.from('customers').insert(payload).select('id').single();
         if (error) throw error;
-        toast({ title: 'Pelanggan berjaya disimpan!' });
+        toast({ title: tx('Pelanggan berjaya disimpan!') });
         if (fromJobForm) {
           navigate('/jobs/new');
         } else {
@@ -97,7 +98,7 @@ export default function CustomerFormPage() {
         }
       }
     } catch (err: any) {
-      toast({ title: 'Ralat', description: err.message, variant: 'destructive' });
+      toast({ title: tx('Ralat'), description: err.message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -121,12 +122,12 @@ export default function CustomerFormPage() {
         <button onClick={() => navigate(isEdit ? `/customers/${id}` : '/customers')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Pelanggan' : 'Pelanggan Baru'}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isEdit ? tx('Edit Pelanggan') : tx('Pelanggan Baru')}</h1>
       </div>
 
       {/* Name */}
       <div className="space-y-1.5">
-        <Label>Nama Pelanggan *</Label>
+        <Label>{tx('Nama Pelanggan *')}</Label>
         <Input
           value={name}
           onChange={e => { setName(e.target.value); setErrors(prev => ({ ...prev, name: '' })); }}
@@ -138,7 +139,7 @@ export default function CustomerFormPage() {
 
       {/* Phone */}
       <div className="space-y-1.5">
-        <Label>Nombor Telefon *</Label>
+        <Label>{tx('Nombor Telefon *')}</Label>
         <Input
           type="text"
           value={phone}
@@ -163,12 +164,12 @@ export default function CustomerFormPage() {
 
       {/* Address */}
       <div className="space-y-1.5">
-        <Label>Alamat</Label>
+        <Label>{tx('Alamat')}</Label>
         <Textarea
           value={address}
           onChange={e => setAddress(e.target.value)}
           rows={3}
-          placeholder="Alamat lengkap..."
+          placeholder={tx("Alamat lengkap...")}
         />
       </div>
 
@@ -187,13 +188,13 @@ export default function CustomerFormPage() {
             onChange={e => setTinNumber(e.target.value)}
             placeholder="e.g. C12345678900"
           />
-          <p className="text-xs text-muted-foreground">Untuk tujuan e-invois LHDN</p>
+          <p className="text-xs text-muted-foreground">{tx('Untuk tujuan e-invois LHDN')}</p>
         </div>
       )}
 
       {/* Submit */}
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
-        {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Pelanggan' : 'Simpan Pelanggan'}
+        {submitting ? 'Menyimpan...' : isEdit ? tx('Kemaskini Pelanggan') : tx('Simpan Pelanggan')}
       </Button>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 interface Props {
   open: boolean;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const REASONS = [
-  'Tidak guna WorkTrace lagi',
+  tx('Tidak guna WorkTrace lagi'),
   'Berpindah ke aplikasi lain',
   'Terlalu mahal',
   'Aplikasi tidak memenuhi keperluan',
@@ -91,7 +92,7 @@ export default function AccountDeletionDialog({ open, onClose }: Props) {
   const scheduledStr = scheduledAt.toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const handleConfirm = async () => {
-    if (!user || confirmText !== 'PADAM' || !agreed) return;
+    if (!user || confirmText !== tx('PADAM') || !agreed) return;
     setSubmitting(true);
     try {
       const scheduledIso = scheduledAt.toISOString();
@@ -173,7 +174,7 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Padam Akaun WorkTrace
+            {tx('Padam Akaun WorkTrace')}
           </DialogTitle>
           <p className="text-xs text-muted-foreground">Langkah {step} daripada 3</p>
         </DialogHeader>
@@ -181,7 +182,7 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
         {step === 1 && (
           <div className="space-y-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-1">
-              <p className="text-sm font-medium text-red-700">Memadamkan akaun akan:</p>
+              <p className="text-sm font-medium text-red-700">{tx('Memadamkan akaun akan:')}</p>
               <ul className="text-sm text-red-700 space-y-0.5">
                 <li>✕ Memadam semua kerja dan pelanggan</li>
                 <li>✕ Memadam semua quotation & invois</li>
@@ -189,7 +190,7 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
                 <li>✕ Membatalkan langganan Pro anda</li>
                 <li>✕ Memadam semua fail yang dimuat naik</li>
               </ul>
-              <p className="text-sm text-red-700 mt-2">⏱ Anda ada <strong>14 hari</strong> untuk membatalkan sebelum data dipadam kekal.</p>
+              <p className="text-sm text-red-700 mt-2">⏱ Anda ada <strong>{tx('14 hari')}</strong> {tx('untuk membatalkan sebelum data dipadam kekal.')}</p>
             </div>
 
             <div className="space-y-2">
@@ -210,7 +211,7 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={onClose}>Batal</Button>
+              <Button variant="ghost" onClick={onClose}>{tx('Batal')}</Button>
               <Button variant="destructive" onClick={() => setStep(2)}
                 disabled={!reason || (reason === 'Lain-lain (nyatakan)' && !otherReason.trim())}>
                 Teruskan →
@@ -221,7 +222,7 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
 
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm font-medium">Data yang akan dipadam:</p>
+            <p className="text-sm font-medium">{tx('Data yang akan dipadam:')}</p>
             {loadingCounts || !counts ? (
               <div className="flex items-center justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
             ) : (
@@ -252,9 +253,9 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
               💡 Sebelum memadam, pertimbangkan:
               <ul className="mt-1 ml-4 list-disc">
-                <li>Export / screenshot invois penting</li>
-                <li>Simpan maklumat pelanggan</li>
-                <li>Download laporan yang diperlukan</li>
+                <li>{tx('Export / screenshot invois penting')}</li>
+                <li>{tx('Simpan maklumat pelanggan')}</li>
+                <li>{tx('Download laporan yang diperlukan')}</li>
               </ul>
             </div>
 
@@ -267,33 +268,33 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
 
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-sm">Akaun anda akan dipadam kekal pada:</p>
+            <p className="text-sm">{tx('Akaun anda akan dipadam kekal pada:')}</p>
             <div className="text-center py-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-base font-bold text-blue-700">{scheduledStr}</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              Sebelum tarikh tersebut, anda boleh:
+              {tx('Sebelum tarikh tersebut, anda boleh:')}
               <br />• Log masuk dan batalkan permintaan
               <br />• Hubungi <a href="mailto:customerservice@worktrace.my" className="underline">customerservice@worktrace.my</a>
             </p>
 
             <div className="space-y-1.5">
-              <p className="text-sm font-medium">Taip <strong>PADAM</strong> untuk mengesahkan:</p>
+              <p className="text-sm font-medium">Taip <strong>{tx('PADAM')}</strong> {tx('untuk mengesahkan:')}</p>
               <Input value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())}
-                placeholder="Taip PADAM di sini"
-                className={confirmText === 'PADAM' ? 'border-green-500' : confirmText ? 'border-destructive' : ''} />
+                placeholder={tx("Taip PADAM di sini")}
+                className={confirmText === tx('PADAM') ? 'border-green-500' : confirmText ? 'border-destructive' : ''} />
             </div>
 
             <label className="flex items-start gap-2 text-sm cursor-pointer">
               <Checkbox checked={agreed} onCheckedChange={v => setAgreed(!!v)} className="mt-0.5" />
-              <span>Saya faham bahawa tindakan ini tidak boleh dibatalkan selepas 14 hari dan semua data saya akan dipadam kekal.</span>
+              <span>{tx('Saya faham bahawa tindakan ini tidak boleh dibatalkan selepas 14 hari dan semua data saya akan dipadam kekal.')}</span>
             </label>
 
             <div className="flex justify-between gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(2)} disabled={submitting}>← Kembali</Button>
               <Button variant="destructive" onClick={handleConfirm}
-                disabled={submitting || confirmText !== 'PADAM' || !agreed}>
-                {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Memproses...</> : 'Sahkan Pemadaman'}
+                disabled={submitting || confirmText !== tx('PADAM') || !agreed}>
+                {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Memproses...</> : tx('Sahkan Pemadaman')}
               </Button>
             </div>
           </div>

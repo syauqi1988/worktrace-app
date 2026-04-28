@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Paperclip, X, CheckCircle2, Mail } from 'lucide-react';
+import { tx } from '@/lib/tx';
 
 const STATUS_STYLES: Record<string, string> = {
   open: 'bg-blue-100 text-blue-700',
@@ -85,7 +86,7 @@ export default function SupportDetailPage() {
       await fetchData();
       toast.success('Balasan dihantar');
     } catch {
-      toast.error('Gagal menghantar balasan');
+      toast.error(tx('Gagal menghantar balasan'));
     } finally {
       setSending(false);
     }
@@ -97,7 +98,7 @@ export default function SupportDetailPage() {
     try {
       await supabase.from('support_tickets').update({ status: 'closed', resolved_at: new Date().toISOString() } as any).eq('id', id);
       await fetchData();
-      toast.success('Tiket telah ditutup. Terima kasih!');
+      toast.success(tx('Tiket telah ditutup. Terima kasih!'));
     } catch {
       toast.error('Gagal menutup tiket');
     } finally {
@@ -105,8 +106,8 @@ export default function SupportDetailPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-center text-muted-foreground text-sm">Memuatkan...</div>;
-  if (!ticket) return <div className="p-6 text-center text-muted-foreground">Tiket tidak dijumpai</div>;
+  if (loading) return <div className="p-6 text-center text-muted-foreground text-sm">{tx('Memuatkan...')}</div>;
+  if (!ticket) return <div className="p-6 text-center text-muted-foreground">{tx('Tiket tidak dijumpai')}</div>;
 
   const attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
 
@@ -132,7 +133,7 @@ export default function SupportDetailPage() {
         <div className="rounded-xl border p-4 flex items-start gap-3" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
           <Mail className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#166534' }} />
           <div className="flex-1">
-            <p className="text-sm font-semibold" style={{ color: '#166534' }}>Tiket Berjaya Dihantar!</p>
+            <p className="text-sm font-semibold" style={{ color: '#166534' }}>{tx('Tiket Berjaya Dihantar!')}</p>
             <p className="text-sm mt-1" style={{ color: '#166534' }}>
               Nombor Tiket: <strong>{ticket.ticket_number}</strong>
             </p>
@@ -140,7 +141,7 @@ export default function SupportDetailPage() {
               Pengesahan telah dihantar ke: {ticket.user_email}
             </p>
             <p className="text-xs mt-0.5" style={{ color: '#15803d' }}>
-              Kami akan balas dalam masa 24 jam (hari bekerja).
+              {tx('Kami akan balas dalam masa 24 jam (hari bekerja).')}
             </p>
           </div>
           <button onClick={() => setShowBanner(false)} className="text-muted-foreground hover:text-foreground">
@@ -150,7 +151,7 @@ export default function SupportDetailPage() {
       )}
 
       <div className="bg-card rounded-xl border border-border p-4 space-y-2 text-sm">
-        <p><span className="text-muted-foreground">Kategori:</span> {CATEGORY_LABELS[ticket.category] || ticket.category}</p>
+        <p><span className="text-muted-foreground">{tx('Kategori:')}</span> {CATEGORY_LABELS[ticket.category] || ticket.category}</p>
         <p><span className="text-muted-foreground">Keutamaan:</span> {PRIORITY_LABELS[ticket.priority] || ticket.priority}</p>
         <p><span className="text-muted-foreground">Dihantar:</span> {new Date(ticket.created_at).toLocaleString('ms-MY')}</p>
         <p><span className="text-muted-foreground">Dikemaskini:</span> {new Date(ticket.updated_at).toLocaleString('ms-MY')}</p>
@@ -177,7 +178,7 @@ export default function SupportDetailPage() {
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-foreground">Balasan</h3>
         {replies.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">Tiada respons lagi. Kami akan balas dalam masa 24 jam.</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">{tx('Tiada respons lagi. Kami akan balas dalam masa 24 jam.')}</p>
         ) : (
           replies.map(r => (
             <div
@@ -189,7 +190,7 @@ export default function SupportDetailPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-foreground">
-                  {r.sender_type === 'admin' ? 'WorkTrace Support' : 'Anda'}
+                  {r.sender_type === 'admin' ? 'WorkTrace Support' : tx('Anda')}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {new Date(r.created_at).toLocaleString('ms-MY')}
@@ -207,7 +208,7 @@ export default function SupportDetailPage() {
           <Textarea
             value={replyText}
             onChange={e => setReplyText(e.target.value)}
-            placeholder="Tambah maklumat atau tanya soalan lanjut..."
+            placeholder={tx("Tambah maklumat atau tanya soalan lanjut...")}
             rows={3}
           />
           <Button onClick={handleReply} disabled={sending || !replyText.trim()} className="rounded-lg">
@@ -226,7 +227,7 @@ export default function SupportDetailPage() {
           className="w-full rounded-lg text-green-600 border-green-300 hover:bg-green-50"
         >
           {closing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          <CheckCircle2 className="h-4 w-4 mr-1" /> Tandakan Selesai
+          <CheckCircle2 className="h-4 w-4 mr-1" /> {tx('Tandakan Selesai')}
         </Button>
       )}
     </div>

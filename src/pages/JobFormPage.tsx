@@ -16,6 +16,7 @@ import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, CalendarDays, Search, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { tx } from '@/lib/tx';
 
 const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 const STATUSES = ['Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
@@ -109,8 +110,8 @@ export default function JobFormPage() {
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (!customerId) newErrors.customer = 'Sila pilih pelanggan';
-    if (!title.trim()) newErrors.title = 'Sila masukkan tajuk kerja';
+    if (!customerId) newErrors.customer={tx('Sila pilih pelanggan')};
+    if (!title.trim()) newErrors.title={tx('Sila masukkan tajuk kerja')};
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
@@ -135,7 +136,7 @@ export default function JobFormPage() {
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
         }).eq('id', id);
         if (error) throw error;
-        toast({ title: 'Kerja berjaya dikemaskini!' });
+        toast({ title: tx('Kerja berjaya dikemaskini!') });
         navigate(`/jobs/${id}`);
       } else {
         // Generate job number
@@ -154,11 +155,11 @@ export default function JobFormPage() {
           notes: notes.trim() || null,
         }).select('id').single();
         if (error) throw error;
-        toast({ title: 'Kerja berjaya disimpan!' });
+        toast({ title: tx('Kerja berjaya disimpan!') });
         navigate(`/jobs/${data.id}`);
       }
     } catch (err: any) {
-      toast({ title: 'Ralat', description: err.message, variant: 'destructive' });
+      toast({ title: tx('Ralat'), description: err.message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -182,12 +183,12 @@ export default function JobFormPage() {
         <button onClick={() => navigate(isEdit ? `/jobs/${id}` : '/jobs')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Kerja' : 'Kerja Baru'}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isEdit ? tx('Edit Kerja') : tx('Kerja Baru')}</h1>
       </div>
 
       {/* Customer field */}
       <div className="space-y-1.5">
-        <Label>Pelanggan *</Label>
+        <Label>{tx('Pelanggan *')}</Label>
         <div className="relative">
           <button
             type="button"
@@ -197,7 +198,7 @@ export default function JobFormPage() {
               errors.customer ? 'border-destructive' : 'border-input'
             )}
           >
-            {customerName || <span className="text-muted-foreground">Pilih pelanggan...</span>}
+            {customerName || <span className="text-muted-foreground">{tx('Pilih pelanggan...')}</span>}
           </button>
           {customerDropdownOpen && (
             <>
@@ -209,7 +210,7 @@ export default function JobFormPage() {
                     <Input
                       value={customerSearch}
                       onChange={e => setCustomerSearch(e.target.value)}
-                      placeholder="Cari nama atau telefon..."
+                      placeholder={tx("Cari nama atau telefon...")}
                       className="pl-8 h-8 text-sm"
                       autoFocus
                     />
@@ -224,14 +225,14 @@ export default function JobFormPage() {
                     </button>
                   ))}
                   {filteredCustomers.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-muted-foreground">Tiada pelanggan dijumpai</p>
+                    <p className="px-3 py-2 text-sm text-muted-foreground">{tx('Tiada pelanggan dijumpai')}</p>
                   )}
                 </div>
                 <button
                   onClick={() => { setCustomerDropdownOpen(false); navigate('/customers/new'); }}
                   className="border-t border-border px-3 py-2.5 text-sm font-medium text-primary hover:bg-accent flex items-center gap-1.5"
                 >
-                  <Plus className="h-3.5 w-3.5" /> Tambah Pelanggan Baru
+                  <Plus className="h-3.5 w-3.5" /> {tx('Tambah Pelanggan Baru')}
                 </button>
               </div>
             </>
@@ -242,7 +243,7 @@ export default function JobFormPage() {
 
       {/* Title */}
       <div className="space-y-1.5">
-        <Label>Tajuk Kerja *</Label>
+        <Label>{tx('Tajuk Kerja *')}</Label>
         <Input
           value={title}
           onChange={e => { setTitle(e.target.value); setErrors(prev => ({ ...prev, title: '' })); }}
@@ -255,7 +256,7 @@ export default function JobFormPage() {
       {/* Category & Status */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label>Kategori</Label>
+          <Label>{tx('Kategori')}</Label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -276,12 +277,12 @@ export default function JobFormPage() {
 
       {/* Scheduled Date */}
       <div className="space-y-1.5">
-        <Label>Tarikh Dijadualkan</Label>
+        <Label>{tx('Tarikh Dijadualkan')}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !scheduledDate && "text-muted-foreground")}>
               <CalendarDays className="mr-2 h-4 w-4" />
-              {scheduledDate ? format(scheduledDate, 'dd MMM yyyy') : 'Pilih tarikh...'}
+              {scheduledDate ? format(scheduledDate, 'dd MMM yyyy') : tx('Pilih tarikh...')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -293,18 +294,18 @@ export default function JobFormPage() {
       {/* Description */}
       <div className="space-y-1.5">
         <Label>Penerangan</Label>
-        <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Huraikan skop kerja..." />
+        <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder={tx("Huraikan skop kerja...")} />
       </div>
 
       {/* Notes */}
       <div className="space-y-1.5">
-        <Label>Nota Dalaman</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Nota untuk rujukan dalaman..." />
+        <Label>{tx('Nota Dalaman')}</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder={tx("Nota untuk rujukan dalaman...")} />
       </div>
 
       {/* Submit */}
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
-        {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Kerja' : 'Simpan Kerja'}
+        {submitting ? 'Menyimpan...' : isEdit ? tx('Kemaskini Kerja') : tx('Simpan Kerja')}
       </Button>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
