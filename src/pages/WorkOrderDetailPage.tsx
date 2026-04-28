@@ -165,20 +165,26 @@ export default function WorkOrderDetailPage() {
       });
       const approvalUrl = buildPublicApprovalUrl(token);
       const phone = formatPhone(job.customers.phone);
+      const companyName = profile?.company_name || '';
       const msg =
-`Assalamualaikum ${job.customers.name},
+`Assalamualaikum / Salam Sejahtera ${job.customers.name},
 
-Berikut Work Order kami untuk pengesahan:
+Terima kasih atas kepercayaan anda. 🙏
 
-📋 *No.:* ${wo.wo_number}
-🔨 *Tajuk:* ${wo.title}
+Berikut adalah Work Order daripada *${companyName}*:
+
+📋 *No. Work Order:* ${wo.wo_number}
+🔨 *Tajuk Kerja:* ${wo.title}
 📅 *Tarikh Mula:* ${formatDate(wo.scheduled_start_date)}
 📍 *Lokasi:* ${wo.location || '-'}
 
-Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+Sila klik pautan di bawah untuk *melihat & mengesahkan* work order:
 🔗 ${approvalUrl}
 
-*${profile?.company_name || ''}*`;
+Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
+
+Terima kasih!
+*${companyName}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
       // Auto-mark as Sent if Draft
       if (wo.status === 'Draft') {
