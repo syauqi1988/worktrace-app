@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, PartyPopper } from 'lucide-react';
+import { getDateLocale } from '@/i18n';
 
 const STATUS_STYLES: Record<string, string> = {
   open: 'bg-blue-100 text-blue-700',
