@@ -192,5 +192,24 @@
   "notFound": {
     "title": "Halaman tidak dijumpai",
     "back": "Kembali ke Dashboard"
+  },
+  "login": {
+    "tagline": "Jejak Kerja. Senang Collect.",
+    "referralTitle": "Anda dijemput oleh rakan kontraktor WorkTrace!",
+    "referralBody": "Daftar sekarang dan nikmati ciri-ciri premium WorkTrace.",
+    "title": "Masuk atau Daftar",
+    "subtitle": "Kami akan hantar kod OTP ke emel anda",
+    "emailPlaceholder": "emel@contoh.com",
+    "sending": "Menghantar...",
+    "sendOtp": "Hantar Kod OTP",
+    "back": "Kembali",
+    "checkEmail": "Semak emel anda",
+    "sentTo": "Kod 6-digit telah dihantar ke",
+    "verifying": "Mengesahkan...",
+    "verify": "Sahkan Kod",
+    "resendIn": "Hantar semula dalam {{seconds}}s",
+    "resend": "Hantar semula kod",
+    "invalidEmail": "Sila masukkan emel yang sah",
+    "captchaRequired": "Sila lengkapkan captcha"
   }
 }

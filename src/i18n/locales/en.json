@@ -192,5 +192,24 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back to Dashboard"
+  },
+  "login": {
+    "tagline": "Track Jobs. Collect Easily.",
+    "referralTitle": "You were invited by a WorkTrace contractor!",
+    "referralBody": "Sign up now and enjoy WorkTrace premium features.",
+    "title": "Log In or Sign Up",
+    "subtitle": "We will send an OTP code to your email",
+    "emailPlaceholder": "email@example.com",
+    "sending": "Sending...",
+    "sendOtp": "Send OTP Code",
+    "back": "Back",
+    "checkEmail": "Check your email",
+    "sentTo": "A 6-digit code has been sent to",
+    "verifying": "Verifying...",
+    "verify": "Verify Code",
+    "resendIn": "Resend in {{seconds}}s",
+    "resend": "Resend code",
+    "invalidEmail": "Please enter a valid email",
+    "captchaRequired": "Please complete the captcha"
   }
 }
