@@ -823,6 +823,33 @@ export type Database = {
         }
         Relationships: []
       }
+      short_links: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          kind: string
+          target_url: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          kind?: string
+          target_url: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          target_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscription_events: {
         Row: {
           amount: number | null
