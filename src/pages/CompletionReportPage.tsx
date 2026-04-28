@@ -343,16 +343,25 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    await shareReportViaWhatsApp(reportId);
+    // Open the tab synchronously so mobile/desktop browsers preserve the user gesture
+    const waWindow = window.open('about:blank', '_blank');
+    await shareReportViaWhatsApp(reportId, waWindow);
   };
 
-  const shareReportViaWhatsApp = async (rid: string) => {
-    if (!job || !user) return;
-    if (!job.customers?.phone) {
-      toast.error('Pelanggan tiada nombor telefon');
+  const shareReportViaWhatsApp = async (rid: string, waWindow?: Window | null) => {
+    if (!job || !user) {
+      if (waWindow) waWindow.close();
       return;
     }
-    if (!checkWhatsAppShare()) return;
+    if (!job.customers?.phone) {
+      toast.error('Pelanggan tiada nombor telefon');
+      if (waWindow) waWindow.close();
+      return;
+    }
+    if (!checkWhatsAppShare()) {
+      if (waWindow) waWindow.close();
+      return;
+    }
     setSharing(true);
     try {
       const [beforeBase64, afterBase64] = await Promise.all([
