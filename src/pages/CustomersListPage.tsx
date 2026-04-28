@@ -146,7 +146,7 @@ export default function CustomersListPage() {
         )}
       </div>
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+      <div data-tutorial="customers-tags" className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
         <button
           onClick={() => setTagFilter('Semua')}
           className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
