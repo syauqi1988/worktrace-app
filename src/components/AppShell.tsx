@@ -115,7 +115,7 @@ export default function AppShell() {
     if (endDate < sevenDays && !(profile as any).subscription_cancelled) {
       const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       toast.info(
-        `Langganan Pro anda akan tamat dalam ${daysLeft} hari. Perbaharui untuk kekal dengan Pro.`,
+        t('expiry.warning', { days: daysLeft }),
         { duration: 8000 }
       );
     }
@@ -236,7 +236,7 @@ export default function AppShell() {
                   onClick={(e) => {
                     if (isTeamOnlyLocked) {
                       e.preventDefault();
-                      toast.info(`${item.label} akan datang. Pelan Team masih dalam pembangunan.`);
+                      toast.info(t('workOrders.comingSoon', { label: item.label }));
                     }
                   }}
                 >
@@ -279,7 +279,7 @@ export default function AppShell() {
                       onClick={(e) => {
                         if (isTeamOnlyLocked) {
                           e.preventDefault();
-                          toast.info(`${item.label} akan datang. Pelan Team masih dalam pembangunan.`);
+                          toast.info(t('workOrders.comingSoon', { label: item.label }));
                           return;
                         }
                         setSidebarOpen(false);
@@ -364,7 +364,7 @@ export default function AppShell() {
       <TutorialController
         showWelcome={shouldAutoStart}
         onComplete={() => {
-          toast.success('Tutorial selesai! Selamat menggunakan WorkTrace 🎉');
+          toast.success(t('tutorial.complete'));
         }}
       />
     </div>
