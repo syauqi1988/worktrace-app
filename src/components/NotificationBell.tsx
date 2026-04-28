@@ -67,20 +67,20 @@ export default function NotificationBell() {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-[60] bg-black/20 md:bg-transparent" onClick={() => setOpen(false)} />
           <div
-            className="absolute right-0 mt-2 w-[360px] max-w-[92vw] bg-card rounded-xl border border-border z-[70] overflow-hidden"
-            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+            className="fixed left-2 right-2 top-[3.5rem] md:absolute md:left-auto md:right-0 md:top-auto md:mt-2 md:w-[360px] bg-card rounded-xl border border-border z-[70] overflow-hidden"
+            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
           >
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-foreground">Notifikasi</p>
               {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1">
+                <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0">
                   <Check className="h-3 w-3" /> Tandakan semua dibaca
                 </button>
               )}
             </div>
-            <div className="max-h-[420px] overflow-y-auto">
+            <div className="max-h-[70vh] md:max-h-[420px] overflow-y-auto">
               {items.length === 0 ? (
                 <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                   Tiada notifikasi lagi.
