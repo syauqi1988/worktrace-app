@@ -311,7 +311,12 @@ export default function CompletionReportPage() {
   };
 
   const handleWhatsAppShare = async () => {
-    if (!job || !user || !reportId) return;
+    if (!reportId) return;
+    await shareReportViaWhatsApp(reportId);
+  };
+
+  const shareReportViaWhatsApp = async (rid: string) => {
+    if (!job || !user) return;
     if (!job.customers?.phone) {
       toast.error('Pelanggan tiada nombor telefon');
       return;
