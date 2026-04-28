@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +28,8 @@ interface Customer {
 
 export default function JobFormPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const preselectedCustomerId = searchParams.get('customer_id');
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -54,9 +56,17 @@ export default function JobFormPage() {
   useEffect(() => {
     if (!user) return;
     supabase.from('customers').select('id, name, phone').order('name').then(({ data }) => {
-      setCustomers((data as Customer[]) || []);
+      const list = (data as Customer[]) || [];
+      setCustomers(list);
+      if (!isEdit && preselectedCustomerId && !customerId) {
+        const c = list.find(x => x.id === preselectedCustomerId);
+        if (c) {
+          setCustomerId(c.id);
+          setCustomerName(c.name);
+        }
+      }
     });
-  }, [user]);
+  }, [user, isEdit, preselectedCustomerId]);
 
   // Fetch existing job for edit
   useEffect(() => {
