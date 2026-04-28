@@ -803,6 +803,7 @@ export type Database = {
         Row: {
           amount: number | null
           billing_period: string | null
+          billplz_bill_id: string | null
           created_at: string | null
           event_type: string
           id: string
@@ -813,6 +814,7 @@ export type Database = {
         Insert: {
           amount?: number | null
           billing_period?: string | null
+          billplz_bill_id?: string | null
           created_at?: string | null
           event_type: string
           id?: string
@@ -823,6 +825,7 @@ export type Database = {
         Update: {
           amount?: number | null
           billing_period?: string | null
+          billplz_bill_id?: string | null
           created_at?: string | null
           event_type?: string
           id?: string

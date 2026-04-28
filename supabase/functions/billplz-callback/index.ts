@@ -113,25 +113,19 @@ Deno.serve(async (req) => {
       .eq('id', userId)
       .single()
 
-    // Only treat as duplicate if THIS exact bill was already processed.
-    // We detect that by checking if a payment_success event already exists for this bill amount
-    // AND the stored billplz_bill_id matches this bill id (same bill being callbacked twice).
-    if (profile?.billplz_bill_id === billId) {
-      const { data: existingEvent } = await supabaseAdmin
-        .from('subscription_events')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('event_type', 'payment_success')
-        .eq('plan', plan)
-        .eq('billing_period', billing_period)
-        .eq('amount', Number(bill?.amount || 0))
-        .limit(1)
-        .maybeSingle()
+    // Dedupe strictly by bill id: only skip if THIS exact bill already produced a payment_success event.
+    const { data: existingEvent } = await supabaseAdmin
+      .from('subscription_events')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('event_type', 'payment_success')
+      .eq('billplz_bill_id', billId)
+      .limit(1)
+      .maybeSingle()
 
-      if (existingEvent) {
-        console.log('Payment already processed for this bill, skipping duplicate update')
-        return new Response('ok', { status: 200 })
-      }
+    if (existingEvent) {
+      console.log('Bill already processed, skipping duplicate update:', billId)
+      return new Response('ok', { status: 200 })
     }
 
     // Base the new end date on existing subscription_end_date if it's still in the future,
