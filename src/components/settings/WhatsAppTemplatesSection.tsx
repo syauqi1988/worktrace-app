@@ -99,12 +99,12 @@ export default function WhatsAppTemplatesSection() {
         <label className="text-sm font-medium text-foreground mb-1.5 block">Pilih Templet</label>
         <select
           value={activeKey}
-          onChange={(e) => setActiveKey(e.target.value as TemplateKey)}
+          onChange={(e) => handleSelectTemplate(e.target.value as TemplateKey)}
           className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
         >
           {TEMPLATES.map((t) => (
             <option key={t.key} value={t.key}>
-              {t.label}
+              {t.label}{t.key === "work_order" && !isTeam ? " 🔒 (Team)" : ""}
             </option>
           ))}
         </select>
