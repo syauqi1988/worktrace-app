@@ -278,7 +278,19 @@ export default function WorkOrderFormPage() {
       const fileName = `${user!.id}/${woNumber}.pdf`;
       await supabase.storage.from('work-order-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('work-order-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const publicUrl = signed?.signedUrl ?? '';
+      const pdfUrl = signed?.signedUrl ?? '';
+
+      const token = await getOrCreateApprovalToken({
+        userId: user!.id,
+        documentId: woId,
+        documentType: 'work_order',
+        customerName: job.customers.name,
+        customerEmail: job.customers.email || null,
+        pdfUrl,
+        expiresInDays: 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
+
       const phone = formatPhone(job.customers.phone);
       const msg =
 `Assalamualaikum ${job.customers.name},
@@ -292,10 +304,10 @@ Berikut adalah Work Order untuk kerja yang akan kami laksanakan:
 📅 *Tarikh Mula:* ${formatDate(startDate)}
 📍 *Lokasi:* ${location || '-'}
 
-Sila semak dan sahkan penerimaan work order:
-🔗 ${publicUrl}
+Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+🔗 ${approvalUrl}
 
-Untuk mengesahkan, balas "SETUJU" atau hubungi kami.
+Terima kasih! 🙏
 
 *${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
