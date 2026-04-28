@@ -243,9 +243,20 @@ export default function JobDetailPage() {
       const fileName = `${user.id}/${report.report_number}.pdf`;
       await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('completion-report-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const publicUrl = signed?.signedUrl ?? '';
+      const pdfUrl = signed?.signedUrl ?? '';
+      const token = await getOrCreateApprovalToken({
+        userId: user.id,
+        documentId: report.id,
+        documentType: 'completion_report',
+        customerName: job.customers.name,
+        customerEmail: job.customers.email || null,
+        pdfUrl,
+        expiresInDays: 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
       const phone = formatPhone(job.customers.phone);
-      const message = `Assalamualaikum ${job.customers.name},\n\nKerja yang kami laksanakan telah siap! 🔧✅\n\nSila semak Laporan Siap Kerja kami:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\nLaporan lengkap dengan gambar kerja:\n🔗 ${publicUrl}\n\nTerima kasih kerana mempercayai perkhidmatan kami! 🙏\n\n*${profile?.company_name || ''}*`;
+      const companyName = profile?.company_name || '';
+      const message = `Assalamualaikum / Salam Sejahtera ${job.customers.name},\n\nAlhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *${companyName}*:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* laporan:\n🔗 ${approvalUrl}\n\nAnda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*${companyName}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
       toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
