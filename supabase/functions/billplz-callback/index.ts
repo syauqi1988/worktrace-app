@@ -91,12 +91,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (billing_period === 'yearly') {
-      endDate.setFullYear(endDate.getFullYear() + 1)
-    } else {
-      endDate.setMonth(endDate.getMonth() + 1)
-    }
-
     if (!userId) {
       const { data: matchedProfile } = await supabaseAdmin
         .from('profiles')
@@ -112,10 +106,10 @@ Deno.serve(async (req) => {
       return new Response('Unable to resolve bill owner', { status: 400 })
     }
 
-    // Check free months from referral
+    // Fetch profile first so we can extend from existing end date if still active
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('free_months_earned, free_months_used, plan, billing_period, subscription_status, billplz_bill_id')
+      .select('free_months_earned, free_months_used, plan, billing_period, subscription_status, billplz_bill_id, subscription_end_date')
       .eq('id', userId)
       .single()
 
@@ -127,6 +121,22 @@ Deno.serve(async (req) => {
     ) {
       console.log('Payment already processed, skipping duplicate update')
       return new Response('ok', { status: 200 })
+    }
+
+    // Base the new end date on existing subscription_end_date if it's still in the future,
+    // so renewals/upgrades stack on top of remaining balance instead of resetting from now.
+    const existingEnd = profile?.subscription_end_date
+      ? new Date(profile.subscription_end_date)
+      : null
+    if (existingEnd && existingEnd.getTime() > endDate.getTime()) {
+      endDate.setTime(existingEnd.getTime())
+      console.log('Extending from existing end date:', existingEnd.toISOString())
+    }
+
+    if (billing_period === 'yearly') {
+      endDate.setFullYear(endDate.getFullYear() + 1)
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1)
     }
 
     const freeBalance = profile
