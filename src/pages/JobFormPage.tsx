@@ -110,8 +110,8 @@ export default function JobFormPage() {
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (!customerId) newErrors.customer={tx('Sila pilih pelanggan')};
-    if (!title.trim()) newErrors.title={tx('Sila masukkan tajuk kerja')};
+    if (!customerId) newErrors.customer = tx('Sila pilih pelanggan');
+    if (!title.trim()) newErrors.title = tx('Sila masukkan tajuk kerja');
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;

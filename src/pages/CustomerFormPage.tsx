@@ -56,8 +56,8 @@ export default function CustomerFormPage() {
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name={tx('Sila masukkan nama pelanggan')};
-    if (!phone.trim()) newErrors.phone={tx('Sila masukkan nombor telefon')};
+    if (!name.trim()) newErrors.name = tx('Sila masukkan nama pelanggan');
+    if (!phone.trim()) newErrors.phone = tx('Sila masukkan nombor telefon');
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;

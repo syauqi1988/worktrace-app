@@ -253,10 +253,10 @@ export default function CompletionReportPage() {
   const handleSave = async (status: 'draft' | 'submitted') => {
     if (status === 'submitted') {
       const newErrors: Record<string, string> = {};
-      if (!completionDate) newErrors.completionDate={tx('Sila pilih tarikh')};
-      if (!technicianName.trim()) newErrors.technicianName={tx('Sila isi nama juruteknik')};
-      if (!workDescription.trim()) newErrors.workDescription={tx('Sila isi penerangan kerja')};
-      if (afterPhotos.length === 0) newErrors.photos={tx('Sila muat naik sekurang-kurangnya 1 gambar selepas')};
+      if (!completionDate) newErrors.completionDate = tx('Sila pilih tarikh');
+      if (!technicianName.trim()) newErrors.technicianName = tx('Sila isi nama juruteknik');
+      if (!workDescription.trim()) newErrors.workDescription = tx('Sila isi penerangan kerja');
+      if (afterPhotos.length === 0) newErrors.photos = tx('Sila muat naik sekurang-kurangnya 1 gambar selepas');
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
