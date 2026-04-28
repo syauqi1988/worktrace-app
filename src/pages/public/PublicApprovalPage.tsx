@@ -73,15 +73,22 @@ export default function PublicApprovalPage() {
         r.document_type === 'quotation' ? 'quote_number'
         : r.document_type === 'work_order' ? 'wo_number'
         : 'report_number';
-      const selectCols = r.document_type === 'completion_report'
-        ? `id, ${numberCol}, created_at, status`
-        : `id, ${numberCol}, total, created_at, status`;
-      const { data: docData } = await supabase
-        .from(tableName as any)
-        .select(selectCols)
-        .eq('id', r.document_id)
-        .maybeSingle();
-      setDoc(docData);
+      if (r.document_type === 'completion_report') {
+        const { data: docData } = await supabase
+          .from('completion_reports')
+          .select('*, jobs(job_number, title, category, customers(name, phone, address))')
+          .eq('id', r.document_id)
+          .maybeSingle();
+        setDoc(docData);
+      } else {
+        const selectCols = `id, ${numberCol}, total, created_at, status`;
+        const { data: docData } = await supabase
+          .from(tableName as any)
+          .select(selectCols)
+          .eq('id', r.document_id)
+          .maybeSingle();
+        setDoc(docData);
+      }
       setLoading(false);
     })();
   }, [token]);
