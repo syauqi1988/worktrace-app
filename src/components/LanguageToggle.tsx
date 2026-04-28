@@ -8,6 +8,8 @@ export default function LanguageToggle() {
   const setLang = (lng: 'ms' | 'en') => {
     if (lng === current) return;
     i18n.changeLanguage(lng);
+    // Reload to ensure every memoized/derived view picks up the new language.
+    setTimeout(() => window.location.reload(), 50);
   };
 
   const segBase =
