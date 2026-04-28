@@ -311,7 +311,7 @@ export default function SettingsPage() {
     }
     await savePaymentMethods(methods);
     resetQrForm();
-    toast.success("QR payment disimpan!");
+    toast.success(t("settings.payment.qrSaved"));
   };
 
   const handleDeletePayment = async (id: string) => {
