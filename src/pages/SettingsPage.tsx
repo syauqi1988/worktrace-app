@@ -174,7 +174,7 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     if (ssmNumberNew && !/^\d+$/.test(ssmNumberNew)) {
-      toast.error("No. Pendaftaran SSM (Baru) mesti nombor sahaja");
+      toast.error(t("settings.profile.ssmNewError"));
       return;
     }
     setSavingProfile(true);
