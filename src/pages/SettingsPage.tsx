@@ -935,15 +935,15 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="rujukan"
         icon={<Gift className="h-5 w-5" />}
-        title="Rujukan"
-        description="Kod rujukan dan ganjaran bulan percuma"
+        title={t("settings.referral.title")}
+        description={t("settings.referral.description")}
       >
         {isFree ? (
           <div className="text-center py-8 space-y-3">
             <Gift className="h-10 w-10 text-muted-foreground/30 mx-auto" />
-            <p className="text-sm text-muted-foreground">Upgrade ke Pro untuk akses sistem referral</p>
+            <p className="text-sm text-muted-foreground">{t("settings.referral.upgradePrompt")}</p>
             <p className="text-xs text-muted-foreground">
-              Kongsi link anda dan dapatkan 1 bulan percuma setiap kali rakan anda melanggan!
+              {t("settings.referral.upgradeHint")}
             </p>
           </div>
         ) : (
@@ -953,14 +953,14 @@ export default function SettingsPage() {
               style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.5))" }}
             >
               <p className="text-sm text-foreground">
-                Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!
+                <Trans i18nKey="settings.referral.intro" components={{ strong: <strong /> }} />
               </p>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Link Rujukan Anda:</p>
+                <p className="text-xs text-muted-foreground mb-1">{t("settings.referral.yourLink")}</p>
                 <div className="flex items-center gap-2">
                   <Input value={referralUrl} readOnly className="text-xs bg-muted font-mono" />
                   <Button variant="outline" size="sm" onClick={copyReferralLink} className="shrink-0 rounded-lg gap-1">
-                    <Copy className="h-3.5 w-3.5" /> Salin
+                    <Copy className="h-3.5 w-3.5" /> {t("settings.referral.copy")}
                   </Button>
                 </div>
               </div>
@@ -971,20 +971,20 @@ export default function SettingsPage() {
                   className="rounded-lg gap-1.5 text-white"
                   style={{ backgroundColor: "#25D366" }}
                 >
-                  <MessageCircle className="h-3.5 w-3.5" /> Kongsi via WhatsApp
+                  <MessageCircle className="h-3.5 w-3.5" /> {t("settings.referral.shareWa")}
                 </Button>
                 <Button onClick={shareTelegram} size="sm" variant="outline" className="rounded-lg gap-1.5">
-                  <Send className="h-3.5 w-3.5" /> Telegram
+                  <Send className="h-3.5 w-3.5" /> {t("settings.referral.telegram")}
                 </Button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Jumlah Rujukan", value: profile?.referral_count || 0 },
-                { label: "Bulan Diperolehi", value: profile?.free_months_earned || 0 },
-                { label: "Bulan Digunakan", value: profile?.free_months_used || 0 },
-                { label: "Baki Tersedia", value: freeMonthsBalance },
+                { label: t("settings.referral.totalReferrals"), value: profile?.referral_count || 0 },
+                { label: t("settings.referral.monthsEarned"), value: profile?.free_months_earned || 0 },
+                { label: t("settings.referral.monthsUsed"), value: profile?.free_months_used || 0 },
+                { label: t("settings.referral.balance"), value: freeMonthsBalance },
               ].map((s) => (
                 <div key={s.label} className="border border-border rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold text-foreground">{s.value}</p>
@@ -999,10 +999,10 @@ export default function SettingsPage() {
                   <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      Anda ada {freeMonthsBalance} bulan percuma
+                      {t("settings.referral.youHave", { count: freeMonthsBalance })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Klik untuk lanjutkan tarikh tamat langganan anda sekarang.
+                      {t("settings.referral.applyNow")}
                     </p>
                   </div>
                 </div>
@@ -1012,23 +1012,23 @@ export default function SettingsPage() {
                   disabled={applyingFreeMonths || isFree}
                   className="rounded-lg shrink-0"
                 >
-                  {applyingFreeMonths ? "Memproses..." : `Guna ${freeMonthsBalance} Bulan Sekarang`}
+                  {applyingFreeMonths ? t("settings.referral.applying") : t("settings.referral.useNow", { count: freeMonthsBalance })}
                 </Button>
               </div>
             )}
             {freeMonthsBalance > 0 && isFree && (
               <p className="text-xs text-muted-foreground -mt-1">
-                Upgrade ke Pro untuk menggunakan bulan percuma anda.
+                {t("settings.referral.upgradeToUse")}
               </p>
             )}
 
             <div>
-              <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
+              <p className="text-sm font-medium text-foreground mb-2">{t("settings.referral.history")}</p>
               {referrals.length === 0 ? (
                 <div className="text-center py-6">
                   <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Belum ada rujukan</p>
-                  <p className="text-xs text-muted-foreground">Kongsi link untuk mula mendapat ganjaran!</p>
+                  <p className="text-sm text-muted-foreground">{t("settings.referral.noReferrals")}</p>
+                  <p className="text-xs text-muted-foreground">{t("settings.referral.shareToStart")}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1039,7 +1039,7 @@ export default function SettingsPage() {
                     >
                       <div>
                         <p className="text-sm text-foreground">
-                          {new Date(r.created_at).toLocaleDateString("ms-MY", {
+                          {new Date(r.created_at).toLocaleDateString(dateLocale, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
@@ -1052,11 +1052,11 @@ export default function SettingsPage() {
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {r.status === "rewarded" ? "✓ Ganjaran Diterima" : "Menunggu Langganan"}
+                          {r.status === "rewarded" ? t("settings.referral.rewarded") : t("settings.referral.pending")}
                         </span>
                       </div>
                       <span className="text-sm text-foreground">
-                        {r.status === "rewarded" ? `${r.months_awarded} Bulan Percuma ✓` : "—"}
+                        {r.status === "rewarded" ? t("settings.referral.monthsAwarded", { count: r.months_awarded }) : "—"}
                       </span>
                     </div>
                   ))}
