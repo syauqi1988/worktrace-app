@@ -354,6 +354,26 @@ export default function SettingsPage() {
     );
   };
 
+  const handleApplyFreeMonths = async () => {
+    if (freeMonthsBalance <= 0) return;
+    const ok = window.confirm(
+      `Guna ${freeMonthsBalance} bulan percuma sekarang? Tarikh tamat langganan anda akan dilanjutkan ${freeMonthsBalance} bulan.`,
+    );
+    if (!ok) return;
+    setApplyingFreeMonths(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("apply-free-months");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`${(data as any).monthsApplied} bulan percuma telah digunakan!`);
+      await refreshProfile();
+    } catch (e: any) {
+      toast.error(e?.message || "Gagal menggunakan bulan percuma");
+    } finally {
+      setApplyingFreeMonths(false);
+    }
+  };
+
   const planLabel = profile?.plan === "pro" ? "Pro" : profile?.plan === "team" ? "Team" : "Free";
   const isFree = !profile || profile.plan === "free";
   const banks = paymentMethods.filter((m) => m.type === "bank_transfer");
