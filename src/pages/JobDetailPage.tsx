@@ -81,6 +81,7 @@ interface CompletionReport {
   customer_signature: string | null;
   notes: string | null;
   photos: any;
+  accepted_at?: string | null;
 }
 
 function formatPhone(phone: string): string {
