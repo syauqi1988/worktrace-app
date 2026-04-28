@@ -24,7 +24,19 @@ interface Job {
   title: string;
   category: string;
   customer_id: string | null;
-  customers: { name: string; phone: string | null; address: string | null } | null;
+  customers: { name: string; phone: string | null; email: string | null; address: string | null } | null;
+}
+
+function formatPhoneIntl(phone: string): string {
+  let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
+  if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
+  return cleaned;
+}
+
+function formatDateMs(d: string | null) {
+  if (!d) return '-';
+  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function CompletionReportPage() {
