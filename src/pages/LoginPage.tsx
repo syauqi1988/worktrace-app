@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
+import LanguageToggle from '@/components/LanguageToggle';
 import { applyReferralFromUrl } from '@/lib/applyReferral';
 
 const HCAPTCHA_SITE_KEY = '71b8e45e-eee4-4054-8f94-121a300c9072';
