@@ -447,7 +447,8 @@ export default function InvoiceDetailPage() {
       invoiceId: invoice.id,
       customerName: customer?.name || null,
     });
-    const proofUrl = buildPublicPaymentProofUrl(token);
+    const fullProofUrl = buildPublicPaymentProofUrl(token);
+    const proofUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullProofUrl, kind: 'proof' });
 
     // Persist invoice PDF link on the proof so the public page can show it
     await supabase.from('payment_proofs').update({ invoice_pdf_url: pdfUrl } as any).eq('token', token);
