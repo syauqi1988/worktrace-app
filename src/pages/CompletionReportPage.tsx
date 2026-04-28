@@ -350,6 +350,8 @@ export default function CompletionReportPage() {
             materials_used: materialsUsed,
             customer_signature: customerSignature,
             notes,
+            status: reportStatus,
+            accepted_at: acceptedAt,
             before_photos: beforeBase64.filter(Boolean),
             after_photos: afterBase64.filter(Boolean),
           }}
@@ -360,6 +362,8 @@ export default function CompletionReportPage() {
             phone: profile?.phone || null,
             address: profile?.address || null,
             logo_base64: logoBase64,
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
           }}
         />
       ).toBlob();
