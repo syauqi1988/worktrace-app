@@ -312,7 +312,19 @@ Terima kasih!
     }
   };
 
-  const handlePreview = async () => {
+  // Auto-trigger WhatsApp share when arriving with ?share=1 (e.g. from Sent action in form)
+  useEffect(() => {
+    if (autoShareDone) return;
+    if (searchParams.get('share') !== '1') return;
+    if (!quotation || !pdfData || !user || !hasPhone) return;
+    setAutoShareDone(true);
+    // Clear the param so it doesn't re-trigger on refresh
+    const next = new URLSearchParams(searchParams);
+    next.delete('share');
+    setSearchParams(next, { replace: true });
+    shareViaWhatsApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotation, pdfData, user, hasPhone, searchParams, autoShareDone]);
     if (!pdfData) return;
     setPreviewOpen(true);
     setPreviewLoading(true);
