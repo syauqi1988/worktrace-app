@@ -209,7 +209,7 @@ export default function SettingsPage() {
       invoice_terms: invoiceTerms || null,
     });
     setSavingTerms(false);
-    toast.success("Terma & syarat berjaya disimpan!");
+    toast.success(t("settings.terms.saved"));
   };
 
   // Payment methods
