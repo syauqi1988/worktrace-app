@@ -39,6 +39,12 @@ function formatDateMs(d: string | null) {
   return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function formatDateTimeMs(d: string | null) {
+  if (!d) return '-';
+  const dt = new Date(d);
+  return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+}
+
 export default function CompletionReportPage() {
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
