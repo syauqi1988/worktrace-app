@@ -237,7 +237,7 @@ export default function SettingsPage() {
 
   const handleSaveBank = async () => {
     if (!accountName.trim() || !accountNumber.trim()) {
-      toast.error("Sila isi semua medan");
+      toast.error(t("settings.payment.fillAll"));
       return;
     }
     let methods = [...paymentMethods];
