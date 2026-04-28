@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle2, XCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import CompletionReportView from '@/components/reports/CompletionReportView';
 
 interface ApprovalRow {
   id: string;
