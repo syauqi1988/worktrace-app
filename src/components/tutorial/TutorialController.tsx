@@ -94,10 +94,11 @@ export default function TutorialController({
     driverObj.drive();
   }, [markCompleted, incrementSeenCount, onComplete]);
 
-  // Auto-start per-page tutorial on first visit
+  // Auto-start per-page tutorial on first visit (skip detail pages — too noisy)
+  const isDetailPage = currentPage === 'job-detail' || currentPage === 'quotation-detail' || currentPage === 'invoice-detail';
   useEffect(() => {
     if (isLoading) return;
-    if (currentPage === 'settings') return;
+    if (isDetailPage) return;
     const pageState = getPageState(currentPage);
     if (!pageState.completed && !autoStartedPages.current.has(currentPage)) {
       autoStartedPages.current.add(currentPage);
@@ -106,18 +107,12 @@ export default function TutorialController({
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, currentPage, getPageState, startTourForPage]);
+  }, [isLoading, currentPage, getPageState, startTourForPage, isDetailPage]);
 
-  // Expose globally for ? button
+  // Expose globally for ? button — always plays the CURRENT page tutorial only
   useEffect(() => {
     window.__startWorkTraceTutorial = () => {
-      const steps = buildPageTutorialSteps(currentPage);
-      if (steps.length === 0) {
-        // No tutorial for this page (e.g. settings) — start dashboard tutorial
-        startTourForPage('dashboard');
-      } else {
-        startTourForPage(currentPage);
-      }
+      startTourForPage(currentPage);
     };
     return () => {
       delete window.__startWorkTraceTutorial;
