@@ -1,28 +1,29 @@
 import { Bell, BellOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function NotificationSettingsSection() {
   const { supported, status, busy, enable, disable } = usePushNotifications();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-3">
       <div>
-        <h3 className="text-sm font-semibold text-foreground">Notifikasi Peranti</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('settings.deviceNotifications.heading')}</h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Terima notifikasi pada telefon atau komputer anda apabila pelanggan mengesahkan/menolak dokumen,
-          menghantar bukti pembayaran, atau pasukan sokongan membalas tiket anda.
+          {t('settings.deviceNotifications.body')}
         </p>
       </div>
 
       {!supported && (
         <p className="text-xs text-muted-foreground bg-muted rounded-lg p-3">
-          Pelayar anda tidak menyokong notifikasi. Untuk iPhone, sila pasang aplikasi ke skrin utama dahulu.
+          {t('settings.deviceNotifications.unsupported')}
         </p>
       )}
 
       {supported && status === 'denied' && (
         <p className="text-xs text-destructive bg-destructive/10 rounded-lg p-3">
-          Notifikasi telah disekat. Sila benarkan dalam tetapan pelayar anda untuk laman ini.
+          {t('settings.deviceNotifications.blocked')}
         </p>
       )}
 
@@ -38,10 +39,10 @@ export default function NotificationSettingsSection() {
         >
           {status === 'subscribed' ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
           {busy
-            ? 'Sila tunggu…'
+            ? t('settings.deviceNotifications.wait')
             : status === 'subscribed'
-            ? 'Matikan notifikasi peranti'
-            : 'Aktifkan notifikasi peranti'}
+            ? t('settings.deviceNotifications.disable')
+            : t('settings.deviceNotifications.enable')}
         </button>
       )}
     </div>

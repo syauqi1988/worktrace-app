@@ -150,10 +150,189 @@
   },
   "settings": {
     "title": "Settings",
-    "company": "Company Information",
-    "billing": "Billing & Subscription",
-    "notifications": "Device Notifications",
-    "deleteAccount": "Delete Account"
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+
+    "profile": {
+      "title": "Company Profile",
+      "description": "Company name, phone, address and logo",
+      "companyName": "Company Name *",
+      "phone": "Phone Number",
+      "address": "Address",
+      "ssmNew": "SSM Registration No. (New)",
+      "ssmNewHint": "New SSM format (numbers only)",
+      "ssmNewPlaceholder": "e.g. 202301012345",
+      "ssmOld": "SSM Registration No. (Old)",
+      "ssmOldHint": "Old SSM format (if any)",
+      "ssmOldPlaceholder": "e.g. 123456-A",
+      "ssmNewError": "SSM Registration No. (New) must be numbers only",
+      "save": "Save Profile",
+      "saved": "Profile updated successfully!"
+    },
+
+    "lhdn": {
+      "title": "LHDN & SST",
+      "description": "Tax information and LHDN MyInvois e-Invoice",
+      "enable": "Enable LHDN e-Invoice",
+      "enableHint": "Enable to display LHDN fields on your invoices",
+      "tin": "Company TIN No.",
+      "msic": "MSIC Code",
+      "sstRegistered": "SST Registered",
+      "sstNumber": "SST No.",
+      "comingSoon": "Automatic integration with the LHDN MyInvois portal is coming soon.",
+      "save": "Save LHDN Settings",
+      "saved": "LHDN settings saved!"
+    },
+
+    "payment": {
+      "title": "Payment Methods",
+      "description": "Bank accounts and QR payments for invoices",
+      "willShow": "This information will be displayed on every invoice you issue",
+      "bankTransfer": "🏦 Bank Transfer",
+      "primary": "Primary ✓",
+      "bankName": "Bank Name",
+      "accountName": "Account Name *",
+      "accountNumber": "Account Number *",
+      "setPrimary": "Set as primary",
+      "saveBank": "Save Account",
+      "addBank": "Add Bank Account",
+      "addQr": "Add QR Payment",
+      "qrProvider": "QR Provider",
+      "uploadQr": "Upload QR Image",
+      "uploading": "Uploading...",
+      "saveQr": "Save QR",
+      "fillAll": "Please fill all fields",
+      "fileTooLarge": "File size exceeds 2MB",
+      "uploadFailed": "Failed to upload QR",
+      "uploadQrFirst": "Please upload a QR image",
+      "bankSaved": "Bank account saved!",
+      "qrSaved": "QR payment saved!",
+      "deleted": "Payment method deleted"
+    },
+
+    "terms": {
+      "title": "Terms & Conditions",
+      "description": "T&C for Quotations, Invoices and Work Orders",
+      "tabQuotation": "Quotation",
+      "tabInvoice": "Invoice",
+      "tabWorkOrder": "Work Order",
+      "quotationHint": "These terms appear on every Quotation PDF",
+      "invoiceHint": "These terms appear on every Invoice PDF",
+      "saveQuotation": "Save Quotation Terms",
+      "saveInvoice": "Save Invoice Terms",
+      "saved": "Terms & conditions saved!"
+    },
+
+    "whatsappTemplates": {
+      "title": "WhatsApp Templates",
+      "description": "Customize greetings & closing lines for all WhatsApp messages"
+    },
+
+    "deviceNotifications": {
+      "title": "Device Notifications",
+      "description": "Enable push notifications on your phone or computer",
+      "heading": "Device Notifications",
+      "body": "Receive notifications on your phone or computer when customers approve/reject documents, send payment proofs, or the support team replies to your tickets.",
+      "unsupported": "Your browser does not support notifications. For iPhone, please install the app to your home screen first.",
+      "blocked": "Notifications are blocked. Please allow them in your browser settings for this site.",
+      "wait": "Please wait…",
+      "disable": "Turn off device notifications",
+      "enable": "Enable device notifications"
+    },
+
+    "docNumbers": {
+      "title": "Document Numbers",
+      "description": "Auto-numbering format for all document types"
+    },
+
+    "subscription": {
+      "title": "Subscription & Plan",
+      "description": "Current plan and subscription management",
+      "freeMonthsBanner": "You have <strong>{{count}} free months</strong> from the referral program! They will be applied at your next renewal.",
+      "currentPlan": "Current Plan",
+      "active": "— Active ●",
+      "willEnd": "Ending Soon ⚠️",
+      "forever": " · Free forever",
+      "yearly": "Yearly",
+      "monthly": "Monthly",
+      "perYear": "/year",
+      "perMonth": "/month",
+      "cancelledUntil": "Subscription cancelled. Active until {{date}}",
+      "startDate": "Start Date: {{date}}",
+      "endDate": "End Date: {{date}}",
+      "reactivate": "Reactivate Subscription",
+      "choosePeriod": "Choose renewal period",
+      "monthlyOption": "Monthly — RM{{price}}/month",
+      "yearlyOption": "Yearly — RM{{price}}/year",
+      "processing": "Processing...",
+      "renew": "Renew Subscription — RM{{price}}/{{period}}",
+      "cancelSub": "Cancel Subscription"
+    },
+
+    "integrations": {
+      "title": "Integrations & Links",
+      "description": "Approval and payment proof links",
+      "heading": "Built-in Approvals & Payment Proofs",
+      "body": "WorkTrace generates approval links automatically when you send a Quotation, Work Order, or Report to a customer. For Invoices, payment proof links (/bayar) are generated automatically — customers can upload their receipts directly without any external integration.",
+      "noConfig": "No configuration required — all links are generated automatically."
+    },
+
+    "referral": {
+      "title": "Referrals",
+      "description": "Referral code and free month rewards",
+      "upgradePrompt": "Upgrade to Pro to access the referral system",
+      "upgradeHint": "Share your link and get 1 free month every time a friend subscribes!",
+      "intro": "Share your link and get <strong>1 free month</strong> every time a friend subscribes!",
+      "yourLink": "Your Referral Link:",
+      "copy": "Copy",
+      "copied": "Referral link copied! Share it with your contractor friends.",
+      "shareWa": "Share via WhatsApp",
+      "telegram": "Telegram",
+      "totalReferrals": "Total Referrals",
+      "monthsEarned": "Months Earned",
+      "monthsUsed": "Months Used",
+      "balance": "Available Balance",
+      "youHave": "You have {{count}} free months",
+      "applyNow": "Click to extend your subscription end date now.",
+      "useNow": "Use {{count}} Months Now",
+      "applying": "Processing...",
+      "applyConfirm": "Use {{count}} free months now? Your subscription end date will be extended by {{count}} months.",
+      "applied": "{{count}} free months have been applied!",
+      "applyFailed": "Failed to apply free months",
+      "history": "Referral History",
+      "noReferrals": "No referrals yet",
+      "shareToStart": "Share your link to start earning rewards!",
+      "rewarded": "✓ Reward Received",
+      "pending": "Awaiting Subscription",
+      "monthsAwarded": "{{count}} Free Months ✓",
+      "upgradeToUse": "Upgrade to Pro to use your free months."
+    },
+
+    "help": {
+      "title": "Help",
+      "description": "AI help and support",
+      "needHuman": "Need a human?",
+      "sendTicket": "📧 Send Support Ticket",
+      "responseTime": "Response time: < 24 hours (working days)"
+    },
+
+    "danger": {
+      "title": "Danger Zone",
+      "description": "Account deletion and irreversible actions",
+      "accountEmail": "Account Email",
+      "irreversible": "Irreversible Action",
+      "items": {
+        "jobs": "All jobs and records",
+        "customers": "All customers",
+        "documents": "All quotations, work orders and invoices",
+        "files": "All files and documents",
+        "profile": "Company profile and account",
+        "referrals": "Referral records"
+      },
+      "deleteAccount": "Delete Account"
+    }
   },
   "expiry": {
     "warning": "Your Pro subscription expires in {{days}} days. Renew to keep Pro features.",

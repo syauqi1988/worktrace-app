@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +18,7 @@ import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
 import AiHelpButton from "@/components/settings/AiHelpButton";
 import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
 import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
+import { getDateLocale } from "@/i18n";
 import {
   Building2,
   Shield,
@@ -69,15 +71,16 @@ const BANK_OPTIONS = [
 ];
 const QR_PROVIDERS = ["DuitNow QR", "TnG eWallet", "ShopeePay", "GrabPay", "Boost", "Other"];
 
-const TERMS_TABS = [
-  { key: "quotation", label: "Sebut Harga" },
-  { key: "invoice", label: "Invois" },
-  { key: "work_order", label: "Work Order" },
-] as const;
-
-type TermsTab = (typeof TERMS_TABS)[number]["key"];
+type TermsTab = "quotation" | "invoice" | "work_order";
 
 export default function SettingsPage() {
+  const { t, i18n } = useTranslation();
+  const TERMS_TABS: { key: TermsTab; label: string }[] = [
+    { key: "quotation", label: t("settings.terms.tabQuotation") },
+    { key: "invoice", label: t("settings.terms.tabInvoice") },
+    { key: "work_order", label: t("settings.terms.tabWorkOrder") },
+  ];
+  const dateLocale = getDateLocale();
   const { user, profile, updateProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { totalSeenCount } = useTutorial("settings");
@@ -171,7 +174,7 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     if (ssmNumberNew && !/^\d+$/.test(ssmNumberNew)) {
-      toast.error("No. Pendaftaran SSM (Baru) mesti nombor sahaja");
+      toast.error(t("settings.profile.ssmNewError"));
       return;
     }
     setSavingProfile(true);
@@ -184,7 +187,7 @@ export default function SettingsPage() {
       ssm_number_old: ssmNumberOld || null,
     });
     setSavingProfile(false);
-    toast.success("Profil berjaya dikemaskini!");
+    toast.success(t("settings.profile.saved"));
   };
 
   const handleSaveLhdn = async () => {
@@ -196,7 +199,7 @@ export default function SettingsPage() {
       sst_registered: sstRegistered,
     });
     setSavingLhdn(false);
-    toast.success("Tetapan LHDN disimpan!");
+    toast.success(t("settings.lhdn.saved"));
   };
 
   const handleSaveTerms = async () => {
@@ -206,7 +209,7 @@ export default function SettingsPage() {
       invoice_terms: invoiceTerms || null,
     });
     setSavingTerms(false);
-    toast.success("Terma & syarat berjaya disimpan!");
+    toast.success(t("settings.terms.saved"));
   };
 
   // Payment methods
@@ -234,7 +237,7 @@ export default function SettingsPage() {
 
   const handleSaveBank = async () => {
     if (!accountName.trim() || !accountNumber.trim()) {
-      toast.error("Sila isi semua medan");
+      toast.error(t("settings.payment.fillAll"));
       return;
     }
     let methods = [...paymentMethods];
@@ -263,21 +266,21 @@ export default function SettingsPage() {
     }
     await savePaymentMethods(methods);
     resetBankForm();
-    toast.success("Akaun bank disimpan!");
+    toast.success(t("settings.payment.bankSaved"));
   };
 
   const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Saiz fail melebihi 2MB");
+      toast.error(t("settings.payment.fileTooLarge"));
       return;
     }
     setUploadingQr(true);
     const path = `${user.id}/${Date.now()}.png`;
     const { error } = await supabase.storage.from("payment-qr").upload(path, file, { upsert: true });
     if (error) {
-      toast.error("Gagal muat naik QR");
+      toast.error(t("settings.payment.uploadFailed"));
       setUploadingQr(false);
       return;
     }
@@ -290,7 +293,7 @@ export default function SettingsPage() {
 
   const handleSaveQr = async () => {
     if (!qrImageUrl) {
-      toast.error("Sila muat naik imej QR");
+      toast.error(t("settings.payment.uploadQrFirst"));
       return;
     }
     let methods = [...paymentMethods];
@@ -308,13 +311,13 @@ export default function SettingsPage() {
     }
     await savePaymentMethods(methods);
     resetQrForm();
-    toast.success("QR payment disimpan!");
+    toast.success(t("settings.payment.qrSaved"));
   };
 
   const handleDeletePayment = async (id: string) => {
     const methods = paymentMethods.filter((m) => m.id !== id);
     await savePaymentMethods(methods);
-    toast.success("Kaedah pembayaran dipadam");
+    toast.success(t("settings.payment.deleted"));
   };
 
   const handleEditBank = (m: PaymentMethod) => {
@@ -340,7 +343,7 @@ export default function SettingsPage() {
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralUrl);
-    toast.success("Link rujukan disalin! Kongsi dengan rakan kontraktor anda.");
+    toast.success(t("settings.referral.copied"));
   };
 
   const shareWhatsApp = () => {
@@ -359,7 +362,7 @@ export default function SettingsPage() {
   const handleApplyFreeMonths = async () => {
     if (freeMonthsBalance <= 0) return;
     const ok = window.confirm(
-      `Guna ${freeMonthsBalance} bulan percuma sekarang? Tarikh tamat langganan anda akan dilanjutkan ${freeMonthsBalance} bulan.`,
+      t("settings.referral.applyConfirm", { count: freeMonthsBalance }),
     );
     if (!ok) return;
     setApplyingFreeMonths(true);
@@ -367,10 +370,10 @@ export default function SettingsPage() {
       const { data, error } = await supabase.functions.invoke("apply-free-months");
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success(`${(data as any).monthsApplied} bulan percuma telah digunakan!`);
+      toast.success(t("settings.referral.applied", { count: (data as any).monthsApplied }));
       await refreshProfile();
     } catch (e: any) {
-      toast.error(e?.message || "Gagal menggunakan bulan percuma");
+      toast.error(e?.message || t("settings.referral.applyFailed"));
     } finally {
       setApplyingFreeMonths(false);
     }
@@ -383,26 +386,26 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl">
-      <h1 className="text-xl font-bold text-foreground">Tetapan</h1>
+      <h1 className="text-xl font-bold text-foreground">{t("settings.title")}</h1>
 
       {/* 1 — Profil Syarikat */}
       <SettingsAccordion
         id="profil-syarikat"
         tutorialId="settings-profile"
         icon={<Building2 className="h-5 w-5" />}
-        title="Profil Syarikat"
-        description="Nama syarikat, telefon, alamat dan logo"
+        title={t("settings.profile.title")}
+        description={t("settings.profile.description")}
         defaultOpen
       >
         {user && (
           <CompanyLogoUpload userId={user.id} logoUrl={logoUrl} onChange={setLogoUrl} />
         )}
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Syarikat *</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.companyName")}</label>
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="h-11 rounded-lg" />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Nombor Telefon</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.phone")}</label>
           <Input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -411,7 +414,7 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Alamat</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.address")}</label>
           <textarea
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -419,29 +422,29 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Baru)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.ssmNew")}</label>
           <Input
             value={ssmNumberNew}
             onChange={(e) => setSsmNumberNew(e.target.value.replace(/\D/g, ""))}
-            placeholder="cth: 202301012345"
+            placeholder={t("settings.profile.ssmNewPlaceholder")}
             inputMode="numeric"
             pattern="[0-9]*"
             className="h-11 rounded-lg"
           />
-          <p className="text-xs text-muted-foreground mt-1">Format baru SSM (nombor sahaja)</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("settings.profile.ssmNewHint")}</p>
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Lama)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.ssmOld")}</label>
           <Input
             value={ssmNumberOld}
             onChange={(e) => setSsmNumberOld(e.target.value)}
-            placeholder="cth: 123456-A"
+            placeholder={t("settings.profile.ssmOldPlaceholder")}
             className="h-11 rounded-lg"
           />
-          <p className="text-xs text-muted-foreground mt-1">Format lama SSM (jika ada)</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("settings.profile.ssmOldHint")}</p>
         </div>
         <Button onClick={handleSaveProfile} disabled={savingProfile} className="rounded-lg">
-          {savingProfile ? "Menyimpan..." : "Simpan Profil"}
+          {savingProfile ? t("settings.saving") : t("settings.profile.save")}
         </Button>
       </SettingsAccordion>
 
@@ -449,20 +452,20 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="lhdn-sst"
         icon={<Shield className="h-5 w-5" />}
-        title="LHDN & SST"
-        description="Maklumat cukai dan e-Invois LHDN MyInvois"
+        title={t("settings.lhdn.title")}
+        description={t("settings.lhdn.description")}
       >
         <div className="flex items-center justify-between py-2">
-          <span className="text-sm font-medium text-foreground">Aktifkan e-Invois LHDN</span>
+          <span className="text-sm font-medium text-foreground">{t("settings.lhdn.enable")}</span>
           <Switch checked={lhdnEnabled} onCheckedChange={setLhdnEnabled} />
         </div>
         {!lhdnEnabled && (
-          <p className="text-sm text-muted-foreground">Aktifkan untuk memaparkan medan LHDN pada invois anda</p>
+          <p className="text-sm text-muted-foreground">{t("settings.lhdn.enableHint")}</p>
         )}
         {lhdnEnabled && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">No. TIN Syarikat</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.lhdn.tin")}</label>
               <Input
                 value={tinNumber}
                 onChange={(e) => setTinNumber(e.target.value)}
@@ -471,7 +474,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Kod MSIC</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.lhdn.msic")}</label>
               <Input
                 value={msicCode}
                 onChange={(e) => setMsicCode(e.target.value)}
@@ -480,12 +483,12 @@ export default function SettingsPage() {
               />
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm font-medium text-foreground">SST Berdaftar</span>
+              <span className="text-sm font-medium text-foreground">{t("settings.lhdn.sstRegistered")}</span>
               <Switch checked={sstRegistered} onCheckedChange={setSstRegistered} />
             </div>
             {sstRegistered && (
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">No. SST</label>
+                <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.lhdn.sstNumber")}</label>
                 <Input
                   value={sstNumber}
                   onChange={(e) => setSstNumber(e.target.value)}
@@ -497,10 +500,10 @@ export default function SettingsPage() {
           </div>
         )}
         <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
-          Integrasi automatik dengan portal MyInvois LHDN akan datang tidak lama lagi.
+          {t("settings.lhdn.comingSoon")}
         </div>
         <Button onClick={handleSaveLhdn} disabled={savingLhdn} className="rounded-lg">
-          {savingLhdn ? "Menyimpan..." : "Simpan Tetapan LHDN"}
+          {savingLhdn ? t("settings.saving") : t("settings.lhdn.save")}
         </Button>
       </SettingsAccordion>
 
@@ -509,18 +512,18 @@ export default function SettingsPage() {
         id="kaedah-pembayaran"
         tutorialId="settings-payment"
         icon={<Landmark className="h-5 w-5" />}
-        title="Kaedah Pembayaran"
-        description="Akaun bank dan QR bayaran untuk invois"
+        title={t("settings.payment.title")}
+        description={t("settings.payment.description")}
       >
-        <p className="text-sm text-muted-foreground">Maklumat ini akan dipaparkan dalam setiap invois anda</p>
+        <p className="text-sm text-muted-foreground">{t("settings.payment.willShow")}</p>
 
         {banks.map((b) => (
           <div key={b.id} className="border border-border rounded-lg p-4 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">🏦 Bank Transfer</span>
+              <span className="text-sm font-medium">{t("settings.payment.bankTransfer")}</span>
               {b.is_primary && (
                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                  Utama ✓
+                  {t("settings.payment.primary")}
                 </span>
               )}
             </div>
@@ -529,13 +532,13 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground font-mono">{b.account_number}</p>
             <div className="flex gap-2 pt-1">
               <button onClick={() => handleEditBank(b)} className="text-xs text-primary hover:underline">
-                Edit
+                {t("settings.edit")}
               </button>
               <button
                 onClick={() => handleDeletePayment(b.id)}
                 className="text-xs text-destructive hover:underline"
               >
-                Padam
+                {t("settings.delete")}
               </button>
             </div>
           </div>
@@ -553,13 +556,13 @@ export default function SettingsPage() {
             )}
             <div className="flex gap-2">
               <button onClick={() => handleEditQr(q)} className="text-xs text-primary hover:underline">
-                Edit
+                {t("settings.edit")}
               </button>
               <button
                 onClick={() => handleDeletePayment(q.id)}
                 className="text-xs text-destructive hover:underline"
               >
-                Padam
+                {t("settings.delete")}
               </button>
             </div>
           </div>
@@ -568,7 +571,7 @@ export default function SettingsPage() {
         {showBankForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nama Bank</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.bankName")}</label>
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
@@ -582,7 +585,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nama Akaun *</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.accountName")}</label>
               <Input
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
@@ -590,7 +593,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nombor Akaun *</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.accountNumber")}</label>
               <Input
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
@@ -600,15 +603,15 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2">
               <Checkbox id="primary-bank" checked={isPrimary} onCheckedChange={(v) => setIsPrimary(!!v)} />
               <label htmlFor="primary-bank" className="text-sm cursor-pointer">
-                Tetapkan sebagai utama
+                {t("settings.payment.setPrimary")}
               </label>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSaveBank} disabled={savingPayment} size="sm" className="rounded-lg">
-                Simpan Akaun
+                {t("settings.payment.saveBank")}
               </Button>
               <Button variant="outline" onClick={resetBankForm} size="sm" className="rounded-lg">
-                Batal
+                {t("settings.cancel")}
               </Button>
             </div>
           </div>
@@ -617,7 +620,7 @@ export default function SettingsPage() {
         {showQrForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Penyedia QR</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.qrProvider")}</label>
               <select
                 value={qrProvider}
                 onChange={(e) => setQrProvider(e.target.value)}
@@ -631,14 +634,14 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Muat Naik Imej QR</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.uploadQr")}</label>
               <input
                 type="file"
                 accept="image/png,image/jpeg"
                 onChange={handleQrUpload}
                 disabled={uploadingQr}
               />
-              {uploadingQr && <p className="text-xs text-muted-foreground">Memuat naik...</p>}
+              {uploadingQr && <p className="text-xs text-muted-foreground">{t("settings.payment.uploading")}</p>}
               {qrImageUrl && (
                 <img
                   src={qrImageUrl}
@@ -649,10 +652,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSaveQr} disabled={savingPayment} size="sm" className="rounded-lg">
-                Simpan QR
+                {t("settings.payment.saveQr")}
               </Button>
               <Button variant="outline" onClick={resetQrForm} size="sm" className="rounded-lg">
-                Batal
+                {t("settings.cancel")}
               </Button>
             </div>
           </div>
@@ -661,10 +664,10 @@ export default function SettingsPage() {
         {!showBankForm && !showQrForm && (
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setShowBankForm(true)} size="sm" className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Tambah Akaun Bank
+              <Plus className="h-3.5 w-3.5" /> {t("settings.payment.addBank")}
             </Button>
             <Button variant="outline" onClick={() => setShowQrForm(true)} size="sm" className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Tambah QR Payment
+              <Plus className="h-3.5 w-3.5" /> {t("settings.payment.addQr")}
             </Button>
           </div>
         )}
@@ -675,22 +678,22 @@ export default function SettingsPage() {
         id="terma-syarat"
         tutorialId="settings-terms"
         icon={<FileText className="h-5 w-5" />}
-        title="Terma & Syarat"
-        description="T&C untuk Sebut Harga, Invois dan Work Order"
+        title={t("settings.terms.title")}
+        description={t("settings.terms.description")}
       >
         <div className="flex gap-2 border-b border-border mb-2">
-          {TERMS_TABS.map((t) => (
+          {TERMS_TABS.map((tab) => (
             <button
-              key={t.key}
+              key={tab.key}
               type="button"
-              onClick={() => setTermsTab(t.key)}
+              onClick={() => setTermsTab(tab.key)}
               className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                termsTab === t.key
+                termsTab === tab.key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.label}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -698,9 +701,9 @@ export default function SettingsPage() {
         {termsTab === "quotation" && (
           <div className="space-y-3">
             <Textarea value={quotationTerms} onChange={(e) => setQuotationTerms(e.target.value)} rows={10} />
-            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Sebut Harga PDF</p>
+            <p className="text-xs text-muted-foreground">{t("settings.terms.quotationHint")}</p>
             <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-              {savingTerms ? "Menyimpan..." : "Simpan Terma Sebut Harga"}
+              {savingTerms ? t("settings.saving") : t("settings.terms.saveQuotation")}
             </Button>
           </div>
         )}
@@ -708,9 +711,9 @@ export default function SettingsPage() {
         {termsTab === "invoice" && (
           <div className="space-y-3">
             <Textarea value={invoiceTerms} onChange={(e) => setInvoiceTerms(e.target.value)} rows={10} />
-            <p className="text-xs text-muted-foreground">Terma ini dipaparkan dalam setiap Invois PDF</p>
+            <p className="text-xs text-muted-foreground">{t("settings.terms.invoiceHint")}</p>
             <Button onClick={handleSaveTerms} disabled={savingTerms} className="rounded-lg">
-              {savingTerms ? "Menyimpan..." : "Simpan Terma Invois"}
+              {savingTerms ? t("settings.saving") : t("settings.terms.saveInvoice")}
             </Button>
           </div>
         )}
@@ -723,8 +726,8 @@ export default function SettingsPage() {
         id="whatsapp-templates"
         tutorialId="settings-whatsapp"
         icon={<MessageCircle className="h-5 w-5" />}
-        title="Templet WhatsApp"
-        description="Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
+        title={t("settings.whatsappTemplates.title")}
+        description={t("settings.whatsappTemplates.description")}
       >
         <WhatsAppTemplatesSection />
       </SettingsAccordion>
@@ -733,8 +736,8 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="device-notifications"
         icon={<MessageCircle className="h-5 w-5" />}
-        title="Notifikasi Peranti"
-        description="Aktifkan notifikasi push pada telefon atau komputer anda"
+        title={t("settings.deviceNotifications.title")}
+        description={t("settings.deviceNotifications.description")}
       >
         <NotificationSettingsSection />
       </SettingsAccordion>
@@ -744,8 +747,8 @@ export default function SettingsPage() {
         id="nombor-dokumen"
         tutorialId="settings-docnum"
         icon={<Hash className="h-5 w-5" />}
-        title="Nombor Dokumen"
-        description="Format nombor auto untuk semua jenis dokumen"
+        title={t("settings.docNumbers.title")}
+        description={t("settings.docNumbers.description")}
       >
         <DocNumberSettings />
       </SettingsAccordion>
@@ -754,32 +757,35 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="langganan-pelan"
         icon={<CreditCard className="h-5 w-5" />}
-        title="Langganan & Pelan"
-        description="Pelan semasa dan pengurusan langganan"
+        title={t("settings.subscription.title")}
+        description={t("settings.subscription.description")}
       >
         {freeMonthsBalance > 0 && (
           <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-2">
             <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="text-sm text-foreground">
-              Anda ada <strong>{freeMonthsBalance} bulan percuma</strong> daripada program rujukan! Akan digunakan
-              semasa pembaharuan langganan.
+              <Trans
+                i18nKey="settings.subscription.freeMonthsBanner"
+                values={{ count: freeMonthsBalance }}
+                components={{ strong: <strong /> }}
+              />
             </p>
           </div>
         )}
 
         <div className="rounded-lg border border-border p-4 space-y-2">
-          <p className="text-sm text-muted-foreground mb-1">Pelan Semasa</p>
+          <p className="text-sm text-muted-foreground mb-1">{t("settings.subscription.currentPlan")}</p>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
               {planLabel}
             </span>
             <span className="text-base font-bold text-foreground">{planLabel}</span>
             {!isFree && !(profile as any)?.subscription_cancelled && (
-              <span className="text-xs text-emerald-600 font-medium">— Aktif ●</span>
+              <span className="text-xs text-emerald-600 font-medium">{t("settings.subscription.active")}</span>
             )}
             {!isFree && (profile as any)?.subscription_cancelled && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                Akan Tamat ⚠️
+                {t("settings.subscription.willEnd")}
               </span>
             )}
           </div>
@@ -788,20 +794,21 @@ export default function SettingsPage() {
               const dbPlan = getPlan(profile?.plan ?? "free");
               const isYearly = profile?.billing_period === "yearly";
               const price = dbPlan ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price) : 0;
-              const periodLabel = isFree ? "" : isYearly ? "/tahun" : "/bulan";
+              const periodLabel = isFree ? "" : isYearly ? t("settings.subscription.perYear") : t("settings.subscription.perMonth");
               return `RM${price.toFixed(2)}${periodLabel}`;
             })()}
             {isFree
-              ? " · Selamanya percuma"
-              : ` · ${profile?.billing_period === "yearly" ? "Tahunan" : "Bulanan"}`}
+              ? t("settings.subscription.forever")
+              : ` · ${profile?.billing_period === "yearly" ? t("settings.subscription.yearly") : t("settings.subscription.monthly")}`}
           </p>
           {!isFree && (profile as any)?.subscription_cancelled && profile?.subscription_end_date && (
             <p className="text-sm text-amber-700 mt-1">
-              Langganan dibatalkan. Masih aktif sehingga{" "}
-              {new Date(profile.subscription_end_date).toLocaleDateString("ms-MY", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
+              {t("settings.subscription.cancelledUntil", {
+                date: new Date(profile.subscription_end_date).toLocaleDateString(dateLocale, {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }),
               })}
             </p>
           )}
@@ -809,21 +816,23 @@ export default function SettingsPage() {
             <div className="space-y-1 mt-2">
               {profile?.subscription_start_date && (
                 <p className="text-sm text-muted-foreground">
-                  Tarikh Mula:{" "}
-                  {new Date(profile.subscription_start_date).toLocaleDateString("ms-MY", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
+                  {t("settings.subscription.startDate", {
+                    date: new Date(profile.subscription_start_date).toLocaleDateString(dateLocale, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }),
                   })}
                 </p>
               )}
               {profile?.subscription_end_date && (
                 <p className="text-sm text-muted-foreground">
-                  Tarikh Tamat:{" "}
-                  {new Date(profile.subscription_end_date).toLocaleDateString("ms-MY", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
+                  {t("settings.subscription.endDate", {
+                    date: new Date(profile.subscription_end_date).toLocaleDateString(dateLocale, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }),
                   })}
                 </p>
               )}
@@ -833,7 +842,7 @@ export default function SettingsPage() {
 
         {!isFree && (profile as any)?.subscription_cancelled ? (
           <Button onClick={() => setReactivateOpen(true)} className="w-full rounded-lg">
-            Aktifkan Semula Langganan
+            {t("settings.subscription.reactivate")}
           </Button>
         ) : !isFree ? (
           <div className="space-y-3">
@@ -846,7 +855,7 @@ export default function SettingsPage() {
               return (
                 <>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">Pilih tempoh pembaharuan</p>
+                    <p className="text-xs text-muted-foreground mb-1.5">{t("settings.subscription.choosePeriod")}</p>
                     <div className="flex rounded-lg border border-border overflow-hidden">
                       <button
                         type="button"
@@ -857,7 +866,7 @@ export default function SettingsPage() {
                             : "text-muted-foreground hover:bg-accent"
                         }`}
                       >
-                        Bulanan — RM{monthly.toFixed(2)}/bulan
+                        {t("settings.subscription.monthlyOption", { price: monthly.toFixed(2) })}
                       </button>
                       <button
                         type="button"
@@ -868,7 +877,7 @@ export default function SettingsPage() {
                             : "text-muted-foreground hover:bg-accent"
                         }`}
                       >
-                        Tahunan — RM{yearly.toFixed(2)}/tahun
+                        {t("settings.subscription.yearlyOption", { price: yearly.toFixed(2) })}
                         {discount > 0 && (
                           <span className="ml-1.5 text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">
                             -{discount}%
@@ -883,10 +892,11 @@ export default function SettingsPage() {
                     className="w-full rounded-lg"
                   >
                     {billPlzLoading
-                      ? "Memproses..."
-                      : `Perbaharui Langganan — RM${price.toFixed(2)}/${
-                          renewPeriod === "yearly" ? "tahun" : "bulan"
-                        }`}
+                      ? t("settings.subscription.processing")
+                      : t("settings.subscription.renew", {
+                          price: price.toFixed(2),
+                          period: renewPeriod === "yearly" ? t("settings.subscription.perYear").replace("/", "") : t("settings.subscription.perMonth").replace("/", ""),
+                        })}
                   </Button>
                 </>
               );
@@ -895,7 +905,7 @@ export default function SettingsPage() {
               onClick={() => setCancelOpen(true)}
               className="w-full text-center text-[13px] font-medium text-destructive hover:underline"
             >
-              Batalkan Langganan
+              {t("settings.subscription.cancelSub")}
             </button>
           </div>
         ) : null}
@@ -907,19 +917,17 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="integrasi-pautan"
         icon={<Link2 className="h-5 w-5" />}
-        title="Integrasi & Pautan"
-        description="Pautan pengesahan dan bukti pembayaran"
+        title={t("settings.integrations.title")}
+        description={t("settings.integrations.description")}
       >
         <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-2">
-          <p className="text-sm font-medium text-foreground">Pengesahan & Bukti Pembayaran Built-in</p>
+          <p className="text-sm font-medium text-foreground">{t("settings.integrations.heading")}</p>
           <p className="text-sm text-muted-foreground">
-            WorkTrace menjana pautan pengesahan automatik ketika anda menghantar Sebut Harga, Work Order, atau
-            Laporan kepada pelanggan. Untuk Invois, pautan bukti pembayaran (/bayar) dijana secara automatik —
-            pelanggan boleh muat naik resit terus tanpa perlu sebarang integrasi luaran.
+            {t("settings.integrations.body")}
           </p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Tiada konfigurasi diperlukan — semua pautan dijana automatik.
+          {t("settings.integrations.noConfig")}
         </p>
       </SettingsAccordion>
 
@@ -927,15 +935,15 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="rujukan"
         icon={<Gift className="h-5 w-5" />}
-        title="Rujukan"
-        description="Kod rujukan dan ganjaran bulan percuma"
+        title={t("settings.referral.title")}
+        description={t("settings.referral.description")}
       >
         {isFree ? (
           <div className="text-center py-8 space-y-3">
             <Gift className="h-10 w-10 text-muted-foreground/30 mx-auto" />
-            <p className="text-sm text-muted-foreground">Upgrade ke Pro untuk akses sistem referral</p>
+            <p className="text-sm text-muted-foreground">{t("settings.referral.upgradePrompt")}</p>
             <p className="text-xs text-muted-foreground">
-              Kongsi link anda dan dapatkan 1 bulan percuma setiap kali rakan anda melanggan!
+              {t("settings.referral.upgradeHint")}
             </p>
           </div>
         ) : (
@@ -945,14 +953,14 @@ export default function SettingsPage() {
               style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.5))" }}
             >
               <p className="text-sm text-foreground">
-                Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!
+                <Trans i18nKey="settings.referral.intro" components={{ strong: <strong /> }} />
               </p>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Link Rujukan Anda:</p>
+                <p className="text-xs text-muted-foreground mb-1">{t("settings.referral.yourLink")}</p>
                 <div className="flex items-center gap-2">
                   <Input value={referralUrl} readOnly className="text-xs bg-muted font-mono" />
                   <Button variant="outline" size="sm" onClick={copyReferralLink} className="shrink-0 rounded-lg gap-1">
-                    <Copy className="h-3.5 w-3.5" /> Salin
+                    <Copy className="h-3.5 w-3.5" /> {t("settings.referral.copy")}
                   </Button>
                 </div>
               </div>
@@ -963,20 +971,20 @@ export default function SettingsPage() {
                   className="rounded-lg gap-1.5 text-white"
                   style={{ backgroundColor: "#25D366" }}
                 >
-                  <MessageCircle className="h-3.5 w-3.5" /> Kongsi via WhatsApp
+                  <MessageCircle className="h-3.5 w-3.5" /> {t("settings.referral.shareWa")}
                 </Button>
                 <Button onClick={shareTelegram} size="sm" variant="outline" className="rounded-lg gap-1.5">
-                  <Send className="h-3.5 w-3.5" /> Telegram
+                  <Send className="h-3.5 w-3.5" /> {t("settings.referral.telegram")}
                 </Button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Jumlah Rujukan", value: profile?.referral_count || 0 },
-                { label: "Bulan Diperolehi", value: profile?.free_months_earned || 0 },
-                { label: "Bulan Digunakan", value: profile?.free_months_used || 0 },
-                { label: "Baki Tersedia", value: freeMonthsBalance },
+                { label: t("settings.referral.totalReferrals"), value: profile?.referral_count || 0 },
+                { label: t("settings.referral.monthsEarned"), value: profile?.free_months_earned || 0 },
+                { label: t("settings.referral.monthsUsed"), value: profile?.free_months_used || 0 },
+                { label: t("settings.referral.balance"), value: freeMonthsBalance },
               ].map((s) => (
                 <div key={s.label} className="border border-border rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold text-foreground">{s.value}</p>
@@ -991,10 +999,10 @@ export default function SettingsPage() {
                   <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      Anda ada {freeMonthsBalance} bulan percuma
+                      {t("settings.referral.youHave", { count: freeMonthsBalance })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Klik untuk lanjutkan tarikh tamat langganan anda sekarang.
+                      {t("settings.referral.applyNow")}
                     </p>
                   </div>
                 </div>
@@ -1004,23 +1012,23 @@ export default function SettingsPage() {
                   disabled={applyingFreeMonths || isFree}
                   className="rounded-lg shrink-0"
                 >
-                  {applyingFreeMonths ? "Memproses..." : `Guna ${freeMonthsBalance} Bulan Sekarang`}
+                  {applyingFreeMonths ? t("settings.referral.applying") : t("settings.referral.useNow", { count: freeMonthsBalance })}
                 </Button>
               </div>
             )}
             {freeMonthsBalance > 0 && isFree && (
               <p className="text-xs text-muted-foreground -mt-1">
-                Upgrade ke Pro untuk menggunakan bulan percuma anda.
+                {t("settings.referral.upgradeToUse")}
               </p>
             )}
 
             <div>
-              <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
+              <p className="text-sm font-medium text-foreground mb-2">{t("settings.referral.history")}</p>
               {referrals.length === 0 ? (
                 <div className="text-center py-6">
                   <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Belum ada rujukan</p>
-                  <p className="text-xs text-muted-foreground">Kongsi link untuk mula mendapat ganjaran!</p>
+                  <p className="text-sm text-muted-foreground">{t("settings.referral.noReferrals")}</p>
+                  <p className="text-xs text-muted-foreground">{t("settings.referral.shareToStart")}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1031,7 +1039,7 @@ export default function SettingsPage() {
                     >
                       <div>
                         <p className="text-sm text-foreground">
-                          {new Date(r.created_at).toLocaleDateString("ms-MY", {
+                          {new Date(r.created_at).toLocaleDateString(dateLocale, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
@@ -1044,11 +1052,11 @@ export default function SettingsPage() {
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {r.status === "rewarded" ? "✓ Ganjaran Diterima" : "Menunggu Langganan"}
+                          {r.status === "rewarded" ? t("settings.referral.rewarded") : t("settings.referral.pending")}
                         </span>
                       </div>
                       <span className="text-sm text-foreground">
-                        {r.status === "rewarded" ? `${r.months_awarded} Bulan Percuma ✓` : "—"}
+                        {r.status === "rewarded" ? t("settings.referral.monthsAwarded", { count: r.months_awarded }) : "—"}
                       </span>
                     </div>
                   ))}
@@ -1063,22 +1071,22 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="tutorial-bantuan"
         icon={<BookOpen className="h-5 w-5" />}
-        title="Bantuan"
-        description="Bantuan AI dan sokongan"
+        title={t("settings.help.title")}
+        description={t("settings.help.description")}
       >
         <div>
           <AiHelpButton />
         </div>
 
         <div className="border-t border-border pt-4 space-y-2">
-          <p className="text-sm text-muted-foreground">Perlukan bantuan manusia?</p>
+          <p className="text-sm text-muted-foreground">{t("settings.help.needHuman")}</p>
           <button
             onClick={() => navigate("/support/new")}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
           >
-            📧 Hantar Tiket Sokongan
+            {t("settings.help.sendTicket")}
           </button>
-          <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
+          <p className="text-xs text-muted-foreground">{t("settings.help.responseTime")}</p>
         </div>
       </SettingsAccordion>
 
@@ -1086,25 +1094,25 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="zon-bahaya"
         icon={<AlertTriangle className="h-5 w-5" />}
-        title="Zon Bahaya"
-        description="Padam akaun dan tindakan yang tidak boleh dibatalkan"
+        title={t("settings.danger.title")}
+        description={t("settings.danger.description")}
         danger
       >
         <div>
-          <label className="text-sm font-medium text-foreground mb-1 block">E-mel Akaun</label>
+          <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.danger.accountEmail")}</label>
           <p className="text-sm text-foreground">{user?.email}</p>
         </div>
         <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 space-y-1">
           <p className="text-[13px] text-destructive font-medium flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5" /> Tindakan Tidak Boleh Dibatalkan
+            <AlertTriangle className="h-3.5 w-3.5" /> {t("settings.danger.irreversible")}
           </p>
           <ul className="text-[13px] text-destructive list-disc list-inside space-y-0.5">
-            <li>Semua kerja dan rekod</li>
-            <li>Semua pelanggan</li>
-            <li>Semua sebut harga, work order dan invois</li>
-            <li>Semua fail dan dokumen</li>
-            <li>Profil dan akaun syarikat</li>
-            <li>Rekod rujukan</li>
+            <li>{t("settings.danger.items.jobs")}</li>
+            <li>{t("settings.danger.items.customers")}</li>
+            <li>{t("settings.danger.items.documents")}</li>
+            <li>{t("settings.danger.items.files")}</li>
+            <li>{t("settings.danger.items.profile")}</li>
+            <li>{t("settings.danger.items.referrals")}</li>
           </ul>
         </div>
         <Button
@@ -1112,7 +1120,7 @@ export default function SettingsPage() {
           className="text-destructive border-destructive hover:bg-destructive/5 rounded-lg"
           onClick={() => setDeleteOpen(true)}
         >
-          Padam Akaun
+          {t("settings.danger.deleteAccount")}
         </Button>
       </SettingsAccordion>
 
