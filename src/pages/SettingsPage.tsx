@@ -187,7 +187,7 @@ export default function SettingsPage() {
       ssm_number_old: ssmNumberOld || null,
     });
     setSavingProfile(false);
-    toast.success("Profil berjaya dikemaskini!");
+    toast.success(t("settings.profile.saved"));
   };
 
   const handleSaveLhdn = async () => {
