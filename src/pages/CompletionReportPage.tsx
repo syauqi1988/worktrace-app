@@ -85,7 +85,7 @@ export default function CompletionReportPage() {
     async function fetch() {
       const [jobRes, reportRes] = await Promise.all([
         supabase.from('jobs')
-          .select('id, job_number, title, category, customer_id, customers(name, phone, address)')
+          .select('id, job_number, title, category, customer_id, customers(name, phone, email, address)')
           .eq('id', jobId).single(),
         supabase.from('completion_reports')
           .select('*')
