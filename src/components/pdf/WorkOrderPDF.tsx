@@ -51,11 +51,6 @@ const extra = StyleSheet.create({
   scheduleCell: { width: '50%', marginBottom: 4 },
   scheduleLabel: { fontSize: 8, color: COLORS.MUTED },
   scheduleValue: { fontSize: 9, color: COLORS.BLACK, marginTop: 1 },
-  signatureRow: { flexDirection: 'row', gap: 24, marginTop: 30 },
-  signatureBox: { flex: 1 },
-  signatureLine: { borderTopWidth: 0.5, borderTopColor: COLORS.BLACK, paddingTop: 4 },
-  signatureLabel: { fontSize: 8, color: COLORS.MUTED, textAlign: 'center' },
-  signatureName: { fontSize: 9, color: COLORS.BLACK, marginTop: 2, textAlign: 'center' },
 });
 
 const DEFAULT_TERMS = `1. Kerja dilaksanakan mengikut spesifikasi dipersetujui.
