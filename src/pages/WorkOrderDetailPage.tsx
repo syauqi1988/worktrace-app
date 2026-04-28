@@ -46,8 +46,6 @@ export default function WorkOrderDetailPage() {
   const [job, setJob] = useState<any>(null);
   const [quotation, setQuotation] = useState<any>(null);
   const [report, setReport] = useState<any>(null);
-  const [rejectOpen, setRejectOpen] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
   const [acting, setActing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
