@@ -271,12 +271,15 @@ export default function CompletionReportPage() {
         toast.success('Laporan dihantar! Membuka WhatsApp...');
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
-          await shareReportViaWhatsApp(savedId);
+          await shareReportViaWhatsApp(savedId, waWindow);
+        } else if (waWindow) {
+          waWindow.close();
         }
       } else {
         toast.success('Draf laporan disimpan!');
       }
     } catch (err: any) {
+      if (waWindow && !waWindow.closed) waWindow.close();
       toast.error(err.message || 'Ralat menyimpan');
     } finally {
       setSaving(false);
