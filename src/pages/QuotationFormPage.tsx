@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ export default function QuotationFormPage() {
   const isEdit = !!id;
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
 
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -101,7 +103,7 @@ export default function QuotationFormPage() {
       if (data) {
         const q = data as any;
         if (q.status === 'Rejected') {
-          toast.error('Sebut harga yang ditolak tidak boleh diedit.');
+          toast.error(t('quotationForm.rejectedNoEdit'));
           navigate(`/quotations/${id}`, { replace: true });
           return;
         }
@@ -158,9 +160,9 @@ export default function QuotationFormPage() {
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
-    if (!selectedJob) newErrors.job = 'Sila pilih kerja';
-    if (!items.some(i => i.description.trim())) newErrors.items = 'Sila isi sekurang-kurangnya satu item';
-    if (items.some(i => i.unit_price < 0)) newErrors.items = 'Harga tidak boleh negatif';
+    if (!selectedJob) newErrors.job = t('quotationForm.errJob');
+    if (!items.some(i => i.description.trim())) newErrors.items = t('quotationForm.errItems');
+    if (items.some(i => i.unit_price < 0)) newErrors.items = t('quotationForm.errPriceNeg');
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
@@ -189,7 +191,7 @@ export default function QuotationFormPage() {
       if (isEdit) {
         const { error } = await supabase.from('quotations').update(payload).eq('id', id);
         if (error) throw error;
-        toast.success('Sebut harga berjaya dikemaskini!');
+        toast.success(t('quotationForm.savedEdit'));
         navigate(`/quotations/${id}`);
       } else {
         const { data, error } = await supabase.from('quotations').insert(payload).select('id').single();
@@ -199,14 +201,14 @@ export default function QuotationFormPage() {
         const trigger = status === 'Sent' ? 'quotation_sent' : 'quotation_created';
         const newJobStatus = await autoUpdateJobStatus(supabase, selectedJob!.id, user!.id, trigger);
         if (newJobStatus) {
-          toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
+          toast.info(t('quotationForm.autoStatus', { status: newJobStatus }));
         }
 
-        toast.success(status === 'Draft' ? 'Draf disimpan!' : 'Sebut harga dihantar! Membuka WhatsApp...');
+        toast.success(status === 'Draft' ? t('quotationForm.savedDraft') : t('quotationForm.savedSent'));
         navigate(`/quotations/${data.id}${status === 'Sent' ? '?share=1' : ''}`);
       }
     } catch (err: any) {
-      toast.error(err.message || 'Ralat menyimpan');
+      toast.error(err.message || t('forms.errorSaving'));
     } finally {
       setSubmitting(false);
     }
@@ -230,17 +232,17 @@ export default function QuotationFormPage() {
           <button onClick={() => navigate('/quotations')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-foreground">Sebut Harga Baru</h1>
+          <h1 className="text-xl font-bold text-foreground">{t('quotationForm.new')}</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-[#B45309]" />
-            <h2 className="text-base font-bold text-[#B45309]">Sebut harga sudah wujud</h2>
+            <h2 className="text-base font-bold text-[#B45309]">{t('quotationForm.alreadyExistsTitle')}</h2>
           </div>
-          <p className="text-sm text-[#B45309]">Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.</p>
+          <p className="text-sm text-[#B45309]">{t('quotationForm.alreadyExistsBody')}</p>
           <div className="flex gap-3 pt-2">
-            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">Lihat Sebut Harga</Button>
-            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
+            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">{t('quotationForm.viewQuotation')}</Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">{t('quotationForm.backToJob')}</Button>
           </div>
         </div>
       </div>
@@ -253,20 +255,20 @@ export default function QuotationFormPage() {
         <button onClick={() => navigate(isEdit ? `/quotations/${id}` : '/quotations')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Sebut Harga' : 'Sebut Harga Baru'}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isEdit ? t('quotationForm.edit') : t('quotationForm.new')}</h1>
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nombor Sebut Harga</Label>
+        <Label>{t('quotationForm.quoteNumber')}</Label>
         <Input value={quoteNumber} readOnly className="bg-muted" />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Kerja *</Label>
+        <Label>{t('quotationForm.jobLabel')}</Label>
         <div className="relative">
           <button type="button" onClick={() => setJobDropdownOpen(!jobDropdownOpen)}
             className={cn("w-full flex items-center h-10 rounded-md border bg-background px-3 text-sm text-left", errors.job ? 'border-destructive' : 'border-input')}>
-            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">Pilih kerja...</span>}
+            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">{t('forms.selectJob')}</span>}
           </button>
           {jobDropdownOpen && (
             <>
@@ -275,7 +277,7 @@ export default function QuotationFormPage() {
                 <div className="p-2 border-b border-border">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder="Cari kerja..." className="pl-8 h-8 text-sm" autoFocus />
+                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder={t('forms.searchJob')} className="pl-8 h-8 text-sm" autoFocus />
                   </div>
                 </div>
                 <div className="overflow-y-auto max-h-40">
@@ -285,7 +287,7 @@ export default function QuotationFormPage() {
                       if (!isEdit && user) {
                         const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
                         if (existing) {
-                          setJobWarning({ message: `Kerja ini sudah ada sebut harga.`, link: `/quotations/${existing.id}` });
+                          setJobWarning({ message: t('quotationForm.jobHasQuote'), link: `/quotations/${existing.id}` });
                           setSaveDisabled(true);
                         } else {
                           setJobWarning(null);
@@ -298,7 +300,7 @@ export default function QuotationFormPage() {
                       {j.customers?.name && <span className="block text-xs text-muted-foreground mt-0.5">{j.customers.name}</span>}
                     </button>
                   ))}
-                  {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">Tiada kerja dijumpai</p>}
+                  {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">{t('forms.noJobsFound')}</p>}
                 </div>
               </div>
             </>
@@ -310,7 +312,7 @@ export default function QuotationFormPage() {
             <AlertCircle className="h-4 w-4 text-[#B45309] shrink-0 mt-0.5" />
             <div className="text-sm text-[#B45309]">
               {jobWarning.message}{' '}
-              <Link to={jobWarning.link} className="underline font-medium hover:text-[#92400E]">Lihat sebut harga →</Link>
+              <Link to={jobWarning.link} className="underline font-medium hover:text-[#92400E]">{t('quotationForm.viewQuote')}</Link>
             </div>
           </div>
         )}
@@ -318,22 +320,22 @@ export default function QuotationFormPage() {
 
       {selectedJob?.customers && (
         <div className="bg-card rounded-xl border border-border p-3">
-          <p className="text-xs text-muted-foreground">Pelanggan</p>
+          <p className="text-xs text-muted-foreground">{t('forms.customer')}</p>
           <p className="text-sm font-medium text-foreground">{selectedJob.customers.name}</p>
           {selectedJob.customers.phone && <p className="text-xs text-muted-foreground">{selectedJob.customers.phone}</p>}
         </div>
       )}
 
       <div className="space-y-3">
-        <Label>Item Kerja *</Label>
+        <Label>{t('quotationForm.items')}</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
-            <span>Penerangan</span><span>Qty</span><span>Harga Seunit</span><span>Jumlah</span><span></span>
+            <span>{t('forms.itemDescription')}</span><span>{t('forms.itemQty')}</span><span>{t('forms.itemUnitPrice')}</span><span>{t('forms.itemTotal')}</span><span></span>
           </div>
           {items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 mb-2">
-              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="e.g. Pasang aircond 1.0HP" className="text-sm" />
+              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
               <Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" />
               <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" />
               <div className="flex items-center px-3 text-sm font-medium text-foreground bg-muted rounded-md">RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
@@ -360,10 +362,10 @@ export default function QuotationFormPage() {
       </div>
 
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
+        <div className="flex justify-between text-sm"><span className="text-muted-foreground">{t('forms.subtotal')}</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Diskaun</span>
+            <span className="text-sm text-muted-foreground">{t('forms.discount')}</span>
             <div className="flex bg-muted rounded-md overflow-hidden text-xs ml-auto">
               <button onClick={() => setDiscountMode('rm')} className={cn("px-2.5 py-1 font-medium", discountMode === 'rm' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>RM</button>
               <button onClick={() => setDiscountMode('pct')} className={cn("px-2.5 py-1 font-medium", discountMode === 'pct' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>%</button>
@@ -376,7 +378,7 @@ export default function QuotationFormPage() {
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">SST Dikenakan?</span>
+            <span className="text-sm text-muted-foreground">{t('forms.sstApply')}</span>
             <Switch checked={sstEnabled} onCheckedChange={setSstEnabled} />
           </div>
           {sstEnabled && (
@@ -390,38 +392,38 @@ export default function QuotationFormPage() {
           )}
         </div>
         <div className="border-t border-border pt-3 flex justify-between items-center">
-          <span className="text-base font-bold text-foreground">Jumlah Keseluruhan</span>
+          <span className="text-base font-bold text-foreground">{t('forms.grandTotal')}</span>
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label>Sah Hingga</Label>
+        <Label>{t('quotationForm.validUntil')}</Label>
         <Input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className="rounded-lg" />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nota</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Nota tambahan untuk pelanggan..." />
+        <Label>{t('forms.notes')}</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Terma & Syarat</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder="Terma & syarat sebut harga..." />
-        <p className="text-xs text-muted-foreground">Terma ini akan dipaparkan dalam PDF sebut harga</p>
+        <Label>{t('forms.termsConditions')}</Label>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={t('quotationForm.termsPlaceholder')} />
+        <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
       </div>
 
       {isEdit ? (
         <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-          {submitting ? 'Menyimpan...' : 'Kemaskini Sebut Harga'}
+          {submitting ? t('forms.saving') : t('quotationForm.saveEdit')}
         </Button>
       ) : (
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? 'Menyimpan...' : 'Simpan Draft'}
+            {submitting ? t('forms.saving') : t('quotationForm.saveDraft')}
           </Button>
           <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? 'Menghantar...' : 'Hantar Sebut Harga'}
+            {submitting ? t('forms.sending') : t('quotationForm.send')}
           </Button>
         </div>
       )}

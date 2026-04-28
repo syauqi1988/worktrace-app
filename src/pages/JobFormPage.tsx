@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +34,7 @@ export default function JobFormPage() {
   const isEdit = !!id;
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { checkJobLimit, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -41,7 +43,6 @@ export default function JobFormPage() {
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state
   const [customerId, setCustomerId] = useState<string>('');
   const [customerName, setCustomerName] = useState('');
   const [title, setTitle] = useState('');
@@ -52,7 +53,6 @@ export default function JobFormPage() {
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Fetch customers
   useEffect(() => {
     if (!user) return;
     supabase.from('customers').select('id, name, phone').order('name').then(({ data }) => {
@@ -68,7 +68,6 @@ export default function JobFormPage() {
     });
   }, [user, isEdit, preselectedCustomerId]);
 
-  // Fetch existing job for edit
   useEffect(() => {
     if (!isEdit || !user || !id) return;
     async function fetchJob() {
@@ -109,13 +108,12 @@ export default function JobFormPage() {
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (!customerId) newErrors.customer = 'Sila pilih pelanggan';
-    if (!title.trim()) newErrors.title = 'Sila masukkan tajuk kerja';
+    if (!customerId) newErrors.customer = t('jobForm.errCustomer');
+    if (!title.trim()) newErrors.title = t('jobForm.errTitle');
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
     }
-    // Plan gate: check job limit for new jobs
     if (!isEdit && user) {
       const allowed = await checkJobLimit(user.id);
       if (!allowed) return;
@@ -135,10 +133,9 @@ export default function JobFormPage() {
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
         }).eq('id', id);
         if (error) throw error;
-        toast({ title: 'Kerja berjaya dikemaskini!' });
+        toast({ title: t('jobForm.savedEdit') });
         navigate(`/jobs/${id}`);
       } else {
-        // Generate job number
         const { count } = await supabase.from('jobs').select('id', { count: 'exact', head: true });
         const jobNumber = `JOB-${String((count ?? 0) + 1).padStart(4, '0')}`;
 
@@ -154,11 +151,11 @@ export default function JobFormPage() {
           notes: notes.trim() || null,
         }).select('id').single();
         if (error) throw error;
-        toast({ title: 'Kerja berjaya disimpan!' });
+        toast({ title: t('jobForm.savedNew') });
         navigate(`/jobs/${data.id}`);
       }
     } catch (err: any) {
-      toast({ title: 'Ralat', description: err.message, variant: 'destructive' });
+      toast({ title: t('forms.errorLabel'), description: err.message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -177,17 +174,15 @@ export default function JobFormPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-xl pb-28 md:pb-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(isEdit ? `/jobs/${id}` : '/jobs')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Kerja' : 'Kerja Baru'}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isEdit ? t('jobForm.edit') : t('jobForm.new')}</h1>
       </div>
 
-      {/* Customer field */}
       <div className="space-y-1.5">
-        <Label>Pelanggan *</Label>
+        <Label>{t('jobForm.customerLabel')}</Label>
         <div className="relative">
           <button
             type="button"
@@ -197,7 +192,7 @@ export default function JobFormPage() {
               errors.customer ? 'border-destructive' : 'border-input'
             )}
           >
-            {customerName || <span className="text-muted-foreground">Pilih pelanggan...</span>}
+            {customerName || <span className="text-muted-foreground">{t('forms.selectCustomer')}</span>}
           </button>
           {customerDropdownOpen && (
             <>
@@ -209,7 +204,7 @@ export default function JobFormPage() {
                     <Input
                       value={customerSearch}
                       onChange={e => setCustomerSearch(e.target.value)}
-                      placeholder="Cari nama atau telefon..."
+                      placeholder={t('forms.searchCustomer')}
                       className="pl-8 h-8 text-sm"
                       autoFocus
                     />
@@ -224,14 +219,14 @@ export default function JobFormPage() {
                     </button>
                   ))}
                   {filteredCustomers.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-muted-foreground">Tiada pelanggan dijumpai</p>
+                    <p className="px-3 py-2 text-sm text-muted-foreground">{t('forms.noCustomersFound')}</p>
                   )}
                 </div>
                 <button
                   onClick={() => { setCustomerDropdownOpen(false); navigate('/customers/new'); }}
                   className="border-t border-border px-3 py-2.5 text-sm font-medium text-primary hover:bg-accent flex items-center gap-1.5"
                 >
-                  <Plus className="h-3.5 w-3.5" /> Tambah Pelanggan Baru
+                  <Plus className="h-3.5 w-3.5" /> {t('forms.addNewCustomer')}
                 </button>
               </div>
             </>
@@ -240,22 +235,20 @@ export default function JobFormPage() {
         {errors.customer && <p className="text-xs text-destructive">{errors.customer}</p>}
       </div>
 
-      {/* Title */}
       <div className="space-y-1.5">
-        <Label>Tajuk Kerja *</Label>
+        <Label>{t('jobForm.titleLabel')}</Label>
         <Input
           value={title}
           onChange={e => { setTitle(e.target.value); setErrors(prev => ({ ...prev, title: '' })); }}
-          placeholder="e.g. Servis aircond unit 1"
+          placeholder={t('jobForm.titlePlaceholder')}
           className={errors.title ? 'border-destructive' : ''}
         />
         {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
       </div>
 
-      {/* Category & Status */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label>Kategori</Label>
+          <Label>{t('jobForm.category')}</Label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -264,7 +257,7 @@ export default function JobFormPage() {
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Status</Label>
+          <Label>{t('jobForm.status')}</Label>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -274,14 +267,13 @@ export default function JobFormPage() {
         </div>
       </div>
 
-      {/* Scheduled Date */}
       <div className="space-y-1.5">
-        <Label>Tarikh Dijadualkan</Label>
+        <Label>{t('jobForm.scheduledDate')}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !scheduledDate && "text-muted-foreground")}>
               <CalendarDays className="mr-2 h-4 w-4" />
-              {scheduledDate ? format(scheduledDate, 'dd MMM yyyy') : 'Pilih tarikh...'}
+              {scheduledDate ? format(scheduledDate, 'dd MMM yyyy') : t('jobForm.selectDate')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -290,21 +282,18 @@ export default function JobFormPage() {
         </Popover>
       </div>
 
-      {/* Description */}
       <div className="space-y-1.5">
-        <Label>Penerangan</Label>
-        <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Huraikan skop kerja..." />
+        <Label>{t('jobForm.description')}</Label>
+        <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder={t('jobForm.descriptionPlaceholder')} />
       </div>
 
-      {/* Notes */}
       <div className="space-y-1.5">
-        <Label>Nota Dalaman</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Nota untuk rujukan dalaman..." />
+        <Label>{t('jobForm.internalNotes')}</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder={t('jobForm.internalNotesPlaceholder')} />
       </div>
 
-      {/* Submit */}
       <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
-        {submitting ? 'Menyimpan...' : isEdit ? 'Kemaskini Kerja' : 'Simpan Kerja'}
+        {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
       </Button>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
