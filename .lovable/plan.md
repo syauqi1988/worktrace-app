@@ -1,77 +1,103 @@
 ## Goal
 
-Redesign the Completion Report so it looks like the WorkTrace mockup — clean, professional, mobile-first — across the **PDF**, the **public approval page** (what the customer sees), and the **submitted view in-app**. Form (edit mode), data flow, WhatsApp share, approval workflow, status banners, and edit/delete buttons stay exactly as today.
+Build an in-app notification system with a bell icon dropdown in the header, plus device-level web push so users get notified about important events even when the app isn't open.
 
-Add a few high-value optional fields so the report feels more detailed without bloating the form.
+## Events that create a notification
 
-## New optional fields (added to `completion_reports`)
+1. **Customer approves a document** (Quotation / Invoice / Work Order / Completion Report) — via `customer_approvals.action = 'accepted'`
+2. **Customer rejects a document** — `customer_approvals.action = 'rejected'`
+3. **Customer submits payment proof** — `payment_proofs.submitted_at IS NOT NULL`
+4. **Admin replies to a support ticket** — new row in `ticket_replies` with `sender_type = 'admin'`
 
-| Field | Type | Purpose |
+## Database
+
+New table `notifications`:
+
+| column | type | notes |
 |---|---|---|
-| `location_label` | text | e.g. "Level 3 / Grid C5", site/area where the work was done |
-| `project_ref` | text | Project / contract reference (e.g. "MRC-2024-078") |
-| `checklist` | jsonb (array of `{ title, done, note? }`) | Free-form completion checklist, one item per line in the form, parsed into objects |
-| `engineer_notes` | text | Renamed display of existing `notes` as "Engineer's notes / Site remarks" — no schema change, just relabel |
-| `photo_captions` | jsonb (`{ before: string[], after: string[] }`) | Optional caption per photo, indexed to existing photo arrays |
+| id | uuid pk | |
+| user_id | uuid | owner who receives it |
+| type | text | `approval_accepted`, `approval_rejected`, `payment_proof`, `ticket_reply` |
+| title | text | short headline (Malay) |
+| body | text | one-line detail |
+| link | text | in-app route to open on click |
+| ref_id | uuid | source row id (approval/proof/ticket) |
+| read_at | timestamptz null | |
+| created_at | timestamptz default now() | |
 
-All optional. Existing reports continue to render fine (fall back to "—" / hidden sections).
+RLS: owner can SELECT/UPDATE own rows; INSERT allowed by service role / DB triggers.
 
-Migration adds the three new columns (`location_label`, `project_ref`, `checklist`, `photo_captions`) with safe defaults. No data backfill needed.
+New table `push_subscriptions`:
 
-## Visual design (applied consistently to PDF + public page + in-app submitted view)
+| column | type |
+|---|---|
+| id, user_id, endpoint (unique), p256dh, auth, user_agent, created_at |
 
-Inspired by the mockup:
+RLS: user manages own rows.
 
-- **Header bar**: company logo + name on the left, doc title "Laporan Siap Kerja" + report number on the right, status pill (Draf / Menunggu / Disahkan / Ditolak) with colored dot.
-- **Meta strip**: 4 cells in one row (Tarikh Siap, Kategori/Trade, Lokasi, Disediakan oleh) — collapses to 2 cols on mobile.
-- **Section headings**: small uppercase mono-style label + thin divider line + count chip (e.g. "4 gambar", "5 item").
-- **Photo cards**: rounded card with image (4:3), small "Sebelum"/"Selepas" tag overlay, caption text + timestamp (using upload time / `created_at`) and location chip if `location_label` set.
-- **Checklist items**: white card rows with green check (done) or amber dot (pending), title + note, right-aligned signer + time (uses technician name + `submitted_at`).
-- **Remarks / Engineer's notes**: bordered card.
-- **Sign-off row**: 2-card grid for now — "Disediakan oleh" (technician + completion_date) and "Disahkan oleh Pelanggan" (customer name from `customer_signature` + `accepted_at`, or "Menunggu pengesahan"). Mobile: stacks to 1 column.
-- **Footer**: report id + "Dijana oleh WorkTrace" + generation date.
-- **Palette**: WorkTrace orange `#E85C26`, dark `#1A1A1A`, surface `#F8F8F6`, line `#E5E5E5`, green `#2D7D46`, amber `#A0620D`, blue `#1B5FA8`. Mono accents (DM Mono available via Google Fonts on web; PDF uses Helvetica with letter-spacing).
+### DB triggers (auto-create notifications)
 
-### Mobile-first
+- `customer_approvals` AFTER UPDATE → when `action` changes from NULL to `accepted`/`rejected`, insert a `notifications` row for `user_id` and call edge function `send-push` via `pg_net`.
+- `payment_proofs` AFTER UPDATE → when `submitted_at` becomes non-null, same.
+- `ticket_replies` AFTER INSERT → when `sender_type = 'admin'`, look up `support_tickets.user_id`, insert notification + push.
 
-- All grids use `grid-cols-1` → `sm:grid-cols-2` → `md:grid-cols-4`.
-- Photo grid: `grid-cols-2` on mobile (matches mockup).
-- Header actions wrap below the title on small screens.
-- Sticky bottom bar already exists for form; submitted view actions stay inline and wrap.
+## Frontend
 
-## Files changed
+### Bell dropdown in `AppShell` header
+- New `<NotificationBell />` next to the support / help buttons.
+- Shows unread count badge (red dot with number).
+- Click → dropdown panel listing latest 20 notifications, newest first.
+- Each item: icon by type, title, body, relative time, click navigates to `link` and marks as read.
+- "Tandakan semua sebagai dibaca" action at top.
+- Realtime: subscribe to `notifications` inserts via Supabase Realtime so the bell updates live.
 
-1. **`supabase/migrations/<new>.sql`** — add columns:
-   - `location_label text`, `project_ref text`, `checklist jsonb default '[]'`, `photo_captions jsonb default '{"before":[],"after":[]}'`.
+### Push subscription flow
+- New hook `usePushNotifications()` registers a service worker (`/sw.js`) and asks for permission on first visit to Settings (or via a "Enable notifications" button in the new Settings tutorial).
+- On grant, call `pushManager.subscribe()` with VAPID public key, store in `push_subscriptions`.
+- Show toggle in Settings → "Notifikasi Peranti" so user can enable/disable.
 
-2. **`src/pages/CompletionReportPage.tsx`**
-   - Form: add optional inputs for Lokasi, Rujukan Projek, Checklist (textarea, one item per line; lines starting with `[ ]` = pending, `[x]` = done, plain text = done by default), and per-photo caption inputs under each thumbnail.
-   - Save / load these new fields.
-   - Replace the current submitted/read-only view with a new `<SubmittedReportView />` component styled per mockup. Edit / Padam / Pratonton PDF / Kongsi WhatsApp buttons unchanged in behavior.
-   - Status banners (waiting / accepted / rejected) stay above as today.
+### Service worker
+- `public/sw.js` — handles `push` event, shows native OS notification with title + body, click opens the link.
 
-3. **`src/components/pdf/CompletionReportPDF.tsx`** — full redesign of the layout per mockup:
-   - New header bar, meta strip, section headings with divider, photo cards w/ tag + caption, checklist rows, remarks card, 2-column sign-off, footer with report id.
-   - Accept new props: `location_label`, `project_ref`, `checklist`, `photo_captions`.
-   - Keep page size A4, footer "Jana oleh WorkTrace" + page numbers.
+## Edge function: `send-push`
 
-4. **`src/pages/public/PublicApprovalPage.tsx`** — for `document_type === 'completion_report'`, render the new mockup-styled report inline (reusing a shared `<CompletionReportView />` component) above the existing Terima / Tolak action card. Other doc types (quotation, work order) untouched.
+- Triggered by DB trigger via `pg_net` after a notification row is inserted (or called from a trigger function).
+- Reads all `push_subscriptions` for the recipient `user_id`.
+- Sends Web Push using VAPID keys (`web-push` Deno port).
+- Removes subscriptions that return 410/404 (expired).
 
-5. **`src/components/reports/CompletionReportView.tsx`** *(new)* — shared React component used by both `CompletionReportPage` (submitted view) and `PublicApprovalPage`, so the in-app and customer view stay identical and mobile-first. Pure presentational, takes the report + job + customer + company as props.
+### Required secrets (will be added)
+- `VAPID_PUBLIC_KEY`
+- `VAPID_PRIVATE_KEY`
+- `VAPID_SUBJECT` (e.g. `mailto:support@worktrace.app`)
 
-## Out of scope (unchanged)
+The user will be asked to confirm generation; we generate keys and store them as Supabase secrets. Public key is also exposed via a small public edge function or hard-coded in client config.
 
-- WhatsApp share message and flow.
-- Approval link generation, accept/reject logic, status transitions.
-- Auto-update of job status on submit.
-- Edit / Delete buttons and confirm dialog.
-- Other PDFs (Quotation, Invoice, Work Order, Receipt).
-- Quotation / Work Order / Invoice pages.
+## Files to create
 
-## Acceptance
+- `supabase/migrations/<ts>_notifications.sql` — tables, RLS, triggers, trigger functions
+- `supabase/functions/send-push/index.ts`
+- `src/components/NotificationBell.tsx`
+- `src/hooks/useNotifications.ts` (fetch + realtime + mark read)
+- `src/hooks/usePushNotifications.ts`
+- `src/components/settings/NotificationSettingsSection.tsx` (toggle in Settings accordion)
+- `public/sw.js`
 
-- New report (with no optional fields filled) renders cleanly — sections without data are hidden.
-- Existing reports load and render without errors after migration.
-- PDF, in-app submitted view, and public approval page all share the same look.
-- Submitted view and public page look good at 360px wide (mobile-first).
-- Hantar Laporan still opens WhatsApp to the customer's number with the existing pre-set message.
+## Files to edit
+
+- `src/components/AppShell.tsx` — mount `<NotificationBell />` in header
+- `src/components/settings/SettingsAccordion.tsx` — add Notifications section
+- `src/main.tsx` — register service worker (production only, guarded against iframe/preview per Lovable PWA rules)
+- `src/integrations/supabase/types.ts` — auto-regenerated after migration
+
+## Behavior summary
+
+- Customer accepts/rejects a quote → owner instantly sees red dot on bell + (if enabled) a system push notification on phone/desktop. Clicking opens that document.
+- Admin replies to ticket → same flow, opens that ticket.
+- All notifications persist; user can browse history in the dropdown.
+- Push works even when the app is closed (PWA installed) or the tab is in background (desktop) — standard Web Push behavior. iOS requires the app to be added to Home Screen first.
+
+## Out of scope
+
+- Email notifications (already handled separately for tickets).
+- Native iOS/Android app push (would require Capacitor — can be added later).
