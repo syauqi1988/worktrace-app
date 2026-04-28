@@ -5,10 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, CheckCircle, XCircle, Edit, Trash2, Eye, MessageCircle, Loader2,
+  ArrowLeft, Edit, Trash2, Eye, MessageCircle, Loader2,
   CalendarDays, MapPin, User as UserIcon, FileText, ClipboardCheck
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
