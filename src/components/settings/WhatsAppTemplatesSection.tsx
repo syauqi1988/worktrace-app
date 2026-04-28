@@ -59,6 +59,10 @@ export default function WhatsAppTemplatesSection() {
   }, [draft, meta, previewVars]);
 
   const handleSave = async () => {
+    if (isWorkOrderLocked) {
+      checkTeamFeature("Templet WhatsApp Work Order");
+      return;
+    }
     setSaving(true);
     const next: TemplatesState = { ...templates, [activeKey]: { ...draft } };
     await updateProfile({ whatsapp_templates: next as any });
@@ -67,8 +71,20 @@ export default function WhatsAppTemplatesSection() {
   };
 
   const handleReset = () => {
+    if (isWorkOrderLocked) {
+      checkTeamFeature("Templet WhatsApp Work Order");
+      return;
+    }
     setDraft({ ...meta.defaults });
     toast.info("Templet dikembalikan ke asal. Tekan Simpan untuk sahkan.");
+  };
+
+  const handleSelectTemplate = (key: TemplateKey) => {
+    if (key === "work_order" && !isTeam) {
+      checkTeamFeature("Templet WhatsApp Work Order");
+      return;
+    }
+    setActiveKey(key);
   };
 
   return (
