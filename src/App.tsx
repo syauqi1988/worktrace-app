@@ -31,6 +31,8 @@ import CompletionReportPage from "@/pages/CompletionReportPage";
 import WorkOrderFormPage from "@/pages/WorkOrderFormPage";
 import WorkOrderDetailPage from "@/pages/WorkOrderDetailPage";
 import WorkOrdersListPage from "@/pages/WorkOrdersListPage";
+import CompletionReportsListPage from "@/pages/CompletionReportsListPage";
+import TeamOnlyRoute from "@/components/TeamOnlyRoute";
 import GoodbyePage from "@/pages/GoodbyePage";
 import AccountDeletedPage from "@/pages/AccountDeletedPage";
 import SupportPage from "@/pages/SupportPage";
@@ -79,9 +81,10 @@ const App = () => (
               <Route path="jobs/:id" element={<JobDetailPage />} />
               <Route path="jobs/:id/edit" element={<JobFormPage />} />
               <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />
-              <Route path="jobs/:id/work-order" element={<WorkOrderDetailPage />} />
-              <Route path="jobs/:id/work-order/new" element={<WorkOrderFormPage />} />
-              <Route path="work-orders" element={<WorkOrdersListPage />} />
+              <Route path="jobs/:id/work-order" element={<TeamOnlyRoute><WorkOrderDetailPage /></TeamOnlyRoute>} />
+              <Route path="jobs/:id/work-order/new" element={<TeamOnlyRoute><WorkOrderFormPage /></TeamOnlyRoute>} />
+              <Route path="work-orders" element={<TeamOnlyRoute><WorkOrdersListPage /></TeamOnlyRoute>} />
+              <Route path="completion-reports" element={<CompletionReportsListPage />} />
               <Route path="customers" element={<CustomersListPage />} />
               <Route path="customers/new" element={<CustomerFormPage />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />

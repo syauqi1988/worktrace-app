@@ -530,8 +530,8 @@ Terima kasih!
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> Edit
             </Button>
-            <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
-              <Briefcase className="h-4 w-4" /> Buat Work Order
+            <Button onClick={() => navigate(`/jobs/${quotation.job_id}/completion-report`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
+              <Briefcase className="h-4 w-4" /> Isi Laporan Siap Kerja
             </Button>
           </>
         )}

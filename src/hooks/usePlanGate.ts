@@ -8,6 +8,8 @@ export function usePlanGate() {
   const [upgradeReason, setUpgradeReason] = useState('');
 
   const isFree = !profile || profile.plan === 'free';
+  const isPro = profile?.plan === 'pro';
+  const isTeam = profile?.plan === 'team';
 
   const checkJobLimit = async (userId: string): Promise<boolean> => {
     if (!isFree) return true;
@@ -45,16 +47,26 @@ export function usePlanGate() {
     return false;
   };
 
+  const checkTeamFeature = (featureName = 'Work Order'): boolean => {
+    if (isTeam) return true;
+    setUpgradeReason(`${featureName} hanya tersedia untuk pengguna pelan Team. Naik taraf untuk akses penuh.`);
+    setUpgradeOpen(true);
+    return false;
+  };
+
   const canShowLogo = !isFree;
 
   return {
     isFree,
+    isPro,
+    isTeam,
     upgradeOpen,
     setUpgradeOpen,
     upgradeReason,
     checkJobLimit,
     checkCustomerLimit,
     checkWhatsAppShare,
+    checkTeamFeature,
     canShowLogo,
   };
 }
