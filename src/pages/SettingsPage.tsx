@@ -512,18 +512,18 @@ export default function SettingsPage() {
         id="kaedah-pembayaran"
         tutorialId="settings-payment"
         icon={<Landmark className="h-5 w-5" />}
-        title="Kaedah Pembayaran"
-        description="Akaun bank dan QR bayaran untuk invois"
+        title={t("settings.payment.title")}
+        description={t("settings.payment.description")}
       >
-        <p className="text-sm text-muted-foreground">Maklumat ini akan dipaparkan dalam setiap invois anda</p>
+        <p className="text-sm text-muted-foreground">{t("settings.payment.willShow")}</p>
 
         {banks.map((b) => (
           <div key={b.id} className="border border-border rounded-lg p-4 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">🏦 Bank Transfer</span>
+              <span className="text-sm font-medium">{t("settings.payment.bankTransfer")}</span>
               {b.is_primary && (
                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                  Utama ✓
+                  {t("settings.payment.primary")}
                 </span>
               )}
             </div>
@@ -532,13 +532,13 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground font-mono">{b.account_number}</p>
             <div className="flex gap-2 pt-1">
               <button onClick={() => handleEditBank(b)} className="text-xs text-primary hover:underline">
-                Edit
+                {t("settings.edit")}
               </button>
               <button
                 onClick={() => handleDeletePayment(b.id)}
                 className="text-xs text-destructive hover:underline"
               >
-                Padam
+                {t("settings.delete")}
               </button>
             </div>
           </div>
@@ -556,13 +556,13 @@ export default function SettingsPage() {
             )}
             <div className="flex gap-2">
               <button onClick={() => handleEditQr(q)} className="text-xs text-primary hover:underline">
-                Edit
+                {t("settings.edit")}
               </button>
               <button
                 onClick={() => handleDeletePayment(q.id)}
                 className="text-xs text-destructive hover:underline"
               >
-                Padam
+                {t("settings.delete")}
               </button>
             </div>
           </div>
@@ -571,7 +571,7 @@ export default function SettingsPage() {
         {showBankForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nama Bank</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.bankName")}</label>
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
@@ -585,7 +585,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nama Akaun *</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.accountName")}</label>
               <Input
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
@@ -593,7 +593,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Nombor Akaun *</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.accountNumber")}</label>
               <Input
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
@@ -603,15 +603,15 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2">
               <Checkbox id="primary-bank" checked={isPrimary} onCheckedChange={(v) => setIsPrimary(!!v)} />
               <label htmlFor="primary-bank" className="text-sm cursor-pointer">
-                Tetapkan sebagai utama
+                {t("settings.payment.setPrimary")}
               </label>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSaveBank} disabled={savingPayment} size="sm" className="rounded-lg">
-                Simpan Akaun
+                {t("settings.payment.saveBank")}
               </Button>
               <Button variant="outline" onClick={resetBankForm} size="sm" className="rounded-lg">
-                Batal
+                {t("settings.cancel")}
               </Button>
             </div>
           </div>
@@ -620,7 +620,7 @@ export default function SettingsPage() {
         {showQrForm && (
           <div className="border border-primary/30 rounded-lg p-4 space-y-3 bg-primary/5">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Penyedia QR</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.qrProvider")}</label>
               <select
                 value={qrProvider}
                 onChange={(e) => setQrProvider(e.target.value)}
@@ -634,14 +634,14 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Muat Naik Imej QR</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.payment.uploadQr")}</label>
               <input
                 type="file"
                 accept="image/png,image/jpeg"
                 onChange={handleQrUpload}
                 disabled={uploadingQr}
               />
-              {uploadingQr && <p className="text-xs text-muted-foreground">Memuat naik...</p>}
+              {uploadingQr && <p className="text-xs text-muted-foreground">{t("settings.payment.uploading")}</p>}
               {qrImageUrl && (
                 <img
                   src={qrImageUrl}
@@ -652,10 +652,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSaveQr} disabled={savingPayment} size="sm" className="rounded-lg">
-                Simpan QR
+                {t("settings.payment.saveQr")}
               </Button>
               <Button variant="outline" onClick={resetQrForm} size="sm" className="rounded-lg">
-                Batal
+                {t("settings.cancel")}
               </Button>
             </div>
           </div>
@@ -664,10 +664,10 @@ export default function SettingsPage() {
         {!showBankForm && !showQrForm && (
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setShowBankForm(true)} size="sm" className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Tambah Akaun Bank
+              <Plus className="h-3.5 w-3.5" /> {t("settings.payment.addBank")}
             </Button>
             <Button variant="outline" onClick={() => setShowQrForm(true)} size="sm" className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Tambah QR Payment
+              <Plus className="h-3.5 w-3.5" /> {t("settings.payment.addQr")}
             </Button>
           </div>
         )}
