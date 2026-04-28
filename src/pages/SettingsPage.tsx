@@ -266,7 +266,7 @@ export default function SettingsPage() {
     }
     await savePaymentMethods(methods);
     resetBankForm();
-    toast.success("Akaun bank disimpan!");
+    toast.success(t("settings.payment.bankSaved"));
   };
 
   const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
