@@ -30,32 +30,38 @@ type NavItem = {
   teamOnly?: boolean;
 };
 
-const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Kerja', icon: Briefcase, tutorialId: 'jobs-nav' },
-  { to: '/customers', label: 'Pelanggan', icon: Users, tutorialId: 'customers-nav' },
-  { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
-  { to: '/work-orders', label: 'Work Order', icon: ClipboardList, teamOnly: true },
-  { to: '/completion-reports', label: 'Laporan Kerja', icon: ClipboardCheck },
-  { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
-  { to: '/receipts', label: 'Resit', icon: Receipt },
-  { to: '/reports', label: 'Laporan', icon: FileBarChart },
-  { to: '/support', label: 'Sokongan', icon: LifeBuoy },
-  { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
-];
+function buildNavItems(t: (k: string) => string): NavItem[] {
+  return [
+    { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/jobs', label: t('nav.jobs'), icon: Briefcase, tutorialId: 'jobs-nav' },
+    { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
+    { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
+    { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList, teamOnly: true },
+    { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
+    { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
+    { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
+    { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
+    { to: '/support', label: t('nav.support'), icon: LifeBuoy },
+    { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
+  ];
+}
 
-const BOTTOM_TABS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Kerja', icon: Briefcase },
-  { to: '/customers', label: 'Pelanggan', icon: Users },
-  { to: '/profile', label: 'Profil', icon: User },
-];
+function buildBottomTabs(t: (k: string) => string) {
+  return [
+    { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/jobs', label: t('nav.jobs'), icon: Briefcase },
+    { to: '/customers', label: t('nav.customers'), icon: Users },
+    { to: '/profile', label: t('nav.profile'), icon: User },
+  ];
+}
 
-const QUICK_ACTIONS = [
-  { label: 'Kerja Baru', to: '/jobs/new', icon: Briefcase },
-  { label: 'Pelanggan Baru', to: '/customers/new', icon: Users },
-  { label: 'Invois Baru', to: '/invoices/new', icon: Receipt },
-];
+function buildQuickActions(t: (k: string) => string) {
+  return [
+    { label: t('nav.newJob'), to: '/jobs/new', icon: Briefcase },
+    { label: t('nav.newCustomer'), to: '/customers/new', icon: Users },
+    { label: t('nav.newInvoice'), to: '/invoices/new', icon: Receipt },
+  ];
+}
 
 function isNavActive(pathname: string, to: string) {
   if (to === '/dashboard') return pathname === '/dashboard';
