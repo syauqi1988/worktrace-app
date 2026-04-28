@@ -377,19 +377,24 @@ export default function InvoiceDetailPage() {
     URL.revokeObjectURL(url);
   };
 
+  const shareReceiptWhatsAppCore = async (inv: Invoice, receiptData: any) => {
+    if (!user || !customerPhone) return;
+    const blob = await pdf(<ReceiptPDF {...receiptData} />).toBlob();
+    const fileName = `${user.id}/${inv.receipt_number}.pdf`;
+    await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+    const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+    const publicUrl = signed?.signedUrl ?? '';
+    const phone = formatPhone(customerPhone);
+    const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\nMuat turun resit 👉\n${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   const shareReceiptWhatsApp = async () => {
     if (!checkWhatsAppShare()) return;
     if (!receiptPdfData || !invoice || !user || !hasPhone) return;
     setIsSharingReceipt(true);
     try {
-      const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
-      const fileName = `${user.id}/${invoice.receipt_number}.pdf`;
-      await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const publicUrl = signed?.signedUrl ?? '';
-      const phone = formatPhone(customerPhone);
-      const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      await shareReceiptWhatsAppCore(invoice, receiptPdfData);
       toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
     } catch {
       toast.error('Gagal kongsi resit');
@@ -416,8 +421,8 @@ export default function InvoiceDetailPage() {
     ];
     if (proofUrl) {
       lines.push(
-        'Sila klik pautan di bawah untuk melihat invois dan menghantar bukti pembayaran:',
-        `🔗 ${proofUrl}`,
+        'Lihat invois & hantar bukti bayaran 👉',
+        proofUrl,
         '',
       );
     }
@@ -516,9 +521,46 @@ export default function InvoiceDetailPage() {
         receipt_number: receiptNumber,
       } as any).eq('id', invoice.id);
       if (error) throw error;
-      setInvoice({ ...invoice, status: 'Paid', paid_date: paidDate, receipt_number: receiptNumber });
+      const updatedInvoice = { ...invoice, status: 'Paid', paid_date: paidDate, receipt_number: receiptNumber };
+      setInvoice(updatedInvoice);
       setProof({ ...proof, status: 'verified', verified_at: new Date().toISOString() });
       toast.success('Bukti disahkan, invois ditandakan Dibayar!');
+
+      // Auto-redirect to WhatsApp with receipt share message
+      if (hasPhone && checkWhatsAppShare()) {
+        const updatedReceiptData = {
+          receipt: {
+            receipt_number: receiptNumber,
+            payment_date: paidDate,
+            amount_paid: updatedInvoice.total,
+          },
+          invoice: {
+            invoice_number: updatedInvoice.invoice_number,
+            issued_date: updatedInvoice.issued_date || null,
+            items: Array.isArray(updatedInvoice.items) ? (updatedInvoice.items as any) : [],
+            subtotal: updatedInvoice.subtotal,
+            discount: updatedInvoice.discount,
+            tax_rate: updatedInvoice.tax_rate,
+            total: updatedInvoice.total,
+          },
+          job: updatedInvoice.jobs ? { job_number: updatedInvoice.jobs.job_number, title: updatedInvoice.jobs.title } : null,
+          customer: customer ? { name: customer.name, phone: customer.phone, email: customer.email, address: customer.address } : null,
+          company: {
+            company_name: profile?.company_name || null,
+            phone: profile?.phone || null,
+            address: profile?.address || null,
+            logo_base64: canShowLogo ? logoBase64 : '',
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
+          },
+          paymentMethod: selectedPMs.length > 0 ? selectedPMs.map((pm: any) => pm.label || pm.type).join(', ') : undefined,
+        };
+        try {
+          await shareReceiptWhatsAppCore(updatedInvoice, updatedReceiptData);
+        } catch {
+          toast.error('Resit dijana tetapi gagal membuka WhatsApp');
+        }
+      }
     } catch (err: any) {
       toast.error(err.message || 'Gagal mengesahkan');
     } finally {
