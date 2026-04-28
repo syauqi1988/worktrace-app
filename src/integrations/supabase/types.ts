@@ -633,6 +633,7 @@ export type Database = {
           tutorial_seen_count: number | null
           tutorial_state: Json | null
           updated_at: string
+          whatsapp_templates: Json
           wo_terms: string | null
         }
         Insert: {
@@ -681,6 +682,7 @@ export type Database = {
           tutorial_seen_count?: number | null
           tutorial_state?: Json | null
           updated_at?: string
+          whatsapp_templates?: Json
           wo_terms?: string | null
         }
         Update: {
@@ -729,6 +731,7 @@ export type Database = {
           tutorial_seen_count?: number | null
           tutorial_state?: Json | null
           updated_at?: string
+          whatsapp_templates?: Json
           wo_terms?: string | null
         }
         Relationships: []
