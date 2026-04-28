@@ -189,7 +189,15 @@ export type Database = {
           user_id?: string
           work_description?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "completion_reports_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_approvals: {
         Row: {
@@ -1057,7 +1065,22 @@ export type Database = {
           user_id?: string
           wo_number?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
