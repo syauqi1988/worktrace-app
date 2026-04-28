@@ -747,8 +747,8 @@ export default function SettingsPage() {
         id="nombor-dokumen"
         tutorialId="settings-docnum"
         icon={<Hash className="h-5 w-5" />}
-        title="Nombor Dokumen"
-        description="Format nombor auto untuk semua jenis dokumen"
+        title={t("settings.docNumbers.title")}
+        description={t("settings.docNumbers.description")}
       >
         <DocNumberSettings />
       </SettingsAccordion>
