@@ -452,20 +452,20 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="lhdn-sst"
         icon={<Shield className="h-5 w-5" />}
-        title="LHDN & SST"
-        description="Maklumat cukai dan e-Invois LHDN MyInvois"
+        title={t("settings.lhdn.title")}
+        description={t("settings.lhdn.description")}
       >
         <div className="flex items-center justify-between py-2">
-          <span className="text-sm font-medium text-foreground">Aktifkan e-Invois LHDN</span>
+          <span className="text-sm font-medium text-foreground">{t("settings.lhdn.enable")}</span>
           <Switch checked={lhdnEnabled} onCheckedChange={setLhdnEnabled} />
         </div>
         {!lhdnEnabled && (
-          <p className="text-sm text-muted-foreground">Aktifkan untuk memaparkan medan LHDN pada invois anda</p>
+          <p className="text-sm text-muted-foreground">{t("settings.lhdn.enableHint")}</p>
         )}
         {lhdnEnabled && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">No. TIN Syarikat</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.lhdn.tin")}</label>
               <Input
                 value={tinNumber}
                 onChange={(e) => setTinNumber(e.target.value)}
@@ -474,7 +474,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Kod MSIC</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.lhdn.msic")}</label>
               <Input
                 value={msicCode}
                 onChange={(e) => setMsicCode(e.target.value)}
@@ -483,12 +483,12 @@ export default function SettingsPage() {
               />
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm font-medium text-foreground">SST Berdaftar</span>
+              <span className="text-sm font-medium text-foreground">{t("settings.lhdn.sstRegistered")}</span>
               <Switch checked={sstRegistered} onCheckedChange={setSstRegistered} />
             </div>
             {sstRegistered && (
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">No. SST</label>
+                <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.lhdn.sstNumber")}</label>
                 <Input
                   value={sstNumber}
                   onChange={(e) => setSstNumber(e.target.value)}
@@ -500,10 +500,10 @@ export default function SettingsPage() {
           </div>
         )}
         <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 text-sm text-primary">
-          Integrasi automatik dengan portal MyInvois LHDN akan datang tidak lama lagi.
+          {t("settings.lhdn.comingSoon")}
         </div>
         <Button onClick={handleSaveLhdn} disabled={savingLhdn} className="rounded-lg">
-          {savingLhdn ? "Menyimpan..." : "Simpan Tetapan LHDN"}
+          {savingLhdn ? t("settings.saving") : t("settings.lhdn.save")}
         </Button>
       </SettingsAccordion>
 
