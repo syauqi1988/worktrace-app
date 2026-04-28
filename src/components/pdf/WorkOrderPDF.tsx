@@ -216,21 +216,6 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
           })}
         </View>
 
-        {/* Acceptance signatures */}
-        <View style={extra.signatureRow}>
-          <View style={extra.signatureBox}>
-            <View style={extra.signatureLine}>
-              <Text style={extra.signatureLabel}>Tandatangan Syarikat</Text>
-              <Text style={extra.signatureName}>{company.company_name || ''}</Text>
-            </View>
-          </View>
-          <View style={extra.signatureBox}>
-            <View style={extra.signatureLine}>
-              <Text style={extra.signatureLabel}>Tandatangan Pelanggan</Text>
-              <Text style={extra.signatureName}>{customer?.name || ''}</Text>
-            </View>
-          </View>
-        </View>
 
         {/* Footer */}
         <View style={s.footer} fixed>
