@@ -220,8 +220,12 @@ export default function CompletionReportPage() {
 
       if (status === 'submitted') {
         payload.submitted_at = new Date().toISOString();
+        // Reset any prior rejection so it goes back into "waiting for customer"
+        payload.rejected_at = null;
+        payload.rejection_reason = null;
       }
 
+      let savedId = reportId;
       if (reportId) {
         const { error } = await supabase.from('completion_reports').update(payload).eq('id', reportId);
         if (error) throw error;
@@ -231,8 +235,10 @@ export default function CompletionReportPage() {
         payload.report_number = finalNumber;
         setReportNumber(finalNumber);
 
-        const { error } = await supabase.from('completion_reports').insert(payload);
+        const { data: inserted, error } = await supabase.from('completion_reports').insert(payload).select('id').single();
         if (error) throw error;
+        savedId = inserted?.id || null;
+        if (savedId) setReportId(savedId);
       }
 
       if (status === 'submitted') {
@@ -240,8 +246,11 @@ export default function CompletionReportPage() {
         await autoUpdateJobStatus(supabase as any, jobId!, user!.id, 'report_submitted', {
           completed_date: completionDate,
         });
-        toast.success('Laporan berjaya dihantar! Invois kini boleh dijana.');
-        navigate(`/jobs/${jobId}`);
+        // Stay on page so user can immediately share the approval link via WhatsApp
+        setReportStatus('submitted');
+        setRejectionReason(null);
+        setIsSubmitted(true);
+        toast.success('Laporan dihantar! Sila kongsi pautan pengesahan kepada pelanggan via WhatsApp.');
       } else {
         toast.success('Draf laporan disimpan!');
       }
