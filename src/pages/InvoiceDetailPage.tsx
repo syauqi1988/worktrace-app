@@ -398,13 +398,54 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const buildWhatsAppInvoiceMessage = (pdfUrl?: string) => {
-    const name = customer?.name || '';
+  // Unified invoice WhatsApp template — used for Hantar Invois, Kongsi via WhatsApp,
+  // Peringatan, dan Mohon Bukti Bayaran. Sentiasa sertakan link PDF + link upload bukti.
+  const buildWhatsAppInvoiceMessage = (pdfUrl?: string, proofUrl?: string, isReminder = false) => {
+    const name = customer?.name || 'Pelanggan';
     const companyName = profile?.company_name || '';
+    const intro = isReminder
+      ? `Assalamualaikum / Salam Sejahtera ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois berikut:`
+      : `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:`;
+    const lines = [
+      intro,
+      '',
+      `🧾 *No. Invois:* ${invoice!.invoice_number}`,
+      `💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}`,
+      `📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}`,
+      '',
+    ];
     if (pdfUrl) {
-      return `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat invois anda:\n🔗 ${pdfUrl}\n\nUntuk sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih! 😊\n*${companyName}*`;
+      lines.push('📄 *Lihat / Muat Turun Invois:*', pdfUrl, '');
     }
-    return `Assalamualaikum / Salam Sejahtera ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois yang belum dijelaskan.\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah Perlu Dibayar:* RM ${invoice!.total.toFixed(2)}\n📅 *Tarikh Bayaran Akhir:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila hubungi kami jika ada sebarang pertanyaan atau memerlukan tempoh bayaran lanjutan.\n\nTerima kasih atas kerjasama anda. 🙏\n*${companyName}*`;
+    if (proofUrl) {
+      lines.push('Setelah pembayaran dibuat, mohon hantar bukti pembayaran melalui pautan berikut:', `📤 ${proofUrl}`, '');
+    }
+    lines.push('Untuk sebarang pertanyaan, sila hubungi kami.', '', `Terima kasih! 😊\n*${companyName}*`);
+    return lines.join('\n');
+  };
+
+  // Generate (or reuse) the invoice PDF in storage and the proof-upload token.
+  // Returns both URLs so any WhatsApp action can include them.
+  const prepareInvoiceLinks = async (): Promise<{ pdfUrl: string; proofUrl: string }> => {
+    if (!invoice || !user || !pdfData) return { pdfUrl: '', proofUrl: '' };
+    const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+    const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
+    await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+    const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+    const pdfUrl = signed?.signedUrl ?? '';
+
+    const token = await getOrCreatePaymentProofToken({
+      userId: user.id,
+      invoiceId: invoice.id,
+      customerName: customer?.name || null,
+    });
+    const proofUrl = buildPublicPaymentProofUrl(token);
+
+    // Persist invoice PDF link on the proof so the public page can show it
+    await supabase.from('payment_proofs').update({ invoice_pdf_url: pdfUrl } as any).eq('token', token);
+    const { data: proofRow } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
+    if (proofRow) setProof(proofRow);
+    return { pdfUrl, proofUrl };
   };
 
   const shareViaWhatsApp = async () => {
