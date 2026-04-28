@@ -435,8 +435,14 @@ Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
 
 Terima kasih!
 *${companyName}*`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      if (waWindow && !waWindow.closed) {
+        waWindow.location.href = waUrl;
+      } else {
+        window.open(waUrl, '_blank');
+      }
     } catch (e: any) {
+      if (waWindow && !waWindow.closed) waWindow.close();
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
