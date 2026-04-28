@@ -805,7 +805,39 @@ export default function InvoiceDetailPage() {
         {invoice.status === 'Draft' && (
           <>
             <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> Edit</Button>
-            <Button onClick={() => updateStatus('Sent')} className="flex-1 rounded-lg">Hantar Invois</Button>
+            <Button
+              onClick={async () => {
+                if (!checkWhatsAppShare()) return;
+                if (!invoice || !pdfData || !user) return;
+                if (!hasPhone) {
+                  toast.error('Nombor telefon pelanggan tiada dalam rekod');
+                  return;
+                }
+                setIsSharing(true);
+                try {
+                  const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+                  const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
+                  await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+                  const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+                  await supabase.from('invoices').update({ status: 'Sent' }).eq('id', invoice.id);
+                  setInvoice({ ...invoice, status: 'Sent' });
+                  const phone = formatPhone(customerPhone!);
+                  const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
+                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                  toast.success('Invois dihantar! WhatsApp telah dibuka.');
+                } catch {
+                  toast.error('Gagal menghantar invois');
+                } finally {
+                  setIsSharing(false);
+                }
+              }}
+              disabled={isSharing}
+              className="flex-1 rounded-lg gap-2 text-white"
+              style={{ backgroundColor: '#25D366' }}
+            >
+              {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              Hantar Invois
+            </Button>
           </>
         )}
         {(invoice.status === 'Sent' || isOverdue) && (
