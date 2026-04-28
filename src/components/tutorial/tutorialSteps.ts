@@ -288,7 +288,7 @@ function buildQuotationsSteps(): DriveStep[] {
     {
       popover: {
         title: '✅ Aliran Sebut Harga',
-        description: 'Cipta → Hantar via WhatsApp → Pelanggan terima → Tukar ke Invois. Status kerja juga akan dikemaskini secara automatik.',
+        description: 'Cipta → Hantar via WhatsApp → Pelanggan terima → Hasilkan Work Order (Langkah 4) → Tukar ke Invois (Langkah 6). Status kerja akan dikemaskini secara automatik.',
       },
     },
   ];
