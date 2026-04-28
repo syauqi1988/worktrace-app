@@ -30,6 +30,12 @@ function formatDate(d: string | null) {
   return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function formatDateTime(d: string | null) {
+  if (!d) return '-';
+  const dt = new Date(d);
+  return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+}
+
 function formatPhone(phone: string): string {
   let cleaned = phone.replace(/\D/g, '');
   if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
