@@ -736,8 +736,8 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="device-notifications"
         icon={<MessageCircle className="h-5 w-5" />}
-        title="Notifikasi Peranti"
-        description="Aktifkan notifikasi push pada telefon atau komputer anda"
+        title={t("settings.deviceNotifications.title")}
+        description={t("settings.deviceNotifications.description")}
       >
         <NotificationSettingsSection />
       </SettingsAccordion>
