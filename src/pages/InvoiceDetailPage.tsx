@@ -398,13 +398,54 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const buildWhatsAppInvoiceMessage = (pdfUrl?: string) => {
-    const name = customer?.name || '';
+  // Unified invoice WhatsApp template — used for Hantar Invois, Kongsi via WhatsApp,
+  // Peringatan, dan Mohon Bukti Bayaran. Sentiasa sertakan link PDF + link upload bukti.
+  const buildWhatsAppInvoiceMessage = (pdfUrl?: string, proofUrl?: string, isReminder = false) => {
+    const name = customer?.name || 'Pelanggan';
     const companyName = profile?.company_name || '';
+    const intro = isReminder
+      ? `Assalamualaikum / Salam Sejahtera ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois berikut:`
+      : `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:`;
+    const lines = [
+      intro,
+      '',
+      `🧾 *No. Invois:* ${invoice!.invoice_number}`,
+      `💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}`,
+      `📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}`,
+      '',
+    ];
     if (pdfUrl) {
-      return `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat invois anda:\n🔗 ${pdfUrl}\n\nUntuk sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih! 😊\n*${companyName}*`;
+      lines.push('📄 *Lihat / Muat Turun Invois:*', pdfUrl, '');
     }
-    return `Assalamualaikum / Salam Sejahtera ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois yang belum dijelaskan.\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah Perlu Dibayar:* RM ${invoice!.total.toFixed(2)}\n📅 *Tarikh Bayaran Akhir:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila hubungi kami jika ada sebarang pertanyaan atau memerlukan tempoh bayaran lanjutan.\n\nTerima kasih atas kerjasama anda. 🙏\n*${companyName}*`;
+    if (proofUrl) {
+      lines.push('Setelah pembayaran dibuat, mohon hantar bukti pembayaran melalui pautan berikut:', `📤 ${proofUrl}`, '');
+    }
+    lines.push('Untuk sebarang pertanyaan, sila hubungi kami.', '', `Terima kasih! 😊\n*${companyName}*`);
+    return lines.join('\n');
+  };
+
+  // Generate (or reuse) the invoice PDF in storage and the proof-upload token.
+  // Returns both URLs so any WhatsApp action can include them.
+  const prepareInvoiceLinks = async (): Promise<{ pdfUrl: string; proofUrl: string }> => {
+    if (!invoice || !user || !pdfData) return { pdfUrl: '', proofUrl: '' };
+    const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+    const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
+    await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+    const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+    const pdfUrl = signed?.signedUrl ?? '';
+
+    const token = await getOrCreatePaymentProofToken({
+      userId: user.id,
+      invoiceId: invoice.id,
+      customerName: customer?.name || null,
+    });
+    const proofUrl = buildPublicPaymentProofUrl(token);
+
+    // Persist invoice PDF link on the proof so the public page can show it
+    await supabase.from('payment_proofs').update({ invoice_pdf_url: pdfUrl } as any).eq('token', token);
+    const { data: proofRow } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
+    if (proofRow) setProof(proofRow);
+    return { pdfUrl, proofUrl };
   };
 
   const shareViaWhatsApp = async () => {
@@ -412,12 +453,9 @@ export default function InvoiceDetailPage() {
     if (!invoice || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
-      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-      const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-      await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
-      const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
+      const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
     } catch {
@@ -427,12 +465,20 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const sendPaymentReminder = () => {
+  const sendPaymentReminder = async () => {
     if (!checkWhatsAppShare()) return;
-    if (!invoice || !hasPhone) return;
-    const phone = formatPhone(customerPhone);
-    const message = buildWhatsAppInvoiceMessage();
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    if (!invoice || !hasPhone || !pdfData || !user) return;
+    setIsSharing(true);
+    try {
+      const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
+      const phone = formatPhone(customerPhone);
+      const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl, true);
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    } catch {
+      toast.error('Gagal menjana peringatan');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const requestPaymentProof = async () => {
@@ -440,27 +486,10 @@ export default function InvoiceDetailPage() {
     if (!invoice || !user || !hasPhone || !pdfData) return;
     setRequestingProof(true);
     try {
-      // Generate / upload invoice PDF so the customer can preview / download it
-      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-      const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-      await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const pdfUrl = signed?.signedUrl ?? '';
-
-      const token = await getOrCreatePaymentProofToken({
-        userId: user.id,
-        invoiceId: invoice.id,
-        customerName: customer?.name || null,
-      });
-      const url = buildPublicPaymentProofUrl(token);
-      // Refresh proof state
-      const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
-      if (data) setProof(data);
+      const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
-      const name = customer?.name || '';
-      const companyName = profile?.company_name || '';
-      const msg = `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice.due_date ? formatDate(invoice.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat / muat turun invois anda:\n🔗 ${pdfUrl}\n\nSetelah pembayaran dibuat, mohon hantar bukti pembayaran melalui pautan berikut:\n📤 ${url}\n\nTerima kasih! 😊\n*${companyName}*`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('Pautan bukti bayaran dijana!');
     } catch (err: any) {
       toast.error(err.message || 'Gagal menjana pautan');
@@ -784,7 +813,27 @@ export default function InvoiceDetailPage() {
           </div>
           {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">Nota:</span> {proof.notes}</p>}
           {proof.receipt_url && (
-            <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-blue-700 underline">Lihat resit/bukti</a>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-blue-700">Bukti Dimuat Naik:</p>
+              {/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(proof.receipt_url) ? (
+                <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="block">
+                  <img
+                    src={proof.receipt_url}
+                    alt="Bukti pembayaran"
+                    className="max-h-64 w-auto rounded-lg border border-blue-200 bg-white object-contain"
+                  />
+                </a>
+              ) : (
+                <iframe
+                  src={proof.receipt_url}
+                  title="Bukti pembayaran"
+                  className="w-full h-64 rounded-lg border border-blue-200 bg-white"
+                />
+              )}
+              <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline">
+                <Eye className="h-3.5 w-3.5" /> Buka dalam tab baru
+              </a>
+            </div>
           )}
           <div className="flex gap-2">
             <Button onClick={verifyProofAndMarkPaid} disabled={verifyingProof} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 flex-1">
@@ -824,14 +873,11 @@ export default function InvoiceDetailPage() {
                 }
                 setIsSharing(true);
                 try {
-                  const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-                  const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-                  await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-                  const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+                  const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
                   await supabase.from('invoices').update({ status: 'Sent' }).eq('id', invoice.id);
                   setInvoice({ ...invoice, status: 'Sent' });
                   const phone = formatPhone(customerPhone!);
-                  const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
+                  const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
                   toast.success('Invois dihantar! WhatsApp telah dibuka.');
                 } catch {

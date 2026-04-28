@@ -1,0 +1,1 @@
+ALTER TABLE public.payment_proofs ADD COLUMN IF NOT EXISTS invoice_pdf_url text;

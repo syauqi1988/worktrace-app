@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, XCircle, Upload, Loader2, Receipt } from 'lucide-react';
+import { CheckCircle2, XCircle, Upload, Loader2, Receipt, FileText, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProofRow {
@@ -25,6 +25,7 @@ interface ProofRow {
   status: string;
   submitted_at: string | null;
   rejection_reason: string | null;
+  invoice_pdf_url: string | null;
 }
 
 export default function PublicPaymentProofPage() {
@@ -136,12 +137,15 @@ export default function PublicPaymentProofPage() {
         receipt_url: receiptUrl,
         notes: notes.trim() || null,
         submitted_at: new Date().toISOString(),
+        // If previously rejected, move back to pending so the owner can re-verify
+        status: 'pending',
+        rejection_reason: null,
       } as any)
       .eq('token', row.token);
     setSubmitting(false);
     if (error) { toast.error('Gagal menghantar'); return; }
     toast.success('Bukti pembayaran dihantar!');
-    setRow({ ...row, submitted_at: new Date().toISOString() });
+    setRow({ ...row, submitted_at: new Date().toISOString(), status: 'pending', rejection_reason: null });
   };
 
   if (loading) {
@@ -163,9 +167,12 @@ export default function PublicPaymentProofPage() {
     );
   }
 
-  const isSubmitted = !!row.submitted_at;
   const verified = row.status === 'verified';
   const rejected = row.status === 'rejected';
+  // Customer can edit when: never submitted, or rejected (resubmit allowed). Locked once verified or pending review.
+  const canEdit = !row.submitted_at || rejected;
+  const isLocked = !canEdit;
+  const isSubmitted = isLocked; // alias for legacy UI gating
   const paymentMethods: any[] = Array.isArray(company?.payment_methods) ? company.payment_methods : [];
 
   return (
@@ -190,6 +197,25 @@ export default function PublicPaymentProofPage() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Invois</p>
             <p className="text-lg font-bold">{invoice.invoice_number}</p>
             <p className="text-2xl font-bold text-primary mt-1">RM {Number(invoice.total || 0).toFixed(2)}</p>
+            {row.invoice_pdf_url && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href={row.invoice_pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/5"
+                >
+                  <Eye className="h-4 w-4" /> Lihat Invois
+                </a>
+                <a
+                  href={row.invoice_pdf_url}
+                  download
+                  className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-border text-foreground hover:bg-muted"
+                >
+                  <Download className="h-4 w-4" /> Muat Turun PDF
+                </a>
+              </div>
+            )}
           </div>
         )}
 
@@ -205,7 +231,8 @@ export default function PublicPaymentProofPage() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center text-red-800">
             <XCircle className="h-10 w-10 mx-auto mb-2" />
             <p className="font-bold">Bukti pembayaran ditolak</p>
-            {row.rejection_reason && <p className="text-sm mt-1">{row.rejection_reason}</p>}
+            {row.rejection_reason && <p className="text-sm mt-1">Sebab: {row.rejection_reason}</p>}
+            <p className="text-sm mt-2">Sila semak maklumat di bawah dan hantar semula bukti pembayaran.</p>
           </div>
         )}
         {isSubmitted && !verified && !rejected && (
@@ -231,7 +258,7 @@ export default function PublicPaymentProofPage() {
 
         {/* Form */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold">{isSubmitted ? 'Maklumat Bayaran Anda' : 'Hantar Bukti Pembayaran'}</p>
+          <p className="text-sm font-bold">{isLocked ? 'Maklumat Bayaran Anda' : (rejected ? 'Hantar Semula Bukti Pembayaran' : 'Hantar Bukti Pembayaran')}</p>
 
           <div>
             <Label>Nama Pembayar *</Label>
@@ -286,10 +313,10 @@ export default function PublicPaymentProofPage() {
             )}
           </div>
 
-          {!isSubmitted && (
+          {!isLocked && (
             <Button onClick={handleSubmit} disabled={submitting || !receiptUrl} className="w-full rounded-lg gap-2 h-12">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              {receiptUrl ? 'Hantar Bukti Pembayaran' : 'Muat naik resit dahulu'}
+              {receiptUrl ? (rejected ? 'Hantar Semula Bukti' : 'Hantar Bukti Pembayaran') : 'Muat naik resit dahulu'}
             </Button>
           )}
         </div>
