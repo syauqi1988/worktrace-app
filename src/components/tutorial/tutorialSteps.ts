@@ -207,8 +207,8 @@ function buildCustomersSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '👥 Modul Pelanggan',
-        description: 'Simpan semua maklumat pelanggan di sini sekali sahaja. Lepas itu, boleh guna semula untuk kerja, sebut harga dan invois.',
+        title: '👥 Modul Pelanggan (Langkah 1)',
+        description: 'Ini langkah PERTAMA dalam aliran kerja WorkTrace. Daftar pelanggan dahulu, kemudian baru boleh buka kerja, sebut harga, invois & resit untuk mereka.',
       },
     },
     {
