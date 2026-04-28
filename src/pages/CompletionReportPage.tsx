@@ -275,6 +275,10 @@ export default function CompletionReportPage() {
         before_photos: beforePhotos,
         after_photos: afterPhotos,
         notes: notes.trim() || null,
+        location_label: locationLabel.trim() || null,
+        project_ref: projectRef.trim() || null,
+        checklist: parseChecklist(checklistText),
+        photo_captions: { before: beforeCaptions, after: afterCaptions },
         status,
       };
 
