@@ -15,6 +15,7 @@ import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 
 interface JobRow {
   id: string;
