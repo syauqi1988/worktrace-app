@@ -137,12 +137,15 @@ export default function PublicPaymentProofPage() {
         receipt_url: receiptUrl,
         notes: notes.trim() || null,
         submitted_at: new Date().toISOString(),
+        // If previously rejected, move back to pending so the owner can re-verify
+        status: 'pending',
+        rejection_reason: null,
       } as any)
       .eq('token', row.token);
     setSubmitting(false);
     if (error) { toast.error('Gagal menghantar'); return; }
     toast.success('Bukti pembayaran dihantar!');
-    setRow({ ...row, submitted_at: new Date().toISOString() });
+    setRow({ ...row, submitted_at: new Date().toISOString(), status: 'pending', rejection_reason: null });
   };
 
   if (loading) {
