@@ -152,6 +152,8 @@ export default function SettingsPage() {
     }
   }, [profile]);
 
+  const [applyingFreeMonths, setApplyingFreeMonths] = useState(false);
+
   // Fetch referrals
   useEffect(() => {
     if (!user) return;
@@ -350,6 +352,26 @@ export default function SettingsPage() {
       `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(msg)}`,
       "_blank",
     );
+  };
+
+  const handleApplyFreeMonths = async () => {
+    if (freeMonthsBalance <= 0) return;
+    const ok = window.confirm(
+      `Guna ${freeMonthsBalance} bulan percuma sekarang? Tarikh tamat langganan anda akan dilanjutkan ${freeMonthsBalance} bulan.`,
+    );
+    if (!ok) return;
+    setApplyingFreeMonths(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("apply-free-months");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`${(data as any).monthsApplied} bulan percuma telah digunakan!`);
+      await refreshProfile();
+    } catch (e: any) {
+      toast.error(e?.message || "Gagal menggunakan bulan percuma");
+    } finally {
+      setApplyingFreeMonths(false);
+    }
   };
 
   const planLabel = profile?.plan === "pro" ? "Pro" : profile?.plan === "team" ? "Team" : "Free";
@@ -935,6 +957,35 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
+
+            {freeMonthsBalance > 0 && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-start gap-2">
+                  <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Anda ada {freeMonthsBalance} bulan percuma
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Klik untuk lanjutkan tarikh tamat langganan anda sekarang.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleApplyFreeMonths}
+                  disabled={applyingFreeMonths || isFree}
+                  className="rounded-lg shrink-0"
+                >
+                  {applyingFreeMonths ? "Memproses..." : `Guna ${freeMonthsBalance} Bulan Sekarang`}
+                </Button>
+              </div>
+            )}
+            {freeMonthsBalance > 0 && isFree && (
+              <p className="text-xs text-muted-foreground -mt-1">
+                Upgrade ke Pro untuk menggunakan bulan percuma anda.
+              </p>
+            )}
 
             <div>
               <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
