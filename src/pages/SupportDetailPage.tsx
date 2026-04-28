@@ -208,7 +208,7 @@ export default function SupportDetailPage() {
           <Textarea
             value={replyText}
             onChange={e => setReplyText(e.target.value)}
-            placeholder=tx("Tambah maklumat atau tanya soalan lanjut...")
+            placeholder={tx("Tambah maklumat atau tanya soalan lanjut...")}
             rows={3}
           />
           <Button onClick={handleReply} disabled={sending || !replyText.trim()} className="rounded-lg">

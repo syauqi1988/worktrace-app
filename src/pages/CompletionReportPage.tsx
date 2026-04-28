@@ -253,10 +253,10 @@ export default function CompletionReportPage() {
   const handleSave = async (status: 'draft' | 'submitted') => {
     if (status === 'submitted') {
       const newErrors: Record<string, string> = {};
-      if (!completionDate) newErrors.completionDate = tx('Sila pilih tarikh');
-      if (!technicianName.trim()) newErrors.technicianName = tx('Sila isi nama juruteknik');
-      if (!workDescription.trim()) newErrors.workDescription = tx('Sila isi penerangan kerja');
-      if (afterPhotos.length === 0) newErrors.photos = tx('Sila muat naik sekurang-kurangnya 1 gambar selepas');
+      if (!completionDate) newErrors.completionDate={tx('Sila pilih tarikh')};
+      if (!technicianName.trim()) newErrors.technicianName={tx('Sila isi nama juruteknik')};
+      if (!workDescription.trim()) newErrors.workDescription={tx('Sila isi penerangan kerja')};
+      if (afterPhotos.length === 0) newErrors.photos={tx('Sila muat naik sekurang-kurangnya 1 gambar selepas')};
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
@@ -621,7 +621,7 @@ export default function CompletionReportPage() {
           {/* Technician Name */}
           <div className="space-y-1.5">
             <Label>{tx('Nama Juruteknik *')}</Label>
-            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder=tx("Nama pekerja/juruteknik") />
+            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder={tx("Nama pekerja/juruteknik")} />
             {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
           </div>
 
@@ -640,7 +640,7 @@ export default function CompletionReportPage() {
           {/* Work Description */}
           <div className="space-y-1.5">
             <Label>{tx('Penerangan Kerja yang Dilaksanakan *')}</Label>
-            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder=tx("Huraikan kerja yang telah dilaksanakan secara terperinci...") />
+            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder={tx("Huraikan kerja yang telah dilaksanakan secara terperinci...")} />
             {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
           </div>
 
@@ -655,7 +655,7 @@ export default function CompletionReportPage() {
             kind="before"
             label="📷 Gambar Sebelum Kerja"
             badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
-            helper=tx("Gambar keadaan sebelum kerja bermula untuk perbandingan")
+            helper={tx("Gambar keadaan sebelum kerja bermula untuk perbandingan")}
             photos={beforePhotos}
             captions={beforeCaptions}
             uploading={uploadingPhoto}
@@ -670,7 +670,7 @@ export default function CompletionReportPage() {
             kind="after"
             label="📷 Gambar Selepas Kerja"
             badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
-            helper=tx("Gambar hasil akhir kerja yang telah disiapkan")
+            helper={tx("Gambar hasil akhir kerja yang telah disiapkan")}
             photos={afterPhotos}
             captions={afterCaptions}
             uploading={uploadingPhoto}
@@ -699,14 +699,14 @@ export default function CompletionReportPage() {
           {/* Customer Signature */}
           <div className="space-y-1.5">
             <Label>{tx('Pengesahan Pelanggan (opsional)')}</Label>
-            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder=tx("Nama pelanggan sebagai pengesahan") />
+            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder={tx("Nama pelanggan sebagai pengesahan")} />
             <p className="text-[11px] text-muted-foreground">{tx('Minta pelanggan taip nama sebagai tanda pengesahan kerja siap')}</p>
           </div>
 
           {/* Notes */}
           <div className="space-y-1.5">
             <Label>{tx('Nota Tambahan / Catatan Tapak')}</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder=tx("Sebarang catatan atau nota juruteknik...") />
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={tx("Sebarang catatan atau nota juruteknik...")} />
           </div>
         </>
       )}
@@ -763,8 +763,8 @@ export default function CompletionReportPage() {
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
-        title=tx("Padam Laporan Siap Kerja?")
-        body=tx("Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam.")
+        title={tx("Padam Laporan Siap Kerja?")}
+        body={tx("Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam.")}
         confirmLabel={deleting ? 'Memadam...' : tx('Padam')}
         confirmVariant="danger"
         isLoading={deleting}

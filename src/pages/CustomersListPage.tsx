@@ -119,7 +119,7 @@ export default function CustomersListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label=tx("pelanggan")
+          label={tx("pelanggan")}
         />
       )}
 
@@ -139,7 +139,7 @@ export default function CustomersListPage() {
 
       <div data-tutorial="customers-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder=tx("Cari nama atau nombor telefon...") className="pl-9 pr-9 rounded-lg" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={tx("Cari nama atau nombor telefon...")} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -258,9 +258,9 @@ export default function CustomersListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title=tx("Padam Pelanggan Terpilih?")
+        title={tx("Padam Pelanggan Terpilih?")}
         body={`Adakah anda pasti ingin padam ${bulk.selected.size} pelanggan? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel=tx("Padam")
+        confirmLabel={tx("Padam")}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

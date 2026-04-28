@@ -110,8 +110,8 @@ export default function JobFormPage() {
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    if (!customerId) newErrors.customer = tx('Sila pilih pelanggan');
-    if (!title.trim()) newErrors.title = tx('Sila masukkan tajuk kerja');
+    if (!customerId) newErrors.customer={tx('Sila pilih pelanggan')};
+    if (!title.trim()) newErrors.title={tx('Sila masukkan tajuk kerja')};
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
@@ -210,7 +210,7 @@ export default function JobFormPage() {
                     <Input
                       value={customerSearch}
                       onChange={e => setCustomerSearch(e.target.value)}
-                      placeholder=tx("Cari nama atau telefon...")
+                      placeholder={tx("Cari nama atau telefon...")}
                       className="pl-8 h-8 text-sm"
                       autoFocus
                     />
@@ -294,13 +294,13 @@ export default function JobFormPage() {
       {/* Description */}
       <div className="space-y-1.5">
         <Label>Penerangan</Label>
-        <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder=tx("Huraikan skop kerja...") />
+        <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder={tx("Huraikan skop kerja...")} />
       </div>
 
       {/* Notes */}
       <div className="space-y-1.5">
         <Label>{tx('Nota Dalaman')}</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder=tx("Nota untuk rujukan dalaman...") />
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder={tx("Nota untuk rujukan dalaman...")} />
       </div>
 
       {/* Submit */}

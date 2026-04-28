@@ -1139,7 +1139,7 @@ export default function InvoiceDetailPage() {
             <DialogTitle>Tolak Bukti Pembayaran</DialogTitle>
             <DialogDescription>{tx('Nyatakan sebab penolakan. Pelanggan perlu hantar semula.')}</DialogDescription>
           </DialogHeader>
-          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder=tx("Cth: Resit tidak jelas, jumlah salah...") />
+          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder={tx("Cth: Resit tidak jelas, jumlah salah...")} />
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setRejectProofOpen(false)}>{tx('Batal')}</Button>
             <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? 'Memproses...' : tx('Sahkan Tolak')}</Button>

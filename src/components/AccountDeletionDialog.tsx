@@ -281,7 +281,7 @@ Untuk batalkan secara manual, kemaskini account_deletion_requests.status = 'canc
             <div className="space-y-1.5">
               <p className="text-sm font-medium">Taip <strong>{tx('PADAM')}</strong> {tx('untuk mengesahkan:')}</p>
               <Input value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())}
-                placeholder=tx("Taip PADAM di sini")
+                placeholder={tx("Taip PADAM di sini")}
                 className={confirmText === tx('PADAM') ? 'border-green-500' : confirmText ? 'border-destructive' : ''} />
             </div>
 

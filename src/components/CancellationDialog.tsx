@@ -161,7 +161,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
               <Input
                 value={confirmText}
                 onChange={e => setConfirmText(e.target.value)}
-                placeholder=tx("Taip BATAL di sini")
+                placeholder={tx("Taip BATAL di sini")}
                 className={`h-11 rounded-lg ${confirmText === tx('BATAL') ? 'border-green-500 focus-visible:ring-green-500' : confirmText ? 'border-destructive' : ''}`}
               />
             </div>

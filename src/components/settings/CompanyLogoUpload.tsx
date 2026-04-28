@@ -84,7 +84,7 @@ export default function CompanyLogoUpload({ userId, logoUrl, onChange }: Props) 
           {preview ? (
             <img
               src={preview}
-              alt=tx("Logo Syarikat")
+              alt={tx("Logo Syarikat")}
               className="w-full h-full object-contain p-2"
             />
           ) : (

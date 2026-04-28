@@ -393,7 +393,7 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 2: Jobs */}
-          <Section title=tx("Ringkasan Kerja") icon="📋">
+          <Section title={tx("Ringkasan Kerja")} icon="📋">
             <StatGrid items={[
               { label: tx('Jumlah Kerja Baru'), value: data.jobsTotal },
               { label: tx('Kerja Selesai'), value: data.jobsCompleted },
@@ -437,7 +437,7 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 3: Customers */}
-          <Section title=tx("Ringkasan Pelanggan") icon="👥">
+          <Section title={tx("Ringkasan Pelanggan")} icon="👥">
             <StatGrid items={[
               { label: tx('Pelanggan Baru'), value: data.newCustomers },
               { label: tx('Pelanggan Aktif'), value: data.activeCustomers },
@@ -475,11 +475,11 @@ export default function ReportsPage() {
           {/* Section 4: Documents */}
           <Section title="Ringkasan Dokumen" icon="📄">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <StatBox label=tx("Sebut Harga Dihantar") value={data.quotesSent} />
-              <StatBox label=tx("Sebut Harga Diterima") value={data.quotesAccepted} />
+              <StatBox label={tx("Sebut Harga Dihantar")} value={data.quotesSent} />
+              <StatBox label={tx("Sebut Harga Diterima")} value={data.quotesAccepted} />
               <StatBox label="Work Order Diterima" value={data.workOrdersAccepted} />
-              <StatBox label=tx("Laporan Dihantar") value={data.reportsSent} />
-              <StatBox label=tx("Resit Dijana") value={data.receiptsGenerated} />
+              <StatBox label={tx("Laporan Dihantar")} value={data.reportsSent} />
+              <StatBox label={tx("Resit Dijana")} value={data.receiptsGenerated} />
             </div>
 
             {/* Conversion funnel */}

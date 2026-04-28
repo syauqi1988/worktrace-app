@@ -159,9 +159,9 @@ export default function QuotationFormPage() {
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
-    if (!selectedJob) newErrors.job = tx('Sila pilih kerja');
-    if (!items.some(i => i.description.trim())) newErrors.items = tx('Sila isi sekurang-kurangnya satu item');
-    if (items.some(i => i.unit_price < 0)) newErrors.items = tx('Harga tidak boleh negatif');
+    if (!selectedJob) newErrors.job={tx('Sila pilih kerja')};
+    if (!items.some(i => i.description.trim())) newErrors.items={tx('Sila isi sekurang-kurangnya satu item')};
+    if (items.some(i => i.unit_price < 0)) newErrors.items={tx('Harga tidak boleh negatif')};
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
@@ -276,7 +276,7 @@ export default function QuotationFormPage() {
                 <div className="p-2 border-b border-border">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder=tx("Cari kerja...") className="pl-8 h-8 text-sm" autoFocus />
+                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder={tx("Cari kerja...")} className="pl-8 h-8 text-sm" autoFocus />
                   </div>
                 </div>
                 <div className="overflow-y-auto max-h-40">
@@ -403,12 +403,12 @@ export default function QuotationFormPage() {
 
       <div className="space-y-1.5">
         <Label>{tx('Nota')}</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder=tx("Nota tambahan untuk pelanggan...") />
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={tx("Nota tambahan untuk pelanggan...")} />
       </div>
 
       <div className="space-y-1.5">
         <Label>Terma & Syarat</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder=tx("Terma & syarat sebut harga...") />
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={tx("Terma & syarat sebut harga...")} />
         <p className="text-xs text-muted-foreground">{tx('Terma ini akan dipaparkan dalam PDF sebut harga')}</p>
       </div>
 

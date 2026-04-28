@@ -125,7 +125,7 @@ export default function JobsListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label=tx("kerja")
+          label={tx("kerja")}
         />
       )}
 
@@ -150,7 +150,7 @@ export default function JobsListPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder=tx("Cari kerja, nombor, atau pelanggan...")
+          placeholder={tx("Cari kerja, nombor, atau pelanggan...")}
           className="pl-9 pr-9 rounded-lg"
         />
         {search && (
@@ -265,9 +265,9 @@ export default function JobsListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title=tx("Padam Kerja Terpilih?")
+        title={tx("Padam Kerja Terpilih?")}
         body={`Adakah anda pasti ingin padam ${bulk.selected.size} kerja? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel=tx("Padam")
+        confirmLabel={tx("Padam")}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

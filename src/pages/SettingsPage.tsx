@@ -391,8 +391,8 @@ export default function SettingsPage() {
         id="profil-syarikat"
         tutorialId="settings-profile"
         icon={<Building2 className="h-5 w-5" />}
-        title=tx("Profil Syarikat")
-        description=tx("Nama syarikat, telefon, alamat dan logo")
+        title={tx("Profil Syarikat")}
+        description={tx("Nama syarikat, telefon, alamat dan logo")}
         defaultOpen
       >
         {user && (
@@ -451,7 +451,7 @@ export default function SettingsPage() {
         id="lhdn-sst"
         icon={<Shield className="h-5 w-5" />}
         title="LHDN & SST"
-        description=tx("Maklumat cukai dan e-Invois LHDN MyInvois")
+        description={tx("Maklumat cukai dan e-Invois LHDN MyInvois")}
       >
         <div className="flex items-center justify-between py-2">
           <span className="text-sm font-medium text-foreground">{tx('Aktifkan e-Invois LHDN')}</span>
@@ -511,7 +511,7 @@ export default function SettingsPage() {
         tutorialId="settings-payment"
         icon={<Landmark className="h-5 w-5" />}
         title="Kaedah Pembayaran"
-        description=tx("Akaun bank dan QR bayaran untuk invois")
+        description={tx("Akaun bank dan QR bayaran untuk invois")}
       >
         <p className="text-sm text-muted-foreground">{tx('Maklumat ini akan dipaparkan dalam setiap invois anda')}</p>
 
@@ -677,7 +677,7 @@ export default function SettingsPage() {
         tutorialId="settings-terms"
         icon={<FileText className="h-5 w-5" />}
         title="Terma & Syarat"
-        description=tx("T&C untuk Sebut Harga, Invois dan Work Order")
+        description={tx("T&C untuk Sebut Harga, Invois dan Work Order")}
       >
         <div className="flex gap-2 border-b border-border mb-2">
           {TERMS_TABS.map((t) => (
@@ -725,7 +725,7 @@ export default function SettingsPage() {
         tutorialId="settings-whatsapp"
         icon={<MessageCircle className="h-5 w-5" />}
         title="Templet WhatsApp"
-        description=tx("Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp")
+        description={tx("Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp")}
       >
         <WhatsAppTemplatesSection />
       </SettingsAccordion>
@@ -735,7 +735,7 @@ export default function SettingsPage() {
         id="device-notifications"
         icon={<MessageCircle className="h-5 w-5" />}
         title="Notifikasi Peranti"
-        description=tx("Aktifkan notifikasi push pada telefon atau komputer anda")
+        description={tx("Aktifkan notifikasi push pada telefon atau komputer anda")}
       >
         <NotificationSettingsSection />
       </SettingsAccordion>
@@ -746,7 +746,7 @@ export default function SettingsPage() {
         tutorialId="settings-docnum"
         icon={<Hash className="h-5 w-5" />}
         title="Nombor Dokumen"
-        description=tx("Format nombor auto untuk semua jenis dokumen")
+        description={tx("Format nombor auto untuk semua jenis dokumen")}
       >
         <DocNumberSettings />
       </SettingsAccordion>
@@ -929,7 +929,7 @@ export default function SettingsPage() {
         id="rujukan"
         icon={<Gift className="h-5 w-5" />}
         title="Rujukan"
-        description=tx("Kod rujukan dan ganjaran bulan percuma")
+        description={tx("Kod rujukan dan ganjaran bulan percuma")}
       >
         {isFree ? (
           <div className="text-center py-8 space-y-3">
@@ -1065,7 +1065,7 @@ export default function SettingsPage() {
         id="tutorial-bantuan"
         icon={<BookOpen className="h-5 w-5" />}
         title="Bantuan"
-        description=tx("Bantuan AI dan sokongan")
+        description={tx("Bantuan AI dan sokongan")}
       >
         <div>
           <AiHelpButton />
@@ -1088,7 +1088,7 @@ export default function SettingsPage() {
         id="zon-bahaya"
         icon={<AlertTriangle className="h-5 w-5" />}
         title="Zon Bahaya"
-        description=tx("Padam akaun dan tindakan yang tidak boleh dibatalkan")
+        description={tx("Padam akaun dan tindakan yang tidak boleh dibatalkan")}
         danger
       >
         <div>

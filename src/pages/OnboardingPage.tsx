@@ -121,7 +121,7 @@ export default function OnboardingPage() {
                   <textarea
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    placeholder=tx("Alamat syarikat (pilihan)")
+                    placeholder={tx("Alamat syarikat (pilihan)")}
                     className="w-full min-h-[80px] px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
                 {sstRegistered && (
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">No. SST</label>
-                    <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} placeholder=tx("No. pendaftaran SST") className="h-11 rounded-lg" />
+                    <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} placeholder={tx("No. pendaftaran SST")} className="h-11 rounded-lg" />
                   </div>
                 )}
               </div>

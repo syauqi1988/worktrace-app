@@ -181,7 +181,7 @@ export default function SupportNewPage() {
           <Input
             value={subject}
             onChange={(e) => setSubject(e.target.value.slice(0, 100))}
-            placeholder=tx("Ringkasan masalah anda...")
+            placeholder={tx("Ringkasan masalah anda...")}
             className="h-11 rounded-lg"
           />
           <p className="text-xs text-muted-foreground mt-1">{subject.length}/100</p>

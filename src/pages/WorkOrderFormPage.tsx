@@ -216,8 +216,8 @@ export default function WorkOrderFormPage() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!title.trim()) e.title = tx('Tajuk diperlukan');
-    if (!scope.trim()) e.scope = tx('Skop kerja diperlukan');
+    if (!title.trim()) e.title={tx('Tajuk diperlukan')};
+    if (!scope.trim()) e.scope={tx('Skop kerja diperlukan')};
     return e;
   };
 
@@ -396,7 +396,7 @@ export default function WorkOrderFormPage() {
       <div className="space-y-1.5">
         <Label>{tx('Skop Kerja *')}</Label>
         <Textarea rows={6} value={scope} onChange={e => { setScope(e.target.value); setErrors(p => ({ ...p, scope: '' })); }}
-          placeholder=tx("Huraikan skop kerja secara terperinci...") />
+          placeholder={tx("Huraikan skop kerja secara terperinci...")} />
         {errors.scope && <p className="text-xs text-destructive">{errors.scope}</p>}
       </div>
 
@@ -413,7 +413,7 @@ export default function WorkOrderFormPage() {
 
       <div className="space-y-1.5">
         <Label>Tempoh Anggaran</Label>
-        <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder=tx("e.g. 2 hari, 1 minggu") />
+        <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder={tx("e.g. 2 hari, 1 minggu")} />
       </div>
 
       <div className="space-y-1.5">

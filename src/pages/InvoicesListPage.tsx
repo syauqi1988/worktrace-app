@@ -113,7 +113,7 @@ export default function InvoicesListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label=tx("invois")
+          label={tx("invois")}
         />
       )}
 
@@ -133,7 +133,7 @@ export default function InvoicesListPage() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder=tx("Cari nombor atau pelanggan...") className="pl-9 pr-9 rounded-lg" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={tx("Cari nombor atau pelanggan...")} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -248,9 +248,9 @@ export default function InvoicesListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title=tx("Padam Invois Terpilih?")
+        title={tx("Padam Invois Terpilih?")}
         body={`Adakah anda pasti ingin padam ${bulk.selected.size} invois? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel=tx("Padam")
+        confirmLabel={tx("Padam")}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

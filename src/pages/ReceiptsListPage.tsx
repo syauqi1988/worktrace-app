@@ -79,7 +79,7 @@ export default function ReceiptsListPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder=tx("Cari nombor resit, invois, atau pelanggan...")
+          placeholder={tx("Cari nombor resit, invois, atau pelanggan...")}
           className="pl-9 pr-9 rounded-lg"
         />
         {search && (
