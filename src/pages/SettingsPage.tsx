@@ -273,7 +273,7 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Saiz fail melebihi 2MB");
+      toast.error(t("settings.payment.fileTooLarge"));
       return;
     }
     setUploadingQr(true);
