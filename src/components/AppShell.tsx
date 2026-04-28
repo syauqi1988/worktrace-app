@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy, ClipboardList, FileBarChart
+  Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -19,16 +19,25 @@ import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
 import { useTutorial } from '@/hooks/useTutorial';
 
-const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, tutorialId: undefined as string | undefined },
+type NavItem = {
+  to: string;
+  label: string;
+  icon: any;
+  tutorialId?: string;
+  teamOnly?: boolean;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/jobs', label: 'Kerja', icon: Briefcase, tutorialId: 'jobs-nav' },
   { to: '/customers', label: 'Pelanggan', icon: Users, tutorialId: 'customers-nav' },
   { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
-  { to: '/work-orders', label: 'Work Order', icon: ClipboardList, tutorialId: undefined },
+  { to: '/work-orders', label: 'Work Order', icon: ClipboardList, teamOnly: true },
+  { to: '/completion-reports', label: 'Laporan Kerja', icon: ClipboardCheck },
   { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
-  { to: '/receipts', label: 'Resit', icon: Receipt, tutorialId: undefined },
-  { to: '/reports', label: 'Laporan', icon: FileBarChart, tutorialId: undefined },
-  { to: '/support', label: 'Sokongan', icon: LifeBuoy, tutorialId: undefined },
+  { to: '/receipts', label: 'Resit', icon: Receipt },
+  { to: '/reports', label: 'Laporan', icon: FileBarChart },
+  { to: '/support', label: 'Sokongan', icon: LifeBuoy },
   { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
 ];
 
