@@ -987,6 +987,8 @@ export default function SettingsPage() {
               </p>
             )}
 
+            <div>
+              <p className="text-sm font-medium text-foreground mb-2">Sejarah Rujukan</p>
               {referrals.length === 0 ? (
                 <div className="text-center py-6">
                   <Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
