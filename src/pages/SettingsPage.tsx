@@ -373,7 +373,7 @@ export default function SettingsPage() {
       toast.success(t("settings.referral.applied", { count: (data as any).monthsApplied }));
       await refreshProfile();
     } catch (e: any) {
-      toast.error(e?.message || "Gagal menggunakan bulan percuma");
+      toast.error(e?.message || t("settings.referral.applyFailed"));
     } finally {
       setApplyingFreeMonths(false);
     }
