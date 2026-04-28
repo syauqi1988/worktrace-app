@@ -173,8 +173,8 @@ export default function AppShell() {
           </button>
           {profileDropdown && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setProfileDropdown(false)} />
-              <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl border border-border z-50 py-1" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              <div className="fixed inset-0 z-[60]" onClick={() => setProfileDropdown(false)} />
+              <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl border border-border z-[70] py-1" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                 <div className="px-4 py-3 border-b border-border">
                   <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || 'Syarikat'}</p>
                   <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
