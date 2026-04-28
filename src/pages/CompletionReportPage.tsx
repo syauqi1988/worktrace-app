@@ -250,7 +250,12 @@ export default function CompletionReportPage() {
         setReportStatus('submitted');
         setRejectionReason(null);
         setIsSubmitted(true);
-        toast.success('Laporan dihantar! Sila kongsi pautan pengesahan kepada pelanggan via WhatsApp.');
+        if (savedId) setReportId(savedId);
+        toast.success('Laporan dihantar! Membuka WhatsApp...');
+        // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
+        if (job?.customers?.phone && savedId) {
+          await shareReportViaWhatsApp(savedId);
+        }
       } else {
         toast.success('Draf laporan disimpan!');
       }
