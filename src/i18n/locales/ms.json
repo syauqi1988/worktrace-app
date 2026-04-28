@@ -408,7 +408,8 @@
     "savedDraft": "Draf disimpan!",
     "savedSent": "Work Order dihantar!",
     "shareFailed": "Gagal kongsi PDF",
-    "previewFailed": "Gagal pratonton"
+    "previewFailed": "Gagal pratonton",
+    "waDetails": "📋 *No. Work Order:* {{number}}\n🔨 *Tajuk Kerja:* {{title}}\n📅 *Tarikh Mula:* {{startDate}}\n📍 *Lokasi:* {{location}}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 {{url}}"
   },
   "support": {
     "title": "Pusat Sokongan",

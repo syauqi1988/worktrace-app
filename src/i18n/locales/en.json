@@ -408,7 +408,8 @@
     "savedDraft": "Draft saved!",
     "savedSent": "Work Order sent!",
     "shareFailed": "Failed to share PDF",
-    "previewFailed": "Failed to preview"
+    "previewFailed": "Failed to preview",
+    "waDetails": "📋 *Work Order No.:* {{number}}\n🔨 *Job Title:* {{title}}\n📅 *Start Date:* {{startDate}}\n📍 *Location:* {{location}}\n\nPlease click the link below to *view & confirm* the work order:\n🔗 {{url}}"
   },
   "support": {
     "title": "Support Center",

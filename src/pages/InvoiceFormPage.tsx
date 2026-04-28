@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ interface LineItem {
 }
 
 export default function InvoiceFormPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const { user, profile } = useAuth();
@@ -244,7 +246,7 @@ export default function InvoiceFormPage() {
     if (!isEdit && user) {
       const { data: existing } = await supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
       if (existing) {
-        setJobWarning({ message: 'Kerja ini sudah ada invois.', link: `/invoices/${existing.id}` });
+        setJobWarning({ message: t('invoiceForm.jobHasInvoice'), link: `/invoices/${existing.id}` });
         setSaveDisabled(true);
       } else {
         setJobWarning(null);
@@ -262,9 +264,9 @@ export default function InvoiceFormPage() {
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
-    if (!selectedJob) newErrors.job = 'Sila pilih kerja';
-    if (!items.some(i => i.description.trim())) newErrors.items = 'Sila isi sekurang-kurangnya satu item';
-    if (items.some(i => i.unit_price < 0)) newErrors.items = 'Harga tidak boleh negatif';
+    if (!selectedJob) newErrors.job = t('invoiceForm.errJob');
+    if (!items.some(i => i.description.trim())) newErrors.items = t('invoiceForm.errItems');
+    if (items.some(i => i.unit_price < 0)) newErrors.items = t('invoiceForm.errPriceNeg');
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
@@ -296,16 +298,16 @@ export default function InvoiceFormPage() {
       if (isEdit) {
         const { error } = await supabase.from('invoices').update(payload).eq('id', id);
         if (error) throw error;
-        toast.success('Invois berjaya dikemaskini!');
+        toast.success(t('invoiceForm.savedEdit'));
         navigate(`/invoices/${id}`);
       } else {
         const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
         if (error) throw error;
-        toast.success(status === 'Draft' ? 'Draf invois disimpan!' : 'Invois dihantar!');
+        toast.success(status === 'Draft' ? t('invoiceForm.savedDraft') : t('invoiceForm.savedSent'));
         navigate(`/invoices/${data.id}`);
       }
     } catch (err: any) {
-      toast.error(err.message || 'Ralat menyimpan');
+      toast.error(err.message || t('forms.errorSaving'));
     } finally {
       setSubmitting(false);
     }
@@ -328,17 +330,17 @@ export default function InvoiceFormPage() {
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
-          <h1 className="text-xl font-bold text-foreground">Invois Baru</h1>
+          <h1 className="text-xl font-bold text-foreground">{t('invoiceForm.new')}</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-[#B45309]" />
-            <h2 className="text-base font-bold text-[#B45309]">Invois sudah wujud</h2>
+            <h2 className="text-base font-bold text-[#B45309]">{t('invoiceForm.alreadyExistsTitle')}</h2>
           </div>
-          <p className="text-sm text-[#B45309]">Kerja ini sudah mempunyai invois. Setiap kerja hanya boleh ada 1 invois.</p>
+          <p className="text-sm text-[#B45309]">{t('invoiceForm.alreadyExistsBody')}</p>
           <div className="flex gap-3 pt-2">
-            <Button onClick={() => navigate(`/invoices/${existingInvoice.id}`)} className="rounded-lg">Lihat Invois</Button>
-            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
+            <Button onClick={() => navigate(`/invoices/${existingInvoice.id}`)} className="rounded-lg">{t('invoiceForm.viewInvoiceBtn')}</Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">{t('invoiceForm.backToJob')}</Button>
           </div>
         </div>
       </div>
@@ -351,21 +353,19 @@ export default function InvoiceFormPage() {
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
-          <h1 className="text-xl font-bold text-foreground">Invois Baru</h1>
+          <h1 className="text-xl font-bold text-foreground">{t('invoiceForm.new')}</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
           <div className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-[#B45309]" />
-            <h2 className="text-base font-bold text-[#B45309]">Laporan Siap Kerja Diperlukan</h2>
+            <h2 className="text-base font-bold text-[#B45309]">{t('invoiceForm.reportRequiredTitle')}</h2>
           </div>
-          <p className="text-sm text-[#B45309]">
-            Invois tidak boleh dijana sebelum Laporan Siap Kerja dihantar. Laporan ini membuktikan kerja telah siap dilaksanakan sebelum pembayaran dipohon.
-          </p>
+          <p className="text-sm text-[#B45309]">{t('invoiceForm.reportRequiredBody')}</p>
           <div className="flex gap-3 pt-2">
             <Button onClick={() => navigate(`/jobs/${reportJobId}/completion-report`)} className="rounded-lg gap-1.5">
-              <ClipboardCheck className="h-4 w-4" /> Isi Laporan Siap Kerja
+              <ClipboardCheck className="h-4 w-4" /> {t('invoiceForm.fillReport')}
             </Button>
-            <Button variant="outline" onClick={() => navigate(`/jobs/${reportJobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${reportJobId}`)} className="rounded-lg">{t('invoiceForm.backToJob')}</Button>
           </div>
         </div>
       </div>
@@ -377,30 +377,30 @@ export default function InvoiceFormPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(isEdit ? `/invoices/${id}` : '/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Invois' : 'Invois Baru'}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isEdit ? t('invoiceForm.edit') : t('invoiceForm.new')}</h1>
       </div>
 
       {/* Report submitted banner */}
       {!isEdit && reportStatus === 'submitted' && (
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-3 flex items-center gap-2">
           <CheckCircle className="h-4 w-4 text-[#15803D]" />
-          <span className="text-sm font-medium text-[#15803D]">✓ Laporan Siap Kerja telah dihantar</span>
+          <span className="text-sm font-medium text-[#15803D]">{t('invoiceForm.reportSubmitted')}</span>
         </div>
       )}
 
       {/* Invoice Number */}
       <div className="space-y-1.5">
-        <Label>Nombor Invois</Label>
+        <Label>{t('invoiceForm.invoiceNumber')}</Label>
         <Input value={invoiceNumber} readOnly className="bg-muted" />
       </div>
 
       {/* Job Selector */}
       <div className="space-y-1.5">
-        <Label>Kerja *</Label>
+        <Label>{t('invoiceForm.jobLabel')}</Label>
         <div className="relative">
           <button type="button" onClick={() => setJobDropdownOpen(!jobDropdownOpen)}
             className={cn("w-full flex items-center h-10 rounded-md border bg-background px-3 text-sm text-left", errors.job ? 'border-destructive' : 'border-input')}>
-            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">Pilih kerja...</span>}
+            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">{t('forms.selectJob')}</span>}
           </button>
           {jobDropdownOpen && (
             <>
@@ -409,7 +409,7 @@ export default function InvoiceFormPage() {
                 <div className="p-2 border-b border-border">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder="Cari kerja..." className="pl-8 h-8 text-sm" autoFocus />
+                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder={t('forms.searchJob')} className="pl-8 h-8 text-sm" autoFocus />
                   </div>
                 </div>
                 <div className="overflow-y-auto max-h-40">
@@ -420,7 +420,7 @@ export default function InvoiceFormPage() {
                       {j.customers?.name && <span className="block text-xs text-muted-foreground mt-0.5">{j.customers.name}</span>}
                     </button>
                   ))}
-                  {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">Tiada kerja dijumpai</p>}
+                  {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">{t('forms.noJobsFound')}</p>}
                 </div>
               </div>
             </>
@@ -432,7 +432,7 @@ export default function InvoiceFormPage() {
             <AlertCircle className="h-4 w-4 text-[#B45309] shrink-0 mt-0.5" />
             <div className="text-sm text-[#B45309]">
               {jobWarning.message}{' '}
-              <Link to={jobWarning.link} className="underline font-medium hover:text-[#92400E]">Lihat invois →</Link>
+              <Link to={jobWarning.link} className="underline font-medium hover:text-[#92400E]">{t('invoiceForm.viewInvoice')}</Link>
             </div>
           </div>
         )}
@@ -441,7 +441,7 @@ export default function InvoiceFormPage() {
       {/* Customer display */}
       {selectedJob?.customers && (
         <div className="bg-card rounded-xl border border-border p-3">
-          <p className="text-xs text-muted-foreground">Pelanggan</p>
+          <p className="text-xs text-muted-foreground">{t('workOrderForm.customer')}</p>
           <p className="text-sm font-medium text-foreground">{selectedJob.customers.name}</p>
           {selectedJob.customers.phone && <p className="text-xs text-muted-foreground">{selectedJob.customers.phone}</p>}
         </div>
@@ -453,28 +453,28 @@ export default function InvoiceFormPage() {
           <div className="flex items-center gap-2">
             <Info className="h-4 w-4 text-[#1D4ED8]" />
             <p className="text-sm font-medium text-[#1D4ED8]">
-              Sebut harga {availableQuote.quote_number} tersedia. Nak import item dari sebut harga?
+              {t('invoiceForm.importQuoteAvailable', { number: availableQuote.quote_number })}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={handleImportQuote} className="rounded-lg text-xs">Ya, Import Item</Button>
-            <Button size="sm" variant="outline" onClick={() => setImportDismissed(true)} className="rounded-lg text-xs">Tidak, Isi Manual</Button>
+            <Button size="sm" onClick={handleImportQuote} className="rounded-lg text-xs">{t('invoiceForm.importYes')}</Button>
+            <Button size="sm" variant="outline" onClick={() => setImportDismissed(true)} className="rounded-lg text-xs">{t('invoiceForm.importNo')}</Button>
           </div>
         </div>
       )}
 
       {/* Line Items */}
       <div className="space-y-3">
-        <Label>Item Kerja *</Label>
+        <Label>{t('workOrderForm.items')} *</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         {/* Desktop table */}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
-            <span>Penerangan</span><span>Qty</span><span>Harga Seunit</span><span>Jumlah</span><span></span>
+            <span>{t('forms.itemDescription')}</span><span>{t('forms.itemQty')}</span><span>{t('forms.itemUnitPrice')}</span><span>{t('forms.itemTotal')}</span><span></span>
           </div>
           {items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 mb-2">
-              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="e.g. Pasang aircond 1.0HP" className="text-sm" />
+              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
               <Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" />
               <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" />
               <div className="flex items-center px-3 text-sm font-medium text-foreground bg-muted rounded-md">RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
@@ -489,28 +489,28 @@ export default function InvoiceFormPage() {
               {items.length > 1 && (
                 <button onClick={() => removeItem(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
               )}
-              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Penerangan item" className="text-sm" />
+              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemPlaceholder')} className="text-sm" />
               <div className="grid grid-cols-2 gap-2">
-                <div><p className="text-xs text-muted-foreground mb-1">Qty</p><Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" /></div>
-                <div><p className="text-xs text-muted-foreground mb-1">Harga Seunit (RM)</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" /></div>
+                <div><p className="text-xs text-muted-foreground mb-1">{t('forms.itemQty')}</p><Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" /></div>
+                <div><p className="text-xs text-muted-foreground mb-1">{t('forms.itemUnitPriceRm')}</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" /></div>
               </div>
-              <div className="text-right text-sm font-medium text-foreground">Jumlah: RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
+              <div className="text-right text-sm font-medium text-foreground">{t('forms.itemTotalLabel', { amount: ((item.qty || 0) * (item.unit_price || 0)).toFixed(2) })}</div>
             </div>
           ))}
         </div>
-        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
+        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> {t('forms.addItem')}</Button>
       </div>
 
       {/* Summary */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal</span>
+          <span className="text-muted-foreground">{t('forms.subtotal')}</span>
           <span className="font-medium">RM {subtotal.toFixed(2)}</span>
         </div>
         {/* Discount */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Diskaun</span>
+            <span className="text-sm text-muted-foreground">{t('forms.discount')}</span>
             <div className="flex bg-muted rounded-md overflow-hidden text-xs ml-auto">
               <button onClick={() => setDiscountMode('rm')} className={cn("px-2.5 py-1 font-medium", discountMode === 'rm' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>RM</button>
               <button onClick={() => setDiscountMode('pct')} className={cn("px-2.5 py-1 font-medium", discountMode === 'pct' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>%</button>
@@ -524,7 +524,7 @@ export default function InvoiceFormPage() {
         {/* SST */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">SST Dikenakan?</span>
+            <span className="text-sm text-muted-foreground">{t('forms.sstApply')}</span>
             <Switch checked={sstEnabled} onCheckedChange={setSstEnabled} />
           </div>
           {sstEnabled && (
@@ -538,7 +538,7 @@ export default function InvoiceFormPage() {
           )}
         </div>
         <div className="border-t border-border pt-3 flex justify-between items-center">
-          <span className="text-base font-bold text-foreground">Jumlah Keseluruhan</span>
+          <span className="text-base font-bold text-foreground">{t('forms.grandTotal')}</span>
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
@@ -546,26 +546,26 @@ export default function InvoiceFormPage() {
       {/* Dates */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label>Tarikh Invois</Label>
+          <Label>{t('invoiceForm.issuedDate')}</Label>
           <Input type="date" value={issuedDate} onChange={e => setIssuedDate(e.target.value)} className="rounded-lg" />
         </div>
         <div className="space-y-1.5">
-          <Label>Bayar Sebelum</Label>
+          <Label>{t('invoiceForm.dueDate')}</Label>
           <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="rounded-lg" />
         </div>
       </div>
 
       {/* Notes */}
       <div className="space-y-1.5">
-        <Label>Nota</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Nota tambahan untuk pelanggan..." />
+        <Label>{t('forms.notes')}</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
       </div>
 
       {/* Terms & Conditions */}
       <div className="space-y-1.5">
-        <Label>Terma & Syarat</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder="Terma & syarat invois..." />
-        <p className="text-xs text-muted-foreground">Terma ini akan dipaparkan dalam PDF invois</p>
+        <Label>{t('forms.termsConditions')}</Label>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={t('invoiceForm.termsPlaceholder')} />
+        <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
       </div>
 
       {/* Payment Methods Selection */}
@@ -573,13 +573,13 @@ export default function InvoiceFormPage() {
         const allMethods: any[] = Array.isArray(profile?.payment_methods) ? profile!.payment_methods : [];
         if (allMethods.length === 0) return (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
-            Belum ada kaedah pembayaran. <button onClick={() => navigate('/settings')} className="underline font-medium">Tambah dalam Tetapan</button>
+            {t('invoiceForm.noPaymentMethods')} <button onClick={() => navigate('/settings')} className="underline font-medium">{t('invoiceForm.addInSettings')}</button>
           </div>
         );
         return (
           <div className="space-y-2">
-            <Label>Kaedah Pembayaran dalam Invois</Label>
-            <p className="text-xs text-muted-foreground">Pilih kaedah pembayaran yang akan dipaparkan dalam invois ini</p>
+            <Label>{t('invoiceForm.paymentMethodsLabel')}</Label>
+            <p className="text-xs text-muted-foreground">{t('invoiceForm.paymentMethodsHint')}</p>
             {allMethods.map((m: any) => (
               <div key={m.id} className="flex items-center gap-2">
                 <Checkbox
@@ -592,7 +592,7 @@ export default function InvoiceFormPage() {
                 />
                 <label htmlFor={`pm-${m.id}`} className="text-sm cursor-pointer">
                   {m.type === 'bank_transfer' ? `🏦 ${m.bank_name} — ${m.account_number}` : `📱 ${m.provider || 'QR'}`}
-                  {m.is_primary && <span className="text-xs text-primary ml-1">(Utama)</span>}
+                  {m.is_primary && <span className="text-xs text-primary ml-1">{t('invoiceForm.primaryTag')}</span>}
                 </label>
               </div>
             ))}
@@ -606,37 +606,37 @@ export default function InvoiceFormPage() {
           <CollapsibleTrigger className="w-full flex items-center justify-between bg-card rounded-xl border border-border p-4 hover:bg-accent/50 transition-colors">
             <div className="flex items-center gap-2">
               <Landmark className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">e-Invois LHDN MyInvois</span>
+              <span className="text-sm font-medium text-foreground">{t('invoiceForm.lhdnTitle')}</span>
             </div>
             <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", lhdnOpen && "rotate-180")} />
           </CollapsibleTrigger>
           <CollapsibleContent className="bg-card rounded-b-xl border border-t-0 border-border p-4 space-y-3">
             <div className="space-y-1.5">
-              <Label>TIN Syarikat Anda</Label>
+              <Label>{t('invoiceForm.lhdnYourTin')}</Label>
               <Input value={profile.tin_number || ''} readOnly className="bg-muted text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label>TIN Pelanggan</Label>
+              <Label>{t('invoiceForm.lhdnCustTin')}</Label>
               <Input value={customerTin} onChange={e => setCustomerTin(e.target.value)} placeholder="e.g. C12345678900" className="text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label>Kod MSIC</Label>
+              <Label>{t('invoiceForm.lhdnMsic')}</Label>
               <Input value={msicCode} onChange={e => setMsicCode(e.target.value)} placeholder="e.g. 43211" className="text-sm" />
             </div>
             {profile.sst_registered && (
               <div className="space-y-1.5">
-                <Label>No. Pendaftaran SST</Label>
+                <Label>{t('invoiceForm.lhdnSstNo')}</Label>
                 <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} className="text-sm" />
               </div>
             )}
             <div className="flex items-center gap-2">
               <Checkbox id="lhdn-submitted" checked={lhdnSubmitted} onCheckedChange={(v) => setLhdnSubmitted(!!v)} />
-              <label htmlFor="lhdn-submitted" className="text-sm text-foreground cursor-pointer">Tandakan jika invois ini telah dihantar ke portal MyInvois LHDN</label>
+              <label htmlFor="lhdn-submitted" className="text-sm text-foreground cursor-pointer">{t('invoiceForm.lhdnSubmitted')}</label>
             </div>
             <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-lg p-3 flex items-start gap-2">
               <Info className="h-4 w-4 text-[#1D4ED8] shrink-0 mt-0.5" />
               <p className="text-xs text-[#1D4ED8]">
-                Integrasi automatik dengan MyInvois akan datang. Buat masa ini, sila hantar invois secara manual di myinvois.hasil.gov.my dan tandakan checkbox di atas setelah selesai.
+                {t('invoiceForm.lhdnInfo')}
               </p>
             </div>
           </CollapsibleContent>
@@ -646,15 +646,15 @@ export default function InvoiceFormPage() {
       {/* Save Buttons */}
       {isEdit ? (
         <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-          {submitting ? 'Menyimpan...' : 'Kemaskini Invois'}
+          {submitting ? t('forms.saving') : t('invoiceForm.saveEdit')}
         </Button>
       ) : (
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? 'Menyimpan...' : 'Simpan Draft'}
+            {submitting ? t('forms.saving') : t('invoiceForm.saveDraft')}
           </Button>
           <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? 'Menghantar...' : 'Hantar Invois'}
+            {submitting ? t('forms.sending') : t('invoiceForm.send')}
           </Button>
         </div>
       )}
