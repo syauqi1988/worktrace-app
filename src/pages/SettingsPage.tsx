@@ -1032,33 +1032,14 @@ export default function SettingsPage() {
         )}
       </SettingsAccordion>
 
-      {/* 9 — Tutorial & Bantuan + AI */}
+      {/* 9 — Bantuan + AI */}
       <SettingsAccordion
         id="tutorial-bantuan"
         icon={<BookOpen className="h-5 w-5" />}
-        title="Tutorial & Bantuan"
-        description="Tutorial interaktif dan bantuan AI"
+        title="Bantuan"
+        description="Bantuan AI dan sokongan"
       >
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Tutorial Interaktif</h3>
-          </div>
-          <p className="text-[13px] text-muted-foreground">
-            Tutorial dilihat: {totalSeenCount === 0 ? "Belum pernah ditonton" : `${totalSeenCount} kali`}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Merangkumi: Dashboard, Kerja, Pelanggan, Sebut Harga, Invois, Tetapan
-          </p>
-          <button
-            onClick={() => window.__startWorkTraceTutorial?.()}
-            className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 transition-colors"
-          >
-            <Play className="h-4 w-4" /> Mulakan Tutorial Semula
-          </button>
-        </div>
-
-        <div className="border-t border-border pt-4">
+        <div>
           <AiHelpButton />
         </div>
 
