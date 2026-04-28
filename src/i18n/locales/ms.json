@@ -150,10 +150,189 @@
   },
   "settings": {
     "title": "Tetapan",
-    "company": "Maklumat Syarikat",
-    "billing": "Bil & Langganan",
-    "notifications": "Notifikasi Peranti",
-    "deleteAccount": "Padam Akaun"
+    "saving": "Menyimpan...",
+    "cancel": "Batal",
+    "edit": "Edit",
+    "delete": "Padam",
+
+    "profile": {
+      "title": "Profil Syarikat",
+      "description": "Nama syarikat, telefon, alamat dan logo",
+      "companyName": "Nama Syarikat *",
+      "phone": "Nombor Telefon",
+      "address": "Alamat",
+      "ssmNew": "No. Pendaftaran SSM (Baru)",
+      "ssmNewHint": "Format baru SSM (nombor sahaja)",
+      "ssmNewPlaceholder": "cth: 202301012345",
+      "ssmOld": "No. Pendaftaran SSM (Lama)",
+      "ssmOldHint": "Format lama SSM (jika ada)",
+      "ssmOldPlaceholder": "cth: 123456-A",
+      "ssmNewError": "No. Pendaftaran SSM (Baru) mesti nombor sahaja",
+      "save": "Simpan Profil",
+      "saved": "Profil berjaya dikemaskini!"
+    },
+
+    "lhdn": {
+      "title": "LHDN & SST",
+      "description": "Maklumat cukai dan e-Invois LHDN MyInvois",
+      "enable": "Aktifkan e-Invois LHDN",
+      "enableHint": "Aktifkan untuk memaparkan medan LHDN pada invois anda",
+      "tin": "No. TIN Syarikat",
+      "msic": "Kod MSIC",
+      "sstRegistered": "SST Berdaftar",
+      "sstNumber": "No. SST",
+      "comingSoon": "Integrasi automatik dengan portal MyInvois LHDN akan datang tidak lama lagi.",
+      "save": "Simpan Tetapan LHDN",
+      "saved": "Tetapan LHDN disimpan!"
+    },
+
+    "payment": {
+      "title": "Kaedah Pembayaran",
+      "description": "Akaun bank dan QR bayaran untuk invois",
+      "willShow": "Maklumat ini akan dipaparkan dalam setiap invois anda",
+      "bankTransfer": "🏦 Bank Transfer",
+      "primary": "Utama ✓",
+      "bankName": "Nama Bank",
+      "accountName": "Nama Akaun *",
+      "accountNumber": "Nombor Akaun *",
+      "setPrimary": "Tetapkan sebagai utama",
+      "saveBank": "Simpan Akaun",
+      "addBank": "Tambah Akaun Bank",
+      "addQr": "Tambah QR Payment",
+      "qrProvider": "Penyedia QR",
+      "uploadQr": "Muat Naik Imej QR",
+      "uploading": "Memuat naik...",
+      "saveQr": "Simpan QR",
+      "fillAll": "Sila isi semua medan",
+      "fileTooLarge": "Saiz fail melebihi 2MB",
+      "uploadFailed": "Gagal muat naik QR",
+      "uploadQrFirst": "Sila muat naik imej QR",
+      "bankSaved": "Akaun bank disimpan!",
+      "qrSaved": "QR payment disimpan!",
+      "deleted": "Kaedah pembayaran dipadam"
+    },
+
+    "terms": {
+      "title": "Terma & Syarat",
+      "description": "T&C untuk Sebut Harga, Invois dan Work Order",
+      "tabQuotation": "Sebut Harga",
+      "tabInvoice": "Invois",
+      "tabWorkOrder": "Work Order",
+      "quotationHint": "Terma ini dipaparkan dalam setiap Sebut Harga PDF",
+      "invoiceHint": "Terma ini dipaparkan dalam setiap Invois PDF",
+      "saveQuotation": "Simpan Terma Sebut Harga",
+      "saveInvoice": "Simpan Terma Invois",
+      "saved": "Terma & syarat berjaya disimpan!"
+    },
+
+    "whatsappTemplates": {
+      "title": "Templet WhatsApp",
+      "description": "Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
+    },
+
+    "deviceNotifications": {
+      "title": "Notifikasi Peranti",
+      "description": "Aktifkan notifikasi push pada telefon atau komputer anda",
+      "heading": "Notifikasi Peranti",
+      "body": "Terima notifikasi pada telefon atau komputer anda apabila pelanggan mengesahkan/menolak dokumen, menghantar bukti pembayaran, atau pasukan sokongan membalas tiket anda.",
+      "unsupported": "Pelayar anda tidak menyokong notifikasi. Untuk iPhone, sila pasang aplikasi ke skrin utama dahulu.",
+      "blocked": "Notifikasi telah disekat. Sila benarkan dalam tetapan pelayar anda untuk laman ini.",
+      "wait": "Sila tunggu…",
+      "disable": "Matikan notifikasi peranti",
+      "enable": "Aktifkan notifikasi peranti"
+    },
+
+    "docNumbers": {
+      "title": "Nombor Dokumen",
+      "description": "Format nombor auto untuk semua jenis dokumen"
+    },
+
+    "subscription": {
+      "title": "Langganan & Pelan",
+      "description": "Pelan semasa dan pengurusan langganan",
+      "freeMonthsBanner": "Anda ada <strong>{{count}} bulan percuma</strong> daripada program rujukan! Akan digunakan semasa pembaharuan langganan.",
+      "currentPlan": "Pelan Semasa",
+      "active": "— Aktif ●",
+      "willEnd": "Akan Tamat ⚠️",
+      "forever": " · Selamanya percuma",
+      "yearly": "Tahunan",
+      "monthly": "Bulanan",
+      "perYear": "/tahun",
+      "perMonth": "/bulan",
+      "cancelledUntil": "Langganan dibatalkan. Masih aktif sehingga {{date}}",
+      "startDate": "Tarikh Mula: {{date}}",
+      "endDate": "Tarikh Tamat: {{date}}",
+      "reactivate": "Aktifkan Semula Langganan",
+      "choosePeriod": "Pilih tempoh pembaharuan",
+      "monthlyOption": "Bulanan — RM{{price}}/bulan",
+      "yearlyOption": "Tahunan — RM{{price}}/tahun",
+      "processing": "Memproses...",
+      "renew": "Perbaharui Langganan — RM{{price}}/{{period}}",
+      "cancelSub": "Batalkan Langganan"
+    },
+
+    "integrations": {
+      "title": "Integrasi & Pautan",
+      "description": "Pautan pengesahan dan bukti pembayaran",
+      "heading": "Pengesahan & Bukti Pembayaran Built-in",
+      "body": "WorkTrace menjana pautan pengesahan automatik ketika anda menghantar Sebut Harga, Work Order, atau Laporan kepada pelanggan. Untuk Invois, pautan bukti pembayaran (/bayar) dijana secara automatik — pelanggan boleh muat naik resit terus tanpa perlu sebarang integrasi luaran.",
+      "noConfig": "Tiada konfigurasi diperlukan — semua pautan dijana automatik."
+    },
+
+    "referral": {
+      "title": "Rujukan",
+      "description": "Kod rujukan dan ganjaran bulan percuma",
+      "upgradePrompt": "Upgrade ke Pro untuk akses sistem referral",
+      "upgradeHint": "Kongsi link anda dan dapatkan 1 bulan percuma setiap kali rakan anda melanggan!",
+      "intro": "Kongsi link anda dan dapatkan <strong>1 bulan percuma</strong> setiap kali rakan anda melanggan!",
+      "yourLink": "Link Rujukan Anda:",
+      "copy": "Salin",
+      "copied": "Link rujukan disalin! Kongsi dengan rakan kontraktor anda.",
+      "shareWa": "Kongsi via WhatsApp",
+      "telegram": "Telegram",
+      "totalReferrals": "Jumlah Rujukan",
+      "monthsEarned": "Bulan Diperolehi",
+      "monthsUsed": "Bulan Digunakan",
+      "balance": "Baki Tersedia",
+      "youHave": "Anda ada {{count}} bulan percuma",
+      "applyNow": "Klik untuk lanjutkan tarikh tamat langganan anda sekarang.",
+      "useNow": "Guna {{count}} Bulan Sekarang",
+      "applying": "Memproses...",
+      "applyConfirm": "Guna {{count}} bulan percuma sekarang? Tarikh tamat langganan anda akan dilanjutkan {{count}} bulan.",
+      "applied": "{{count}} bulan percuma telah digunakan!",
+      "applyFailed": "Gagal menggunakan bulan percuma",
+      "history": "Sejarah Rujukan",
+      "noReferrals": "Belum ada rujukan",
+      "shareToStart": "Kongsi link untuk mula mendapat ganjaran!",
+      "rewarded": "✓ Ganjaran Diterima",
+      "pending": "Menunggu Langganan",
+      "monthsAwarded": "{{count}} Bulan Percuma ✓",
+      "upgradeToUse": "Upgrade ke Pro untuk menggunakan bulan percuma anda."
+    },
+
+    "help": {
+      "title": "Bantuan",
+      "description": "Bantuan AI dan sokongan",
+      "needHuman": "Perlukan bantuan manusia?",
+      "sendTicket": "📧 Hantar Tiket Sokongan",
+      "responseTime": "Masa respons: < 24 jam (hari bekerja)"
+    },
+
+    "danger": {
+      "title": "Zon Bahaya",
+      "description": "Padam akaun dan tindakan yang tidak boleh dibatalkan",
+      "accountEmail": "E-mel Akaun",
+      "irreversible": "Tindakan Tidak Boleh Dibatalkan",
+      "items": {
+        "jobs": "Semua kerja dan rekod",
+        "customers": "Semua pelanggan",
+        "documents": "Semua sebut harga, work order dan invois",
+        "files": "Semua fail dan dokumen",
+        "profile": "Profil dan akaun syarikat",
+        "referrals": "Rekod rujukan"
+      },
+      "deleteAccount": "Padam Akaun"
+    }
   },
   "expiry": {
     "warning": "Langganan Pro anda akan tamat dalam {{days}} hari. Perbaharui untuk kekal dengan Pro.",
