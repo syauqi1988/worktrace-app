@@ -450,7 +450,7 @@ export default function InvoiceDetailPage() {
       const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
       if (data) setProof(data);
       const phone = formatPhone(customerPhone);
-      const msg = `Assalamualaikum ${customer?.name || ''},\n\nMohon hantar bukti pembayaran untuk invois berikut:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n\nSila klik pautan ini untuk muat naik resit/bukti bayaran:\n🔗 ${url}\n\nTerima kasih!\n*${profile?.company_name || ''}*`;
+      const msg = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nMohon hantar bukti pembayaran untuk invois berikut:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n\nSila klik pautan ini untuk muat naik resit/bukti bayaran:\n🔗 ${url}\n\nTerima kasih! 🙏\n*${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
       toast.success('Pautan bukti bayaran dijana!');
     } catch (err: any) {
