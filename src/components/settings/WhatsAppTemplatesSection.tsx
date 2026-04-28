@@ -217,7 +217,7 @@ export default function WhatsAppTemplatesSection() {
 
       <UpgradeModal
         open={upgradeOpen}
-        onOpenChange={setUpgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
         reason={upgradeReason}
       />
     </div>
