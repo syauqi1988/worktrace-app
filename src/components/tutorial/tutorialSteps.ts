@@ -254,8 +254,8 @@ function buildQuotationsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '📝 Modul Sebut Harga',
-        description: 'Sebut harga (quotation) ialah tawaran harga rasmi kepada pelanggan sebelum kerja dimulakan.',
+        title: '📝 Sebut Harga (Langkah 3)',
+        description: 'Lepas daftar Pelanggan (1) & buka Kerja (2), kini hantar tawaran harga rasmi kepada pelanggan. Selepas mereka setuju, baru sambung ke Work Order & Invois.',
       },
     },
     {
