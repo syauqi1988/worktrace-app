@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
@@ -615,11 +615,25 @@ function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpl
           </div>
         ))}
         {photos.length < 10 && !disabled && (
-          <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
-            {uploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <Plus className="h-5 w-5 text-muted-foreground" />}
-            <span className="text-[11px] text-muted-foreground mt-1">{uploading ? 'Memuat naik...' : 'Tambah'}</span>
-            <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" disabled={uploading || disabled} />
-          </label>
+          uploading ? (
+            <div className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground mt-1">Memuat naik...</span>
+            </div>
+          ) : (
+            <>
+              <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
+                <Camera className="h-5 w-5 text-muted-foreground" />
+                <span className="text-[11px] text-muted-foreground mt-1">Kamera</span>
+                <input type="file" accept="image/*" capture="environment" onChange={onUpload} className="hidden" disabled={disabled} />
+              </label>
+              <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
+                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                <span className="text-[11px] text-muted-foreground mt-1">Galeri</span>
+                <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" disabled={disabled} />
+              </label>
+            </>
+          )
         )}
       </div>
     </div>
