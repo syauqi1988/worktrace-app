@@ -159,9 +159,9 @@ export default function QuotationFormPage() {
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
-    if (!selectedJob) newErrors.job={tx('Sila pilih kerja')};
-    if (!items.some(i => i.description.trim())) newErrors.items={tx('Sila isi sekurang-kurangnya satu item')};
-    if (items.some(i => i.unit_price < 0)) newErrors.items={tx('Harga tidak boleh negatif')};
+    if (!selectedJob) newErrors.job = tx('Sila pilih kerja');
+    if (!items.some(i => i.description.trim())) newErrors.items = tx('Sila isi sekurang-kurangnya satu item');
+    if (items.some(i => i.unit_price < 0)) newErrors.items = tx('Harga tidak boleh negatif');
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
