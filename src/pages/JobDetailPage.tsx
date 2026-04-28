@@ -240,6 +240,8 @@ export default function JobDetailPage() {
             phone: profile?.phone || null,
             address: profile?.address || null,
             logo_base64: canShowLogo ? logoBase64 : '',
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
           }}
         />
       ).toBlob();
