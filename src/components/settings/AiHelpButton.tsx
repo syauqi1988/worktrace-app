@@ -1,6 +1,5 @@
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { tx } from '@/lib/tx';
 
 const AI_CHAT_URL = ""; // Set when AI agent is ready
 
@@ -23,7 +22,7 @@ export default function AiHelpButton() {
         <h3 className="text-sm font-bold text-foreground">AI Bantuan WorkTrace</h3>
       </div>
       <p className="text-sm text-muted-foreground">
-        {tx('Tanya apa sahaja tentang cara menggunakan WorkTrace. Kami akan bantu anda 24/7.')}
+        Tanya apa sahaja tentang cara menggunakan WorkTrace. Kami akan bantu anda 24/7.
       </p>
       <div className="relative">
         <button
@@ -37,7 +36,7 @@ export default function AiHelpButton() {
         </button>
         {!AI_CHAT_URL && (
           <span className="absolute -top-2 -right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
-            {tx('Akan Datang')}
+            Akan Datang
           </span>
         )}
       </div>

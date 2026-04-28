@@ -13,7 +13,6 @@ import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
-import { tx } from '@/lib/tx';
 
 interface Job {
   id: string;
@@ -102,7 +101,7 @@ export default function QuotationFormPage() {
       if (data) {
         const q = data as any;
         if (q.status === 'Rejected') {
-          toast.error(tx('Sebut harga yang ditolak tidak boleh diedit.'));
+          toast.error('Sebut harga yang ditolak tidak boleh diedit.');
           navigate(`/quotations/${id}`, { replace: true });
           return;
         }
@@ -159,9 +158,9 @@ export default function QuotationFormPage() {
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
-    if (!selectedJob) newErrors.job = tx('Sila pilih kerja');
-    if (!items.some(i => i.description.trim())) newErrors.items = tx('Sila isi sekurang-kurangnya satu item');
-    if (items.some(i => i.unit_price < 0)) newErrors.items = tx('Harga tidak boleh negatif');
+    if (!selectedJob) newErrors.job = 'Sila pilih kerja';
+    if (!items.some(i => i.description.trim())) newErrors.items = 'Sila isi sekurang-kurangnya satu item';
+    if (items.some(i => i.unit_price < 0)) newErrors.items = 'Harga tidak boleh negatif';
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
@@ -190,7 +189,7 @@ export default function QuotationFormPage() {
       if (isEdit) {
         const { error } = await supabase.from('quotations').update(payload).eq('id', id);
         if (error) throw error;
-        toast.success(tx('Sebut harga berjaya dikemaskini!'));
+        toast.success('Sebut harga berjaya dikemaskini!');
         navigate(`/quotations/${id}`);
       } else {
         const { data, error } = await supabase.from('quotations').insert(payload).select('id').single();
@@ -203,11 +202,11 @@ export default function QuotationFormPage() {
           toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
         }
 
-        toast.success(status === 'Draft' ? tx('Draf disimpan!') : tx('Sebut harga dihantar! Membuka WhatsApp...'));
+        toast.success(status === 'Draft' ? 'Draf disimpan!' : 'Sebut harga dihantar! Membuka WhatsApp...');
         navigate(`/quotations/${data.id}${status === 'Sent' ? '?share=1' : ''}`);
       }
     } catch (err: any) {
-      toast.error(err.message || tx('Ralat menyimpan'));
+      toast.error(err.message || 'Ralat menyimpan');
     } finally {
       setSubmitting(false);
     }
@@ -231,17 +230,17 @@ export default function QuotationFormPage() {
           <button onClick={() => navigate('/quotations')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-foreground">{tx('Sebut Harga Baru')}</h1>
+          <h1 className="text-xl font-bold text-foreground">Sebut Harga Baru</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-[#B45309]" />
-            <h2 className="text-base font-bold text-[#B45309]">{tx('Sebut harga sudah wujud')}</h2>
+            <h2 className="text-base font-bold text-[#B45309]">Sebut harga sudah wujud</h2>
           </div>
-          <p className="text-sm text-[#B45309]">{tx('Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.')}</p>
+          <p className="text-sm text-[#B45309]">Kerja ini sudah mempunyai sebut harga. Setiap kerja hanya boleh ada 1 sebut harga.</p>
           <div className="flex gap-3 pt-2">
-            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">{tx('Lihat Sebut Harga')}</Button>
-            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">{tx('Kembali ke Kerja')}</Button>
+            <Button onClick={() => navigate(`/quotations/${existingQuotation.id}`)} className="rounded-lg">Lihat Sebut Harga</Button>
+            <Button variant="outline" onClick={() => navigate(`/jobs/${blockedJobId}`)} className="rounded-lg">Kembali ke Kerja</Button>
           </div>
         </div>
       </div>
@@ -254,20 +253,20 @@ export default function QuotationFormPage() {
         <button onClick={() => navigate(isEdit ? `/quotations/${id}` : '/quotations')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? tx('Edit Sebut Harga') : tx('Sebut Harga Baru')}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isEdit ? 'Edit Sebut Harga' : 'Sebut Harga Baru'}</h1>
       </div>
 
       <div className="space-y-1.5">
-        <Label>{tx('Nombor Sebut Harga')}</Label>
+        <Label>Nombor Sebut Harga</Label>
         <Input value={quoteNumber} readOnly className="bg-muted" />
       </div>
 
       <div className="space-y-1.5">
-        <Label>{tx('Kerja *')}</Label>
+        <Label>Kerja *</Label>
         <div className="relative">
           <button type="button" onClick={() => setJobDropdownOpen(!jobDropdownOpen)}
             className={cn("w-full flex items-center h-10 rounded-md border bg-background px-3 text-sm text-left", errors.job ? 'border-destructive' : 'border-input')}>
-            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">{tx('Pilih kerja...')}</span>}
+            {selectedJob ? <span>{selectedJob.job_number} — {selectedJob.title}</span> : <span className="text-muted-foreground">Pilih kerja...</span>}
           </button>
           {jobDropdownOpen && (
             <>
@@ -276,7 +275,7 @@ export default function QuotationFormPage() {
                 <div className="p-2 border-b border-border">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder={tx("Cari kerja...")} className="pl-8 h-8 text-sm" autoFocus />
+                    <Input value={jobSearch} onChange={e => setJobSearch(e.target.value)} placeholder="Cari kerja..." className="pl-8 h-8 text-sm" autoFocus />
                   </div>
                 </div>
                 <div className="overflow-y-auto max-h-40">
@@ -299,7 +298,7 @@ export default function QuotationFormPage() {
                       {j.customers?.name && <span className="block text-xs text-muted-foreground mt-0.5">{j.customers.name}</span>}
                     </button>
                   ))}
-                  {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">{tx('Tiada kerja dijumpai')}</p>}
+                  {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">Tiada kerja dijumpai</p>}
                 </div>
               </div>
             </>
@@ -319,18 +318,18 @@ export default function QuotationFormPage() {
 
       {selectedJob?.customers && (
         <div className="bg-card rounded-xl border border-border p-3">
-          <p className="text-xs text-muted-foreground">{tx('Pelanggan')}</p>
+          <p className="text-xs text-muted-foreground">Pelanggan</p>
           <p className="text-sm font-medium text-foreground">{selectedJob.customers.name}</p>
           {selectedJob.customers.phone && <p className="text-xs text-muted-foreground">{selectedJob.customers.phone}</p>}
         </div>
       )}
 
       <div className="space-y-3">
-        <Label>{tx('Item Kerja *')}</Label>
+        <Label>Item Kerja *</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
-            <span>Penerangan</span><span>Qty</span><span>Harga Seunit</span><span>{tx('Jumlah')}</span><span></span>
+            <span>Penerangan</span><span>Qty</span><span>Harga Seunit</span><span>Jumlah</span><span></span>
           </div>
           {items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-2 mb-2">
@@ -357,14 +356,14 @@ export default function QuotationFormPage() {
             </div>
           ))}
         </div>
-        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> {tx('Tambah Item')}</Button>
+        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
       </div>
 
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{tx('Diskaun')}</span>
+            <span className="text-sm text-muted-foreground">Diskaun</span>
             <div className="flex bg-muted rounded-md overflow-hidden text-xs ml-auto">
               <button onClick={() => setDiscountMode('rm')} className={cn("px-2.5 py-1 font-medium", discountMode === 'rm' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>RM</button>
               <button onClick={() => setDiscountMode('pct')} className={cn("px-2.5 py-1 font-medium", discountMode === 'pct' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>%</button>
@@ -391,7 +390,7 @@ export default function QuotationFormPage() {
           )}
         </div>
         <div className="border-t border-border pt-3 flex justify-between items-center">
-          <span className="text-base font-bold text-foreground">{tx('Jumlah Keseluruhan')}</span>
+          <span className="text-base font-bold text-foreground">Jumlah Keseluruhan</span>
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
@@ -402,27 +401,27 @@ export default function QuotationFormPage() {
       </div>
 
       <div className="space-y-1.5">
-        <Label>{tx('Nota')}</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={tx("Nota tambahan untuk pelanggan...")} />
+        <Label>Nota</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Nota tambahan untuk pelanggan..." />
       </div>
 
       <div className="space-y-1.5">
         <Label>Terma & Syarat</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={tx("Terma & syarat sebut harga...")} />
-        <p className="text-xs text-muted-foreground">{tx('Terma ini akan dipaparkan dalam PDF sebut harga')}</p>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder="Terma & syarat sebut harga..." />
+        <p className="text-xs text-muted-foreground">Terma ini akan dipaparkan dalam PDF sebut harga</p>
       </div>
 
       {isEdit ? (
         <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-          {submitting ? 'Menyimpan...' : tx('Kemaskini Sebut Harga')}
+          {submitting ? 'Menyimpan...' : 'Kemaskini Sebut Harga'}
         </Button>
       ) : (
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? 'Menyimpan...' : tx('Simpan Draft')}
+            {submitting ? 'Menyimpan...' : 'Simpan Draft'}
           </Button>
           <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? tx('Menghantar...') : tx('Hantar Sebut Harga')}
+            {submitting ? 'Menghantar...' : 'Hantar Sebut Harga'}
           </Button>
         </div>
       )}

@@ -1,6 +1,5 @@
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { tx } from '@/lib/tx';
 
 export default function TeamPlaceholderPage() {
   return (
@@ -15,7 +14,7 @@ export default function TeamPlaceholderPage() {
           menetapkan peranan, dan mengurus akses.
         </p>
         <span className="inline-block text-xs font-medium bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-          {tx('Akan Datang')}
+          Akan Datang
         </span>
         <div>
           <Button

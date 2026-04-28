@@ -18,7 +18,6 @@ import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { renderTemplate } from '@/lib/whatsappTemplates';
-import { tx } from '@/lib/tx';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -129,7 +128,7 @@ export default function WorkOrderDetailPage() {
     setActing(true);
     try {
       await supabase.from('work_orders').delete().eq('id', wo.id);
-      toast.success(tx('Work Order dipadam'));
+      toast.success('Work Order dipadam');
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
       toast.error(e.message);
@@ -188,7 +187,7 @@ export default function WorkOrderDetailPage() {
         await load();
       }
     } catch {
-      toast.error(tx('Gagal kongsi'));
+      toast.error('Gagal kongsi');
     } finally {
       setSharing(false);
     }
@@ -201,8 +200,8 @@ export default function WorkOrderDetailPage() {
   if (!wo) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground mb-4">{tx('Tiada Work Order untuk kerja ini.')}</p>
-        <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} className="rounded-lg">{tx('Buat Work Order')}</Button>
+        <p className="text-muted-foreground mb-4">Tiada Work Order untuk kerja ini.</p>
+        <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} className="rounded-lg">Buat Work Order</Button>
       </div>
     );
   }
@@ -230,10 +229,10 @@ export default function WorkOrderDetailPage() {
         <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4">
           <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
             <Loader2 className="h-4 w-4 animate-spin" />
-            {tx('Menunggu Pengesahan Pelanggan')}
+            Menunggu Pengesahan Pelanggan
           </div>
           <p className="text-xs text-[#1D4ED8]/80 mt-2">
-            {tx('Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.')}
+            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
           </p>
         </div>
       )}
@@ -246,7 +245,7 @@ export default function WorkOrderDetailPage() {
           )}
           {!report && (
             <Button onClick={() => navigate(`/jobs/${jobId}/completion-report`)} size="sm" className="rounded-lg gap-1.5">
-              <ClipboardCheck className="h-4 w-4" /> {tx('Buat Laporan Siap Kerja')}
+              <ClipboardCheck className="h-4 w-4" /> Buat Laporan Siap Kerja
             </Button>
           )}
         </div>
@@ -257,7 +256,7 @@ export default function WorkOrderDetailPage() {
           <p className="text-sm font-medium text-[#B91C1C]">✕ Work Order Ditolak</p>
           {wo.rejection_reason && <p className="text-sm text-[#B91C1C]">Sebab: {wo.rejection_reason}</p>}
           <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} size="sm" className="rounded-lg">
-            {tx('Buat Work Order Baru')}
+            Buat Work Order Baru
           </Button>
         </div>
       )}
@@ -294,13 +293,13 @@ export default function WorkOrderDetailPage() {
       </div>
 
       <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{tx('Skop Kerja')}</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Skop Kerja</p>
         <p className="text-sm whitespace-pre-wrap text-foreground">{wo.scope_of_work}</p>
       </div>
 
       {items.length > 0 && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tx('Item Kerja')}</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
           {items.map((it: any, i: number) => (
             <div key={i} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
               <span>{it.description} × {it.qty}</span>
@@ -308,7 +307,7 @@ export default function WorkOrderDetailPage() {
             </div>
           ))}
           <div className="flex justify-between pt-2 border-t border-border">
-            <span className="font-bold">{tx('Jumlah')}</span>
+            <span className="font-bold">Jumlah</span>
             <span className="font-bold text-primary">RM {Number(wo.total || 0).toFixed(2)}</span>
           </div>
         </div>
@@ -331,10 +330,10 @@ export default function WorkOrderDetailPage() {
           </Button>
         )}
         <Button variant="outline" onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} className="rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> {tx('Edit')}
+          <Edit className="h-4 w-4" /> Edit
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2">
-          <Trash2 className="h-4 w-4" /> {tx('Padam')}
+          <Trash2 className="h-4 w-4" /> Padam
         </Button>
       </div>
 
@@ -343,12 +342,12 @@ export default function WorkOrderDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tx('Padam Work Order?')}</DialogTitle>
-            <DialogDescription>{tx('Tindakan ini tidak boleh dibatalkan.')}</DialogDescription>
+            <DialogTitle>Padam Work Order?</DialogTitle>
+            <DialogDescription>Tindakan ini tidak boleh dibatalkan.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{tx('Batal')}</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={acting}>{acting ? 'Memadam...' : tx('Padam')}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={acting}>{acting ? 'Memadam...' : 'Padam'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

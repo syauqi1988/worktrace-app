@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import TagInput from '@/components/customers/TagInput';
 import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
-import { tx } from '@/lib/tx';
 
 const STATUS_COLORS: Record<string, string> = {
   Lead: 'bg-gray-100 text-gray-600',
@@ -100,9 +99,9 @@ export default function CustomerDetailPage() {
     const { error } = await supabase.from('customers').delete().eq('id', customer.id);
     setDeleting(false);
     if (error) {
-      toast({ title: tx('Ralat'), description: error.message, variant: 'destructive' });
+      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: tx('Pelanggan berjaya dipadam!') });
+      toast({ title: 'Pelanggan berjaya dipadam!' });
       navigate('/customers');
     }
   };
@@ -124,7 +123,7 @@ export default function CustomerDetailPage() {
       .eq('id', customer.id);
     setSavingTags(false);
     if (error) {
-      toast({ title: tx('Ralat'), description: error.message, variant: 'destructive' });
+      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
     } else {
       setCustomer({ ...customer, tags: draftTags });
       setEditingTags(false);
@@ -149,7 +148,7 @@ export default function CustomerDetailPage() {
   if (!customer) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">{tx('Pelanggan tidak dijumpai.')}</p>
+        <p className="text-muted-foreground">Pelanggan tidak dijumpai.</p>
         <Button variant="outline" onClick={() => navigate('/customers')} className="mt-4">Kembali</Button>
       </div>
     );
@@ -162,9 +161,9 @@ export default function CustomerDetailPage() {
         <button onClick={() => navigate('/customers')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground flex-1">{tx('Profil Pelanggan')}</h1>
+        <h1 className="text-xl font-bold text-foreground flex-1">Profil Pelanggan</h1>
         <Button variant="outline" size="sm" onClick={() => navigate(`/customers/${customer.id}/edit`)} className="gap-1.5 shrink-0">
-          <Edit className="h-3.5 w-3.5" /> {tx('Edit')}
+          <Edit className="h-3.5 w-3.5" /> Edit
         </Button>
       </div>
 
@@ -232,15 +231,15 @@ export default function CustomerDetailPage() {
             <TagInput tags={draftTags} onChange={setDraftTags} />
             <div className="flex gap-2">
               <Button size="sm" onClick={saveTags} disabled={savingTags} className="rounded-lg">
-                {savingTags ? 'Menyimpan...' : tx('Simpan')}
+                {savingTags ? 'Menyimpan...' : 'Simpan'}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setEditingTags(false)} className="rounded-lg">{tx('Batal')}</Button>
+              <Button size="sm" variant="outline" onClick={() => setEditingTags(false)} className="rounded-lg">Batal</Button>
             </div>
           </div>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {(customer.tags || []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">{tx('Tiada tag')}</p>
+              <p className="text-sm text-muted-foreground">Tiada tag</p>
             ) : (
               customer.tags!.map(tag => (
                 <TagBadge key={tag.label} tag={tag} />
@@ -253,16 +252,16 @@ export default function CustomerDetailPage() {
       {/* Job History */}
       <div className="bg-card rounded-xl border border-border p-4">
         <div className="flex items-center gap-2 mb-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tx('Sejarah Kerja')}</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Sejarah Kerja</p>
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-sidebar-background text-muted-foreground">{jobs.length}</span>
         </div>
 
         {jobs.length === 0 ? (
           <div className="text-center py-4">
             <Briefcase className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground mb-3">{tx('Tiada kerja untuk pelanggan ini')}</p>
+            <p className="text-sm text-muted-foreground mb-3">Tiada kerja untuk pelanggan ini</p>
             <Button size="sm" onClick={() => navigate(`/jobs/new?customer_id=${customer.id}`)} className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> {tx('Buat Kerja Baru')}
+              <Plus className="h-3.5 w-3.5" /> Buat Kerja Baru
             </Button>
           </div>
         ) : (
@@ -294,10 +293,10 @@ export default function CustomerDetailPage() {
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button onClick={() => navigate(`/customers/${customer.id}/edit`)} className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> {tx('Edit Pelanggan')}
+          <Edit className="h-4 w-4" /> Edit Pelanggan
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="rounded-lg gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" /> {tx('Padam')}
+          <Trash2 className="h-4 w-4" /> Padam
         </Button>
       </div>
 
@@ -305,15 +304,15 @@ export default function CustomerDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tx('Padam Pelanggan?')}</DialogTitle>
+            <DialogTitle>Padam Pelanggan?</DialogTitle>
             <DialogDescription>
-              {tx('Data pelanggan akan dipadam. Kerja berkaitan tidak akan dipadam.')}
+              Data pelanggan akan dipadam. Kerja berkaitan tidak akan dipadam.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{tx('Batal')}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Memadam...' : tx('Padam')}
+              {deleting ? 'Memadam...' : 'Padam'}
             </Button>
           </DialogFooter>
         </DialogContent>

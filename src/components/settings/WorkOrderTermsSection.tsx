@@ -3,7 +3,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { tx } from '@/lib/tx';
 
 export const DEFAULT_WO_TERMS = `1. Kerja akan dilaksanakan mengikut spesifikasi yang telah dipersetujui.
 2. Sebarang perubahan skop kerja memerlukan kelulusan bertulis.
@@ -25,7 +24,7 @@ export default function WorkOrderTermsSection() {
     setSaving(true);
     try {
       await updateProfile({ wo_terms: text || null } as any);
-      toast.success(tx("Terma Work Order disimpan!"));
+      toast.success("Terma Work Order disimpan!");
     } catch {
       toast.error("Gagal menyimpan terma");
     } finally {
@@ -35,7 +34,7 @@ export default function WorkOrderTermsSection() {
 
   const handleReset = () => {
     setText(DEFAULT_WO_TERMS);
-    toast.info(tx("Terma dipulihkan ke lalai. Tekan Simpan untuk mengesahkan."));
+    toast.info("Terma dipulihkan ke lalai. Tekan Simpan untuk mengesahkan.");
   };
 
   return (
@@ -52,7 +51,7 @@ export default function WorkOrderTermsSection() {
       </p>
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} disabled={saving} className="rounded-lg">
-          {saving ? "Menyimpan..." : tx("Simpan Terma Work Order")}
+          {saving ? "Menyimpan..." : "Simpan Terma Work Order"}
         </Button>
         <button
           type="button"

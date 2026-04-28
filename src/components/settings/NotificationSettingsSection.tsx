@@ -1,6 +1,5 @@
 import { Bell, BellOff } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { tx } from '@/lib/tx';
 
 export default function NotificationSettingsSection() {
   const { supported, status, busy, enable, disable } = usePushNotifications();
@@ -23,7 +22,7 @@ export default function NotificationSettingsSection() {
 
       {supported && status === 'denied' && (
         <p className="text-xs text-destructive bg-destructive/10 rounded-lg p-3">
-          {tx('Notifikasi telah disekat. Sila benarkan dalam tetapan pelayar anda untuk laman ini.')}
+          Notifikasi telah disekat. Sila benarkan dalam tetapan pelayar anda untuk laman ini.
         </p>
       )}
 

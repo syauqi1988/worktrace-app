@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClipboardList, Search, X, User, Briefcase, CalendarDays } from 'lucide-react';
-import { tx } from '@/lib/tx';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -70,7 +69,7 @@ export default function WorkOrdersListPage() {
       <div data-tutorial="workorders-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder={tx("Cari nombor, tajuk, atau pelanggan...")} className="pl-9 pr-9 rounded-lg" />
+          placeholder="Cari nombor, tajuk, atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -98,8 +97,8 @@ export default function WorkOrdersListPage() {
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border p-8 flex flex-col items-center text-center bg-card">
           <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-3" />
-          <p className="text-muted-foreground">{rows.length === 0 ? tx('Belum ada work order') : tx('Tiada work order dijumpai')}</p>
-          <p className="text-xs text-muted-foreground mt-2">{tx('Work order dibuat dari halaman kerja selepas sebut harga diterima.')}</p>
+          <p className="text-muted-foreground">{rows.length === 0 ? 'Belum ada work order' : 'Tiada work order dijumpai'}</p>
+          <p className="text-xs text-muted-foreground mt-2">Work order dibuat dari halaman kerja selepas sebut harga diterima.</p>
         </div>
       ) : (
         <div className="space-y-2">

@@ -12,7 +12,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 
 import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
-import { tx } from '@/lib/tx';
 
 interface CustomerRow {
   id: string;
@@ -119,27 +118,27 @@ export default function CustomersListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label={tx("pelanggan")}
+          label="pelanggan"
         />
       )}
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">{tx('Pelanggan')}</h1>
+        <h1 className="text-xl font-bold text-foreground">Pelanggan</h1>
         <div className="flex gap-2">
           {!bulk.selectionMode && filtered.length > 0 && (
             <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
-              <CheckSquare className="h-4 w-4" /> {tx('Pilih')}
+              <CheckSquare className="h-4 w-4" /> Pilih
             </Button>
           )}
           <Button data-tutorial="customers-new-btn" onClick={() => navigate('/customers/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-            <Plus className="h-4 w-4" /> {tx('Pelanggan Baru')}
+            <Plus className="h-4 w-4" /> Pelanggan Baru
           </Button>
         </div>
       </div>
 
       <div data-tutorial="customers-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={tx("Cari nama atau nombor telefon...")} className="pl-9 pr-9 rounded-lg" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama atau nombor telefon..." className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -185,11 +184,11 @@ export default function CustomersListPage() {
         <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
           <Users className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground mb-4">
-            {customers.length === 0 ? tx('Belum ada pelanggan') : tx('Tiada pelanggan dijumpai')}
+            {customers.length === 0 ? 'Belum ada pelanggan' : 'Tiada pelanggan dijumpai'}
           </p>
           {customers.length === 0 && (
             <Button onClick={() => navigate('/customers/new')} className="rounded-lg gap-2">
-              <Plus className="h-4 w-4" /> {tx('Tambah Pelanggan Pertama')}
+              <Plus className="h-4 w-4" /> Tambah Pelanggan Pertama
             </Button>
           )}
         </div>
@@ -258,9 +257,9 @@ export default function CustomersListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title={tx("Padam Pelanggan Terpilih?")}
+        title="Padam Pelanggan Terpilih?"
         body={`Adakah anda pasti ingin padam ${bulk.selected.size} pelanggan? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel={tx("Padam")}
+        confirmLabel="Padam"
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

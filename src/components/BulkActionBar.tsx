@@ -1,6 +1,5 @@
 import { Trash2, X, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { tx } from '@/lib/tx';
 
 interface Props {
   count: number;
@@ -10,7 +9,7 @@ interface Props {
   onDelete: () => void;
   onExit: () => void;
   deleting?: boolean;
-  label?: string; // e.g. tx("kerja"), tx("pelanggan")
+  label?: string; // e.g. "kerja", "pelanggan"
 }
 
 export default function BulkActionBar({ count, total, onSelectAll, onClear, onDelete, onExit, deleting, label = 'item' }: Props) {
@@ -27,7 +26,7 @@ export default function BulkActionBar({ count, total, onSelectAll, onClear, onDe
         className="text-xs flex items-center gap-1 px-2 py-1 hover:bg-primary-foreground/10 rounded"
       >
         <CheckSquare className="h-3.5 w-3.5" />
-        {count === total ? 'Buang Semua' : tx('Pilih Semua')}
+        {count === total ? 'Buang Semua' : 'Pilih Semua'}
       </button>
       <Button
         onClick={onDelete}
@@ -37,7 +36,7 @@ export default function BulkActionBar({ count, total, onSelectAll, onClear, onDe
         className="h-8 rounded-md gap-1"
       >
         <Trash2 className="h-3.5 w-3.5" />
-        {tx('Padam')}
+        Padam
       </Button>
     </div>
   );

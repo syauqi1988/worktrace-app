@@ -21,7 +21,6 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
-import { tx } from '@/lib/tx';
 
 interface Job {
   id: string;
@@ -253,10 +252,10 @@ export default function CompletionReportPage() {
   const handleSave = async (status: 'draft' | 'submitted') => {
     if (status === 'submitted') {
       const newErrors: Record<string, string> = {};
-      if (!completionDate) newErrors.completionDate = tx('Sila pilih tarikh');
-      if (!technicianName.trim()) newErrors.technicianName = tx('Sila isi nama juruteknik');
-      if (!workDescription.trim()) newErrors.workDescription = tx('Sila isi penerangan kerja');
-      if (afterPhotos.length === 0) newErrors.photos = tx('Sila muat naik sekurang-kurangnya 1 gambar selepas');
+      if (!completionDate) newErrors.completionDate = 'Sila pilih tarikh';
+      if (!technicianName.trim()) newErrors.technicianName = 'Sila isi nama juruteknik';
+      if (!workDescription.trim()) newErrors.workDescription = 'Sila isi penerangan kerja';
+      if (afterPhotos.length === 0) newErrors.photos = 'Sila muat naik sekurang-kurangnya 1 gambar selepas';
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
@@ -318,16 +317,16 @@ export default function CompletionReportPage() {
         setRejectionReason(null);
         setIsSubmitted(true);
         if (savedId) setReportId(savedId);
-        toast.success(tx('Laporan dihantar! Membuka WhatsApp...'));
+        toast.success('Laporan dihantar! Membuka WhatsApp...');
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
           await shareReportViaWhatsApp(savedId);
         }
       } else {
-        toast.success(tx('Draf laporan disimpan!'));
+        toast.success('Draf laporan disimpan!');
       }
     } catch (err: any) {
-      toast.error(err.message || tx('Ralat menyimpan'));
+      toast.error(err.message || 'Ralat menyimpan');
     } finally {
       setSaving(false);
       setSubmitting(false);
@@ -340,10 +339,10 @@ export default function CompletionReportPage() {
     try {
       const { error } = await supabase.from('completion_reports').delete().eq('id', reportId);
       if (error) throw error;
-      toast.success(tx('Laporan dipadam'));
+      toast.success('Laporan dipadam');
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
-      toast.error(e.message || tx('Gagal memadam laporan'));
+      toast.error(e.message || 'Gagal memadam laporan');
     } finally {
       setDeleting(false);
       setDeleteOpen(false);
@@ -411,7 +410,7 @@ export default function CompletionReportPage() {
       return;
     }
     if (!job.customers?.phone) {
-      toast.error(tx('Pelanggan tiada nombor telefon'));
+      toast.error('Pelanggan tiada nombor telefon');
       return;
     }
     if (!checkWhatsAppShare()) {
@@ -487,7 +486,7 @@ export default function CompletionReportPage() {
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
       openWhatsAppUrl(waUrl);
     } catch (e: any) {
-      toast.error(e?.message || tx('Gagal kongsi laporan'));
+      toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
     }
@@ -505,7 +504,7 @@ export default function CompletionReportPage() {
   if (!job) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">{tx('Kerja tidak dijumpai.')}</p>
+        <p className="text-muted-foreground">Kerja tidak dijumpai.</p>
         <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">Kembali</Button>
       </div>
     );
@@ -519,7 +518,7 @@ export default function CompletionReportPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-foreground">{tx('Laporan Siap Kerja')}</h1>
+          <h1 className="text-xl font-bold text-foreground">Laporan Siap Kerja</h1>
           <p className="text-sm text-muted-foreground">{reportNumber}</p>
         </div>
       </div>
@@ -529,10 +528,10 @@ export default function CompletionReportPage() {
         <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
           <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
             <Loader2 className="h-4 w-4 animate-spin" />
-            {tx('Menunggu Pengesahan Pelanggan')}
+            Menunggu Pengesahan Pelanggan
           </div>
           <p className="text-xs text-[#1D4ED8]/80">
-            {tx('Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.')}
+            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
           </p>
           {job.customers?.phone && (
             <Button onClick={handleWhatsAppShare} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
@@ -553,7 +552,7 @@ export default function CompletionReportPage() {
             <p className="text-xs text-[#15803D]/80">Disahkan pada {formatDateTimeMs(acceptedAt)}</p>
           )}
           <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
-            <Receipt className="h-4 w-4" /> {tx('Buat Invois')}
+            <Receipt className="h-4 w-4" /> Buat Invois
           </Button>
         </div>
       )}
@@ -562,12 +561,12 @@ export default function CompletionReportPage() {
         <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
           <div className="flex items-center gap-2 text-[#B91C1C] text-sm font-semibold">
             <XCircle className="h-5 w-5" />
-            {tx('Laporan Ditolak oleh Pelanggan')}
+            Laporan Ditolak oleh Pelanggan
           </div>
           {rejectionReason && (
             <p className="text-sm text-[#B91C1C]">Sebab: {rejectionReason}</p>
           )}
-          <p className="text-xs text-[#B91C1C]/80">{tx('Anda boleh mengubah suai laporan dan hantar semula.')}</p>
+          <p className="text-xs text-[#B91C1C]/80">Anda boleh mengubah suai laporan dan hantar semula.</p>
         </div>
       )}
 
@@ -602,26 +601,26 @@ export default function CompletionReportPage() {
         <>
           {/* Job Info (read-only) */}
           <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tx('Maklumat Kerja')}</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div><p className="text-xs text-muted-foreground">{tx('Nombor Kerja')}</p><p className="font-medium text-foreground">{job.job_number}</p></div>
+              <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
               <div><p className="text-xs text-muted-foreground">Tajuk</p><p className="text-foreground">{job.title}</p></div>
-              <div><p className="text-xs text-muted-foreground">{tx('Pelanggan')}</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
-              <div><p className="text-xs text-muted-foreground">{tx('Kategori')}</p><p className="text-foreground">{job.category}</p></div>
+              <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
+              <div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-foreground">{job.category}</p></div>
             </div>
           </div>
 
           {/* Completion Date */}
           <div className="space-y-1.5">
-            <Label>{tx('Tarikh Siap Kerja *')}</Label>
+            <Label>Tarikh Siap Kerja *</Label>
             <Input type="date" value={completionDate} onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }} />
             {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
           </div>
 
           {/* Technician Name */}
           <div className="space-y-1.5">
-            <Label>{tx('Nama Juruteknik *')}</Label>
-            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder={tx("Nama pekerja/juruteknik")} />
+            <Label>Nama Juruteknik *</Label>
+            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder="Nama pekerja/juruteknik" />
             {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
           </div>
 
@@ -639,8 +638,8 @@ export default function CompletionReportPage() {
 
           {/* Work Description */}
           <div className="space-y-1.5">
-            <Label>{tx('Penerangan Kerja yang Dilaksanakan *')}</Label>
-            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder={tx("Huraikan kerja yang telah dilaksanakan secara terperinci...")} />
+            <Label>Penerangan Kerja yang Dilaksanakan *</Label>
+            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder="Huraikan kerja yang telah dilaksanakan secara terperinci..." />
             {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
           </div>
 
@@ -655,7 +654,7 @@ export default function CompletionReportPage() {
             kind="before"
             label="📷 Gambar Sebelum Kerja"
             badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
-            helper={tx("Gambar keadaan sebelum kerja bermula untuk perbandingan")}
+            helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
             photos={beforePhotos}
             captions={beforeCaptions}
             uploading={uploadingPhoto}
@@ -670,7 +669,7 @@ export default function CompletionReportPage() {
             kind="after"
             label="📷 Gambar Selepas Kerja"
             badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
-            helper={tx("Gambar hasil akhir kerja yang telah disiapkan")}
+            helper="Gambar hasil akhir kerja yang telah disiapkan"
             photos={afterPhotos}
             captions={afterCaptions}
             uploading={uploadingPhoto}
@@ -683,7 +682,7 @@ export default function CompletionReportPage() {
 
           {/* Checklist (optional) */}
           <div className="space-y-1.5">
-            <Label>{tx('Senarai Semak Siap Kerja')} <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+            <Label>Senarai Semak Siap Kerja <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
             <Textarea
               value={checklistText}
               onChange={e => setChecklistText(e.target.value)}
@@ -692,21 +691,21 @@ export default function CompletionReportPage() {
               className="font-mono text-sm"
             />
             <p className="text-[11px] text-muted-foreground">
-              Gunakan <code className="bg-muted px-1 rounded">[x]</code> {tx('untuk siap,')} <code className="bg-muted px-1 rounded">[ ]</code> {tx('untuk pending. Teks biasa dikira siap.')}
+              Gunakan <code className="bg-muted px-1 rounded">[x]</code> untuk siap, <code className="bg-muted px-1 rounded">[ ]</code> untuk pending. Teks biasa dikira siap.
             </p>
           </div>
 
           {/* Customer Signature */}
           <div className="space-y-1.5">
-            <Label>{tx('Pengesahan Pelanggan (opsional)')}</Label>
-            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder={tx("Nama pelanggan sebagai pengesahan")} />
-            <p className="text-[11px] text-muted-foreground">{tx('Minta pelanggan taip nama sebagai tanda pengesahan kerja siap')}</p>
+            <Label>Pengesahan Pelanggan (opsional)</Label>
+            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder="Nama pelanggan sebagai pengesahan" />
+            <p className="text-[11px] text-muted-foreground">Minta pelanggan taip nama sebagai tanda pengesahan kerja siap</p>
           </div>
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <Label>{tx('Nota Tambahan / Catatan Tapak')}</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={tx("Sebarang catatan atau nota juruteknik...")} />
+            <Label>Nota Tambahan / Catatan Tapak</Label>
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Sebarang catatan atau nota juruteknik..." />
           </div>
         </>
       )}
@@ -715,11 +714,11 @@ export default function CompletionReportPage() {
       {!isSubmitted && (
         <div className="flex flex-col gap-2">
           <Button onClick={() => handleSave('submitted')} disabled={submitting} className="rounded-lg">
-            {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {tx('Menghantar...')}</> : tx('Hantar Laporan')}
+            {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Menghantar...</> : 'Hantar Laporan'}
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => handleSave('draft')} disabled={saving} className="flex-1 rounded-lg">
-              {saving ? 'Menyimpan...' : tx('Simpan Draf')}
+              {saving ? 'Menyimpan...' : 'Simpan Draf'}
             </Button>
             <Button variant="outline" onClick={handlePreview} className="flex-1 rounded-lg gap-2">
               <Eye className="h-4 w-4" /> Pratonton PDF
@@ -731,7 +730,7 @@ export default function CompletionReportPage() {
               onClick={() => setDeleteOpen(true)}
               className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
             >
-              <Trash2 className="h-4 w-4" /> {tx('Padam Laporan')}
+              <Trash2 className="h-4 w-4" /> Padam Laporan
             </Button>
           )}
         </div>
@@ -744,17 +743,17 @@ export default function CompletionReportPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => { setIsSubmitted(false); toast.info(tx('Mod edit dibuka. Hantar semula selepas perubahan.')); }}
+            onClick={() => { setIsSubmitted(false); toast.info('Mod edit dibuka. Hantar semula selepas perubahan.'); }}
             className="rounded-lg gap-2"
           >
-            <Edit className="h-4 w-4" /> {tx('Edit Laporan')}
+            <Edit className="h-4 w-4" /> Edit Laporan
           </Button>
           <Button
             variant="outline"
             onClick={() => setDeleteOpen(true)}
             className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
           >
-            <Trash2 className="h-4 w-4" /> {tx('Padam')}
+            <Trash2 className="h-4 w-4" /> Padam
           </Button>
         </div>
       )}
@@ -763,9 +762,9 @@ export default function CompletionReportPage() {
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
-        title={tx("Padam Laporan Siap Kerja?")}
-        body={tx("Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam.")}
-        confirmLabel={deleting ? 'Memadam...' : tx('Padam')}
+        title="Padam Laporan Siap Kerja?"
+        body="Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam."
+        confirmLabel={deleting ? 'Memadam...' : 'Padam'}
         confirmVariant="danger"
         isLoading={deleting}
       />

@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { RotateCcw, Lock } from "lucide-react";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import UpgradeModal from "@/components/UpgradeModal";
-import { tx } from '@/lib/tx';
 import {
   TEMPLATES,
   TEMPLATE_MAP,
@@ -40,7 +39,7 @@ export default function WhatsAppTemplatesSection() {
   const previewVars = useMemo(
     () => ({
       customer_name: "Encik Ali",
-      company_name: profile?.company_name || tx("Syarikat Anda"),
+      company_name: profile?.company_name || "Syarikat Anda",
       job_number: "JOB-0001",
     }),
     [profile?.company_name],
@@ -77,7 +76,7 @@ export default function WhatsAppTemplatesSection() {
       return;
     }
     setDraft({ ...meta.defaults });
-    toast.info(tx("Templet dikembalikan ke asal. Tekan Simpan untuk sahkan."));
+    toast.info("Templet dikembalikan ke asal. Tekan Simpan untuk sahkan.");
   };
 
   const handleSelectTemplate = (key: TemplateKey) => {
@@ -97,7 +96,7 @@ export default function WhatsAppTemplatesSection() {
 
       {/* Template selector — dropdown style matching native selects in this page */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">{tx('Pilih Templet')}</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">Pilih Templet</label>
         <select
           value={activeKey}
           onChange={(e) => handleSelectTemplate(e.target.value as TemplateKey)}
@@ -132,7 +131,7 @@ export default function WhatsAppTemplatesSection() {
         <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 flex items-start gap-2">
           <Lock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
           <div className="text-xs text-amber-800 dark:text-amber-200">
-            {tx('Templet WhatsApp untuk')} <b>Work Order</b> {tx('hanya boleh diedit pada pelan')} <b>Team</b>.
+            Templet WhatsApp untuk <b>Work Order</b> hanya boleh diedit pada pelan <b>Team</b>.
             Naik taraf untuk membuka kunci.
           </div>
         </div>
@@ -172,7 +171,7 @@ export default function WhatsAppTemplatesSection() {
             </pre>
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">
-            {tx('Bahagian ini dijana automatik dari data dokumen sebenar dan tidak boleh diubah.')}
+            Bahagian ini dijana automatik dari data dokumen sebenar dan tidak boleh diubah.
           </p>
         </div>
 

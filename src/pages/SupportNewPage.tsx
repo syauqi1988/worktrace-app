@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Paperclip, X } from "lucide-react";
-import { tx } from '@/lib/tx';
 
 const CATEGORIES = [
   { value: "bug", label: "🐛 Bug / Ralat Teknikal", defaultPriority: "high" },
@@ -20,7 +19,7 @@ const CATEGORIES = [
 const PRIORITIES = [
   { value: "low", label: "🟢 Rendah", desc: "Soalan am / cadangan" },
   { value: "normal", label: "🔵 Normal", desc: "Isu biasa" },
-  { value: "high", label: "🟡 Tinggi", desc: tx("Mengganggu kerja harian") },
+  { value: "high", label: "🟡 Tinggi", desc: "Mengganggu kerja harian" },
   { value: "urgent", label: "🔴 Urgent", desc: "Tidak boleh guna langsung" },
 ];
 
@@ -49,7 +48,7 @@ export default function SupportNewPage() {
 
   const handleSubmit = async () => {
     if (!category || !subject.trim() || description.length < 20 || !user) {
-      toast.error(tx("Sila lengkapkan semua medan wajib"));
+      toast.error("Sila lengkapkan semua medan wajib");
       return;
     }
     setSubmitting(true);
@@ -118,7 +117,7 @@ export default function SupportNewPage() {
       navigate(`/support/${ticket.id}?new=true`);
     } catch (err) {
       console.error(err);
-      toast.error(tx("Gagal menghantar tiket. Sila cuba lagi."));
+      toast.error("Gagal menghantar tiket. Sila cuba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -130,13 +129,13 @@ export default function SupportNewPage() {
         <button onClick={() => navigate("/support")} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">{tx('Buat Tiket Baru')}</h1>
+        <h1 className="text-xl font-bold text-foreground">Buat Tiket Baru</h1>
       </div>
 
       <div className="bg-card rounded-xl border border-border p-5 space-y-5">
         {/* Category */}
         <div>
-          <label className="text-sm font-medium text-foreground mb-2 block">{tx('Kategori Isu *')}</label>
+          <label className="text-sm font-medium text-foreground mb-2 block">Kategori Isu *</label>
           <div className="space-y-2">
             {CATEGORIES.map((c) => (
               <button
@@ -181,7 +180,7 @@ export default function SupportNewPage() {
           <Input
             value={subject}
             onChange={(e) => setSubject(e.target.value.slice(0, 100))}
-            placeholder={tx("Ringkasan masalah anda...")}
+            placeholder="Ringkasan masalah anda..."
             className="h-11 rounded-lg"
           />
           <p className="text-xs text-muted-foreground mt-1">{subject.length}/100</p>
@@ -218,7 +217,7 @@ export default function SupportNewPage() {
             ))}
             {files.length < 3 && (
               <label className="cursor-pointer">
-                <span className="text-sm text-primary hover:underline">{tx('+ Tambah fail (maks 3, 5MB setiap satu)')}</span>
+                <span className="text-sm text-primary hover:underline">+ Tambah fail (maks 3, 5MB setiap satu)</span>
                 <input type="file" accept="image/*,.pdf,.txt" onChange={handleFileAdd} className="hidden" />
               </label>
             )}
