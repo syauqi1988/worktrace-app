@@ -197,6 +197,25 @@ export default function PublicPaymentProofPage() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Invois</p>
             <p className="text-lg font-bold">{invoice.invoice_number}</p>
             <p className="text-2xl font-bold text-primary mt-1">RM {Number(invoice.total || 0).toFixed(2)}</p>
+            {row.invoice_pdf_url && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href={row.invoice_pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/5"
+                >
+                  <Eye className="h-4 w-4" /> Lihat Invois
+                </a>
+                <a
+                  href={row.invoice_pdf_url}
+                  download
+                  className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-border text-foreground hover:bg-muted"
+                >
+                  <Download className="h-4 w-4" /> Muat Turun PDF
+                </a>
+              </div>
+            )}
           </div>
         )}
 
