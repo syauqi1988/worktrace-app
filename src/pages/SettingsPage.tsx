@@ -1071,22 +1071,22 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="tutorial-bantuan"
         icon={<BookOpen className="h-5 w-5" />}
-        title="Bantuan"
-        description="Bantuan AI dan sokongan"
+        title={t("settings.help.title")}
+        description={t("settings.help.description")}
       >
         <div>
           <AiHelpButton />
         </div>
 
         <div className="border-t border-border pt-4 space-y-2">
-          <p className="text-sm text-muted-foreground">Perlukan bantuan manusia?</p>
+          <p className="text-sm text-muted-foreground">{t("settings.help.needHuman")}</p>
           <button
             onClick={() => navigate("/support/new")}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
           >
-            📧 Hantar Tiket Sokongan
+            {t("settings.help.sendTicket")}
           </button>
-          <p className="text-xs text-muted-foreground">Masa respons: &lt; 24 jam (hari bekerja)</p>
+          <p className="text-xs text-muted-foreground">{t("settings.help.responseTime")}</p>
         </div>
       </SettingsAccordion>
 
@@ -1094,25 +1094,25 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="zon-bahaya"
         icon={<AlertTriangle className="h-5 w-5" />}
-        title="Zon Bahaya"
-        description="Padam akaun dan tindakan yang tidak boleh dibatalkan"
+        title={t("settings.danger.title")}
+        description={t("settings.danger.description")}
         danger
       >
         <div>
-          <label className="text-sm font-medium text-foreground mb-1 block">E-mel Akaun</label>
+          <label className="text-sm font-medium text-foreground mb-1 block">{t("settings.danger.accountEmail")}</label>
           <p className="text-sm text-foreground">{user?.email}</p>
         </div>
         <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 space-y-1">
           <p className="text-[13px] text-destructive font-medium flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5" /> Tindakan Tidak Boleh Dibatalkan
+            <AlertTriangle className="h-3.5 w-3.5" /> {t("settings.danger.irreversible")}
           </p>
           <ul className="text-[13px] text-destructive list-disc list-inside space-y-0.5">
-            <li>Semua kerja dan rekod</li>
-            <li>Semua pelanggan</li>
-            <li>Semua sebut harga, work order dan invois</li>
-            <li>Semua fail dan dokumen</li>
-            <li>Profil dan akaun syarikat</li>
-            <li>Rekod rujukan</li>
+            <li>{t("settings.danger.items.jobs")}</li>
+            <li>{t("settings.danger.items.customers")}</li>
+            <li>{t("settings.danger.items.documents")}</li>
+            <li>{t("settings.danger.items.files")}</li>
+            <li>{t("settings.danger.items.profile")}</li>
+            <li>{t("settings.danger.items.referrals")}</li>
           </ul>
         </div>
         <Button
@@ -1120,7 +1120,7 @@ export default function SettingsPage() {
           className="text-destructive border-destructive hover:bg-destructive/5 rounded-lg"
           onClick={() => setDeleteOpen(true)}
         >
-          Padam Akaun
+          {t("settings.danger.deleteAccount")}
         </Button>
       </SettingsAccordion>
 
