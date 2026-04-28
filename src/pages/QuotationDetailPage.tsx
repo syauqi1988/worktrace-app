@@ -503,7 +503,9 @@ Terima kasih!
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> Edit
             </Button>
-            <Button onClick={() => updateStatus('Accepted')} className="flex-1 rounded-lg bg-green-600 hover:bg-green-700">Diterima</Button>
+            <Button disabled className="flex-1 rounded-lg gap-2 bg-amber-500 text-white opacity-90 cursor-not-allowed hover:bg-amber-500">
+              <Loader2 className="h-4 w-4 animate-spin" /> Menunggu Pengesahan Pelanggan
+            </Button>
             <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">Ditolak</Button>
           </>
         )}
@@ -512,8 +514,8 @@ Terima kasih!
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> Edit
             </Button>
-            <Button onClick={handleConvertToInvoice} disabled={converting} className="flex-1 rounded-lg gap-2">
-              <FileText className="h-4 w-4" /> {converting ? 'Membuat invois...' : 'Tukar ke Invois'}
+            <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
+              <Briefcase className="h-4 w-4" /> Buat Work Order
             </Button>
           </>
         )}
