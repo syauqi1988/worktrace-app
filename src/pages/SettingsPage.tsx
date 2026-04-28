@@ -152,6 +152,8 @@ export default function SettingsPage() {
     }
   }, [profile]);
 
+  const [applyingFreeMonths, setApplyingFreeMonths] = useState(false);
+
   // Fetch referrals
   useEffect(() => {
     if (!user) return;
