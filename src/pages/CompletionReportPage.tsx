@@ -604,14 +604,50 @@ Terima kasih!
               <Eye className="h-4 w-4" /> Pratonton PDF
             </Button>
           </div>
+          {reportId && (
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOpen(true)}
+              className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
+            >
+              <Trash2 className="h-4 w-4" /> Padam Laporan
+            </Button>
+          )}
         </div>
       )}
 
       {isSubmitted && (
-        <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2">
-          <Eye className="h-4 w-4" /> Pratonton PDF
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
+            <Eye className="h-4 w-4" /> Pratonton PDF
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { setIsSubmitted(false); toast.info('Mod edit dibuka. Hantar semula selepas perubahan.'); }}
+            className="rounded-lg gap-2"
+          >
+            <Edit className="h-4 w-4" /> Edit Laporan
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setDeleteOpen(true)}
+            className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
+          >
+            <Trash2 className="h-4 w-4" /> Padam
+          </Button>
+        </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+        title="Padam Laporan Siap Kerja?"
+        body="Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam."
+        confirmLabel={deleting ? 'Memadam...' : 'Padam'}
+        confirmVariant="danger"
+        isLoading={deleting}
+      />
 
       <PDFPreviewModal
         open={previewOpen}
