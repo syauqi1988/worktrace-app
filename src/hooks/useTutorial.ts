@@ -2,7 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type TutorialPage = 'dashboard' | 'jobs' | 'customers' | 'quotations' | 'invoices' | 'settings';
+export type TutorialPage =
+  | 'dashboard'
+  | 'jobs'
+  | 'job-detail'
+  | 'customers'
+  | 'quotations'
+  | 'quotation-detail'
+  | 'work-orders'
+  | 'invoices'
+  | 'invoice-detail'
+  | 'receipts'
+  | 'reports'
+  | 'support'
+  | 'settings';
 
 interface PageTutorialState {
   completed: boolean;
