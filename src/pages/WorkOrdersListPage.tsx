@@ -66,7 +66,7 @@ export default function WorkOrdersListPage() {
     <div className="p-4 md:p-6 space-y-4">
       <h1 className="text-xl font-bold text-foreground">Work Order</h1>
 
-      <div className="relative">
+      <div data-tutorial="workorders-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Cari nombor, tajuk, atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
@@ -77,7 +77,7 @@ export default function WorkOrdersListPage() {
         )}
       </div>
 
-      <div className="flex gap-1 overflow-x-auto pb-1">
+      <div data-tutorial="workorders-status-tabs" className="flex gap-1 overflow-x-auto pb-1">
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium shrink-0 ${
