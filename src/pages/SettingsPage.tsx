@@ -343,7 +343,7 @@ export default function SettingsPage() {
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralUrl);
-    toast.success("Link rujukan disalin! Kongsi dengan rakan kontraktor anda.");
+    toast.success(t("settings.referral.copied"));
   };
 
   const shareWhatsApp = () => {
