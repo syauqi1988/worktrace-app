@@ -245,7 +245,7 @@ export default function AppShell() {
                 </button>
               </div>
               <nav className="flex-1 py-4 space-y-1">
-                {NAV_ITEMS.map(item => {
+                {NAV_ITEMS.filter(item => !(item.teamOnly && profile?.plan !== 'team')).map(item => {
                   const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
                   return (
                     <NavLink
