@@ -22,12 +22,14 @@ function fillPreview(text: string, vars: Record<string, string>): string {
 
 export default function WhatsAppTemplatesSection() {
   const { profile, updateProfile } = useAuth();
+  const { isTeam, upgradeOpen, setUpgradeOpen, upgradeReason, checkTeamFeature } = usePlanGate();
   const [activeKey, setActiveKey] = useState<TemplateKey>("quotation");
   const [draft, setDraft] = useState<TemplateEditable>({ greeting: "", intro: "", closing: "" });
   const [saving, setSaving] = useState(false);
 
   const templates: TemplatesState = (profile as any)?.whatsapp_templates || {};
   const meta = TEMPLATE_MAP[activeKey];
+  const isWorkOrderLocked = activeKey === "work_order" && !isTeam;
 
   useEffect(() => {
     setDraft(getTemplate(templates, activeKey));
