@@ -393,19 +393,19 @@ export default function SettingsPage() {
         id="profil-syarikat"
         tutorialId="settings-profile"
         icon={<Building2 className="h-5 w-5" />}
-        title="Profil Syarikat"
-        description="Nama syarikat, telefon, alamat dan logo"
+        title={t("settings.profile.title")}
+        description={t("settings.profile.description")}
         defaultOpen
       >
         {user && (
           <CompanyLogoUpload userId={user.id} logoUrl={logoUrl} onChange={setLogoUrl} />
         )}
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Syarikat *</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.companyName")}</label>
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="h-11 rounded-lg" />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Nombor Telefon</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.phone")}</label>
           <Input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -414,7 +414,7 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Alamat</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.address")}</label>
           <textarea
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -422,29 +422,29 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Baru)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.ssmNew")}</label>
           <Input
             value={ssmNumberNew}
             onChange={(e) => setSsmNumberNew(e.target.value.replace(/\D/g, ""))}
-            placeholder="cth: 202301012345"
+            placeholder={t("settings.profile.ssmNewPlaceholder")}
             inputMode="numeric"
             pattern="[0-9]*"
             className="h-11 rounded-lg"
           />
-          <p className="text-xs text-muted-foreground mt-1">Format baru SSM (nombor sahaja)</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("settings.profile.ssmNewHint")}</p>
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">No. Pendaftaran SSM (Lama)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t("settings.profile.ssmOld")}</label>
           <Input
             value={ssmNumberOld}
             onChange={(e) => setSsmNumberOld(e.target.value)}
-            placeholder="cth: 123456-A"
+            placeholder={t("settings.profile.ssmOldPlaceholder")}
             className="h-11 rounded-lg"
           />
-          <p className="text-xs text-muted-foreground mt-1">Format lama SSM (jika ada)</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("settings.profile.ssmOldHint")}</p>
         </div>
         <Button onClick={handleSaveProfile} disabled={savingProfile} className="rounded-lg">
-          {savingProfile ? "Menyimpan..." : "Simpan Profil"}
+          {savingProfile ? t("settings.saving") : t("settings.profile.save")}
         </Button>
       </SettingsAccordion>
 
