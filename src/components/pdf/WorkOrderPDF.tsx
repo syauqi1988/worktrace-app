@@ -51,11 +51,6 @@ const extra = StyleSheet.create({
   scheduleCell: { width: '50%', marginBottom: 4 },
   scheduleLabel: { fontSize: 8, color: COLORS.MUTED },
   scheduleValue: { fontSize: 9, color: COLORS.BLACK, marginTop: 1 },
-  signatureRow: { flexDirection: 'row', gap: 24, marginTop: 30 },
-  signatureBox: { flex: 1 },
-  signatureLine: { borderTopWidth: 0.5, borderTopColor: COLORS.BLACK, paddingTop: 4 },
-  signatureLabel: { fontSize: 8, color: COLORS.MUTED, textAlign: 'center' },
-  signatureName: { fontSize: 9, color: COLORS.BLACK, marginTop: 2, textAlign: 'center' },
 });
 
 const DEFAULT_TERMS = `1. Kerja dilaksanakan mengikut spesifikasi dipersetujui.
@@ -221,21 +216,6 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
           })}
         </View>
 
-        {/* Acceptance signatures */}
-        <View style={extra.signatureRow}>
-          <View style={extra.signatureBox}>
-            <View style={extra.signatureLine}>
-              <Text style={extra.signatureLabel}>Tandatangan Syarikat</Text>
-              <Text style={extra.signatureName}>{company.company_name || ''}</Text>
-            </View>
-          </View>
-          <View style={extra.signatureBox}>
-            <View style={extra.signatureLine}>
-              <Text style={extra.signatureLabel}>Tandatangan Pelanggan</Text>
-              <Text style={extra.signatureName}>{customer?.name || ''}</Text>
-            </View>
-          </View>
-        </View>
 
         {/* Footer */}
         <View style={s.footer} fixed>

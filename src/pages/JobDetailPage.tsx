@@ -81,6 +81,7 @@ interface CompletionReport {
   customer_signature: string | null;
   notes: string | null;
   photos: any;
+  accepted_at?: string | null;
 }
 
 function formatPhone(phone: string): string {
@@ -132,7 +133,7 @@ export default function JobDetailPage() {
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase.from('completion_reports')
-          .select('id, report_number, status, completion_date, work_description, technician_name, photos')
+          .select('id, report_number, status, completion_date, work_description, technician_name, materials_used, customer_signature, notes, photos, accepted_at')
           .eq('job_id', id)
           .eq('user_id', user!.id)
           .maybeSingle(),
@@ -206,6 +207,8 @@ export default function JobDetailPage() {
             phone: profile?.phone || null,
             address: profile?.address || null,
             logo_base64: canShowLogo ? logoBase64 : '',
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
           }}
         />
       ).toBlob();
@@ -237,6 +240,8 @@ export default function JobDetailPage() {
             phone: profile?.phone || null,
             address: profile?.address || null,
             logo_base64: canShowLogo ? logoBase64 : '',
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
           }}
         />
       ).toBlob();

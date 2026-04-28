@@ -39,6 +39,12 @@ function formatDateMs(d: string | null) {
   return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function formatDateTimeMs(d: string | null) {
+  if (!d) return '-';
+  const dt = new Date(d);
+  return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+}
+
 export default function CompletionReportPage() {
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
@@ -65,6 +71,7 @@ export default function CompletionReportPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [reportStatus, setReportStatus] = useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [acceptedAt, setAcceptedAt] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const { checkWhatsAppShare } = usePlanGate();
 
@@ -115,6 +122,7 @@ export default function CompletionReportPage() {
         const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
         setReportStatus(status);
         setRejectionReason(r.rejection_reason || null);
+        setAcceptedAt(r.accepted_at || null);
         // Lock fields once it's been sent (submitted/accepted). Allow edit again if rejected.
         setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
@@ -288,6 +296,8 @@ export default function CompletionReportPage() {
             materials_used: materialsUsed,
             customer_signature: customerSignature,
             notes,
+            status: reportStatus,
+            accepted_at: acceptedAt,
             before_photos: beforeBase64.filter(Boolean),
             after_photos: afterBase64.filter(Boolean),
           }}
@@ -298,6 +308,8 @@ export default function CompletionReportPage() {
             phone: profile?.phone || null,
             address: profile?.address || null,
             logo_base64: logoBase64,
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
           }}
         />
       ).toBlob();
@@ -338,6 +350,8 @@ export default function CompletionReportPage() {
             materials_used: materialsUsed,
             customer_signature: customerSignature,
             notes,
+            status: reportStatus,
+            accepted_at: acceptedAt,
             before_photos: beforeBase64.filter(Boolean),
             after_photos: afterBase64.filter(Boolean),
           }}
@@ -348,6 +362,8 @@ export default function CompletionReportPage() {
             phone: profile?.phone || null,
             address: profile?.address || null,
             logo_base64: logoBase64,
+            ssm_number_new: profile?.ssm_number_new || null,
+            ssm_number_old: profile?.ssm_number_old || null,
           }}
         />
       ).toBlob();
@@ -455,6 +471,9 @@ Terima kasih!
             <CheckCircle className="h-5 w-5" />
             Laporan Disahkan oleh Pelanggan — Kerja Selesai
           </div>
+          {acceptedAt && (
+            <p className="text-xs text-[#15803D]/80">Disahkan pada {formatDateTimeMs(acceptedAt)}</p>
+          )}
           <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
             <Receipt className="h-4 w-4" /> Buat Invois
           </Button>
