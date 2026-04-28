@@ -25,6 +25,7 @@ interface ProofRow {
   status: string;
   submitted_at: string | null;
   rejection_reason: string | null;
+  invoice_pdf_url: string | null;
 }
 
 export default function PublicPaymentProofPage() {
