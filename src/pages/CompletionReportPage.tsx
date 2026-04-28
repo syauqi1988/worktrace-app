@@ -372,21 +372,25 @@ export default function CompletionReportPage() {
       });
       const approvalUrl = buildPublicApprovalUrl(token);
       const phone = formatPhoneIntl(job.customers.phone);
+      const companyName = profile?.company_name || '';
       const msg =
-`Assalamualaikum ${job.customers.name},
+`Assalamualaikum / Salam Sejahtera ${job.customers.name},
 
-Kerja kami telah siap! Sila semak Laporan Siap Kerja:
+Alhamdulillah, kerja telah siap dilaksanakan. 🙏
+
+Berikut adalah Laporan Siap Kerja daripada *${companyName}*:
 
 📋 *No. Laporan:* ${reportNumber}
 🔨 *Kerja:* ${job.title}
 📅 *Tarikh Siap:* ${formatDateMs(completionDate)}
 
-Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+Sila klik pautan di bawah untuk *melihat & mengesahkan* laporan:
 🔗 ${approvalUrl}
 
-Terima kasih! 🙏
+Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
 
-*${profile?.company_name || ''}*`;
+Terima kasih!
+*${companyName}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } catch (e: any) {
       toast.error(e?.message || 'Gagal kongsi laporan');
