@@ -82,8 +82,8 @@ function buildDashboardSteps(): DriveStep[] {
     },
     {
       popover: {
-        title: '✅ Aliran Kerja Mudah',
-        description: 'Cara guna WorkTrace: 1️⃣ Daftar pelanggan → 2️⃣ Buat kerja → 3️⃣ Hantar sebut harga → 4️⃣ Tukar jadi invois → 5️⃣ Tandakan dibayar → resit auto-jana. Mari mulakan!',
+        title: '✅ Aliran Kerja Penuh WorkTrace',
+        description: 'Ikut urutan ini untuk hasil terbaik:\n\n1️⃣ Pelanggan — daftar maklumat pelanggan\n2️⃣ Kerja — buka kerja baru untuk pelanggan\n3️⃣ Sebut Harga — hantar tawaran kepada pelanggan\n4️⃣ Work Order — arahan kerja untuk team/subkon\n5️⃣ Completion Report — laporan kerja siap\n6️⃣ Invois — bil pembayaran\n7️⃣ Resit — auto-jana selepas dibayar\n\nMari mulakan! 🚀',
       },
     },
   ];
