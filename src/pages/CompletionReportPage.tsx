@@ -372,6 +372,10 @@ export default function CompletionReportPage() {
             accepted_at: acceptedAt,
             before_photos: beforeBase64.filter(Boolean),
             after_photos: afterBase64.filter(Boolean),
+            location_label: locationLabel || null,
+            project_ref: projectRef || null,
+            checklist: parseChecklist(checklistText),
+            photo_captions: { before: beforeCaptions, after: afterCaptions },
           }}
           job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
           customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
