@@ -206,22 +206,30 @@ export default function AppShell() {
         {/* Sidebar — desktop */}
         <aside data-tutorial="sidebar" className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
           <nav className="flex-1 py-4 space-y-1">
-            {NAV_ITEMS.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                data-tutorial={item.tutorialId}
-                className={() => navLinkClass(item.to)}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-                {item.to === '/support' && supportNotifCount > 0 && (
-                  <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
-                    {supportNotifCount}
-                  </span>
-                )}
-              </NavLink>
-            ))}
+            {NAV_ITEMS.map(item => {
+              const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  data-tutorial={item.tutorialId}
+                  className={() => navLinkClass(item.to)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
+                  {isTeamOnlyLocked && (
+                    <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+                      <Lock className="h-2.5 w-2.5" /> Team
+                    </span>
+                  )}
+                  {item.to === '/support' && supportNotifCount > 0 && (
+                    <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                      {supportNotifCount}
+                    </span>
+                  )}
+                </NavLink>
+              );
+            })}
           </nav>
         </aside>
 
@@ -237,22 +245,30 @@ export default function AppShell() {
                 </button>
               </div>
               <nav className="flex-1 py-4 space-y-1">
-                {NAV_ITEMS.map(item => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setSidebarOpen(false)}
-                    className={() => navLinkClass(item.to)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                    {item.to === '/support' && supportNotifCount > 0 && (
-                      <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
-                        {supportNotifCount}
-                      </span>
-                    )}
-                  </NavLink>
-                ))}
+                {NAV_ITEMS.map(item => {
+                  const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setSidebarOpen(false)}
+                      className={() => navLinkClass(item.to)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
+                      {isTeamOnlyLocked && (
+                        <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+                          <Lock className="h-2.5 w-2.5" /> Team
+                        </span>
+                      )}
+                      {item.to === '/support' && supportNotifCount > 0 && (
+                        <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+                          {supportNotifCount}
+                        </span>
+                      )}
+                    </NavLink>
+                  );
+                })}
               </nav>
             </aside>
           </>
