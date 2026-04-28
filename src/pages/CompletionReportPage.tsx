@@ -471,6 +471,9 @@ Terima kasih!
             <CheckCircle className="h-5 w-5" />
             Laporan Disahkan oleh Pelanggan — Kerja Selesai
           </div>
+          {acceptedAt && (
+            <p className="text-xs text-[#15803D]/80">Disahkan pada {formatDateTimeMs(acceptedAt)}</p>
+          )}
           <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
             <Receipt className="h-4 w-4" /> Buat Invois
           </Button>
