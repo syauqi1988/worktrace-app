@@ -292,24 +292,26 @@ export default function WorkOrderFormPage() {
       const approvalUrl = buildPublicApprovalUrl(token);
 
       const phone = formatPhone(job.customers.phone);
+      const companyName = profile?.company_name || '';
       const msg =
-`Assalamualaikum ${job.customers.name},
+`Assalamualaikum / Salam Sejahtera ${job.customers.name},
 
-Terima kasih atas kepercayaan anda! 🙏
+Terima kasih atas kepercayaan anda. 🙏
 
-Berikut adalah Work Order untuk kerja yang akan kami laksanakan:
+Berikut adalah Work Order daripada *${companyName}*:
 
 📋 *No. Work Order:* ${woNumber}
 🔨 *Tajuk Kerja:* ${title}
 📅 *Tarikh Mula:* ${formatDate(startDate)}
 📍 *Lokasi:* ${location || '-'}
 
-Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+Sila klik pautan di bawah untuk *melihat & mengesahkan* work order:
 🔗 ${approvalUrl}
 
-Terima kasih! 🙏
+Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
 
-*${profile?.company_name || ''}*`;
+Terima kasih!
+*${companyName}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } catch {
       toast.error('Gagal kongsi PDF');
