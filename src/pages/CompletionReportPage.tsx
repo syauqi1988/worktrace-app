@@ -212,6 +212,12 @@ export default function CompletionReportPage() {
     if (isSaving) setSaving(true);
     else setSubmitting(true);
 
+    // Pre-open WhatsApp tab synchronously to preserve the user gesture (avoids redirect to api.whatsapp.com landing page)
+    let waWindow: Window | null = null;
+    if (status === 'submitted' && job?.customers?.phone) {
+      waWindow = window.open('about:blank', '_blank');
+    }
+
     try {
       const payload: any = {
         user_id: user!.id,
