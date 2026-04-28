@@ -10,7 +10,7 @@ function generateToken(): string {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export type ApprovalDocType = 'quotation' | 'work_order';
+export type ApprovalDocType = 'quotation' | 'work_order' | 'completion_report';
 
 interface CreateApprovalArgs {
   userId: string;

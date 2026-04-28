@@ -463,15 +463,26 @@ export default function JobDetailPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-primary">{report.report_number}</span>
               <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                report.status === 'submitted' ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F5F9] text-[#64748B]'
+                report.status === 'accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
+                report.status === 'submitted' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
+                report.status === 'rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
+                'bg-[#F1F5F9] text-[#64748B]'
               }`}>
-                {report.status === 'submitted' ? 'Submitted' : 'Draft'}
+                {report.status === 'accepted' ? 'Diterima' :
+                 report.status === 'submitted' ? 'Menunggu Pengesahan' :
+                 report.status === 'rejected' ? 'Ditolak' : 'Draft'}
               </span>
             </div>
             {report.status === 'submitted' && (
+              <div className="flex items-center gap-1.5 text-[#1D4ED8]">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span className="text-xs font-medium">Menunggu pengesahan pelanggan</span>
+              </div>
+            )}
+            {report.status === 'accepted' && (
               <div className="flex items-center gap-1.5 text-[#15803D]">
                 <CheckCircle className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">Laporan telah dihantar</span>
+                <span className="text-xs font-medium">Disahkan oleh pelanggan</span>
               </div>
             )}
             <div className="flex flex-wrap gap-2 mt-1">
@@ -489,7 +500,7 @@ export default function JobDetailPage() {
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
                 <Eye className="h-3.5 w-3.5" /> Pratonton PDF
               </Button>
-              {report.status === 'submitted' && job.customers?.phone && (
+              {(report.status === 'submitted' || report.status === 'accepted' || report.status === 'rejected') && job.customers?.phone && (
                 <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={handleReportWhatsApp} disabled={isSharing}>
                   {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
                   Kongsi via WhatsApp
@@ -538,10 +549,10 @@ export default function JobDetailPage() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'submitted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu dihantar dahulu'}
+              {report?.status === 'accepted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu'}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
-              disabled={report?.status !== 'submitted'}
+              disabled={report?.status !== 'accepted'}
               onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
               <Receipt className="h-3.5 w-3.5" /> Buat Invois
             </Button>

@@ -8,13 +8,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Loader2, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
+import { usePlanGate } from '@/hooks/usePlanGate';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 
 interface Job {
   id: string;
@@ -22,7 +24,19 @@ interface Job {
   title: string;
   category: string;
   customer_id: string | null;
-  customers: { name: string; phone: string | null; address: string | null } | null;
+  customers: { name: string; phone: string | null; email: string | null; address: string | null } | null;
+}
+
+function formatPhoneIntl(phone: string): string {
+  let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
+  if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
+  return cleaned;
+}
+
+function formatDateMs(d: string | null) {
+  if (!d) return '-';
+  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function CompletionReportPage() {
@@ -49,6 +63,10 @@ export default function CompletionReportPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [reportStatus, setReportStatus] = useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const { checkWhatsAppShare } = usePlanGate();
 
   // PDF Preview
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -67,7 +85,7 @@ export default function CompletionReportPage() {
     async function fetch() {
       const [jobRes, reportRes] = await Promise.all([
         supabase.from('jobs')
-          .select('id, job_number, title, category, customer_id, customers(name, phone, address)')
+          .select('id, job_number, title, category, customer_id, customers(name, phone, email, address)')
           .eq('id', jobId).single(),
         supabase.from('completion_reports')
           .select('*')
@@ -94,7 +112,11 @@ export default function CompletionReportPage() {
         );
         setCustomerSignature(r.customer_signature || '');
         setNotes(r.notes || '');
-        setIsSubmitted(r.status === 'submitted');
+        const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
+        setReportStatus(status);
+        setRejectionReason(r.rejection_reason || null);
+        // Lock fields once it's been sent (submitted/accepted). Allow edit again if rejected.
+        setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
         // Preview next report number from doc_number_settings
         const { data: profileData } = await supabase
@@ -198,8 +220,12 @@ export default function CompletionReportPage() {
 
       if (status === 'submitted') {
         payload.submitted_at = new Date().toISOString();
+        // Reset any prior rejection so it goes back into "waiting for customer"
+        payload.rejected_at = null;
+        payload.rejection_reason = null;
       }
 
+      let savedId = reportId;
       if (reportId) {
         const { error } = await supabase.from('completion_reports').update(payload).eq('id', reportId);
         if (error) throw error;
@@ -209,8 +235,10 @@ export default function CompletionReportPage() {
         payload.report_number = finalNumber;
         setReportNumber(finalNumber);
 
-        const { error } = await supabase.from('completion_reports').insert(payload);
+        const { data: inserted, error } = await supabase.from('completion_reports').insert(payload).select('id').single();
         if (error) throw error;
+        savedId = inserted?.id || null;
+        if (savedId) setReportId(savedId);
       }
 
       if (status === 'submitted') {
@@ -218,8 +246,11 @@ export default function CompletionReportPage() {
         await autoUpdateJobStatus(supabase as any, jobId!, user!.id, 'report_submitted', {
           completed_date: completionDate,
         });
-        toast.success('Laporan berjaya dihantar! Invois kini boleh dijana.');
-        navigate(`/jobs/${jobId}`);
+        // Stay on page so user can immediately share the approval link via WhatsApp
+        setReportStatus('submitted');
+        setRejectionReason(null);
+        setIsSubmitted(true);
+        toast.success('Laporan dihantar! Sila kongsi pautan pengesahan kepada pelanggan via WhatsApp.');
       } else {
         toast.success('Draf laporan disimpan!');
       }
@@ -274,6 +305,86 @@ export default function CompletionReportPage() {
     }
   };
 
+  const handleWhatsAppShare = async () => {
+    if (!job || !user || !reportId) return;
+    if (!job.customers?.phone) {
+      toast.error('Pelanggan tiada nombor telefon');
+      return;
+    }
+    if (!checkWhatsAppShare()) return;
+    setSharing(true);
+    try {
+      const [beforeBase64, afterBase64] = await Promise.all([
+        Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+        Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+      ]);
+      const blob = await pdf(
+        <CompletionReportPDF
+          report={{
+            report_number: reportNumber,
+            completion_date: completionDate,
+            technician_name: technicianName,
+            work_description: workDescription,
+            materials_used: materialsUsed,
+            customer_signature: customerSignature,
+            notes,
+            before_photos: beforeBase64.filter(Boolean),
+            after_photos: afterBase64.filter(Boolean),
+          }}
+          job={{ job_number: job.job_number, title: job.title, category: job.category }}
+          customer={{ name: job.customers.name, phone: job.customers.phone, address: job.customers.address }}
+          company={{
+            company_name: profile?.company_name || null,
+            phone: profile?.phone || null,
+            address: profile?.address || null,
+            logo_base64: logoBase64,
+          }}
+        />
+      ).toBlob();
+      const fileName = `${user.id}/${reportNumber}.pdf`;
+      await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, {
+        contentType: 'application/pdf',
+        upsert: true,
+      });
+      const { data: signed } = await supabase.storage
+        .from('completion-report-pdfs')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const pdfUrl = signed?.signedUrl ?? '';
+
+      const token = await getOrCreateApprovalToken({
+        userId: user.id,
+        documentId: reportId,
+        documentType: 'completion_report',
+        customerName: job.customers.name,
+        customerEmail: job.customers.email || null,
+        pdfUrl,
+        expiresInDays: 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
+      const phone = formatPhoneIntl(job.customers.phone);
+      const msg =
+`Assalamualaikum ${job.customers.name},
+
+Kerja kami telah siap! Sila semak Laporan Siap Kerja:
+
+📋 *No. Laporan:* ${reportNumber}
+🔨 *Kerja:* ${job.title}
+📅 *Tarikh Siap:* ${formatDateMs(completionDate)}
+
+Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
+🔗 ${approvalUrl}
+
+Terima kasih! 🙏
+
+*${profile?.company_name || ''}*`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    } catch (e: any) {
+      toast.error(e?.message || 'Gagal kongsi laporan');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-6 space-y-4">
@@ -305,9 +416,47 @@ export default function CompletionReportPage() {
         </div>
       </div>
 
-      {isSubmitted && (
-        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 text-sm text-[#15803D] font-medium">
-          ✓ Laporan ini telah dihantar
+      {/* Status banners — mirror Work Order */}
+      {reportStatus === 'submitted' && (
+        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
+          <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Menunggu Pengesahan Pelanggan
+          </div>
+          <p className="text-xs text-[#1D4ED8]/80">
+            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
+          </p>
+          {job.customers?.phone && (
+            <Button onClick={handleWhatsAppShare} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
+              {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              Kongsi Semula via WhatsApp
+            </Button>
+          )}
+        </div>
+      )}
+
+      {reportStatus === 'accepted' && (
+        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2 text-[#15803D] text-sm font-semibold">
+            <CheckCircle className="h-5 w-5" />
+            Laporan Disahkan oleh Pelanggan — Kerja Selesai
+          </div>
+          <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
+            <Receipt className="h-4 w-4" /> Buat Invois
+          </Button>
+        </div>
+      )}
+
+      {reportStatus === 'rejected' && (
+        <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2 text-[#B91C1C] text-sm font-semibold">
+            <XCircle className="h-5 w-5" />
+            Laporan Ditolak oleh Pelanggan
+          </div>
+          {rejectionReason && (
+            <p className="text-sm text-[#B91C1C]">Sebab: {rejectionReason}</p>
+          )}
+          <p className="text-xs text-[#B91C1C]/80">Anda boleh mengubah suai laporan dan hantar semula.</p>
         </div>
       )}
 

@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface ApprovalRow {
   id: string;
   document_id: string;
-  document_type: 'quotation' | 'work_order';
+  document_type: 'quotation' | 'work_order' | 'completion_report';
   token: string;
   pdf_url: string | null;
   customer_name: string | null;
@@ -64,11 +64,20 @@ export default function PublicApprovalPage() {
       if (profile) setCompany(profile as any);
 
       // Load doc summary (only fields needed for display)
-      const tableName = r.document_type === 'quotation' ? 'quotations' : 'work_orders';
-      const numberCol = r.document_type === 'quotation' ? 'quote_number' : 'wo_number';
+      const tableName =
+        r.document_type === 'quotation' ? 'quotations'
+        : r.document_type === 'work_order' ? 'work_orders'
+        : 'completion_reports';
+      const numberCol =
+        r.document_type === 'quotation' ? 'quote_number'
+        : r.document_type === 'work_order' ? 'wo_number'
+        : 'report_number';
+      const selectCols = r.document_type === 'completion_report'
+        ? `id, ${numberCol}, created_at, status`
+        : `id, ${numberCol}, total, created_at, status`;
       const { data: docData } = await supabase
         .from(tableName as any)
-        .select(`id, ${numberCol}, total, created_at, status`)
+        .select(selectCols)
         .eq('id', r.document_id)
         .maybeSingle();
       setDoc(docData);
@@ -99,10 +108,16 @@ export default function PublicApprovalPage() {
     }
 
     // Mirror status to source document
-    const tableName = row.document_type === 'quotation' ? 'quotations' : 'work_orders';
-    const newStatus = action === 'accepted' ? 'Accepted' : 'Rejected';
+    const tableName =
+      row.document_type === 'quotation' ? 'quotations'
+      : row.document_type === 'work_order' ? 'work_orders'
+      : 'completion_reports';
+    // completion_reports uses lowercase status values; quotations/work_orders use Capitalized
+    const newStatus = row.document_type === 'completion_report'
+      ? (action === 'accepted' ? 'accepted' : 'rejected')
+      : (action === 'accepted' ? 'Accepted' : 'Rejected');
     const updates: any = { status: newStatus };
-    if (row.document_type === 'work_order') {
+    if (row.document_type === 'work_order' || row.document_type === 'completion_report') {
       if (action === 'accepted') updates.accepted_at = new Date().toISOString();
       else { updates.rejected_at = new Date().toISOString(); updates.rejection_reason = reason.trim() || null; }
     }
@@ -133,8 +148,14 @@ export default function PublicApprovalPage() {
   }
 
   const expired = row.expires_at && new Date(row.expires_at) < new Date();
-  const docLabel = row.document_type === 'quotation' ? 'Sebut Harga' : 'Work Order';
-  const numberCol = row.document_type === 'quotation' ? 'quote_number' : 'wo_number';
+  const docLabel =
+    row.document_type === 'quotation' ? 'Sebut Harga'
+    : row.document_type === 'work_order' ? 'Work Order'
+    : 'Laporan Siap Kerja';
+  const numberCol =
+    row.document_type === 'quotation' ? 'quote_number'
+    : row.document_type === 'work_order' ? 'wo_number'
+    : 'report_number';
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">

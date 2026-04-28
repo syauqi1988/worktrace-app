@@ -5,10 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, CheckCircle, XCircle, Edit, Trash2, Eye, MessageCircle, Loader2,
+  ArrowLeft, Edit, Trash2, Eye, MessageCircle, Loader2,
   CalendarDays, MapPin, User as UserIcon, FileText, ClipboardCheck
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
@@ -47,8 +46,6 @@ export default function WorkOrderDetailPage() {
   const [job, setJob] = useState<any>(null);
   const [quotation, setQuotation] = useState<any>(null);
   const [report, setReport] = useState<any>(null);
-  const [rejectOpen, setRejectOpen] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
   const [acting, setActing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -116,46 +113,8 @@ export default function WorkOrderDetailPage() {
     },
   });
 
-  const handleAccept = async () => {
-    if (!wo) return;
-    setActing(true);
-    try {
-      await supabase.from('work_orders').update({
-        status: 'Accepted',
-        accepted_at: new Date().toISOString(),
-      }).eq('id', wo.id);
-      const newStatus = await autoUpdateJobStatus(supabase, jobId!, user!.id, 'work_order_accepted');
-      toast.success(newStatus
-        ? `Work Order diterima! Status kerja: ${newStatus}`
-        : 'Work Order diterima!');
-      await load();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setActing(false);
-    }
-  };
+  // Customer accept/reject is handled via PublicApprovalPage (WhatsApp link).
 
-  const handleReject = async () => {
-    if (!wo) return;
-    setActing(true);
-    try {
-      await supabase.from('work_orders').update({
-        status: 'Rejected',
-        rejected_at: new Date().toISOString(),
-        rejection_reason: rejectReason.trim() || null,
-      }).eq('id', wo.id);
-      await autoUpdateJobStatus(supabase, jobId!, user!.id, 'work_order_rejected');
-      toast.success('Work Order ditolak');
-      setRejectOpen(false);
-      setRejectReason('');
-      await load();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setActing(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!wo) return;
@@ -266,17 +225,14 @@ Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
 
       {/* Status banners */}
       {wo.status === 'Sent' && (
-        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
-          <p className="text-sm font-medium text-[#1D4ED8]">Menunggu pengesahan pelanggan</p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={handleAccept} disabled={acting} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2">
-              <CheckCircle className="h-4 w-4" /> Diterima oleh Pelanggan
-            </Button>
-            <Button variant="outline" onClick={() => setRejectOpen(true)} disabled={acting}
-              className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2">
-              <XCircle className="h-4 w-4" /> Ditolak oleh Pelanggan
-            </Button>
+        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4">
+          <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Menunggu Pengesahan Pelanggan
           </div>
+          <p className="text-xs text-[#1D4ED8]/80 mt-2">
+            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
+          </p>
         </div>
       )}
 
@@ -379,22 +335,6 @@ Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
         </Button>
       </div>
 
-      {/* Reject Dialog */}
-      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tolak Work Order</DialogTitle>
-            <DialogDescription>Nyatakan sebab pelanggan menolak work order ini.</DialogDescription>
-          </DialogHeader>
-          <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} placeholder="Sebab penolakan..." />
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleReject} disabled={acting}>
-              {acting ? 'Memproses...' : 'Sahkan Tolak'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
