@@ -388,7 +388,7 @@ export default function InvoiceDetailPage() {
       const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
       const publicUrl = signed?.signedUrl ?? '';
       const phone = formatPhone(customerPhone);
-      const message = `Assalamualaikum ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda! 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. Jumpa lagi! 😊\n\n*${profile?.company_name || ''}*`;
+      const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
     } catch {
@@ -402,9 +402,9 @@ export default function InvoiceDetailPage() {
     const name = customer?.name || '';
     const companyName = profile?.company_name || '';
     if (pdfUrl) {
-      return `Assalamualaikum ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat invois anda:\n🔗 ${pdfUrl}\n\nUntuk sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih! 😊\n*${companyName}*`;
+      return `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat invois anda:\n🔗 ${pdfUrl}\n\nUntuk sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih! 😊\n*${companyName}*`;
     }
-    return `Assalamualaikum ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois yang belum dijelaskan.\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah Perlu Dibayar:* RM ${invoice!.total.toFixed(2)}\n📅 *Tarikh Bayaran Akhir:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila hubungi kami jika ada sebarang pertanyaan atau memerlukan tempoh bayaran lanjutan.\n\nTerima kasih atas kerjasama anda. 🙏\n*${companyName}*`;
+    return `Assalamualaikum / Salam Sejahtera ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois yang belum dijelaskan.\n\n🧾 *No. Invois:* ${invoice!.invoice_number}\n💰 *Jumlah Perlu Dibayar:* RM ${invoice!.total.toFixed(2)}\n📅 *Tarikh Bayaran Akhir:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}\n\nSila hubungi kami jika ada sebarang pertanyaan atau memerlukan tempoh bayaran lanjutan.\n\nTerima kasih atas kerjasama anda. 🙏\n*${companyName}*`;
   };
 
   const shareViaWhatsApp = async () => {
@@ -450,7 +450,7 @@ export default function InvoiceDetailPage() {
       const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
       if (data) setProof(data);
       const phone = formatPhone(customerPhone);
-      const msg = `Assalamualaikum ${customer?.name || ''},\n\nMohon hantar bukti pembayaran untuk invois berikut:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n\nSila klik pautan ini untuk muat naik resit/bukti bayaran:\n🔗 ${url}\n\nTerima kasih!\n*${profile?.company_name || ''}*`;
+      const msg = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nMohon hantar bukti pembayaran untuk invois berikut:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n\nSila klik pautan ini untuk muat naik resit/bukti bayaran:\n🔗 ${url}\n\nTerima kasih! 🙏\n*${profile?.company_name || ''}*`;
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
       toast.success('Pautan bukti bayaran dijana!');
     } catch (err: any) {
