@@ -77,6 +77,10 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const { shouldAutoStart } = useTutorial('dashboard');
+  const { t } = useTranslation();
+  const NAV_ITEMS = buildNavItems(t);
+  const BOTTOM_TABS = buildBottomTabs(t);
+  const QUICK_ACTIONS = buildQuickActions(t);
 
   // Check for new support replies
   useEffect(() => {
