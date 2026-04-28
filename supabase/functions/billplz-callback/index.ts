@@ -183,13 +183,14 @@ Deno.serve(async (req) => {
       console.log('Referral reward processed for:', userId)
     }
 
-    // Log subscription event
+    // Log subscription event (with bill id for future deduplication)
     await supabaseAdmin.from('subscription_events').insert({
       user_id: userId,
       event_type: 'payment_success',
       plan,
       billing_period,
       amount: Number(bill?.amount || 0),
+      billplz_bill_id: billId,
     })
 
     return new Response('ok', { status: 200 })
