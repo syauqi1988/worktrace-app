@@ -105,12 +105,10 @@ export async function getOrCreatePaymentProofToken(args: CreateProofTokenArgs): 
   return token;
 }
 
-const PUBLIC_BASE_URL = 'https://app.worktrace.my';
-
 export function buildPublicApprovalUrl(token: string): string {
-  return `${PUBLIC_BASE_URL}/public/approval/${token}`;
+  return `${window.location.origin}/public/approval/${token}`;
 }
 
 export function buildPublicPaymentProofUrl(token: string): string {
-  return `${PUBLIC_BASE_URL}/public/payment-proof/${token}`;
+  return `${window.location.origin}/public/payment-proof/${token}`;
 }

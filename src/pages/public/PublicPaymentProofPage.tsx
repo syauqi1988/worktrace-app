@@ -136,14 +136,12 @@ export default function PublicPaymentProofPage() {
         receipt_url: receiptUrl,
         notes: notes.trim() || null,
         submitted_at: new Date().toISOString(),
-        status: 'pending',
-        rejection_reason: null,
       } as any)
       .eq('token', row.token);
     setSubmitting(false);
     if (error) { toast.error('Gagal menghantar'); return; }
     toast.success('Bukti pembayaran dihantar!');
-    setRow({ ...row, submitted_at: new Date().toISOString(), status: 'pending', rejection_reason: null });
+    setRow({ ...row, submitted_at: new Date().toISOString() });
   };
 
   if (loading) {
@@ -165,10 +163,9 @@ export default function PublicPaymentProofPage() {
     );
   }
 
+  const isSubmitted = !!row.submitted_at;
   const verified = row.status === 'verified';
   const rejected = row.status === 'rejected';
-  // Locked when submitted, EXCEPT when previously rejected (allow resubmit)
-  const isSubmitted = !!row.submitted_at && !rejected;
   const paymentMethods: any[] = Array.isArray(company?.payment_methods) ? company.payment_methods : [];
 
   return (
