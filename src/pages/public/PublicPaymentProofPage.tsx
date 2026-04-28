@@ -172,6 +172,7 @@ export default function PublicPaymentProofPage() {
   // Customer can edit when: never submitted, or rejected (resubmit allowed). Locked once verified or pending review.
   const canEdit = !row.submitted_at || rejected;
   const isLocked = !canEdit;
+  const isSubmitted = isLocked; // alias for legacy UI gating
   const paymentMethods: any[] = Array.isArray(company?.payment_methods) ? company.payment_methods : [];
 
   return (
