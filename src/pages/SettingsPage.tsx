@@ -362,7 +362,7 @@ export default function SettingsPage() {
   const handleApplyFreeMonths = async () => {
     if (freeMonthsBalance <= 0) return;
     const ok = window.confirm(
-      `Guna ${freeMonthsBalance} bulan percuma sekarang? Tarikh tamat langganan anda akan dilanjutkan ${freeMonthsBalance} bulan.`,
+      t("settings.referral.applyConfirm", { count: freeMonthsBalance }),
     );
     if (!ok) return;
     setApplyingFreeMonths(true);
