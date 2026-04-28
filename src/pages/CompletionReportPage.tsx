@@ -91,6 +91,11 @@ export default function CompletionReportPage() {
   const [afterPhotos, setAfterPhotos] = useState<string[]>([]);
   const [customerSignature, setCustomerSignature] = useState('');
   const [notes, setNotes] = useState('');
+  const [locationLabel, setLocationLabel] = useState('');
+  const [projectRef, setProjectRef] = useState('');
+  const [checklistText, setChecklistText] = useState('');
+  const [beforeCaptions, setBeforeCaptions] = useState<string[]>([]);
+  const [afterCaptions, setAfterCaptions] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
