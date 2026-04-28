@@ -453,12 +453,9 @@ export default function InvoiceDetailPage() {
     if (!invoice || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
-      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-      const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-      await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
-      const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
+      const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
     } catch {
@@ -468,12 +465,20 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const sendPaymentReminder = () => {
+  const sendPaymentReminder = async () => {
     if (!checkWhatsAppShare()) return;
-    if (!invoice || !hasPhone) return;
-    const phone = formatPhone(customerPhone);
-    const message = buildWhatsAppInvoiceMessage();
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    if (!invoice || !hasPhone || !pdfData || !user) return;
+    setIsSharing(true);
+    try {
+      const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
+      const phone = formatPhone(customerPhone);
+      const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl, true);
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    } catch {
+      toast.error('Gagal menjana peringatan');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const requestPaymentProof = async () => {
@@ -481,27 +486,10 @@ export default function InvoiceDetailPage() {
     if (!invoice || !user || !hasPhone || !pdfData) return;
     setRequestingProof(true);
     try {
-      // Generate / upload invoice PDF so the customer can preview / download it
-      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-      const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-      await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const pdfUrl = signed?.signedUrl ?? '';
-
-      const token = await getOrCreatePaymentProofToken({
-        userId: user.id,
-        invoiceId: invoice.id,
-        customerName: customer?.name || null,
-      });
-      const url = buildPublicPaymentProofUrl(token);
-      // Refresh proof state
-      const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
-      if (data) setProof(data);
+      const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
-      const name = customer?.name || '';
-      const companyName = profile?.company_name || '';
-      const msg = `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:\n\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah:* RM ${invoice.total.toFixed(2)}\n📅 *Bayar Sebelum:* ${invoice.due_date ? formatDate(invoice.due_date) : '-'}\n\nSila klik pautan di bawah untuk melihat / muat turun invois anda:\n🔗 ${pdfUrl}\n\nSetelah pembayaran dibuat, mohon hantar bukti pembayaran melalui pautan berikut:\n📤 ${url}\n\nTerima kasih! 😊\n*${companyName}*`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
       toast.success('Pautan bukti bayaran dijana!');
     } catch (err: any) {
       toast.error(err.message || 'Gagal menjana pautan');
