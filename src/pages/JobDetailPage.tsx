@@ -538,10 +538,10 @@ export default function JobDetailPage() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'submitted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu dihantar dahulu'}
+              {report?.status === 'accepted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu'}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
-              disabled={report?.status !== 'submitted'}
+              disabled={report?.status !== 'accepted'}
               onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
               <Receipt className="h-3.5 w-3.5" /> Buat Invois
             </Button>
