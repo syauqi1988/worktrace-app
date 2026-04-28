@@ -853,14 +853,11 @@ export default function InvoiceDetailPage() {
                 }
                 setIsSharing(true);
                 try {
-                  const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
-                  const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
-                  await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-                  const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+                  const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
                   await supabase.from('invoices').update({ status: 'Sent' }).eq('id', invoice.id);
                   setInvoice({ ...invoice, status: 'Sent' });
                   const phone = formatPhone(customerPhone!);
-                  const message = buildWhatsAppInvoiceMessage(signed?.signedUrl ?? '');
+                  const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
                   toast.success('Invois dihantar! WhatsApp telah dibuka.');
                 } catch {
