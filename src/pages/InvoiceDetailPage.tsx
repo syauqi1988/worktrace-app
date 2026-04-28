@@ -400,7 +400,7 @@ export default function InvoiceDetailPage() {
 
   // Unified invoice WhatsApp template — used for Hantar Invois, Kongsi via WhatsApp,
   // Peringatan, dan Mohon Bukti Bayaran. Sentiasa sertakan link PDF + link upload bukti.
-  const buildWhatsAppInvoiceMessage = (pdfUrl?: string, proofUrl?: string, isReminder = false) => {
+  const buildWhatsAppInvoiceMessage = (_pdfUrl?: string, proofUrl?: string, isReminder = false) => {
     const name = customer?.name || 'Pelanggan';
     const companyName = profile?.company_name || '';
     const intro = isReminder
@@ -414,11 +414,12 @@ export default function InvoiceDetailPage() {
       `📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}`,
       '',
     ];
-    if (pdfUrl) {
-      lines.push('📄 *Lihat / Muat Turun Invois:*', pdfUrl, '');
-    }
     if (proofUrl) {
-      lines.push('Setelah pembayaran dibuat, mohon hantar bukti pembayaran melalui pautan berikut:', `📤 ${proofUrl}`, '');
+      lines.push(
+        'Sila klik pautan di bawah untuk melihat invois dan menghantar bukti pembayaran:',
+        `🔗 ${proofUrl}`,
+        '',
+      );
     }
     lines.push('Untuk sebarang pertanyaan, sila hubungi kami.', '', `Terima kasih! 😊\n*${companyName}*`);
     return lines.join('\n');
