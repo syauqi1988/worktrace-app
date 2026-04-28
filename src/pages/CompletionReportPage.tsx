@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2 } from 'lucide-react';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
@@ -73,6 +74,8 @@ export default function CompletionReportPage() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [acceptedAt, setAcceptedAt] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { checkWhatsAppShare } = usePlanGate();
 
   // PDF Preview
@@ -272,6 +275,22 @@ export default function CompletionReportPage() {
     } finally {
       setSaving(false);
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!reportId) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('completion_reports').delete().eq('id', reportId);
+      if (error) throw error;
+      toast.success('Laporan dipadam');
+      navigate(`/jobs/${jobId}`);
+    } catch (e: any) {
+      toast.error(e.message || 'Gagal memadam laporan');
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
     }
   };
 
@@ -585,14 +604,50 @@ Terima kasih!
               <Eye className="h-4 w-4" /> Pratonton PDF
             </Button>
           </div>
+          {reportId && (
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOpen(true)}
+              className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
+            >
+              <Trash2 className="h-4 w-4" /> Padam Laporan
+            </Button>
+          )}
         </div>
       )}
 
       {isSubmitted && (
-        <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2">
-          <Eye className="h-4 w-4" /> Pratonton PDF
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
+            <Eye className="h-4 w-4" /> Pratonton PDF
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => { setIsSubmitted(false); toast.info('Mod edit dibuka. Hantar semula selepas perubahan.'); }}
+            className="rounded-lg gap-2"
+          >
+            <Edit className="h-4 w-4" /> Edit Laporan
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setDeleteOpen(true)}
+            className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
+          >
+            <Trash2 className="h-4 w-4" /> Padam
+          </Button>
+        </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+        title="Padam Laporan Siap Kerja?"
+        body="Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam."
+        confirmLabel={deleting ? 'Memadam...' : 'Padam'}
+        confirmVariant="danger"
+        isLoading={deleting}
+      />
 
       <PDFPreviewModal
         open={previewOpen}
