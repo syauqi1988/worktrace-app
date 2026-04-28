@@ -757,32 +757,35 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="langganan-pelan"
         icon={<CreditCard className="h-5 w-5" />}
-        title="Langganan & Pelan"
-        description="Pelan semasa dan pengurusan langganan"
+        title={t("settings.subscription.title")}
+        description={t("settings.subscription.description")}
       >
         {freeMonthsBalance > 0 && (
           <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-2">
             <Gift className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="text-sm text-foreground">
-              Anda ada <strong>{freeMonthsBalance} bulan percuma</strong> daripada program rujukan! Akan digunakan
-              semasa pembaharuan langganan.
+              <Trans
+                i18nKey="settings.subscription.freeMonthsBanner"
+                values={{ count: freeMonthsBalance }}
+                components={{ strong: <strong /> }}
+              />
             </p>
           </div>
         )}
 
         <div className="rounded-lg border border-border p-4 space-y-2">
-          <p className="text-sm text-muted-foreground mb-1">Pelan Semasa</p>
+          <p className="text-sm text-muted-foreground mb-1">{t("settings.subscription.currentPlan")}</p>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
               {planLabel}
             </span>
             <span className="text-base font-bold text-foreground">{planLabel}</span>
             {!isFree && !(profile as any)?.subscription_cancelled && (
-              <span className="text-xs text-emerald-600 font-medium">— Aktif ●</span>
+              <span className="text-xs text-emerald-600 font-medium">{t("settings.subscription.active")}</span>
             )}
             {!isFree && (profile as any)?.subscription_cancelled && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                Akan Tamat ⚠️
+                {t("settings.subscription.willEnd")}
               </span>
             )}
           </div>
@@ -791,20 +794,21 @@ export default function SettingsPage() {
               const dbPlan = getPlan(profile?.plan ?? "free");
               const isYearly = profile?.billing_period === "yearly";
               const price = dbPlan ? Number(isYearly ? dbPlan.yearly_price : dbPlan.monthly_price) : 0;
-              const periodLabel = isFree ? "" : isYearly ? "/tahun" : "/bulan";
+              const periodLabel = isFree ? "" : isYearly ? t("settings.subscription.perYear") : t("settings.subscription.perMonth");
               return `RM${price.toFixed(2)}${periodLabel}`;
             })()}
             {isFree
-              ? " · Selamanya percuma"
-              : ` · ${profile?.billing_period === "yearly" ? "Tahunan" : "Bulanan"}`}
+              ? t("settings.subscription.forever")
+              : ` · ${profile?.billing_period === "yearly" ? t("settings.subscription.yearly") : t("settings.subscription.monthly")}`}
           </p>
           {!isFree && (profile as any)?.subscription_cancelled && profile?.subscription_end_date && (
             <p className="text-sm text-amber-700 mt-1">
-              Langganan dibatalkan. Masih aktif sehingga{" "}
-              {new Date(profile.subscription_end_date).toLocaleDateString("ms-MY", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
+              {t("settings.subscription.cancelledUntil", {
+                date: new Date(profile.subscription_end_date).toLocaleDateString(dateLocale, {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }),
               })}
             </p>
           )}
@@ -812,21 +816,23 @@ export default function SettingsPage() {
             <div className="space-y-1 mt-2">
               {profile?.subscription_start_date && (
                 <p className="text-sm text-muted-foreground">
-                  Tarikh Mula:{" "}
-                  {new Date(profile.subscription_start_date).toLocaleDateString("ms-MY", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
+                  {t("settings.subscription.startDate", {
+                    date: new Date(profile.subscription_start_date).toLocaleDateString(dateLocale, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }),
                   })}
                 </p>
               )}
               {profile?.subscription_end_date && (
                 <p className="text-sm text-muted-foreground">
-                  Tarikh Tamat:{" "}
-                  {new Date(profile.subscription_end_date).toLocaleDateString("ms-MY", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
+                  {t("settings.subscription.endDate", {
+                    date: new Date(profile.subscription_end_date).toLocaleDateString(dateLocale, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }),
                   })}
                 </p>
               )}
@@ -836,7 +842,7 @@ export default function SettingsPage() {
 
         {!isFree && (profile as any)?.subscription_cancelled ? (
           <Button onClick={() => setReactivateOpen(true)} className="w-full rounded-lg">
-            Aktifkan Semula Langganan
+            {t("settings.subscription.reactivate")}
           </Button>
         ) : !isFree ? (
           <div className="space-y-3">
@@ -849,7 +855,7 @@ export default function SettingsPage() {
               return (
                 <>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1.5">Pilih tempoh pembaharuan</p>
+                    <p className="text-xs text-muted-foreground mb-1.5">{t("settings.subscription.choosePeriod")}</p>
                     <div className="flex rounded-lg border border-border overflow-hidden">
                       <button
                         type="button"
@@ -860,7 +866,7 @@ export default function SettingsPage() {
                             : "text-muted-foreground hover:bg-accent"
                         }`}
                       >
-                        Bulanan — RM{monthly.toFixed(2)}/bulan
+                        {t("settings.subscription.monthlyOption", { price: monthly.toFixed(2) })}
                       </button>
                       <button
                         type="button"
@@ -871,7 +877,7 @@ export default function SettingsPage() {
                             : "text-muted-foreground hover:bg-accent"
                         }`}
                       >
-                        Tahunan — RM{yearly.toFixed(2)}/tahun
+                        {t("settings.subscription.yearlyOption", { price: yearly.toFixed(2) })}
                         {discount > 0 && (
                           <span className="ml-1.5 text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">
                             -{discount}%
@@ -886,10 +892,11 @@ export default function SettingsPage() {
                     className="w-full rounded-lg"
                   >
                     {billPlzLoading
-                      ? "Memproses..."
-                      : `Perbaharui Langganan — RM${price.toFixed(2)}/${
-                          renewPeriod === "yearly" ? "tahun" : "bulan"
-                        }`}
+                      ? t("settings.subscription.processing")
+                      : t("settings.subscription.renew", {
+                          price: price.toFixed(2),
+                          period: renewPeriod === "yearly" ? t("settings.subscription.perYear").replace("/", "") : t("settings.subscription.perMonth").replace("/", ""),
+                        })}
                   </Button>
                 </>
               );
@@ -898,7 +905,7 @@ export default function SettingsPage() {
               onClick={() => setCancelOpen(true)}
               className="w-full text-center text-[13px] font-medium text-destructive hover:underline"
             >
-              Batalkan Langganan
+              {t("settings.subscription.cancelSub")}
             </button>
           </div>
         ) : null}
