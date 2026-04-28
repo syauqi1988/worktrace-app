@@ -18,6 +18,7 @@ import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement } from '@/utils/generateDocNumber';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -255,22 +256,13 @@ export default function QuotationDetailPage() {
   const hasPhone = !!customerPhone;
 
   const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, approvalUrl: string) => {
-    return `Assalamualaikum / Salam Sejahtera ${customerName},
-
-Terima kasih kerana berminat dengan perkhidmatan kami. 🙏
-
-Berikut adalah sebut harga daripada *${companyName}*:
-
-📋 *No. Sebut Harga:* ${quoteNumber}
-💰 *Jumlah:* RM ${total.toFixed(2)}
-
-Sila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:
-🔗 ${approvalUrl}
-
-Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
-
-Terima kasih!
-*${companyName}*`;
+    const details = `📋 *No. Sebut Harga:* ${quoteNumber}\n💰 *Jumlah:* RM ${total.toFixed(2)}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 ${approvalUrl}`;
+    return renderTemplate(
+      (profile as any)?.whatsapp_templates,
+      'quotation',
+      { customer_name: customerName, company_name: companyName },
+      details,
+    );
   };
 
   const shareViaWhatsApp = async () => {
