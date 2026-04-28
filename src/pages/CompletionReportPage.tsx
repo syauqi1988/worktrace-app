@@ -63,6 +63,10 @@ export default function CompletionReportPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [reportStatus, setReportStatus] = useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const { checkWhatsAppShare } = usePlanGate();
 
   // PDF Preview
   const [previewOpen, setPreviewOpen] = useState(false);
