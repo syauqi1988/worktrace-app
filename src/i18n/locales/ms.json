@@ -105,38 +105,128 @@
     "addFirstJob": "Tambah Kerja Pertama",
     "noCustomer": "Tiada pelanggan"
   },
+  "common2": {
+    "select": "Pilih",
+    "all": "Semua",
+    "noCustomer": "Tiada pelanggan",
+    "deleteSelected": "Padam Terpilih?",
+    "deleteConfirm": "Adakah anda pasti ingin padam {{count}} {{label}}? Tindakan ini tidak boleh dibatalkan.",
+    "notFound": "Tiada {{label}} dijumpai"
+  },
   "jobs": {
     "title": "Kerja",
     "newJob": "Kerja Baru",
-    "empty": "Belum ada kerja lagi",
-    "searchPlaceholder": "Cari kerja...",
+    "empty": "Belum ada kerja",
+    "notFound": "Tiada kerja dijumpai",
+    "searchPlaceholder": "Cari kerja, nombor, atau pelanggan...",
     "category": "Kategori",
     "scheduledDate": "Tarikh Dijadualkan",
-    "completedDate": "Tarikh Siap"
+    "completedDate": "Tarikh Siap",
+    "addFirst": "Tambah Kerja",
+    "label": "kerja",
+    "deleteTitle": "Padam Kerja Terpilih?",
+    "deletedToast": "{{count}} kerja dipadam",
+    "statusTabs": {
+      "all": "Semua",
+      "Lead": "Lead",
+      "Scheduled": "Scheduled",
+      "In Progress": "In Progress",
+      "Completed": "Completed",
+      "Cancelled": "Cancelled"
+    }
   },
   "customers": {
     "title": "Pelanggan",
     "newCustomer": "Pelanggan Baru",
-    "empty": "Belum ada pelanggan lagi",
-    "searchPlaceholder": "Cari pelanggan..."
+    "empty": "Belum ada pelanggan",
+    "notFound": "Tiada pelanggan dijumpai",
+    "searchPlaceholder": "Cari nama atau nombor telefon...",
+    "addFirst": "Tambah Pelanggan Pertama",
+    "label": "pelanggan",
+    "deleteTitle": "Padam Pelanggan Terpilih?",
+    "deletedToast": "{{count}} pelanggan dipadam",
+    "jobCount": "{{count}} Kerja",
+    "all": "Semua"
   },
   "quotations": {
     "title": "Sebut Harga",
     "newQuotation": "Sebut Harga Baru",
-    "empty": "Belum ada sebut harga"
+    "empty": "Belum ada sebut harga",
+    "notFound": "Tiada sebut harga dijumpai",
+    "searchPlaceholder": "Cari nombor atau pelanggan...",
+    "create": "Buat Sebut Harga",
+    "label": "sebut harga",
+    "deleteTitle": "Padam Sebut Harga Terpilih?",
+    "deletedToast": "{{count}} sebut harga dipadam",
+    "validUntil": "Sah hingga {{date}}",
+    "statusTabs": {
+      "all": "Semua",
+      "Draft": "Draft",
+      "Sent": "Sent",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected"
+    }
   },
   "invoices": {
     "title": "Invois",
     "newInvoice": "Invois Baru",
-    "empty": "Belum ada invois"
+    "empty": "Belum ada invois",
+    "notFound": "Tiada invois dijumpai",
+    "searchPlaceholder": "Cari nombor atau pelanggan...",
+    "create": "Buat Invois",
+    "label": "invois",
+    "deleteTitle": "Padam Invois Terpilih?",
+    "deletedToast": "{{count}} invois dipadam",
+    "payBefore": "Bayar sebelum {{date}}",
+    "statusTabs": {
+      "all": "Semua",
+      "Draft": "Draft",
+      "Sent": "Sent",
+      "Paid": "Paid",
+      "Overdue": "Overdue"
+    }
   },
   "receipts": {
     "title": "Resit",
-    "empty": "Belum ada resit"
+    "subtitle": "Senarai semua invois yang telah dibayar",
+    "empty": "Belum ada resit. Resit dijana automatik bila invois ditandakan dibayar.",
+    "notFound": "Tiada resit dijumpai",
+    "searchPlaceholder": "Cari nombor resit, invois, atau pelanggan...",
+    "totalCount": "Jumlah Resit",
+    "totalReceived": "Jumlah Diterima",
+    "noNumber": "(Tiada nombor)",
+    "invoiceLabel": "Invois: {{number}}"
   },
   "workOrders": {
     "title": "Work Order",
-    "comingSoon": "{{label}} akan datang. Pelan Team masih dalam pembangunan."
+    "empty": "Belum ada work order",
+    "notFound": "Tiada work order dijumpai",
+    "hint": "Work order dibuat dari halaman kerja selepas sebut harga diterima.",
+    "searchPlaceholder": "Cari nombor, tajuk, atau pelanggan...",
+    "startDate": "Mula: {{date}}",
+    "comingSoon": "{{label}} akan datang. Pelan Team masih dalam pembangunan.",
+    "statusTabs": {
+      "all": "Semua",
+      "Draft": "Draft",
+      "Sent": "Sent",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected"
+    }
+  },
+  "completionReports": {
+    "title": "Laporan Siap Kerja",
+    "empty": "Belum ada laporan siap kerja",
+    "notFound": "Tiada laporan dijumpai",
+    "hint": "Laporan siap kerja dibuat dari halaman kerja selepas sebut harga diterima.",
+    "searchPlaceholder": "Cari nombor, tajuk, atau pelanggan...",
+    "completedOn": "Tarikh siap: {{date}}",
+    "statusTabs": {
+      "all": "Semua",
+      "draft": "Draft",
+      "submitted": "Menunggu Pengesahan",
+      "accepted": "Diterima",
+      "rejected": "Ditolak"
+    }
   },
   "reports": {
     "title": "Laporan"
