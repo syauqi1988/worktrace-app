@@ -1,57 +1,69 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { pdfStyles as s, fmtDate, COLORS } from './pdfStyles';
 
-const BLACK = '#0F172A';
-const DARK = '#1E293B';
-const MID = '#475569';
-const MUTED = '#94A3B8';
-const BORDER = '#CBD5E1';
-const BG_LIGHT = '#F8FAFC';
-const WHITE = '#FFFFFF';
+const extra = StyleSheet.create({
+  greyBox: {
+    backgroundColor: COLORS.HEADER_BG,
+    padding: 8,
+    borderRadius: 2,
+    marginTop: 4,
+  },
+  greyText: { fontSize: 9, color: COLORS.TEXT, lineHeight: 1.4 },
 
-const s = StyleSheet.create({
-  page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10, color: BLACK },
-  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  headerLeft: { flex: 1 },
-  headerRight: { alignItems: 'flex-end' },
-  logo: { maxHeight: 60, maxWidth: 120, marginBottom: 6 },
-  companyName: { fontSize: 16, fontFamily: 'Helvetica-Bold', marginBottom: 2, color: BLACK },
-  companyText: { fontSize: 10, color: MID, marginBottom: 1 },
-  companySmall: { fontSize: 9, color: MID, marginBottom: 1 },
-  docTitle: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: BLACK, marginBottom: 4, letterSpacing: 2 },
-  docNum: { fontSize: 10, color: BLACK, marginBottom: 4 },
-  dateText: { fontSize: 9, color: MID, marginBottom: 1 },
-  divider: { height: 2, backgroundColor: DARK, marginVertical: 12 },
-  sectionLabel: { fontSize: 7, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', color: MUTED, marginBottom: 4 },
-  name: { fontSize: 11, fontFamily: 'Helvetica-Bold', marginBottom: 2, color: BLACK },
-  text: { fontSize: 9, color: MID, marginBottom: 1 },
-  textBlack: { fontSize: 10, color: BLACK, marginBottom: 1 },
-  twoCol: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  col: { flex: 1 },
-  contentBox: { borderWidth: 0.5, borderColor: BORDER, backgroundColor: BG_LIGHT, borderRadius: 4, padding: 10, marginBottom: 12 },
-  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  photoContainer: { width: 240, height: 180, borderWidth: 0.5, borderColor: BORDER, borderRadius: 4, overflow: 'hidden' },
+  // Photos
+  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+  photoContainer: {
+    width: 240,
+    height: 180,
+    borderWidth: 0.5,
+    borderColor: COLORS.BORDER,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
   photo: { width: '100%', height: '100%', objectFit: 'cover' },
-  photoCaption: { fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 2 },
-  // Side-by-side before/after grid
+  photoCaption: { fontSize: 8, color: COLORS.MUTED, textAlign: 'center', marginTop: 2 },
+
+  // Side-by-side comparison
   comparisonRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   comparisonCell: { flex: 1 },
-  comparisonHeader: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  comparisonHeaderText: { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MID, textAlign: 'center' },
-  smallPhotoContainer: { width: '100%', height: 140, borderWidth: 0.5, borderColor: BORDER, borderRadius: 4, overflow: 'hidden' },
-  confirmBox: { backgroundColor: DARK, borderRadius: 4, padding: 12, marginTop: 12 },
-  confirmTitle: { color: WHITE, fontSize: 9, fontFamily: 'Helvetica-Bold', marginBottom: 6 },
-  confirmRow: { flexDirection: 'row', marginBottom: 3 },
-  confirmLabel: { width: 140, fontSize: 9, color: MUTED },
-  confirmValue: { fontSize: 9, color: WHITE },
-  footer: { position: 'absolute', bottom: 40, left: 40, right: 40 },
-  footerDivider: { height: 0.5, backgroundColor: BORDER, marginBottom: 8 },
-  footerRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  footerText: { fontSize: 7, color: MUTED },
+  comparisonHeader: { flexDirection: 'row', gap: 8, marginTop: 4, marginBottom: 4 },
+  comparisonHeaderText: {
+    flex: 1,
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: COLORS.MUTED,
+    textAlign: 'center',
+  },
+  smallPhotoContainer: {
+    width: '100%',
+    height: 140,
+    borderWidth: 0.5,
+    borderColor: COLORS.BORDER,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+
+  // Confirmation info box (clean light style, matches WO greyBox)
+  infoBox: {
+    backgroundColor: COLORS.HEADER_BG,
+    borderRadius: 2,
+    padding: 10,
+    marginTop: 4,
+  },
+  infoRow: { flexDirection: 'row', marginBottom: 3 },
+  infoLabel: { width: 150, fontSize: 9, color: COLORS.MUTED },
+  infoValue: { fontSize: 9, color: COLORS.BLACK, flex: 1 },
 });
 
-function formatDate(d: string | null) {
+function formatDateTime(d: string | null | undefined) {
   if (!d) return '-';
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  const dt = new Date(d);
+  const dd = String(dt.getDate()).padStart(2, '0');
+  const mm = String(dt.getMonth() + 1).padStart(2, '0');
+  const yyyy = dt.getFullYear();
+  const hh = String(dt.getHours()).padStart(2, '0');
+  const mi = String(dt.getMinutes()).padStart(2, '0');
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
 }
 
 export interface CompletionReportPDFProps {
@@ -63,6 +75,8 @@ export interface CompletionReportPDFProps {
     materials_used: string | null;
     customer_signature: string | null;
     notes: string | null;
+    status?: string | null;
+    accepted_at?: string | null;
     /** Legacy single list (kept for compatibility). Used as "after" when before/after not provided. */
     photos?: string[];
     before_photos?: string[];
@@ -74,172 +88,188 @@ export interface CompletionReportPDFProps {
     company_name: string | null;
     phone: string | null;
     address: string | null;
+    logo_url?: string | null;
     logo_base64?: string;
+    ssm_number_new?: string | null;
+    ssm_number_old?: string | null;
   };
 }
 
 export default function CompletionReportPDF({ report, job, customer, company }: CompletionReportPDFProps) {
+  const logo = company.logo_base64 || company.logo_url;
+  const ssm = [company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ');
+  const status = (report.status || 'draft').toString();
+  const before = report.before_photos ?? [];
+  const after = (report.after_photos && report.after_photos.length > 0)
+    ? report.after_photos
+    : (report.photos ?? []);
+  const customerConfirmation =
+    report.accepted_at
+      ? `${customer?.name || report.customer_signature || 'Pelanggan'} — ${formatDateTime(report.accepted_at)}`
+      : (report.customer_signature || '—');
+
   return (
     <Document>
       <Page size="A4" style={s.page}>
         {/* Header */}
         <View style={s.header}>
-          <View style={s.headerLeft}>
-            {company.logo_base64 ? <Image src={company.logo_base64} style={s.logo} /> : null}
-            <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
-            {company.phone && <Text style={s.companyText}>{company.phone}</Text>}
-            {company.address && <Text style={s.companySmall}>{company.address}</Text>}
+          <View style={s.headerLeftRow}>
+            {logo ? <Image src={logo} style={s.logo} /> : null}
+            <View style={s.companyBlock}>
+              <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
+              {ssm ? <Text style={s.companyText}>Reg No: {ssm}</Text> : null}
+              {company.address ? <Text style={s.companyText}>{company.address}</Text> : null}
+              {company.phone ? <Text style={s.companyText}>Contact: {company.phone}</Text> : null}
+            </View>
           </View>
           <View style={s.headerRight}>
             <Text style={s.docTitle}>LAPORAN SIAP KERJA</Text>
-            <Text style={s.docNum}>No. Laporan: {report.report_number}</Text>
-            <Text style={s.dateText}>Tarikh: {formatDate(report.completion_date)}</Text>
+            <View style={s.metaRow}>
+              <Text style={s.metaLabel}>No.</Text>
+              <Text style={s.metaValue}>{report.report_number}</Text>
+            </View>
+            <View style={s.metaRow}>
+              <Text style={s.metaLabel}>Date</Text>
+              <Text style={s.metaValue}>{fmtDate(report.completion_date)}</Text>
+            </View>
+            <View style={s.metaRow}>
+              <Text style={s.metaLabel}>Status</Text>
+              <Text style={s.metaValue}>{status.charAt(0).toUpperCase() + status.slice(1)}</Text>
+            </View>
           </View>
         </View>
 
         <View style={s.divider} />
 
-        {/* Job + Customer Info */}
+        {/* Job + Customer */}
         <View style={s.twoCol}>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>BUTIRAN KERJA</Text>
-            {job && (
-              <>
-                <Text style={s.name}>{job.job_number}</Text>
-                <Text style={s.text}>Tajuk: {job.title}</Text>
-                <Text style={s.text}>Kategori: {job.category}</Text>
-                <Text style={s.text}>Tarikh Siap: {formatDate(report.completion_date)}</Text>
-              </>
-            )}
+            <Text style={s.sectionLabel}>Butiran Kerja</Text>
+            {job ? <Text style={s.partyName}>{job.job_number}</Text> : null}
+            {job ? <Text style={s.partyText}>{job.title}</Text> : null}
+            {job?.category ? (
+              <View style={s.partyMetaRow}>
+                <Text style={s.partyMetaLabel}>Kategori</Text>
+                <Text style={s.partyMetaValue}>{job.category}</Text>
+              </View>
+            ) : null}
+            <View style={s.partyMetaRow}>
+              <Text style={s.partyMetaLabel}>Tarikh Siap</Text>
+              <Text style={s.partyMetaValue}>{fmtDate(report.completion_date)}</Text>
+            </View>
           </View>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>PELANGGAN</Text>
-            {customer && (
-              <>
-                <Text style={s.name}>{customer.name}</Text>
-                {customer.phone && <Text style={s.text}>{customer.phone}</Text>}
-                {customer.address && <Text style={s.text}>{customer.address}</Text>}
-              </>
-            )}
+            <Text style={s.sectionLabel}>Maklumat Pelanggan</Text>
+            <Text style={s.partyName}>{(customer?.name || '-').toUpperCase()}</Text>
+            {customer?.phone ? <Text style={s.partyText}>{customer.phone}</Text> : null}
+            {customer?.address ? <Text style={s.partyText}>{customer.address}</Text> : null}
           </View>
         </View>
 
         {/* Work Description */}
-        {report.work_description && (
-          <>
-            <Text style={s.sectionLabel}>PENERANGAN KERJA DILAKSANAKAN</Text>
-            <View style={s.contentBox}>
-              <Text style={s.textBlack}>{report.work_description}</Text>
+        {report.work_description ? (
+          <View style={{ marginTop: 4 }}>
+            <Text style={s.sectionLabel}>Penerangan Kerja Dilaksanakan</Text>
+            <View style={extra.greyBox}>
+              <Text style={extra.greyText}>{report.work_description}</Text>
             </View>
-          </>
-        )}
+          </View>
+        ) : null}
 
         {/* Materials */}
-        {report.materials_used && (
-          <>
-            <Text style={s.sectionLabel}>BAHAN/ALATAN DIGUNAKAN</Text>
-            <View style={s.contentBox}>
-              <Text style={s.textBlack}>{report.materials_used}</Text>
+        {report.materials_used ? (
+          <View style={{ marginTop: 12 }}>
+            <Text style={s.sectionLabel}>Bahan / Alatan Digunakan</Text>
+            <View style={extra.greyBox}>
+              <Text style={extra.greyText}>{report.materials_used}</Text>
             </View>
-          </>
-        )}
+          </View>
+        ) : null}
 
-        {/* Photos: side-by-side when before exists, otherwise after-only grid */}
-        {(() => {
-          const before = report.before_photos ?? [];
-          const after = (report.after_photos && report.after_photos.length > 0)
-            ? report.after_photos
-            : (report.photos ?? []);
-
-          if (before.length === 0 && after.length === 0) return null;
-
-          if (before.length === 0) {
-            return (
+        {/* Photos */}
+        {(before.length > 0 || after.length > 0) ? (
+          <View style={{ marginTop: 12 }}>
+            {before.length === 0 ? (
               <>
-                <Text style={s.sectionLabel}>GAMBAR SELEPAS KERJA</Text>
-                <View style={s.photoGrid}>
+                <Text style={s.sectionLabel}>Gambar Selepas Kerja</Text>
+                <View style={extra.photoGrid}>
                   {after.map((photo, i) => (
-                    <View key={i}>
-                      <View style={s.photoContainer}>
-                        <Image src={photo} style={s.photo} />
+                    <View key={i} wrap={false}>
+                      <View style={extra.photoContainer}>
+                        <Image src={photo} style={extra.photo} />
                       </View>
-                      <Text style={s.photoCaption}>Selepas {i + 1}</Text>
+                      <Text style={extra.photoCaption}>Selepas {i + 1}</Text>
                     </View>
                   ))}
                 </View>
               </>
-            );
-          }
-
-          // Side-by-side layout: pair before[i] with after[i]
-          const rows = Math.max(before.length, after.length);
-          return (
-            <>
-              <Text style={s.sectionLabel}>PERBANDINGAN SEBELUM & SELEPAS</Text>
-              <View style={s.comparisonHeader}>
-                <Text style={s.comparisonHeaderText}>SEBELUM</Text>
-                <Text style={s.comparisonHeaderText}>SELEPAS</Text>
-              </View>
-              {Array.from({ length: rows }).map((_, i) => (
-                <View key={i} style={s.comparisonRow} wrap={false}>
-                  <View style={s.comparisonCell}>
-                    {before[i] ? (
-                      <>
-                        <View style={s.smallPhotoContainer}>
-                          <Image src={before[i]} style={s.photo} />
-                        </View>
-                        <Text style={s.photoCaption}>Sebelum {i + 1}</Text>
-                      </>
-                    ) : null}
-                  </View>
-                  <View style={s.comparisonCell}>
-                    {after[i] ? (
-                      <>
-                        <View style={s.smallPhotoContainer}>
-                          <Image src={after[i]} style={s.photo} />
-                        </View>
-                        <Text style={s.photoCaption}>Selepas {i + 1}</Text>
-                      </>
-                    ) : null}
-                  </View>
+            ) : (
+              <>
+                <Text style={s.sectionLabel}>Perbandingan Sebelum & Selepas</Text>
+                <View style={extra.comparisonHeader}>
+                  <Text style={extra.comparisonHeaderText}>SEBELUM</Text>
+                  <Text style={extra.comparisonHeaderText}>SELEPAS</Text>
                 </View>
-              ))}
-            </>
-          );
-        })()}
+                {Array.from({ length: Math.max(before.length, after.length) }).map((_, i) => (
+                  <View key={i} style={extra.comparisonRow} wrap={false}>
+                    <View style={extra.comparisonCell}>
+                      {before[i] ? (
+                        <>
+                          <View style={extra.smallPhotoContainer}>
+                            <Image src={before[i]} style={extra.photo} />
+                          </View>
+                          <Text style={extra.photoCaption}>Sebelum {i + 1}</Text>
+                        </>
+                      ) : null}
+                    </View>
+                    <View style={extra.comparisonCell}>
+                      {after[i] ? (
+                        <>
+                          <View style={extra.smallPhotoContainer}>
+                            <Image src={after[i]} style={extra.photo} />
+                          </View>
+                          <Text style={extra.photoCaption}>Selepas {i + 1}</Text>
+                        </>
+                      ) : null}
+                    </View>
+                  </View>
+                ))}
+              </>
+            )}
+          </View>
+        ) : null}
+
+        {/* Notes */}
+        {report.notes ? (
+          <View style={s.block}>
+            <Text style={s.blockLabel}>Nota</Text>
+            <Text style={s.blockText}>{report.notes}</Text>
+          </View>
+        ) : null}
 
         {/* Confirmation */}
-        <View style={s.confirmBox}>
-          <Text style={s.confirmTitle}>✓ PENGESAHAN SIAP KERJA</Text>
-          <View style={s.confirmRow}>
-            <Text style={s.confirmLabel}>Juruteknik:</Text>
-            <Text style={s.confirmValue}>{report.technician_name || '-'}</Text>
-          </View>
-          <View style={s.confirmRow}>
-            <Text style={s.confirmLabel}>Tarikh:</Text>
-            <Text style={s.confirmValue}>{formatDate(report.completion_date)}</Text>
-          </View>
-          <View style={s.confirmRow}>
-            <Text style={s.confirmLabel}>Pengesahan Pelanggan:</Text>
-            <Text style={s.confirmValue}>{report.customer_signature || '—'}</Text>
+        <View style={{ marginTop: 12 }} wrap={false}>
+          <Text style={s.sectionLabel}>Pengesahan Siap Kerja</Text>
+          <View style={extra.infoBox}>
+            <View style={extra.infoRow}>
+              <Text style={extra.infoLabel}>Juruteknik</Text>
+              <Text style={extra.infoValue}>{report.technician_name || '-'}</Text>
+            </View>
+            <View style={extra.infoRow}>
+              <Text style={extra.infoLabel}>Tarikh Siap</Text>
+              <Text style={extra.infoValue}>{fmtDate(report.completion_date)}</Text>
+            </View>
+            <View style={extra.infoRow}>
+              <Text style={extra.infoLabel}>Pengesahan Pelanggan</Text>
+              <Text style={extra.infoValue}>{customerConfirmation}</Text>
+            </View>
           </View>
         </View>
 
-        {/* Notes */}
-        {report.notes && (
-          <View style={{ marginTop: 12 }}>
-            <Text style={s.sectionLabel}>NOTA</Text>
-            <Text style={s.text}>{report.notes}</Text>
-          </View>
-        )}
-
         {/* Footer */}
         <View style={s.footer} fixed>
-          <View style={s.footerDivider} />
-          <View style={s.footerRow}>
-            <Text style={s.footerText}>Jana oleh WorkTrace</Text>
-            <Text style={s.footerText}>{company.company_name || ''}</Text>
-          </View>
+          <Text style={s.footerText}>Jana oleh WorkTrace</Text>
+          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
         </View>
       </Page>
     </Document>
