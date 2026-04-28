@@ -1,17 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClipboardCheck, Search, X, User, Briefcase, CalendarDays } from 'lucide-react';
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  submitted: 'Menunggu Pengesahan',
-  accepted: 'Diterima',
-  rejected: 'Ditolak',
-};
+import { getDateLocale } from '@/i18n';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -20,7 +15,7 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-const TABS = ['Semua', 'draft', 'submitted', 'accepted', 'rejected'];
+const TAB_KEYS = ['all', 'draft', 'submitted', 'accepted', 'rejected'] as const;
 
 interface Row {
   id: string;
@@ -35,10 +30,11 @@ interface Row {
 export default function CompletionReportsListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState('Semua');
+  const [tab, setTab] = useState<string>('all');
 
   useEffect(() => {
     if (!user) return;
@@ -54,7 +50,7 @@ export default function CompletionReportsListPage() {
 
   const filtered = useMemo(() => {
     let r = rows;
-    if (tab !== 'Semua') r = r.filter(x => (x.status || 'draft') === tab);
+    if (tab !== 'all') r = r.filter(x => (x.status || 'draft') === tab);
     if (search.trim()) {
       const q = search.toLowerCase();
       r = r.filter(x =>
@@ -67,16 +63,16 @@ export default function CompletionReportsListPage() {
   }, [rows, tab, search]);
 
   const fmtDate = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+    d ? new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <h1 className="text-xl font-bold text-foreground">Laporan Siap Kerja</h1>
+      <h1 className="text-xl font-bold text-foreground">{t('completionReports.title')}</h1>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Cari nombor, tajuk, atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
+          placeholder={t('completionReports.searchPlaceholder')} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -85,12 +81,12 @@ export default function CompletionReportsListPage() {
       </div>
 
       <div className="flex gap-1 overflow-x-auto pb-1">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {TAB_KEYS.map(key => (
+          <button key={key} onClick={() => setTab(key)}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium shrink-0 ${
-              tab === t ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
+              tab === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
             }`}>
-            {t === 'Semua' ? 'Semua' : STATUS_LABELS[t] || t}
+            {t(`completionReports.statusTabs.${key}`)}
           </button>
         ))}
       </div>
@@ -104,8 +100,8 @@ export default function CompletionReportsListPage() {
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border p-8 flex flex-col items-center text-center bg-card">
           <ClipboardCheck className="h-12 w-12 text-muted-foreground/30 mb-3" />
-          <p className="text-muted-foreground">{rows.length === 0 ? 'Belum ada laporan siap kerja' : 'Tiada laporan dijumpai'}</p>
-          <p className="text-xs text-muted-foreground mt-2">Laporan siap kerja dibuat dari halaman kerja selepas sebut harga diterima.</p>
+          <p className="text-muted-foreground">{rows.length === 0 ? t('completionReports.empty') : t('completionReports.notFound')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('completionReports.hint')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -117,7 +113,7 @@ export default function CompletionReportsListPage() {
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-bold text-primary">{r.report_number}</span>
                   <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[status] || STATUS_COLORS.draft}`}>
-                    {STATUS_LABELS[status] || status}
+                    {t(`completionReports.statusTabs.${status}`, { defaultValue: status })}
                   </span>
                 </div>
                 <p className="text-sm text-foreground mt-1 truncate">{r.jobs?.title || '-'}</p>
@@ -131,7 +127,7 @@ export default function CompletionReportsListPage() {
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground mt-2">
                   <CalendarDays className="h-3.5 w-3.5" />
-                  <span className="text-[13px]">Tarikh siap: {fmtDate(r.completion_date)}</span>
+                  <span className="text-[13px]">{t('completionReports.completedOn', { date: fmtDate(r.completion_date) })}</span>
                 </div>
               </button>
             );

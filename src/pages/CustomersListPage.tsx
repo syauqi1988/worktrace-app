@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -27,13 +28,16 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+const ALL = '__all__';
+
 export default function CustomersListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [tagFilter, setTagFilter] = useState('Semua');
+  const [tagFilter, setTagFilter] = useState<string>(ALL);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -63,14 +67,14 @@ export default function CustomersListPage() {
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    customers.forEach(c => (c.tags || []).forEach(t => set.add(t.label)));
+    customers.forEach(c => (c.tags || []).forEach(tg => set.add(tg.label)));
     return Array.from(set).sort();
   }, [customers]);
 
   const filtered = useMemo(() => {
     let result = customers;
-    if (tagFilter !== 'Semua') {
-      result = result.filter(c => (c.tags || []).some(t => t.label === tagFilter));
+    if (tagFilter !== ALL) {
+      result = result.filter(c => (c.tags || []).some(tg => tg.label === tagFilter));
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -95,7 +99,7 @@ export default function CustomersListPage() {
       return;
     }
     setCustomers(prev => prev.filter(c => !ids.includes(c.id)));
-    toast.success(`${ids.length} pelanggan dipadam`);
+    toast.success(t('customers.deletedToast', { count: ids.length }));
     bulk.exit();
   }
 
@@ -118,27 +122,27 @@ export default function CustomersListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label="pelanggan"
+          label={t('customers.label')}
         />
       )}
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Pelanggan</h1>
+        <h1 className="text-xl font-bold text-foreground">{t('customers.title')}</h1>
         <div className="flex gap-2">
           {!bulk.selectionMode && filtered.length > 0 && (
             <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
-              <CheckSquare className="h-4 w-4" /> Pilih
+              <CheckSquare className="h-4 w-4" /> {t('common2.select')}
             </Button>
           )}
           <Button data-tutorial="customers-new-btn" onClick={() => navigate('/customers/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-            <Plus className="h-4 w-4" /> Pelanggan Baru
+            <Plus className="h-4 w-4" /> {t('customers.newCustomer')}
           </Button>
         </div>
       </div>
 
       <div data-tutorial="customers-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama atau nombor telefon..." className="pl-9 pr-9 rounded-lg" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('customers.searchPlaceholder')} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -148,12 +152,12 @@ export default function CustomersListPage() {
 
       <div data-tutorial="customers-tags" className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
         <button
-          onClick={() => setTagFilter('Semua')}
+          onClick={() => setTagFilter(ALL)}
           className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
-            tagFilter === 'Semua' ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground hover:bg-sidebar-accent'
+            tagFilter === ALL ? 'bg-primary text-primary-foreground' : 'bg-sidebar-background text-muted-foreground hover:bg-sidebar-accent'
           }`}
         >
-          Semua
+          {t('customers.all')}
         </button>
         {allTags.map(tag => (
           <button
@@ -184,11 +188,11 @@ export default function CustomersListPage() {
         <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
           <Users className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground mb-4">
-            {customers.length === 0 ? 'Belum ada pelanggan' : 'Tiada pelanggan dijumpai'}
+            {customers.length === 0 ? t('customers.empty') : t('customers.notFound')}
           </p>
           {customers.length === 0 && (
             <Button onClick={() => navigate('/customers/new')} className="rounded-lg gap-2">
-              <Plus className="h-4 w-4" /> Tambah Pelanggan Pertama
+              <Plus className="h-4 w-4" /> {t('customers.addFirst')}
             </Button>
           )}
         </div>
@@ -236,7 +240,7 @@ export default function CustomersListPage() {
                 <div className="shrink-0">
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-sidebar-background text-muted-foreground flex items-center gap-1">
                     <Briefcase className="h-3 w-3" />
-                    {c.jobCount} Kerja
+                    {t('customers.jobCount', { count: c.jobCount })}
                   </span>
                 </div>
               </button>
@@ -257,9 +261,9 @@ export default function CustomersListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Padam Pelanggan Terpilih?"
-        body={`Adakah anda pasti ingin padam ${bulk.selected.size} pelanggan? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel="Padam"
+        title={t('customers.deleteTitle')}
+        body={t('common2.deleteConfirm', { count: bulk.selected.size, label: t('customers.label') })}
+        confirmLabel={t('common.delete')}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

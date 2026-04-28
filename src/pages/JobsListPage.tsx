@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useBulkSelection } from '@/hooks/useBulkSelection';
 import BulkActionBar from '@/components/BulkActionBar';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { getDateLocale } from '@/i18n';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Renovation: 'bg-blue-100 text-blue-700',
@@ -29,7 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelled: 'bg-red-100 text-red-700',
 };
 
-const STATUS_TABS = ['Semua', 'Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
+const STATUS_KEYS = ['all', 'Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'] as const;
 
 interface JobRow {
   id: string;
@@ -45,16 +47,17 @@ interface JobRow {
 export default function JobsListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Semua');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const filtered = useMemo(() => {
     let result = jobs;
-    if (statusFilter !== 'Semua') result = result.filter(j => j.status === statusFilter);
+    if (statusFilter !== 'all') result = result.filter(j => j.status === statusFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(j =>
@@ -82,7 +85,7 @@ export default function JobsListPage() {
   }, [user]);
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+    new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
   async function handleBulkDelete() {
     setDeleting(true);
@@ -95,7 +98,7 @@ export default function JobsListPage() {
       return;
     }
     setJobs(prev => prev.filter(j => !ids.includes(j.id)));
-    toast.success(`${ids.length} kerja dipadam`);
+    toast.success(t('jobs.deletedToast', { count: ids.length }));
     bulk.exit();
   }
 
@@ -104,7 +107,6 @@ export default function JobsListPage() {
     else navigate(`/jobs/${id}`);
   }
 
-  // Long press for mobile
   let pressTimer: any = null;
   function handlePressStart(id: string) {
     pressTimer = setTimeout(() => bulk.enter(id), 500);
@@ -124,32 +126,30 @@ export default function JobsListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label="kerja"
+          label={t('jobs.label')}
         />
       )}
 
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Kerja</h1>
+        <h1 className="text-xl font-bold text-foreground">{t('jobs.title')}</h1>
         <div className="flex gap-2">
           {!bulk.selectionMode && filtered.length > 0 && (
             <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
-              <CheckSquare className="h-4 w-4" /> Pilih
+              <CheckSquare className="h-4 w-4" /> {t('common2.select')}
             </Button>
           )}
           <Button data-tutorial="jobs-new-btn" onClick={() => navigate('/jobs/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-            <Plus className="h-4 w-4" /> Kerja Baru
+            <Plus className="h-4 w-4" /> {t('jobs.newJob')}
           </Button>
         </div>
       </div>
 
-      {/* Search */}
       <div data-tutorial="jobs-search" className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Cari kerja, nombor, atau pelanggan..."
+          placeholder={t('jobs.searchPlaceholder')}
           className="pl-9 pr-9 rounded-lg"
         />
         {search && (
@@ -159,24 +159,22 @@ export default function JobsListPage() {
         )}
       </div>
 
-      {/* Status Tabs */}
       <div data-tutorial="jobs-status-tabs" className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-        {STATUS_TABS.map(tab => (
+        {STATUS_KEYS.map(key => (
           <button
-            key={tab}
-            onClick={() => setStatusFilter(tab)}
+            key={key}
+            onClick={() => setStatusFilter(key)}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
-              statusFilter === tab
+              statusFilter === key
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-accent'
             }`}
           >
-            {tab}
+            {t(`jobs.statusTabs.${key}`)}
           </button>
         ))}
       </div>
 
-      {/* Job Cards */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
@@ -191,11 +189,11 @@ export default function JobsListPage() {
         <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
           <Briefcase className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground mb-4">
-            {jobs.length === 0 ? 'Belum ada kerja' : 'Tiada kerja dijumpai'}
+            {jobs.length === 0 ? t('jobs.empty') : t('jobs.notFound')}
           </p>
           {jobs.length === 0 && (
             <Button onClick={() => navigate('/jobs/new')} className="rounded-lg gap-2">
-              <Plus className="h-4 w-4" /> Tambah Kerja
+              <Plus className="h-4 w-4" /> {t('jobs.addFirst')}
             </Button>
           )}
         </div>
@@ -231,7 +229,7 @@ export default function JobsListPage() {
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
                       <User className="h-3.5 w-3.5" />
-                      <span>{job.customers?.name || 'Tiada pelanggan'}</span>
+                      <span>{job.customers?.name || t('common2.noCustomer')}</span>
                     </div>
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>
                       {job.category}
@@ -250,7 +248,6 @@ export default function JobsListPage() {
         </div>
       )}
 
-      {/* Mobile FAB */}
       {!bulk.selectionMode && (
         <button
           data-tutorial="jobs-fab"
@@ -264,9 +261,9 @@ export default function JobsListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Padam Kerja Terpilih?"
-        body={`Adakah anda pasti ingin padam ${bulk.selected.size} kerja? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel="Padam"
+        title={t('jobs.deleteTitle')}
+        body={t('common2.deleteConfirm', { count: bulk.selected.size, label: t('jobs.label') })}
+        confirmLabel={t('common.delete')}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

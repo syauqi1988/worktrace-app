@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useBulkSelection } from '@/hooks/useBulkSelection';
 import BulkActionBar from '@/components/BulkActionBar';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { getDateLocale } from '@/i18n';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -18,7 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
   Rejected: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-const STATUS_TABS = ['Semua', 'Draft', 'Sent', 'Accepted', 'Rejected'];
+const STATUS_KEYS = ['all', 'Draft', 'Sent', 'Accepted', 'Rejected'] as const;
 
 interface QuotationRow {
   id: string;
@@ -33,10 +35,11 @@ interface QuotationRow {
 export default function QuotationsListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [quotations, setQuotations] = useState<QuotationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Semua');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -55,7 +58,7 @@ export default function QuotationsListPage() {
 
   const filtered = useMemo(() => {
     let result = quotations;
-    if (statusFilter !== 'Semua') result = result.filter(q => q.status === statusFilter);
+    if (statusFilter !== 'all') result = result.filter(q => q.status === statusFilter);
     if (search.trim()) {
       const s = search.toLowerCase();
       result = result.filter(q =>
@@ -76,7 +79,7 @@ export default function QuotationsListPage() {
     setConfirmOpen(false);
     if (error) { toast.error(error.message); return; }
     setQuotations(prev => prev.filter(q => !ids.includes(q.id)));
-    toast.success(`${ids.length} sebut harga dipadam`);
+    toast.success(t('quotations.deletedToast', { count: ids.length }));
     bulk.exit();
   }
 
@@ -89,7 +92,7 @@ export default function QuotationsListPage() {
   function handlePressEnd() { if (pressTimer) clearTimeout(pressTimer); }
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+    new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -102,27 +105,27 @@ export default function QuotationsListPage() {
           onDelete={() => setConfirmOpen(true)}
           onExit={bulk.exit}
           deleting={deleting}
-          label="sebut harga"
+          label={t('quotations.label')}
         />
       )}
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Sebut Harga</h1>
+        <h1 className="text-xl font-bold text-foreground">{t('quotations.title')}</h1>
         <div className="flex gap-2">
           {!bulk.selectionMode && filtered.length > 0 && (
             <Button onClick={() => bulk.enter()} variant="outline" size="sm" className="rounded-lg gap-1.5">
-              <CheckSquare className="h-4 w-4" /> Pilih
+              <CheckSquare className="h-4 w-4" /> {t('common2.select')}
             </Button>
           )}
           <Button data-tutorial="quotations-new-btn" onClick={() => navigate('/quotations/new')} size="sm" className="rounded-lg gap-1.5 hidden sm:flex">
-            <Plus className="h-4 w-4" /> Sebut Harga Baru
+            <Plus className="h-4 w-4" /> {t('quotations.newQuotation')}
           </Button>
         </div>
       </div>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nombor atau pelanggan..." className="pl-9 pr-9 rounded-lg" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('quotations.searchPlaceholder')} className="pl-9 pr-9 rounded-lg" />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -131,15 +134,15 @@ export default function QuotationsListPage() {
       </div>
 
       <div data-tutorial="quotations-status-tabs" className="flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-        {STATUS_TABS.map(tab => (
+        {STATUS_KEYS.map(key => (
           <button
-            key={tab}
-            onClick={() => setStatusFilter(tab)}
+            key={key}
+            onClick={() => setStatusFilter(key)}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
-              statusFilter === tab ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
+              statusFilter === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
             }`}
           >
-            {tab}
+            {t(`quotations.statusTabs.${key}`)}
           </button>
         ))}
       </div>
@@ -158,11 +161,11 @@ export default function QuotationsListPage() {
         <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
           <FileText className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground mb-4">
-            {quotations.length === 0 ? 'Belum ada sebut harga' : 'Tiada sebut harga dijumpai'}
+            {quotations.length === 0 ? t('quotations.empty') : t('quotations.notFound')}
           </p>
           {quotations.length === 0 && (
             <Button onClick={() => navigate('/quotations/new')} className="rounded-lg gap-2">
-              <Plus className="h-4 w-4" /> Buat Sebut Harga
+              <Plus className="h-4 w-4" /> {t('quotations.create')}
             </Button>
           )}
         </div>
@@ -198,7 +201,7 @@ export default function QuotationsListPage() {
                   <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                     <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
                       <User className="h-3.5 w-3.5" />
-                      <span>{q.jobs?.customers?.name || 'Tiada pelanggan'}</span>
+                      <span>{q.jobs?.customers?.name || t('common2.noCustomer')}</span>
                     </div>
                     <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
                       <Briefcase className="h-3.5 w-3.5" />
@@ -209,7 +212,7 @@ export default function QuotationsListPage() {
                     {q.valid_until && (
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <CalendarDays className="h-3.5 w-3.5" />
-                        <span className="text-[13px]">Sah hingga {formatDate(q.valid_until)}</span>
+                        <span className="text-[13px]">{t('quotations.validUntil', { date: formatDate(q.valid_until) })}</span>
                       </div>
                     )}
                     <span className="text-sm font-bold text-foreground ml-auto">RM {Number(q.total).toFixed(2)}</span>
@@ -233,9 +236,9 @@ export default function QuotationsListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Padam Sebut Harga Terpilih?"
-        body={`Adakah anda pasti ingin padam ${bulk.selected.size} sebut harga? Tindakan ini tidak boleh dibatalkan.`}
-        confirmLabel="Padam"
+        title={t('quotations.deleteTitle')}
+        body={t('common2.deleteConfirm', { count: bulk.selected.size, label: t('quotations.label') })}
+        confirmLabel={t('common.delete')}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}
