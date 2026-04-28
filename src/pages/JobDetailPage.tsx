@@ -500,7 +500,7 @@ export default function JobDetailPage() {
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
                 <Eye className="h-3.5 w-3.5" /> Pratonton PDF
               </Button>
-              {report.status === 'submitted' && job.customers?.phone && (
+              {(report.status === 'submitted' || report.status === 'accepted' || report.status === 'rejected') && job.customers?.phone && (
                 <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={handleReportWhatsApp} disabled={isSharing}>
                   {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
                   Kongsi via WhatsApp
