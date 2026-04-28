@@ -407,9 +407,47 @@ Terima kasih! 🙏
         </div>
       </div>
 
-      {isSubmitted && (
-        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 text-sm text-[#15803D] font-medium">
-          ✓ Laporan ini telah dihantar
+      {/* Status banners — mirror Work Order */}
+      {reportStatus === 'submitted' && (
+        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
+          <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Menunggu Pengesahan Pelanggan
+          </div>
+          <p className="text-xs text-[#1D4ED8]/80">
+            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
+          </p>
+          {job.customers?.phone && (
+            <Button onClick={handleWhatsAppShare} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
+              {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              Kongsi Semula via WhatsApp
+            </Button>
+          )}
+        </div>
+      )}
+
+      {reportStatus === 'accepted' && (
+        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2 text-[#15803D] text-sm font-semibold">
+            <CheckCircle className="h-5 w-5" />
+            Laporan Disahkan oleh Pelanggan — Kerja Selesai
+          </div>
+          <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
+            <Receipt className="h-4 w-4" /> Buat Invois
+          </Button>
+        </div>
+      )}
+
+      {reportStatus === 'rejected' && (
+        <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2 text-[#B91C1C] text-sm font-semibold">
+            <XCircle className="h-5 w-5" />
+            Laporan Ditolak oleh Pelanggan
+          </div>
+          {rejectionReason && (
+            <p className="text-sm text-[#B91C1C]">Sebab: {rejectionReason}</p>
+          )}
+          <p className="text-xs text-[#B91C1C]/80">Anda boleh mengubah suai laporan dan hantar semula.</p>
         </div>
       )}
 
