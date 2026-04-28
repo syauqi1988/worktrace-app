@@ -151,13 +151,16 @@ export default function AppShell() {
         <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
         <div className="flex-1" />
 
+        {/* Language toggle */}
+        <LanguageToggle />
+
         {/* Support button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={() => navigate('/support')}
               className="relative h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground flex items-center justify-center hover:bg-accent transition-colors mr-2"
-              aria-label="Sokongan"
+              aria-label={t('header.support')}
             >
               <LifeBuoy className="h-4 w-4" />
               {supportNotifCount > 0 && (
@@ -167,7 +170,7 @@ export default function AppShell() {
               )}
             </button>
           </TooltipTrigger>
-          <TooltipContent>Sokongan</TooltipContent>
+          <TooltipContent>{t('header.support')}</TooltipContent>
         </Tooltip>
 
         {/* Notification bell */}
