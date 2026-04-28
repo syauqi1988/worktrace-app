@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBillPlz } from '@/hooks/useBillPlz';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X, AlertTriangle, Trash2 } from 'lucide-react';
+import { getDateLocale } from '@/i18n';
 
 export default function ExpiryBanner() {
   const { profile, refreshProfile } = useAuth();
   const { initiatePayment, isLoading } = useBillPlz();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
@@ -27,7 +30,7 @@ export default function ExpiryBanner() {
   if ((profile as any).account_status === 'pending_deletion' && (profile as any).deletion_scheduled_at) {
     const scheduled = new Date((profile as any).deletion_scheduled_at);
     const daysLeft = Math.max(0, Math.ceil((scheduled.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-    const dateStr = scheduled.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+    const dateStr = scheduled.toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
     const handleCancelDeletion = async () => {
       if (!profile) return;
@@ -43,9 +46,9 @@ export default function ExpiryBanner() {
           .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancelled_by: 'user' } as any)
           .eq('user_id', profile.id).eq('status', 'pending');
         await refreshProfile();
-        toast.success('Pemadaman akaun dibatalkan!');
+        toast.success(t('expiry.deletionCancelled'));
       } catch (e: any) {
-        toast.error(e.message || 'Gagal batalkan pemadaman');
+        toast.error(e.message || t('expiry.cancelFailed'));
       } finally {
         setCancelling(false);
       }
@@ -56,7 +59,7 @@ export default function ExpiryBanner() {
         <div className="flex items-center gap-2 min-w-0">
           <Trash2 className="h-4 w-4 shrink-0" style={{ color: '#B91C1C' }} />
           <p className="text-sm truncate" style={{ color: '#B91C1C' }}>
-            Akaun anda akan dipadam dalam {daysLeft} hari ({dateStr}).
+            {t('expiry.pendingDeletion', { days: daysLeft, date: dateStr })}
           </p>
         </div>
         <button
@@ -65,7 +68,7 @@ export default function ExpiryBanner() {
           className="text-sm font-medium px-3 py-1 rounded-lg whitespace-nowrap shrink-0"
           style={{ color: '#B91C1C', textDecoration: 'underline' }}
         >
-          {cancelling ? 'Membatalkan...' : 'Batalkan Pemadaman'}
+          {cancelling ? t('expiry.cancelling') : t('expiry.cancelDeletion')}
         </button>
       </div>
     );
@@ -79,7 +82,7 @@ export default function ExpiryBanner() {
 
   if (daysLeft > 7 || daysLeft < 0 || dismissed) return null;
 
-  const endStr = endDate.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  const endStr = endDate.toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 
   const handleDismiss = () => {
     localStorage.setItem('expiry_banner_dismissed', todayKey);
@@ -91,7 +94,7 @@ export default function ExpiryBanner() {
       <div className="flex items-center gap-2 min-w-0">
         <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: '#B45309' }} />
         <p className="text-sm truncate" style={{ color: '#B45309' }}>
-          Langganan Pro anda akan tamat dalam {daysLeft} hari ({endStr}).
+          {t('expiry.expiresIn', { days: daysLeft, date: endStr })}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
@@ -101,7 +104,7 @@ export default function ExpiryBanner() {
           className="text-sm font-medium px-3 py-1 rounded-lg whitespace-nowrap"
           style={{ color: '#B45309', textDecoration: 'underline' }}
         >
-          Perbaharui Sekarang
+          {t('expiry.renewNow')}
         </button>
         <button onClick={handleDismiss} style={{ color: '#B45309' }}>
           <X className="h-4 w-4" />

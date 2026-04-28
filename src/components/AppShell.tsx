@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift, HelpCircle, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock
@@ -28,32 +30,38 @@ type NavItem = {
   teamOnly?: boolean;
 };
 
-const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Kerja', icon: Briefcase, tutorialId: 'jobs-nav' },
-  { to: '/customers', label: 'Pelanggan', icon: Users, tutorialId: 'customers-nav' },
-  { to: '/quotations', label: 'Sebut Harga', icon: FileText, tutorialId: 'quotations-nav' },
-  { to: '/work-orders', label: 'Work Order', icon: ClipboardList, teamOnly: true },
-  { to: '/completion-reports', label: 'Laporan Kerja', icon: ClipboardCheck },
-  { to: '/invoices', label: 'Invois', icon: Receipt, tutorialId: 'invoices-nav' },
-  { to: '/receipts', label: 'Resit', icon: Receipt },
-  { to: '/reports', label: 'Laporan', icon: FileBarChart },
-  { to: '/support', label: 'Sokongan', icon: LifeBuoy },
-  { to: '/settings', label: 'Tetapan', icon: Settings, tutorialId: 'settings-nav' },
-];
+function buildNavItems(t: (k: string) => string): NavItem[] {
+  return [
+    { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/jobs', label: t('nav.jobs'), icon: Briefcase, tutorialId: 'jobs-nav' },
+    { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
+    { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
+    { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList, teamOnly: true },
+    { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
+    { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
+    { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
+    { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
+    { to: '/support', label: t('nav.support'), icon: LifeBuoy },
+    { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
+  ];
+}
 
-const BOTTOM_TABS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Kerja', icon: Briefcase },
-  { to: '/customers', label: 'Pelanggan', icon: Users },
-  { to: '/profile', label: 'Profil', icon: User },
-];
+function buildBottomTabs(t: (k: string) => string) {
+  return [
+    { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/jobs', label: t('nav.jobs'), icon: Briefcase },
+    { to: '/customers', label: t('nav.customers'), icon: Users },
+    { to: '/profile', label: t('nav.profile'), icon: User },
+  ];
+}
 
-const QUICK_ACTIONS = [
-  { label: 'Kerja Baru', to: '/jobs/new', icon: Briefcase },
-  { label: 'Pelanggan Baru', to: '/customers/new', icon: Users },
-  { label: 'Invois Baru', to: '/invoices/new', icon: Receipt },
-];
+function buildQuickActions(t: (k: string) => string) {
+  return [
+    { label: t('nav.newJob'), to: '/jobs/new', icon: Briefcase },
+    { label: t('nav.newCustomer'), to: '/customers/new', icon: Users },
+    { label: t('nav.newInvoice'), to: '/invoices/new', icon: Receipt },
+  ];
+}
 
 function isNavActive(pathname: string, to: string) {
   if (to === '/dashboard') return pathname === '/dashboard';
@@ -69,6 +77,10 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const { shouldAutoStart } = useTutorial('dashboard');
+  const { t } = useTranslation();
+  const NAV_ITEMS = buildNavItems(t);
+  const BOTTOM_TABS = buildBottomTabs(t);
+  const QUICK_ACTIONS = buildQuickActions(t);
 
   // Check for new support replies
   useEffect(() => {
@@ -103,7 +115,7 @@ export default function AppShell() {
     if (endDate < sevenDays && !(profile as any).subscription_cancelled) {
       const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       toast.info(
-        `Langganan Pro anda akan tamat dalam ${daysLeft} hari. Perbaharui untuk kekal dengan Pro.`,
+        t('expiry.warning', { days: daysLeft }),
         { duration: 8000 }
       );
     }
@@ -139,13 +151,16 @@ export default function AppShell() {
         <img src={logo} alt="WorkTrace" className="h-9 logo-dark" style={{ background: 'transparent' }} />
         <div className="flex-1" />
 
+        {/* Language toggle */}
+        <LanguageToggle />
+
         {/* Support button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={() => navigate('/support')}
               className="relative h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground flex items-center justify-center hover:bg-accent transition-colors mr-2"
-              aria-label="Sokongan"
+              aria-label={t('header.support')}
             >
               <LifeBuoy className="h-4 w-4" />
               {supportNotifCount > 0 && (
@@ -155,7 +170,7 @@ export default function AppShell() {
               )}
             </button>
           </TooltipTrigger>
-          <TooltipContent>Sokongan</TooltipContent>
+          <TooltipContent>{t('header.support')}</TooltipContent>
         </Tooltip>
 
         {/* Notification bell */}
@@ -172,7 +187,7 @@ export default function AppShell() {
               <HelpCircle className="h-4 w-4" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Tonton Tutorial Halaman Ini</TooltipContent>
+          <TooltipContent>{t('header.tutorial')}</TooltipContent>
         </Tooltip>
 
         <div className="relative">
@@ -187,18 +202,18 @@ export default function AppShell() {
               <div className="fixed inset-0 z-[60]" onClick={() => setProfileDropdown(false)} />
               <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl border border-border z-[70] py-1" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                 <div className="px-4 py-3 border-b border-border">
-                  <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || 'Syarikat'}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{profile?.company_name || t('common.company')}</p>
                   <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
                 <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-sidebar-background flex items-center gap-2">
-                  <User className="h-4 w-4" /> Profil
+                  <User className="h-4 w-4" /> {t('common.profile')}
                 </button>
                 <button onClick={() => { setProfileDropdown(false); navigate('/settings'); }} className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-sidebar-background flex items-center gap-2">
-                  <Settings className="h-4 w-4" /> Tetapan
+                  <Settings className="h-4 w-4" /> {t('common.settings')}
                 </button>
                 <hr className="border-border my-1" />
                 <button onClick={handleSignOut} className="w-full px-4 py-2.5 text-left text-sm text-destructive hover:bg-sidebar-background flex items-center gap-2">
-                  <LogOut className="h-4 w-4" /> Log Keluar
+                  <LogOut className="h-4 w-4" /> {t('common.logout')}
                 </button>
               </div>
             </>
@@ -221,7 +236,7 @@ export default function AppShell() {
                   onClick={(e) => {
                     if (isTeamOnlyLocked) {
                       e.preventDefault();
-                      toast.info(`${item.label} akan datang. Pelan Team masih dalam pembangunan.`);
+                      toast.info(t('workOrders.comingSoon', { label: item.label }));
                     }
                   }}
                 >
@@ -264,7 +279,7 @@ export default function AppShell() {
                       onClick={(e) => {
                         if (isTeamOnlyLocked) {
                           e.preventDefault();
-                          toast.info(`${item.label} akan datang. Pelan Team masih dalam pembangunan.`);
+                          toast.info(t('workOrders.comingSoon', { label: item.label }));
                           return;
                         }
                         setSidebarOpen(false);
@@ -349,7 +364,7 @@ export default function AppShell() {
       <TutorialController
         showWelcome={shouldAutoStart}
         onComplete={() => {
-          toast.success('Tutorial selesai! Selamat menggunakan WorkTrace 🎉');
+          toast.success(t('tutorial.complete'));
         }}
       />
     </div>

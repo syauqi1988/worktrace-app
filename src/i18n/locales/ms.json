@@ -1,0 +1,215 @@
+{
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Padam",
+    "edit": "Edit",
+    "add": "Tambah",
+    "new": "Baru",
+    "search": "Cari",
+    "loading": "Memuatkan...",
+    "back": "Kembali",
+    "close": "Tutup",
+    "confirm": "Sahkan",
+    "yes": "Ya",
+    "no": "Tidak",
+    "submit": "Hantar",
+    "send": "Hantar",
+    "update": "Kemaskini",
+    "create": "Cipta",
+    "view": "Lihat",
+    "download": "Muat Turun",
+    "share": "Kongsi",
+    "copy": "Salin",
+    "copied": "Disalin!",
+    "actions": "Tindakan",
+    "status": "Status",
+    "date": "Tarikh",
+    "name": "Nama",
+    "email": "Emel",
+    "phone": "Telefon",
+    "address": "Alamat",
+    "notes": "Nota",
+    "description": "Penerangan",
+    "amount": "Jumlah",
+    "total": "Jumlah Keseluruhan",
+    "subtotal": "Subjumlah",
+    "tax": "Cukai",
+    "discount": "Diskaun",
+    "company": "Syarikat",
+    "customer": "Pelanggan",
+    "all": "Semua",
+    "none": "Tiada",
+    "noData": "Tiada data",
+    "settings": "Tetapan",
+    "profile": "Profil",
+    "logout": "Log Keluar",
+    "login": "Log Masuk",
+    "signup": "Daftar",
+    "required": "Wajib diisi",
+    "optional": "Pilihan",
+    "free": "Percuma",
+    "pro": "Pro",
+    "team": "Team",
+    "upgrade": "Naik Taraf",
+    "comingSoon": "Akan datang"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "jobs": "Kerja",
+    "customers": "Pelanggan",
+    "quotations": "Sebut Harga",
+    "workOrders": "Work Order",
+    "completionReports": "Laporan Kerja",
+    "invoices": "Invois",
+    "receipts": "Resit",
+    "reports": "Laporan",
+    "support": "Sokongan",
+    "settings": "Tetapan",
+    "profile": "Profil",
+    "newJob": "Kerja Baru",
+    "newCustomer": "Pelanggan Baru",
+    "newInvoice": "Invois Baru"
+  },
+  "header": {
+    "support": "Sokongan",
+    "tutorial": "Tonton Tutorial Halaman Ini",
+    "language": "Bahasa"
+  },
+  "auth": {
+    "welcome": "Selamat datang",
+    "loginTitle": "Log Masuk ke WorkTrace",
+    "emailLabel": "Emel",
+    "emailPlaceholder": "anda@syarikat.com",
+    "sendOtp": "Hantar Kod OTP",
+    "sending": "Menghantar...",
+    "verifying": "Mengesahkan...",
+    "otpTitle": "Masukkan Kod OTP",
+    "otpSubtitle": "Kami menghantar kod 6 digit ke {{email}}",
+    "resend": "Hantar semula",
+    "resendIn": "Hantar semula dalam {{seconds}}s",
+    "changeEmail": "Tukar emel",
+    "captchaRequired": "Sila lengkapkan captcha",
+    "invalidEmail": "Sila masukkan emel yang sah",
+    "invalidOtp": "Kod OTP tidak sah"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcomeBack": "Selamat datang, {{name}}",
+    "welcomeGuest": "Selamat datang ke WorkTrace",
+    "totalJobsThisMonth": "Total Kerja Bulan Ini",
+    "activeJobs": "Kerja Aktif",
+    "completedThisMonth": "Siap Bulan Ini",
+    "recentJobs": "Kerja Terkini",
+    "noJobsYet": "Belum ada kerja lagi",
+    "addFirstJob": "Tambah Kerja Pertama",
+    "noCustomer": "Tiada pelanggan"
+  },
+  "jobs": {
+    "title": "Kerja",
+    "newJob": "Kerja Baru",
+    "empty": "Belum ada kerja lagi",
+    "searchPlaceholder": "Cari kerja...",
+    "category": "Kategori",
+    "scheduledDate": "Tarikh Dijadualkan",
+    "completedDate": "Tarikh Siap"
+  },
+  "customers": {
+    "title": "Pelanggan",
+    "newCustomer": "Pelanggan Baru",
+    "empty": "Belum ada pelanggan lagi",
+    "searchPlaceholder": "Cari pelanggan..."
+  },
+  "quotations": {
+    "title": "Sebut Harga",
+    "newQuotation": "Sebut Harga Baru",
+    "empty": "Belum ada sebut harga"
+  },
+  "invoices": {
+    "title": "Invois",
+    "newInvoice": "Invois Baru",
+    "empty": "Belum ada invois"
+  },
+  "receipts": {
+    "title": "Resit",
+    "empty": "Belum ada resit"
+  },
+  "workOrders": {
+    "title": "Work Order",
+    "comingSoon": "{{label}} akan datang. Pelan Team masih dalam pembangunan."
+  },
+  "reports": {
+    "title": "Laporan"
+  },
+  "support": {
+    "title": "Pusat Sokongan",
+    "newTicket": "Tiket Baru",
+    "empty": "🎉 Tiada Isu Dilaporkan",
+    "emptyDesc": "Anda belum ada tiket sokongan. Jika ada masalah, kami sedia membantu!",
+    "createTicket": "Buat Tiket Baru"
+  },
+  "settings": {
+    "title": "Tetapan",
+    "company": "Maklumat Syarikat",
+    "billing": "Bil & Langganan",
+    "notifications": "Notifikasi Peranti",
+    "deleteAccount": "Padam Akaun"
+  },
+  "expiry": {
+    "warning": "Langganan Pro anda akan tamat dalam {{days}} hari. Perbaharui untuk kekal dengan Pro.",
+    "pendingDeletion": "Akaun anda akan dipadam dalam {{days}} hari ({{date}}).",
+    "cancelling": "Membatalkan...",
+    "cancelDeletion": "Batalkan Pemadaman",
+    "deletionCancelled": "Pemadaman akaun dibatalkan!",
+    "cancelFailed": "Gagal batalkan pemadaman",
+    "expiresIn": "Langganan Pro anda akan tamat dalam {{days}} hari ({{date}}).",
+    "renewNow": "Perbaharui Sekarang"
+  },
+  "tutorial": {
+    "complete": "Tutorial selesai! Selamat menggunakan WorkTrace 🎉"
+  },
+  "notifications": {
+    "title": "Notifikasi",
+    "markAllRead": "Tanda semua dibaca",
+    "empty": "Tiada notifikasi",
+    "viewAll": "Lihat semua"
+  },
+  "accountDeleted": {
+    "title": "Akaun Ini Telah Dipadam",
+    "body": "Akaun yang berkaitan dengan emel ini telah dipadam dan tidak boleh dipulihkan lagi.",
+    "contact": "Jika ini adalah kesilapan, hubungi:",
+    "registerNew": "Daftar Akaun Baru"
+  },
+  "goodbye": {
+    "title": "Permintaan Pemadaman Diterima",
+    "willDeleteOn": "Akaun anda akan dipadam pada:",
+    "in14Days": "14 hari dari sekarang",
+    "untilThen": "Sehingga tarikh tersebut, anda masih boleh log masuk dan batalkan pemadaman.",
+    "loginToCancel": "Log Masuk Semula untuk Batal",
+    "inquiry": "Pertanyaan:",
+    "thanks": "Terima kasih kerana menggunakan WorkTrace. Semoga berjaya! 🙏"
+  },
+  "notFound": {
+    "title": "Halaman tidak dijumpai",
+    "back": "Kembali ke Dashboard"
+  },
+  "login": {
+    "tagline": "Jejak Kerja. Senang Collect.",
+    "referralTitle": "Anda dijemput oleh rakan kontraktor WorkTrace!",
+    "referralBody": "Daftar sekarang dan nikmati ciri-ciri premium WorkTrace.",
+    "title": "Masuk atau Daftar",
+    "subtitle": "Kami akan hantar kod OTP ke emel anda",
+    "emailPlaceholder": "emel@contoh.com",
+    "sending": "Menghantar...",
+    "sendOtp": "Hantar Kod OTP",
+    "back": "Kembali",
+    "checkEmail": "Semak emel anda",
+    "sentTo": "Kod 6-digit telah dihantar ke",
+    "verifying": "Mengesahkan...",
+    "verify": "Sahkan Kod",
+    "resendIn": "Hantar semula dalam {{seconds}}s",
+    "resend": "Hantar semula kod",
+    "invalidEmail": "Sila masukkan emel yang sah",
+    "captchaRequired": "Sila lengkapkan captcha"
+  }
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import {
   Briefcase, Clock, CheckCircle, Plus, Users, Receipt, CalendarDays
 } from 'lucide-react';
 import RevenueRangeCard from '@/components/dashboard/RevenueRangeCard';
+import { getDateLocale } from '@/i18n';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Renovation: 'bg-blue-100 text-blue-700',
@@ -47,6 +49,7 @@ interface Stats {
 export default function DashboardPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,20 +89,20 @@ export default function DashboardPage() {
   }, [user]);
 
   const greeting = profile?.company_name
-    ? `Selamat datang, ${profile.company_name}`
-    : 'Selamat datang ke WorkTrace';
+    ? t('dashboard.welcomeBack', { name: profile.company_name })
+    : t('dashboard.welcomeGuest');
 
   const statsCards = [
-    { label: 'Total Kerja Bulan Ini', value: stats?.totalThisMonth ?? 0, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Kerja Aktif', value: stats?.active ?? 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'Siap Bulan Ini', value: stats?.completedThisMonth ?? 0, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: t('dashboard.totalJobsThisMonth'), value: stats?.totalThisMonth ?? 0, icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: t('dashboard.activeJobs'), value: stats?.active ?? 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { label: t('dashboard.completedThisMonth'), value: stats?.completedThisMonth ?? 0, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
   ];
 
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">{t('dashboard.title')}</h1>
         <p className="text-muted-foreground text-sm mt-0.5">{greeting}</p>
       </div>
 
@@ -129,19 +132,19 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div data-tutorial="dashboard-quick-actions" className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <Button onClick={() => navigate('/jobs/new')} className="h-10 rounded-lg gap-2">
-          <Plus className="h-4 w-4" /> Kerja Baru
+          <Plus className="h-4 w-4" /> {t('nav.newJob')}
         </Button>
         <Button onClick={() => navigate('/customers/new')} variant="outline" className="h-10 rounded-lg gap-2">
-          <Users className="h-4 w-4" /> Pelanggan Baru
+          <Users className="h-4 w-4" /> {t('nav.newCustomer')}
         </Button>
         <Button onClick={() => navigate('/invoices/new')} variant="outline" className="h-10 rounded-lg gap-2">
-          <Receipt className="h-4 w-4" /> Invois Baru
+          <Receipt className="h-4 w-4" /> {t('nav.newInvoice')}
         </Button>
       </div>
 
       {/* Recent Jobs */}
       <div data-tutorial="dashboard-recent-jobs">
-        <h2 className="text-lg font-semibold text-foreground mb-3">Kerja Terkini</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-3">{t('dashboard.recentJobs')}</h2>
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -154,9 +157,9 @@ export default function DashboardPage() {
         ) : jobs.length === 0 ? (
           <div className="rounded-xl border border-border p-8 flex flex-col items-center justify-center text-center bg-card">
             <Briefcase className="h-12 w-12 text-muted-foreground/30 mb-3" />
-            <p className="text-muted-foreground mb-4">Belum ada kerja lagi</p>
+            <p className="text-muted-foreground mb-4">{t('dashboard.noJobsYet')}</p>
             <Button onClick={() => navigate('/jobs/new')} className="rounded-lg gap-2">
-              <Plus className="h-4 w-4" /> Tambah Kerja Pertama
+              <Plus className="h-4 w-4" /> {t('dashboard.addFirstJob')}
             </Button>
           </div>
         ) : (
@@ -178,13 +181,13 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <p className="text-[13px] text-muted-foreground mt-0.5 truncate">
-                    {job.customers?.name || 'Tiada pelanggan'}
+                    {job.customers?.name || t('dashboard.noCustomer')}
                   </p>
                 </div>
                 {job.scheduled_date && (
                   <div className="flex items-center gap-1 text-muted-foreground shrink-0">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    <span className="text-[13px]">{new Date(job.scheduled_date).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' })}</span>
+                    <span className="text-[13px]">{new Date(job.scheduled_date).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short' })}</span>
                   </div>
                 )}
               </button>

@@ -1,0 +1,215 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "new": "New",
+    "search": "Search",
+    "loading": "Loading...",
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "submit": "Submit",
+    "send": "Send",
+    "update": "Update",
+    "create": "Create",
+    "view": "View",
+    "download": "Download",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "notes": "Notes",
+    "description": "Description",
+    "amount": "Amount",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "discount": "Discount",
+    "company": "Company",
+    "customer": "Customer",
+    "all": "All",
+    "none": "None",
+    "noData": "No data",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Log Out",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "required": "Required",
+    "optional": "Optional",
+    "free": "Free",
+    "pro": "Pro",
+    "team": "Team",
+    "upgrade": "Upgrade",
+    "comingSoon": "Coming soon"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "jobs": "Jobs",
+    "customers": "Customers",
+    "quotations": "Quotations",
+    "workOrders": "Work Orders",
+    "completionReports": "Completion Reports",
+    "invoices": "Invoices",
+    "receipts": "Receipts",
+    "reports": "Reports",
+    "support": "Support",
+    "settings": "Settings",
+    "profile": "Profile",
+    "newJob": "New Job",
+    "newCustomer": "New Customer",
+    "newInvoice": "New Invoice"
+  },
+  "header": {
+    "support": "Support",
+    "tutorial": "Watch Tutorial for This Page",
+    "language": "Language"
+  },
+  "auth": {
+    "welcome": "Welcome",
+    "loginTitle": "Log In to WorkTrace",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@company.com",
+    "sendOtp": "Send OTP Code",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
+    "otpTitle": "Enter OTP Code",
+    "otpSubtitle": "We sent a 6-digit code to {{email}}",
+    "resend": "Resend",
+    "resendIn": "Resend in {{seconds}}s",
+    "changeEmail": "Change email",
+    "captchaRequired": "Please complete the captcha",
+    "invalidEmail": "Please enter a valid email",
+    "invalidOtp": "Invalid OTP code"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcomeBack": "Welcome, {{name}}",
+    "welcomeGuest": "Welcome to WorkTrace",
+    "totalJobsThisMonth": "Total Jobs This Month",
+    "activeJobs": "Active Jobs",
+    "completedThisMonth": "Completed This Month",
+    "recentJobs": "Recent Jobs",
+    "noJobsYet": "No jobs yet",
+    "addFirstJob": "Add Your First Job",
+    "noCustomer": "No customer"
+  },
+  "jobs": {
+    "title": "Jobs",
+    "newJob": "New Job",
+    "empty": "No jobs yet",
+    "searchPlaceholder": "Search jobs...",
+    "category": "Category",
+    "scheduledDate": "Scheduled Date",
+    "completedDate": "Completed Date"
+  },
+  "customers": {
+    "title": "Customers",
+    "newCustomer": "New Customer",
+    "empty": "No customers yet",
+    "searchPlaceholder": "Search customers..."
+  },
+  "quotations": {
+    "title": "Quotations",
+    "newQuotation": "New Quotation",
+    "empty": "No quotations yet"
+  },
+  "invoices": {
+    "title": "Invoices",
+    "newInvoice": "New Invoice",
+    "empty": "No invoices yet"
+  },
+  "receipts": {
+    "title": "Receipts",
+    "empty": "No receipts yet"
+  },
+  "workOrders": {
+    "title": "Work Orders",
+    "comingSoon": "{{label}} coming soon. The Team plan is still in development."
+  },
+  "reports": {
+    "title": "Reports"
+  },
+  "support": {
+    "title": "Support Center",
+    "newTicket": "New Ticket",
+    "empty": "🎉 No Issues Reported",
+    "emptyDesc": "You don't have any support tickets. If you run into trouble, we're here to help!",
+    "createTicket": "Create New Ticket"
+  },
+  "settings": {
+    "title": "Settings",
+    "company": "Company Information",
+    "billing": "Billing & Subscription",
+    "notifications": "Device Notifications",
+    "deleteAccount": "Delete Account"
+  },
+  "expiry": {
+    "warning": "Your Pro subscription expires in {{days}} days. Renew to keep Pro features.",
+    "pendingDeletion": "Your account will be deleted in {{days}} days ({{date}}).",
+    "cancelling": "Cancelling...",
+    "cancelDeletion": "Cancel Deletion",
+    "deletionCancelled": "Account deletion cancelled!",
+    "cancelFailed": "Failed to cancel deletion",
+    "expiresIn": "Your Pro subscription expires in {{days}} days ({{date}}).",
+    "renewNow": "Renew Now"
+  },
+  "tutorial": {
+    "complete": "Tutorial complete! Enjoy using WorkTrace 🎉"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications",
+    "viewAll": "View all"
+  },
+  "accountDeleted": {
+    "title": "This Account Has Been Deleted",
+    "body": "The account associated with this email has been deleted and cannot be recovered.",
+    "contact": "If this is a mistake, contact:",
+    "registerNew": "Register a New Account"
+  },
+  "goodbye": {
+    "title": "Deletion Request Received",
+    "willDeleteOn": "Your account will be deleted on:",
+    "in14Days": "14 days from now",
+    "untilThen": "Until then, you can still log in and cancel the deletion.",
+    "loginToCancel": "Log In Again to Cancel",
+    "inquiry": "Inquiries:",
+    "thanks": "Thank you for using WorkTrace. All the best! 🙏"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to Dashboard"
+  },
+  "login": {
+    "tagline": "Track Jobs. Collect Easily.",
+    "referralTitle": "You were invited by a WorkTrace contractor!",
+    "referralBody": "Sign up now and enjoy WorkTrace premium features.",
+    "title": "Log In or Sign Up",
+    "subtitle": "We will send an OTP code to your email",
+    "emailPlaceholder": "email@example.com",
+    "sending": "Sending...",
+    "sendOtp": "Send OTP Code",
+    "back": "Back",
+    "checkEmail": "Check your email",
+    "sentTo": "A 6-digit code has been sent to",
+    "verifying": "Verifying...",
+    "verify": "Verify Code",
+    "resendIn": "Resend in {{seconds}}s",
+    "resend": "Resend code",
+    "invalidEmail": "Please enter a valid email",
+    "captchaRequired": "Please complete the captcha"
+  }
+}
