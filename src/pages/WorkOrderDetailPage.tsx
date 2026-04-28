@@ -116,46 +116,8 @@ export default function WorkOrderDetailPage() {
     },
   });
 
-  const handleAccept = async () => {
-    if (!wo) return;
-    setActing(true);
-    try {
-      await supabase.from('work_orders').update({
-        status: 'Accepted',
-        accepted_at: new Date().toISOString(),
-      }).eq('id', wo.id);
-      const newStatus = await autoUpdateJobStatus(supabase, jobId!, user!.id, 'work_order_accepted');
-      toast.success(newStatus
-        ? `Work Order diterima! Status kerja: ${newStatus}`
-        : 'Work Order diterima!');
-      await load();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setActing(false);
-    }
-  };
+  // Customer accept/reject is handled via PublicApprovalPage (WhatsApp link).
 
-  const handleReject = async () => {
-    if (!wo) return;
-    setActing(true);
-    try {
-      await supabase.from('work_orders').update({
-        status: 'Rejected',
-        rejected_at: new Date().toISOString(),
-        rejection_reason: rejectReason.trim() || null,
-      }).eq('id', wo.id);
-      await autoUpdateJobStatus(supabase, jobId!, user!.id, 'work_order_rejected');
-      toast.success('Work Order ditolak');
-      setRejectOpen(false);
-      setRejectReason('');
-      await load();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setActing(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!wo) return;
