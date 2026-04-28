@@ -231,7 +231,8 @@ export default function PublicPaymentProofPage() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center text-red-800">
             <XCircle className="h-10 w-10 mx-auto mb-2" />
             <p className="font-bold">Bukti pembayaran ditolak</p>
-            {row.rejection_reason && <p className="text-sm mt-1">{row.rejection_reason}</p>}
+            {row.rejection_reason && <p className="text-sm mt-1">Sebab: {row.rejection_reason}</p>}
+            <p className="text-sm mt-2">Sila semak maklumat di bawah dan hantar semula bukti pembayaran.</p>
           </div>
         )}
         {isSubmitted && !verified && !rejected && (
