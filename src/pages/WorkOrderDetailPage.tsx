@@ -251,6 +251,9 @@ Terima kasih!
       {wo.status === 'Accepted' && (
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium text-[#15803D]">✓ Work Order Diterima — Kerja boleh dimulakan</p>
+          {wo.accepted_at && (
+            <p className="text-xs text-[#15803D]/80">Disahkan pada {formatDateTime(wo.accepted_at)}</p>
+          )}
           {!report && (
             <Button onClick={() => navigate(`/jobs/${jobId}/completion-report`)} size="sm" className="rounded-lg gap-1.5">
               <ClipboardCheck className="h-4 w-4" /> Buat Laporan Siap Kerja
