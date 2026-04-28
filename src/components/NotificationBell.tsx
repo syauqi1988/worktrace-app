@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNotifications, type AppNotification } from '@/hooks/useNotifications';
@@ -14,21 +15,23 @@ function iconFor(type: string) {
   }
 }
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, justNow: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return 'baru sahaja';
+  if (m < 1) return justNow;
   if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}j`;
+  if (h < 24) return `${h}h`;
   const d = Math.floor(h / 24);
-  return `${d}h`;
+  return `${d}d`;
 }
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const { items, unreadCount, markRead, markAllRead } = useNotifications();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const justNow = i18n.language === 'en' ? 'just now' : 'baru sahaja';
 
   // Listen for SW navigation messages (push click)
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function NotificationBell() {
           <button
             onClick={() => setOpen((v) => !v)}
             className="relative h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground flex items-center justify-center hover:bg-accent transition-colors"
-            aria-label="Notifikasi"
+            aria-label={t('notifications.title')}
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
@@ -62,7 +65,7 @@ export default function NotificationBell() {
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent>Notifikasi</TooltipContent>
+        <TooltipContent>{t('notifications.title')}</TooltipContent>
       </Tooltip>
 
       {open && (
@@ -73,17 +76,17 @@ export default function NotificationBell() {
             style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
           >
             <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-foreground">Notifikasi</p>
+              <p className="text-sm font-semibold text-foreground">{t('notifications.title')}</p>
               {unreadCount > 0 && (
                 <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0">
-                  <Check className="h-3 w-3" /> Tandakan semua dibaca
+                  <Check className="h-3 w-3" /> {t('notifications.markAllRead')}
                 </button>
               )}
             </div>
             <div className="max-h-[70vh] md:max-h-[420px] overflow-y-auto">
               {items.length === 0 ? (
                 <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  Tiada notifikasi lagi.
+                  {t('notifications.empty')}
                 </div>
               ) : (
                 items.map((n) => (
@@ -98,7 +101,7 @@ export default function NotificationBell() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{n.title}</p>
                       {n.body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>}
-                      <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(n.created_at, justNow)}</p>
                     </div>
                     {!n.read_at && <span className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />}
                   </button>
