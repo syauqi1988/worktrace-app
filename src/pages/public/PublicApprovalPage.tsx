@@ -108,10 +108,16 @@ export default function PublicApprovalPage() {
     }
 
     // Mirror status to source document
-    const tableName = row.document_type === 'quotation' ? 'quotations' : 'work_orders';
-    const newStatus = action === 'accepted' ? 'Accepted' : 'Rejected';
+    const tableName =
+      row.document_type === 'quotation' ? 'quotations'
+      : row.document_type === 'work_order' ? 'work_orders'
+      : 'completion_reports';
+    // completion_reports uses lowercase status values; quotations/work_orders use Capitalized
+    const newStatus = row.document_type === 'completion_report'
+      ? (action === 'accepted' ? 'accepted' : 'rejected')
+      : (action === 'accepted' ? 'Accepted' : 'Rejected');
     const updates: any = { status: newStatus };
-    if (row.document_type === 'work_order') {
+    if (row.document_type === 'work_order' || row.document_type === 'completion_report') {
       if (action === 'accepted') updates.accepted_at = new Date().toISOString();
       else { updates.rejected_at = new Date().toISOString(); updates.rejection_reason = reason.trim() || null; }
     }
