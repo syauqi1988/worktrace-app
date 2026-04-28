@@ -338,22 +338,6 @@ Sila klik pautan di bawah untuk *mengesahkan atau menolak*:
         </Button>
       </div>
 
-      {/* Reject Dialog */}
-      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tolak Work Order</DialogTitle>
-            <DialogDescription>Nyatakan sebab pelanggan menolak work order ini.</DialogDescription>
-          </DialogHeader>
-          <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} placeholder="Sebab penolakan..." />
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleReject} disabled={acting}>
-              {acting ? 'Memproses...' : 'Sahkan Tolak'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
