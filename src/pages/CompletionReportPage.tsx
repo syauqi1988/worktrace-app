@@ -112,7 +112,11 @@ export default function CompletionReportPage() {
         );
         setCustomerSignature(r.customer_signature || '');
         setNotes(r.notes || '');
-        setIsSubmitted(r.status === 'submitted');
+        const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
+        setReportStatus(status);
+        setRejectionReason(r.rejection_reason || null);
+        // Lock fields once it's been sent (submitted/accepted). Allow edit again if rejected.
+        setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
         // Preview next report number from doc_number_settings
         const { data: profileData } = await supabase
