@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Lock } from "lucide-react";
+import { usePlanGate } from "@/hooks/usePlanGate";
+import UpgradeModal from "@/components/UpgradeModal";
 import {
   TEMPLATES,
   TEMPLATE_MAP,
