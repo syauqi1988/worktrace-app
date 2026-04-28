@@ -71,6 +71,7 @@ export default function CompletionReportPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [reportStatus, setReportStatus] = useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [acceptedAt, setAcceptedAt] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const { checkWhatsAppShare } = usePlanGate();
 
