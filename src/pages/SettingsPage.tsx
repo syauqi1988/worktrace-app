@@ -726,8 +726,8 @@ export default function SettingsPage() {
         id="whatsapp-templates"
         tutorialId="settings-whatsapp"
         icon={<MessageCircle className="h-5 w-5" />}
-        title="Templet WhatsApp"
-        description="Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
+        title={t("settings.whatsappTemplates.title")}
+        description={t("settings.whatsappTemplates.description")}
       >
         <WhatsAppTemplatesSection />
       </SettingsAccordion>
