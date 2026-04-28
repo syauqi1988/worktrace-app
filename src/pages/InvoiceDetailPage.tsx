@@ -377,19 +377,24 @@ export default function InvoiceDetailPage() {
     URL.revokeObjectURL(url);
   };
 
+  const shareReceiptWhatsAppCore = async (inv: Invoice, receiptData: any) => {
+    if (!user || !customerPhone) return;
+    const blob = await pdf(<ReceiptPDF {...receiptData} />).toBlob();
+    const fileName = `${user.id}/${inv.receipt_number}.pdf`;
+    await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
+    const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
+    const publicUrl = signed?.signedUrl ?? '';
+    const phone = formatPhone(customerPhone);
+    const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\nMuat turun resit 👉\n${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   const shareReceiptWhatsApp = async () => {
     if (!checkWhatsAppShare()) return;
     if (!receiptPdfData || !invoice || !user || !hasPhone) return;
     setIsSharingReceipt(true);
     try {
-      const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
-      const fileName = `${user.id}/${invoice.receipt_number}.pdf`;
-      await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const publicUrl = signed?.signedUrl ?? '';
-      const phone = formatPhone(customerPhone);
-      const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${invoice.receipt_number}\n🧾 *No. Invois:* ${invoice.invoice_number}\n💰 *Jumlah Dibayar:* RM ${invoice.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${invoice.paid_date ? formatDate(invoice.paid_date) : '-'}\n\nSila klik pautan di bawah untuk muat turun resit anda:\n🔗 ${publicUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      await shareReceiptWhatsAppCore(invoice, receiptPdfData);
       toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
     } catch {
       toast.error('Gagal kongsi resit');
