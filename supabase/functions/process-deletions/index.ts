@@ -15,11 +15,11 @@ const STORAGE_BUCKETS = [
   'logos',
   'payment-qr',
   'ticket-attachments',
+  'payment-receipts',
 ]
 
 async function deleteUserStorage(supabase: any, bucket: string, userId: string, errors: string[]) {
   try {
-    // Recursively list and remove files in the user's folder
     const stack: string[] = [userId]
     const allPaths: string[] = []
     while (stack.length) {
@@ -29,7 +29,6 @@ async function deleteUserStorage(supabase: any, bucket: string, userId: string, 
       if (!items) continue
       for (const item of items) {
         const fullPath = `${prefix}/${item.name}`
-        // No id => folder
         if (item.id) {
           allPaths.push(fullPath)
         } else {
@@ -38,7 +37,6 @@ async function deleteUserStorage(supabase: any, bucket: string, userId: string, 
       }
     }
     if (allPaths.length > 0) {
-      // Remove in batches of 100
       for (let i = 0; i < allPaths.length; i += 100) {
         const batch = allPaths.slice(i, i + 100)
         const { error } = await supabase.storage.from(bucket).remove(batch)
@@ -55,13 +53,13 @@ async function deleteUserData(supabase: any, userId: string) {
   let storageDeleted = 0
   let recordsDeleted = 0
 
-  // 1. Delete storage files first (best effort)
+  // 1. Storage
   for (const bucket of STORAGE_BUCKETS) {
     await deleteUserStorage(supabase, bucket, userId, errors)
     storageDeleted++
   }
 
-  // 2. Delete database records (children first)
+  // 2. Database records (children first)
   const tables = [
     'ticket_replies',
     'support_tickets',
@@ -72,6 +70,11 @@ async function deleteUserData(supabase: any, userId: string) {
     'jobs',
     'customers',
     'subscription_events',
+    'notifications',
+    'push_subscriptions',
+    'payment_proofs',
+    'customer_approvals',
+    'short_links',
   ]
   for (const t of tables) {
     try {
@@ -82,6 +85,7 @@ async function deleteUserData(supabase: any, userId: string) {
       errors.push(`delete ${t}: ${e.message}`)
     }
   }
+
   // Referrals (different columns)
   try {
     await supabase.from('referrals').delete().eq('referrer_id', userId)
@@ -90,16 +94,24 @@ async function deleteUserData(supabase: any, userId: string) {
     errors.push(`delete referrals: ${e.message}`)
   }
 
-  // 3. Mark deletion request completed BEFORE we wipe profile (reads need user_id reference)
+  // admin_users (in case)
+  try {
+    await supabase.from('admin_users').delete().eq('user_id', userId)
+  } catch (e: any) {
+    errors.push(`delete admin_users: ${e.message}`)
+  }
+
+  // 3. Mark deletion request(s) completed BEFORE wiping profile
   try {
     await supabase.from('account_deletion_requests')
       .update({ status: 'completed', completed_at: new Date().toISOString() })
-      .eq('user_id', userId).eq('status', 'pending')
+      .eq('user_id', userId)
+      .in('status', ['pending', 'force_deleted'])
   } catch (e: any) {
     errors.push(`update deletion_request: ${e.message}`)
   }
 
-  // 4. Delete profile
+  // 4. Profile
   try {
     const { error } = await supabase.from('profiles').delete().eq('id', userId)
     if (error) errors.push(`delete profile: ${error.message}`)
@@ -137,29 +149,62 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } },
     )
 
-    // Find all due deletion requests
-    const nowIso = new Date().toISOString()
-    const { data: due, error: fetchErr } = await supabase
-      .from('account_deletion_requests')
-      .select('id, user_id, user_email')
-      .eq('status', 'pending')
-      .lte('scheduled_at', nowIso)
+    // Parse body for optional manual targeting
+    let body: any = {}
+    try { body = await req.json() } catch { /* ignore */ }
 
-    if (fetchErr) {
-      return new Response(JSON.stringify({ error: fetchErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    const targetUserId: string | undefined = body?.user_id
+    const targetEmail: string | undefined = body?.email
+
+    let due: any[] = []
+
+    if (targetUserId || targetEmail) {
+      // Manual purge for a single user (force-delete from admin)
+      let q = supabase.from('account_deletion_requests')
+        .select('id, user_id, user_email')
+      if (targetUserId) q = q.eq('user_id', targetUserId)
+      if (targetEmail) q = q.eq('user_email', targetEmail)
+      const { data, error } = await q
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      due = data || []
+
+      // If no deletion request exists but a user_id was passed, still purge
+      if (due.length === 0 && targetUserId) {
+        due = [{ user_id: targetUserId, user_email: targetEmail ?? null }]
+      }
+    } else {
+      // Scheduled run: pick up due pending requests AND any force_deleted requests
+      const nowIso = new Date().toISOString()
+      const { data: pendingDue, error: e1 } = await supabase
+        .from('account_deletion_requests')
+        .select('id, user_id, user_email')
+        .eq('status', 'pending')
+        .lte('scheduled_at', nowIso)
+      if (e1) {
+        return new Response(JSON.stringify({ error: e1.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const { data: forced, error: e2 } = await supabase
+        .from('account_deletion_requests')
+        .select('id, user_id, user_email')
+        .eq('status', 'force_deleted')
+      if (e2) {
+        return new Response(JSON.stringify({ error: e2.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      due = [...(pendingDue || []), ...(forced || [])]
     }
 
     const results: any[] = []
-    for (const req of due || []) {
-      const r = await deleteUserData(supabase, (req as any).user_id)
-      results.push({
-        user_id: (req as any).user_id,
-        user_email: (req as any).user_email,
-        ...r,
-      })
+    for (const r of due) {
+      const out = await deleteUserData(supabase, r.user_id)
+      results.push({ user_id: r.user_id, user_email: r.user_email, ...out })
     }
 
     return new Response(
@@ -168,8 +213,7 @@ Deno.serve(async (req) => {
     )
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })
