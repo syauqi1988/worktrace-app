@@ -253,6 +253,7 @@ export default function JobsListPage() {
       {/* Mobile FAB */}
       {!bulk.selectionMode && (
         <button
+          data-tutorial="jobs-fab"
           onClick={() => navigate('/jobs/new')}
           className="sm:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
         >

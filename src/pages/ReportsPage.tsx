@@ -313,7 +313,7 @@ export default function ReportsPage() {
           <h1 className="text-xl font-bold text-foreground">Laporan Ringkasan</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Pratonton prestasi perniagaan anda</p>
         </div>
-        <Button onClick={handleDownloadPDF} disabled={generating || loading} className="rounded-lg gap-2">
+        <Button data-tutorial="reports-export" onClick={handleDownloadPDF} disabled={generating || loading} className="rounded-lg gap-2">
           {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
           Eksport PDF
         </Button>
@@ -321,7 +321,7 @@ export default function ReportsPage() {
 
       {/* Date range pills */}
       <div className="bg-card rounded-xl border border-border p-3 space-y-3">
-        <div className="flex flex-wrap gap-1.5">
+        <div data-tutorial="reports-presets" className="flex flex-wrap gap-1.5">
           {([
             ['week', 'Minggu Ini'],
             ['month', 'Bulan Ini'],

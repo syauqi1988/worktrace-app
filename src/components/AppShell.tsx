@@ -148,21 +148,19 @@ export default function AppShell() {
           <TooltipContent>Sokongan</TooltipContent>
         </Tooltip>
 
-        {/* Tutorial help button — hidden on Settings page */}
-        {!location.pathname.startsWith('/settings') && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                data-tutorial="help-btn"
-                onClick={() => window.__startWorkTraceTutorial?.()}
-                className="h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground text-sm font-medium flex items-center justify-center hover:bg-accent transition-colors mr-2"
-              >
-                <HelpCircle className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Tonton Tutorial</TooltipContent>
-          </Tooltip>
-        )}
+        {/* Tutorial help button — available on every page */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              data-tutorial="help-btn"
+              onClick={() => window.__startWorkTraceTutorial?.()}
+              className="h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground text-sm font-medium flex items-center justify-center hover:bg-accent transition-colors mr-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Tonton Tutorial Halaman Ini</TooltipContent>
+        </Tooltip>
 
         <div className="relative">
           <button

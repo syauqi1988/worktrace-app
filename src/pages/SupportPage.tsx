@@ -61,7 +61,7 @@ export default function SupportPage() {
     <div className="p-4 md:p-6 space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Pusat Sokongan</h1>
-        <Button onClick={() => navigate('/support/new')} className="rounded-lg gap-1.5" size="sm">
+        <Button data-tutorial="support-new-btn" onClick={() => navigate('/support/new')} className="rounded-lg gap-1.5" size="sm">
           <Plus className="h-4 w-4" /> Tiket Baru
         </Button>
       </div>

@@ -12,10 +12,19 @@ declare global {
 }
 
 function getCurrentPage(pathname: string): TutorialPage {
+  // Detail pages first (more specific)
+  if (/^\/jobs\/[^/]+/.test(pathname)) return 'job-detail';
+  if (/^\/quotations\/[^/]+/.test(pathname)) return 'quotation-detail';
+  if (/^\/invoices\/[^/]+/.test(pathname)) return 'invoice-detail';
+  // List pages
   if (pathname.startsWith('/jobs')) return 'jobs';
   if (pathname.startsWith('/customers')) return 'customers';
   if (pathname.startsWith('/quotations')) return 'quotations';
+  if (pathname.startsWith('/work-orders')) return 'work-orders';
   if (pathname.startsWith('/invoices')) return 'invoices';
+  if (pathname.startsWith('/receipts')) return 'receipts';
+  if (pathname.startsWith('/reports')) return 'reports';
+  if (pathname.startsWith('/support')) return 'support';
   if (pathname.startsWith('/settings') || pathname.startsWith('/profile')) return 'settings';
   return 'dashboard';
 }
@@ -85,10 +94,11 @@ export default function TutorialController({
     driverObj.drive();
   }, [markCompleted, incrementSeenCount, onComplete]);
 
-  // Auto-start per-page tutorial on first visit
+  // Auto-start per-page tutorial on first visit (skip detail pages — too noisy)
+  const isDetailPage = currentPage === 'job-detail' || currentPage === 'quotation-detail' || currentPage === 'invoice-detail';
   useEffect(() => {
     if (isLoading) return;
-    if (currentPage === 'settings') return;
+    if (isDetailPage) return;
     const pageState = getPageState(currentPage);
     if (!pageState.completed && !autoStartedPages.current.has(currentPage)) {
       autoStartedPages.current.add(currentPage);
@@ -97,18 +107,12 @@ export default function TutorialController({
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, currentPage, getPageState, startTourForPage]);
+  }, [isLoading, currentPage, getPageState, startTourForPage, isDetailPage]);
 
-  // Expose globally for ? button
+  // Expose globally for ? button — always plays the CURRENT page tutorial only
   useEffect(() => {
     window.__startWorkTraceTutorial = () => {
-      const steps = buildPageTutorialSteps(currentPage);
-      if (steps.length === 0) {
-        // No tutorial for this page (e.g. settings) — start dashboard tutorial
-        startTourForPage('dashboard');
-      } else {
-        startTourForPage(currentPage);
-      }
+      startTourForPage(currentPage);
     };
     return () => {
       delete window.__startWorkTraceTutorial;

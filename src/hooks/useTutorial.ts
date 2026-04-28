@@ -2,7 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type TutorialPage = 'dashboard' | 'jobs' | 'customers' | 'quotations' | 'invoices' | 'settings';
+export type TutorialPage =
+  | 'dashboard'
+  | 'jobs'
+  | 'job-detail'
+  | 'customers'
+  | 'quotations'
+  | 'quotation-detail'
+  | 'work-orders'
+  | 'invoices'
+  | 'invoice-detail'
+  | 'receipts'
+  | 'reports'
+  | 'support'
+  | 'settings';
 
 interface PageTutorialState {
   completed: boolean;
@@ -69,7 +82,7 @@ export const useTutorial = (page?: TutorialPage) => {
   const markAllCompleted = useCallback(async () => {
     if (!user) return;
     const allCompleted: Record<string, PageTutorialState> = {};
-    const pages: TutorialPage[] = ['dashboard', 'jobs', 'customers', 'quotations', 'invoices', 'settings'];
+    const pages: TutorialPage[] = ['dashboard', 'jobs', 'job-detail', 'customers', 'quotations', 'quotation-detail', 'work-orders', 'invoices', 'invoice-detail', 'receipts', 'reports', 'support', 'settings'];
     for (const p of pages) {
       const existing = tutorialState[p] ?? DEFAULT_PAGE_STATE;
       allCompleted[p] = { completed: true, seen_count: existing.seen_count };
