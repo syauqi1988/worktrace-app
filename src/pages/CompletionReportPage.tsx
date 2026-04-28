@@ -13,6 +13,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
+import CompletionReportView, { ChecklistItem } from '@/components/reports/CompletionReportView';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
@@ -53,6 +54,22 @@ function formatDateTimeMs(d: string | null) {
   return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
+function parseChecklist(raw: string): ChecklistItem[] {
+  return raw
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(line => {
+      const m = line.match(/^\[([ xX])\]\s*(.+)$/);
+      if (m) return { title: m[2].trim(), done: m[1].toLowerCase() === 'x' };
+      return { title: line, done: true };
+    });
+}
+
+function checklistToText(items: ChecklistItem[]): string {
+  return items.map(i => `[${i.done === false ? ' ' : 'x'}] ${i.title}`).join('\n');
+}
+
 export default function CompletionReportPage() {
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
@@ -74,6 +91,11 @@ export default function CompletionReportPage() {
   const [afterPhotos, setAfterPhotos] = useState<string[]>([]);
   const [customerSignature, setCustomerSignature] = useState('');
   const [notes, setNotes] = useState('');
+  const [locationLabel, setLocationLabel] = useState('');
+  const [projectRef, setProjectRef] = useState('');
+  const [checklistText, setChecklistText] = useState('');
+  const [beforeCaptions, setBeforeCaptions] = useState<string[]>([]);
+  const [afterCaptions, setAfterCaptions] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -129,6 +151,13 @@ export default function CompletionReportPage() {
         );
         setCustomerSignature(r.customer_signature || '');
         setNotes(r.notes || '');
+        setLocationLabel(r.location_label || '');
+        setProjectRef(r.project_ref || '');
+        const cl: ChecklistItem[] = Array.isArray(r.checklist) ? r.checklist : [];
+        setChecklistText(cl.length ? checklistToText(cl) : '');
+        const caps = (r.photo_captions || {}) as { before?: string[]; after?: string[] };
+        setBeforeCaptions(Array.isArray(caps.before) ? caps.before : []);
+        setAfterCaptions(Array.isArray(caps.after) ? caps.after : []);
         const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
         setReportStatus(status);
         setRejectionReason(r.rejection_reason || null);
@@ -201,8 +230,21 @@ export default function CompletionReportPage() {
   };
 
   const removePhoto = (kind: 'before' | 'after', index: number) => {
-    const setter = kind === 'before' ? setBeforePhotos : setAfterPhotos;
-    setter(prev => prev.filter((_, i) => i !== index));
+    if (kind === 'before') {
+      setBeforePhotos(prev => prev.filter((_, i) => i !== index));
+      setBeforeCaptions(prev => prev.filter((_, i) => i !== index));
+    } else {
+      setAfterPhotos(prev => prev.filter((_, i) => i !== index));
+      setAfterCaptions(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const setCaption = (kind: 'before' | 'after', index: number, val: string) => {
+    const setter = kind === 'before' ? setBeforeCaptions : setAfterCaptions;
+    const arr = kind === 'before' ? beforeCaptions : afterCaptions;
+    const next = [...arr];
+    next[index] = val;
+    setter(next);
   };
 
   const handleSave = async (status: 'draft' | 'submitted') => {
@@ -233,6 +275,10 @@ export default function CompletionReportPage() {
         before_photos: beforePhotos,
         after_photos: afterPhotos,
         notes: notes.trim() || null,
+        location_label: locationLabel.trim() || null,
+        project_ref: projectRef.trim() || null,
+        checklist: parseChecklist(checklistText),
+        photo_captions: { before: beforeCaptions, after: afterCaptions },
         status,
       };
 
@@ -326,6 +372,10 @@ export default function CompletionReportPage() {
             accepted_at: acceptedAt,
             before_photos: beforeBase64.filter(Boolean),
             after_photos: afterBase64.filter(Boolean),
+            location_label: locationLabel || null,
+            project_ref: projectRef || null,
+            checklist: parseChecklist(checklistText),
+            photo_captions: { before: beforeCaptions, after: afterCaptions },
           }}
           job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
           customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
@@ -384,6 +434,10 @@ export default function CompletionReportPage() {
             accepted_at: acceptedAt,
             before_photos: beforeBase64.filter(Boolean),
             after_photos: afterBase64.filter(Boolean),
+            location_label: locationLabel || null,
+            project_ref: projectRef || null,
+            checklist: parseChecklist(checklistText),
+            photo_captions: { before: beforeCaptions, after: afterCaptions },
           }}
           job={{ job_number: job.job_number, title: job.title, category: job.category }}
           customer={{ name: job.customers.name, phone: job.customers.phone, address: job.customers.address }}
@@ -524,83 +578,145 @@ Terima kasih!
         </div>
       )}
 
-      {/* Job Info (read-only) */}
-      <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
-          <div><p className="text-xs text-muted-foreground">Tajuk</p><p className="text-foreground">{job.title}</p></div>
-          <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
-          <div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-foreground">{job.category}</p></div>
-        </div>
-      </div>
+      {/* SUBMITTED VIEW — polished WorkTrace-style report */}
+      {isSubmitted && (
+        <CompletionReportView
+          report={{
+            report_number: reportNumber,
+            completion_date: completionDate,
+            technician_name: technicianName,
+            work_description: workDescription,
+            materials_used: materialsUsed,
+            customer_signature: customerSignature,
+            notes,
+            status: reportStatus,
+            accepted_at: acceptedAt,
+            before_photos: beforePhotos,
+            after_photos: afterPhotos,
+            location_label: locationLabel,
+            project_ref: projectRef,
+            checklist: parseChecklist(checklistText),
+            photo_captions: { before: beforeCaptions, after: afterCaptions },
+          }}
+          job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
+          customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
+          company={{ company_name: profile?.company_name || null, logo_url: profile?.logo_url || null }}
+        />
+      )}
 
-      {/* Completion Date */}
-      <div className="space-y-1.5">
-        <Label>Tarikh Siap Kerja *</Label>
-        <Input type="date" value={completionDate} onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }} disabled={isSubmitted} />
-        {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
-      </div>
+      {/* EDIT MODE — form */}
+      {!isSubmitted && (
+        <>
+          {/* Job Info (read-only) */}
+          <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
+              <div><p className="text-xs text-muted-foreground">Tajuk</p><p className="text-foreground">{job.title}</p></div>
+              <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
+              <div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-foreground">{job.category}</p></div>
+            </div>
+          </div>
 
-      {/* Technician Name */}
-      <div className="space-y-1.5">
-        <Label>Nama Juruteknik *</Label>
-        <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder="Nama pekerja/juruteknik" disabled={isSubmitted} />
-        {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
-      </div>
+          {/* Completion Date */}
+          <div className="space-y-1.5">
+            <Label>Tarikh Siap Kerja *</Label>
+            <Input type="date" value={completionDate} onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }} />
+            {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
+          </div>
 
-      {/* Work Description */}
-      <div className="space-y-1.5">
-        <Label>Penerangan Kerja yang Dilaksanakan *</Label>
-        <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder="Huraikan kerja yang telah dilaksanakan secara terperinci..." disabled={isSubmitted} />
-        {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
-      </div>
+          {/* Technician Name */}
+          <div className="space-y-1.5">
+            <Label>Nama Juruteknik *</Label>
+            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder="Nama pekerja/juruteknik" />
+            {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
+          </div>
 
-      {/* Materials */}
-      <div className="space-y-1.5">
-        <Label>Bahan/Alatan Digunakan</Label>
-        <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." disabled={isSubmitted} />
-      </div>
+          {/* Location & Project Ref (optional) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Lokasi / Kawasan <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+              <Input value={locationLabel} onChange={e => setLocationLabel(e.target.value)} placeholder="cth: Tingkat 3, Bilik MEP" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Rujukan Projek <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+              <Input value={projectRef} onChange={e => setProjectRef(e.target.value)} placeholder="cth: PRJ-2026-001" />
+            </div>
+          </div>
 
-      {/* Before Photos */}
-      <PhotoSection
-        kind="before"
-        label="📷 Gambar Sebelum Kerja"
-        badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
-        helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
-        photos={beforePhotos}
-        uploading={uploadingPhoto}
-        disabled={isSubmitted}
-        onUpload={(e) => handlePhotoUpload(e, 'before')}
-        onRemove={(i) => removePhoto('before', i)}
-      />
+          {/* Work Description */}
+          <div className="space-y-1.5">
+            <Label>Penerangan Kerja yang Dilaksanakan *</Label>
+            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder="Huraikan kerja yang telah dilaksanakan secara terperinci..." />
+            {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
+          </div>
 
-      {/* After Photos */}
-      <PhotoSection
-        kind="after"
-        label="📷 Gambar Selepas Kerja"
-        badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
-        helper="Gambar hasil akhir kerja yang telah disiapkan"
-        photos={afterPhotos}
-        uploading={uploadingPhoto}
-        disabled={isSubmitted}
-        onUpload={(e) => handlePhotoUpload(e, 'after')}
-        onRemove={(i) => removePhoto('after', i)}
-        error={errors.photos}
-      />
+          {/* Materials */}
+          <div className="space-y-1.5">
+            <Label>Bahan/Alatan Digunakan</Label>
+            <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." />
+          </div>
 
-      {/* Customer Signature */}
-      <div className="space-y-1.5">
-        <Label>Pengesahan Pelanggan (opsional)</Label>
-        <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder="Nama pelanggan sebagai pengesahan" disabled={isSubmitted} />
-        <p className="text-[11px] text-muted-foreground">Minta pelanggan taip nama sebagai tanda pengesahan kerja siap</p>
-      </div>
+          {/* Before Photos */}
+          <PhotoSection
+            kind="before"
+            label="📷 Gambar Sebelum Kerja"
+            badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
+            helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
+            photos={beforePhotos}
+            captions={beforeCaptions}
+            uploading={uploadingPhoto}
+            disabled={false}
+            onUpload={(e) => handlePhotoUpload(e, 'before')}
+            onRemove={(i) => removePhoto('before', i)}
+            onCaption={(i, v) => setCaption('before', i, v)}
+          />
 
-      {/* Notes */}
-      <div className="space-y-1.5">
-        <Label>Nota Tambahan</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} disabled={isSubmitted} />
-      </div>
+          {/* After Photos */}
+          <PhotoSection
+            kind="after"
+            label="📷 Gambar Selepas Kerja"
+            badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
+            helper="Gambar hasil akhir kerja yang telah disiapkan"
+            photos={afterPhotos}
+            captions={afterCaptions}
+            uploading={uploadingPhoto}
+            disabled={false}
+            onUpload={(e) => handlePhotoUpload(e, 'after')}
+            onRemove={(i) => removePhoto('after', i)}
+            onCaption={(i, v) => setCaption('after', i, v)}
+            error={errors.photos}
+          />
+
+          {/* Checklist (optional) */}
+          <div className="space-y-1.5">
+            <Label>Senarai Semak Siap Kerja <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+            <Textarea
+              value={checklistText}
+              onChange={e => setChecklistText(e.target.value)}
+              rows={4}
+              placeholder={`Satu item setiap baris. Contoh:\n[x] Pemasangan disiapkan\n[x] Ujian tekanan lulus\n[ ] Lukisan as-built (pending)`}
+              className="font-mono text-sm"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Gunakan <code className="bg-muted px-1 rounded">[x]</code> untuk siap, <code className="bg-muted px-1 rounded">[ ]</code> untuk pending. Teks biasa dikira siap.
+            </p>
+          </div>
+
+          {/* Customer Signature */}
+          <div className="space-y-1.5">
+            <Label>Pengesahan Pelanggan (opsional)</Label>
+            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder="Nama pelanggan sebagai pengesahan" />
+            <p className="text-[11px] text-muted-foreground">Minta pelanggan taip nama sebagai tanda pengesahan kerja siap</p>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <Label>Nota Tambahan / Catatan Tapak</Label>
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Sebarang catatan atau nota juruteknik..." />
+          </div>
+        </>
+      )}
 
       {/* Actions */}
       {!isSubmitted && (
@@ -685,14 +801,16 @@ interface PhotoSectionProps {
   badge: { text: string; className: string };
   helper: string;
   photos: string[];
+  captions?: string[];
   uploading: boolean;
   disabled: boolean;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: (index: number) => void;
+  onCaption?: (index: number, value: string) => void;
   error?: string;
 }
 
-function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpload, onRemove, error }: PhotoSectionProps) {
+function PhotoSection({ label, badge, helper, photos, captions = [], uploading, disabled, onUpload, onRemove, onCaption, error }: PhotoSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
@@ -703,14 +821,24 @@ function PhotoSection({ label, badge, helper, photos, uploading, disabled, onUpl
       </div>
       <p className="text-xs text-muted-foreground">{helper}</p>
       {error && <p className="text-xs text-destructive">{error}</p>}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {photos.map((url, i) => (
-          <div key={i} className="relative">
-            <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
-            {!disabled && (
-              <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
-                <X className="h-3 w-3" />
-              </button>
+          <div key={i} className="space-y-1.5">
+            <div className="relative">
+              <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
+              {!disabled && (
+                <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            {onCaption && !disabled && (
+              <Input
+                value={captions[i] || ''}
+                onChange={e => onCaption(i, e.target.value)}
+                placeholder="Caption (opsional)"
+                className="h-7 text-[11px] px-2"
+              />
             )}
           </div>
         ))}

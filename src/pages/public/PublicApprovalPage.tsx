@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle2, XCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import CompletionReportView from '@/components/reports/CompletionReportView';
 
 interface ApprovalRow {
   id: string;
@@ -72,15 +73,22 @@ export default function PublicApprovalPage() {
         r.document_type === 'quotation' ? 'quote_number'
         : r.document_type === 'work_order' ? 'wo_number'
         : 'report_number';
-      const selectCols = r.document_type === 'completion_report'
-        ? `id, ${numberCol}, created_at, status`
-        : `id, ${numberCol}, total, created_at, status`;
-      const { data: docData } = await supabase
-        .from(tableName as any)
-        .select(selectCols)
-        .eq('id', r.document_id)
-        .maybeSingle();
-      setDoc(docData);
+      if (r.document_type === 'completion_report') {
+        const { data: docData } = await supabase
+          .from('completion_reports')
+          .select('*, jobs(job_number, title, category, customers(name, phone, address))')
+          .eq('id', r.document_id)
+          .maybeSingle();
+        setDoc(docData);
+      } else {
+        const selectCols = `id, ${numberCol}, total, created_at, status`;
+        const { data: docData } = await supabase
+          .from(tableName as any)
+          .select(selectCols)
+          .eq('id', r.document_id)
+          .maybeSingle();
+        setDoc(docData);
+      }
       setLoading(false);
     })();
   }, [token]);
@@ -175,26 +183,63 @@ export default function PublicApprovalPage() {
           </div>
         </div>
 
-        {/* Doc summary */}
-        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">{docLabel}</p>
-            <p className="text-lg font-bold text-foreground">{doc?.[numberCol] || '-'}</p>
-          </div>
-          {doc?.total != null && (
+        {/* Doc summary or full completion report view */}
+        {row.document_type === 'completion_report' && doc ? (
+          <>
+            <CompletionReportView
+              report={{
+                report_number: doc.report_number,
+                completion_date: doc.completion_date,
+                technician_name: doc.technician_name,
+                work_description: doc.work_description,
+                materials_used: doc.materials_used,
+                customer_signature: doc.customer_signature,
+                notes: doc.notes,
+                status: doc.status,
+                accepted_at: doc.accepted_at,
+                submitted_at: doc.submitted_at,
+                before_photos: Array.isArray(doc.before_photos) ? doc.before_photos : [],
+                after_photos: Array.isArray(doc.after_photos) && doc.after_photos.length
+                  ? doc.after_photos
+                  : (Array.isArray(doc.photos) ? doc.photos : []),
+                location_label: doc.location_label,
+                project_ref: doc.project_ref,
+                checklist: Array.isArray(doc.checklist) ? doc.checklist : [],
+                photo_captions: doc.photo_captions || { before: [], after: [] },
+              }}
+              job={doc.jobs ? { job_number: doc.jobs.job_number, title: doc.jobs.title, category: doc.jobs.category } : null}
+              customer={doc.jobs?.customers ? { name: doc.jobs.customers.name, phone: doc.jobs.customers.phone, address: doc.jobs.customers.address } : null}
+              company={{ company_name: company?.company_name || null, logo_url: company?.logo_url || null }}
+            />
+            {row.pdf_url && (
+              <Button asChild variant="outline" className="w-full rounded-lg gap-2">
+                <a href={row.pdf_url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4" /> Muat Turun PDF
+                </a>
+              </Button>
+            )}
+          </>
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div>
-              <p className="text-xs text-muted-foreground">Jumlah</p>
-              <p className="text-2xl font-bold text-primary">RM {Number(doc.total || 0).toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{docLabel}</p>
+              <p className="text-lg font-bold text-foreground">{doc?.[numberCol] || '-'}</p>
             </div>
-          )}
-          {row.pdf_url && (
-            <Button asChild variant="outline" className="w-full rounded-lg gap-2">
-              <a href={row.pdf_url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-4 w-4" /> Lihat / Muat Turun PDF
-              </a>
-            </Button>
-          )}
-        </div>
+            {doc?.total != null && (
+              <div>
+                <p className="text-xs text-muted-foreground">Jumlah</p>
+                <p className="text-2xl font-bold text-primary">RM {Number(doc.total || 0).toFixed(2)}</p>
+              </div>
+            )}
+            {row.pdf_url && (
+              <Button asChild variant="outline" className="w-full rounded-lg gap-2">
+                <a href={row.pdf_url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4" /> Lihat / Muat Turun PDF
+                </a>
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Action */}
         {row.action ? (
