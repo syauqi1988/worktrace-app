@@ -287,9 +287,9 @@ export default function PublicPaymentProofPage() {
           </div>
 
           {!isSubmitted && (
-            <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg gap-2 h-12">
+            <Button onClick={handleSubmit} disabled={submitting || !receiptUrl} className="w-full rounded-lg gap-2 h-12">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Hantar Bukti Pembayaran
+              {receiptUrl ? 'Hantar Bukti Pembayaran' : 'Muat naik resit dahulu'}
             </Button>
           )}
         </div>
