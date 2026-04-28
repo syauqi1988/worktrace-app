@@ -156,7 +156,14 @@
     "deleteAccount": "Delete Account"
   },
   "expiry": {
-    "warning": "Your Pro subscription expires in {{days}} days. Renew to keep Pro features."
+    "warning": "Your Pro subscription expires in {{days}} days. Renew to keep Pro features.",
+    "pendingDeletion": "Your account will be deleted in {{days}} days ({{date}}).",
+    "cancelling": "Cancelling...",
+    "cancelDeletion": "Cancel Deletion",
+    "deletionCancelled": "Account deletion cancelled!",
+    "cancelFailed": "Failed to cancel deletion",
+    "expiresIn": "Your Pro subscription expires in {{days}} days ({{date}}).",
+    "renewNow": "Renew Now"
   },
   "tutorial": {
     "complete": "Tutorial complete! Enjoy using WorkTrace 🎉"
@@ -181,5 +188,9 @@
     "loginToCancel": "Log In Again to Cancel",
     "inquiry": "Inquiries:",
     "thanks": "Thank you for using WorkTrace. All the best! 🙏"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to Dashboard"
   }
 }

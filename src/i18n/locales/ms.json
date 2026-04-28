@@ -156,7 +156,14 @@
     "deleteAccount": "Padam Akaun"
   },
   "expiry": {
-    "warning": "Langganan Pro anda akan tamat dalam {{days}} hari. Perbaharui untuk kekal dengan Pro."
+    "warning": "Langganan Pro anda akan tamat dalam {{days}} hari. Perbaharui untuk kekal dengan Pro.",
+    "pendingDeletion": "Akaun anda akan dipadam dalam {{days}} hari ({{date}}).",
+    "cancelling": "Membatalkan...",
+    "cancelDeletion": "Batalkan Pemadaman",
+    "deletionCancelled": "Pemadaman akaun dibatalkan!",
+    "cancelFailed": "Gagal batalkan pemadaman",
+    "expiresIn": "Langganan Pro anda akan tamat dalam {{days}} hari ({{date}}).",
+    "renewNow": "Perbaharui Sekarang"
   },
   "tutorial": {
     "complete": "Tutorial selesai! Selamat menggunakan WorkTrace 🎉"
@@ -181,5 +188,9 @@
     "loginToCancel": "Log Masuk Semula untuk Batal",
     "inquiry": "Pertanyaan:",
     "thanks": "Terima kasih kerana menggunakan WorkTrace. Semoga berjaya! 🙏"
+  },
+  "notFound": {
+    "title": "Halaman tidak dijumpai",
+    "back": "Kembali ke Dashboard"
   }
 }
