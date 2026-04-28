@@ -202,8 +202,8 @@ export default function QuotationFormPage() {
           toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
         }
 
-        toast.success(status === 'Draft' ? 'Draf disimpan!' : 'Sebut harga dihantar!');
-        navigate(`/quotations/${data.id}`);
+        toast.success(status === 'Draft' ? 'Draf disimpan!' : 'Sebut harga dihantar! Membuka WhatsApp...');
+        navigate(`/quotations/${data.id}${status === 'Sent' ? '?share=1' : ''}`);
       }
     } catch (err: any) {
       toast.error(err.message || 'Ralat menyimpan');
