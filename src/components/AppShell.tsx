@@ -206,7 +206,7 @@ export default function AppShell() {
         {/* Sidebar — desktop */}
         <aside data-tutorial="sidebar" className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
           <nav className="flex-1 py-4 space-y-1">
-            {NAV_ITEMS.map(item => {
+            {NAV_ITEMS.filter(item => !(item.teamOnly && profile?.plan !== 'team')).map(item => {
               const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
               return (
                 <NavLink
@@ -245,7 +245,7 @@ export default function AppShell() {
                 </button>
               </div>
               <nav className="flex-1 py-4 space-y-1">
-                {NAV_ITEMS.map(item => {
+                {NAV_ITEMS.filter(item => !(item.teamOnly && profile?.plan !== 'team')).map(item => {
                   const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
                   return (
                     <NavLink
