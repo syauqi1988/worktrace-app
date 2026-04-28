@@ -280,7 +280,7 @@ export default function SettingsPage() {
     const path = `${user.id}/${Date.now()}.png`;
     const { error } = await supabase.storage.from("payment-qr").upload(path, file, { upsert: true });
     if (error) {
-      toast.error("Gagal muat naik QR");
+      toast.error(t("settings.payment.uploadFailed"));
       setUploadingQr(false);
       return;
     }
