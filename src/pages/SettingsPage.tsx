@@ -15,6 +15,7 @@ import SettingsAccordion from "@/components/settings/SettingsAccordion";
 import WorkOrderTermsSection from "@/components/settings/WorkOrderTermsSection";
 import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
 import AiHelpButton from "@/components/settings/AiHelpButton";
+import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
 import {
   Building2,
   Shield,
@@ -386,6 +387,7 @@ export default function SettingsPage() {
       {/* 1 — Profil Syarikat */}
       <SettingsAccordion
         id="profil-syarikat"
+        tutorialId="settings-profile"
         icon={<Building2 className="h-5 w-5" />}
         title="Profil Syarikat"
         description="Nama syarikat, telefon, alamat dan logo"
@@ -504,6 +506,7 @@ export default function SettingsPage() {
       {/* 3 — Kaedah Pembayaran */}
       <SettingsAccordion
         id="kaedah-pembayaran"
+        tutorialId="settings-payment"
         icon={<Landmark className="h-5 w-5" />}
         title="Kaedah Pembayaran"
         description="Akaun bank dan QR bayaran untuk invois"
@@ -669,6 +672,7 @@ export default function SettingsPage() {
       {/* 4 — Terma & Syarat (sub-tabs: Sebut Harga / Invois / Work Order) */}
       <SettingsAccordion
         id="terma-syarat"
+        tutorialId="settings-terms"
         icon={<FileText className="h-5 w-5" />}
         title="Terma & Syarat"
         description="T&C untuk Sebut Harga, Invois dan Work Order"
@@ -713,9 +717,21 @@ export default function SettingsPage() {
         {termsTab === "work_order" && <WorkOrderTermsSection />}
       </SettingsAccordion>
 
+      {/* 4.5 — Templet WhatsApp */}
+      <SettingsAccordion
+        id="whatsapp-templates"
+        tutorialId="settings-whatsapp"
+        icon={<MessageCircle className="h-5 w-5" />}
+        title="Templet WhatsApp"
+        description="Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
+      >
+        <WhatsAppTemplatesSection />
+      </SettingsAccordion>
+
       {/* 5 — Nombor Dokumen */}
       <SettingsAccordion
         id="nombor-dokumen"
+        tutorialId="settings-docnum"
         icon={<Hash className="h-5 w-5" />}
         title="Nombor Dokumen"
         description="Format nombor auto untuk semua jenis dokumen"

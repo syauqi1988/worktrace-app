@@ -14,6 +14,7 @@ import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
+import { renderTemplate } from '@/lib/whatsappTemplates';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
@@ -263,7 +264,13 @@ export default function JobDetailPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const message = `Assalamualaikum / Salam Sejahtera ${job.customers.name},\n\nAlhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *${companyName}*:\n\n📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}\n\nAnda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*${companyName}*`;
+      const details = `📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}`;
+      const message = renderTemplate(
+        (profile as any)?.whatsapp_templates,
+        'completion_report',
+        { customer_name: job.customers.name, company_name: companyName },
+        details,
+      );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
       toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
@@ -273,7 +280,7 @@ export default function JobDetailPage() {
   };
 
   const whatsappUrl = job?.customers?.phone
-    ? `https://wa.me/${formatPhone(job.customers.phone)}?text=${encodeURIComponent(`Hi ${job.customers.name}, saya nak follow up berkenaan kerja ${job.job_number}. Boleh confirm status terkini?`)}`
+    ? `https://wa.me/${formatPhone(job.customers.phone)}?text=${encodeURIComponent(renderTemplate((profile as any)?.whatsapp_templates, 'job_followup', { customer_name: job.customers.name, company_name: profile?.company_name || '', job_number: job.job_number }, ''))}`
     : null;
 
   if (loading) {

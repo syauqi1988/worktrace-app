@@ -22,6 +22,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreatePaymentProofToken, buildPublicPaymentProofUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
+import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -387,7 +388,13 @@ export default function InvoiceDetailPage() {
     const publicUrl = signed?.signedUrl ?? '';
     const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: publicUrl, kind: 'receipt' });
     const phone = formatPhone(customerPhone);
-    const message = `Assalamualaikum / Salam Sejahtera ${customer?.name || ''},\n\nTerima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *${profile?.company_name || ''}*:\n\n🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\n👉 Tekan sini untuk muat turun resit:\n${shortUrl}\n\nTerima kasih kerana memilih perkhidmatan kami. 😊\n\n*${profile?.company_name || ''}*`;
+    const details = `🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\n👉 Tekan sini untuk muat turun resit:\n${shortUrl}`;
+    const message = renderTemplate(
+      (profile as any)?.whatsapp_templates,
+      'receipt',
+      { customer_name: customer?.name || '', company_name: profile?.company_name || '' },
+      details,
+    );
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -410,26 +417,20 @@ export default function InvoiceDetailPage() {
   const buildWhatsAppInvoiceMessage = (_pdfUrl?: string, proofUrl?: string, isReminder = false) => {
     const name = customer?.name || 'Pelanggan';
     const companyName = profile?.company_name || '';
-    const intro = isReminder
-      ? `Assalamualaikum / Salam Sejahtera ${name},\n\nIni adalah peringatan mesra daripada *${companyName}* berkenaan invois berikut:`
-      : `Assalamualaikum / Salam Sejahtera ${name},\n\nTerima kasih atas kepercayaan anda kepada *${companyName}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:`;
-    const lines = [
-      intro,
-      '',
+    const detailLines = [
       `🧾 *No. Invois:* ${invoice!.invoice_number}`,
       `💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}`,
       `📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}`,
-      '',
     ];
     if (proofUrl) {
-      lines.push(
-        '👉 Tekan sini untuk lihat invois & hantar bukti bayaran:',
-        proofUrl,
-        '',
-      );
+      detailLines.push('', '👉 Tekan sini untuk lihat invois & hantar bukti bayaran:', proofUrl);
     }
-    lines.push('Untuk sebarang pertanyaan, sila hubungi kami.', '', `Terima kasih! 😊\n*${companyName}*`);
-    return lines.join('\n');
+    return renderTemplate(
+      (profile as any)?.whatsapp_templates,
+      isReminder ? 'invoice_reminder' : 'invoice',
+      { customer_name: name, company_name: companyName },
+      detailLines.join('\n'),
+    );
   };
 
   // Generate (or reuse) the invoice PDF in storage and the proof-upload token.

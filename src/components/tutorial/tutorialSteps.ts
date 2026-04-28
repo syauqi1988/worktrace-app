@@ -561,38 +561,59 @@ function buildSettingsSteps(): DriveStep[] {
   return [
     {
       popover: {
-        title: '⚙️ Tetapan',
-        description: 'Setup di sini sekali sahaja — selepas itu anda boleh fokus pada kerja sebenar.',
+        title: '⚙️ Halaman Tetapan',
+        description: 'Setup di sini sekali sahaja — selepas itu maklumat anda akan keluar automatik dalam semua dokumen, invois & mesej WhatsApp. Mari kita lihat satu per satu.',
       },
     },
     {
+      element: '[data-tutorial="settings-profile"]',
       popover: {
-        title: '🏢 Maklumat Syarikat',
-        description: 'Isi nama syarikat, alamat dan nombor telefon. Maklumat ini akan keluar dalam semua sebut harga, invois dan resit.',
+        title: '🏢 Profil Syarikat',
+        description: 'Isi nama syarikat, telefon, alamat, logo dan nombor SSM. Maklumat ini muncul pada SETIAP sebut harga, invois, work order dan resit. Tekan untuk buka & edit.',
+        side: 'bottom',
+        align: 'start',
       },
     },
     {
-      popover: {
-        title: '🖼️ Logo Syarikat',
-        description: 'Upload logo syarikat (Pro sahaja). Logo akan muncul pada PDF dokumen anda — nampak lebih profesional.',
-      },
-    },
-    {
+      element: '[data-tutorial="settings-payment"]',
       popover: {
         title: '💳 Kaedah Pembayaran',
-        description: 'Tambah maklumat akaun bank dan QR pembayaran. Maklumat ini akan dipaparkan dalam setiap invois supaya pelanggan tahu cara bayar.',
+        description: 'Tambah akaun bank dan QR pembayaran. Tetapkan satu akaun sebagai "Utama" — ia akan jadi default pada invois. Pelanggan akan nampak cara bayar pada setiap invois.',
+        side: 'bottom',
+        align: 'start',
+      },
+    },
+    {
+      element: '[data-tutorial="settings-terms"]',
+      popover: {
+        title: '📄 Terma & Syarat',
+        description: 'Edit T&C berasingan untuk Sebut Harga, Invois dan Work Order. Ada tab di dalam — pilih dokumen, edit teks, simpan. T&C ini muncul di bahagian bawah PDF.',
+        side: 'bottom',
+        align: 'start',
+      },
+    },
+    {
+      element: '[data-tutorial="settings-whatsapp"]',
+      popover: {
+        title: '💬 Templet WhatsApp (BARU)',
+        description: 'Sesuaikan ucapan & ayat penutup untuk SEMUA jenis mesej WhatsApp anda — Sebut Harga, Invois, Peringatan, Work Order, Laporan Kerja, Resit & Follow-up. Pilih templet dari dropdown, edit, dan tengok pratonton secara langsung. Bahagian butiran (nombor, jumlah, pautan) dikunci automatik supaya mesej anda sentiasa tepat.',
+        side: 'bottom',
+        align: 'start',
+      },
+    },
+    {
+      element: '[data-tutorial="settings-docnum"]',
+      popover: {
+        title: '🔢 Nombor Dokumen',
+        description: 'Tetapkan format nombor (contoh: INV-2026-001, QUO-0001). Pilih awalan, panjang nombor dan nombor permulaan. Sistem akan jana nombor secara automatik mengikut format anda.',
+        side: 'bottom',
+        align: 'start',
       },
     },
     {
       popover: {
-        title: '📄 Nombor Dokumen',
-        description: 'Tetapkan format nombor (contoh: INV-2026-001). Sistem akan jana nombor secara auto mengikut format anda.',
-      },
-    },
-    {
-      popover: {
-        title: '✅ Selesai!',
-        description: 'Lepas setup tetapan, anda dah sedia mula guna WorkTrace dengan penuh. Selamat berniaga! 🎉',
+        title: '✅ Tip Penting',
+        description: 'Setiap accordion boleh dibuka/tutup dengan tekan tajuk. Pilihan buka/tutup anda diingati untuk lawatan akan datang.\n\nLepas setup tetapan ini, anda dah sedia mula guna WorkTrace dengan penuh. Selamat berniaga! 🎉',
       },
     },
   ];

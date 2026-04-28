@@ -16,6 +16,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { renderTemplate } from '@/lib/whatsappTemplates';
 
 interface JobRow {
   id: string;
@@ -293,25 +294,13 @@ export default function WorkOrderFormPage() {
 
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const msg =
-`Assalamualaikum / Salam Sejahtera ${job.customers.name},
-
-Terima kasih atas kepercayaan anda. 🙏
-
-Berikut adalah Work Order daripada *${companyName}*:
-
-📋 *No. Work Order:* ${woNumber}
-🔨 *Tajuk Kerja:* ${title}
-📅 *Tarikh Mula:* ${formatDate(startDate)}
-📍 *Lokasi:* ${location || '-'}
-
-Sila klik pautan di bawah untuk *melihat & mengesahkan* work order:
-🔗 ${approvalUrl}
-
-Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.
-
-Terima kasih!
-*${companyName}*`;
+      const details = `📋 *No. Work Order:* ${woNumber}\n🔨 *Tajuk Kerja:* ${title}\n📅 *Tarikh Mula:* ${formatDate(startDate)}\n📍 *Lokasi:* ${location || '-'}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 ${approvalUrl}`;
+      const msg = renderTemplate(
+        (profile as any)?.whatsapp_templates,
+        'work_order',
+        { customer_name: job.customers.name, company_name: companyName },
+        details,
+      );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } catch {
       toast.error('Gagal kongsi PDF');
