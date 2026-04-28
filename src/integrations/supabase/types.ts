@@ -115,6 +115,7 @@ export type Database = {
       }
       completion_reports: {
         Row: {
+          accepted_at: string | null
           after_photos: Json | null
           before_photos: Json | null
           completion_date: string | null
@@ -125,6 +126,8 @@ export type Database = {
           materials_used: string | null
           notes: string | null
           photos: Json | null
+          rejected_at: string | null
+          rejection_reason: string | null
           report_number: string
           status: string | null
           submitted_at: string | null
@@ -133,6 +136,7 @@ export type Database = {
           work_description: string | null
         }
         Insert: {
+          accepted_at?: string | null
           after_photos?: Json | null
           before_photos?: Json | null
           completion_date?: string | null
@@ -143,6 +147,8 @@ export type Database = {
           materials_used?: string | null
           notes?: string | null
           photos?: Json | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           report_number: string
           status?: string | null
           submitted_at?: string | null
@@ -151,6 +157,7 @@ export type Database = {
           work_description?: string | null
         }
         Update: {
+          accepted_at?: string | null
           after_photos?: Json | null
           before_photos?: Json | null
           completion_date?: string | null
@@ -161,6 +168,8 @@ export type Database = {
           materials_used?: string | null
           notes?: string | null
           photos?: Json | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           report_number?: string
           status?: string | null
           submitted_at?: string | null
