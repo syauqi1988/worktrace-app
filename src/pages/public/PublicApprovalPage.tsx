@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface ApprovalRow {
   id: string;
   document_id: string;
-  document_type: 'quotation' | 'work_order';
+  document_type: 'quotation' | 'work_order' | 'completion_report';
   token: string;
   pdf_url: string | null;
   customer_name: string | null;
