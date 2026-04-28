@@ -199,7 +199,7 @@ export default function SettingsPage() {
       sst_registered: sstRegistered,
     });
     setSavingLhdn(false);
-    toast.success("Tetapan LHDN disimpan!");
+    toast.success(t("settings.lhdn.saved"));
   };
 
   const handleSaveTerms = async () => {
