@@ -325,7 +325,7 @@ export default function JobDetailPage() {
           <p className="text-sm text-muted-foreground truncate">{job.title}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate(`/jobs/${job.id}/edit`)} className="gap-1.5 shrink-0">
-          <Edit className="h-3.5 w-3.5" /> Edit
+          <Edit className="h-3.5 w-3.5" /> {t('jobDetail.edit')}
         </Button>
       </div>
 
