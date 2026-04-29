@@ -58,7 +58,7 @@ interface Quotation {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatPhone(phone: string): string {
