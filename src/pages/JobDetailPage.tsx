@@ -96,10 +96,11 @@ function formatPhone(phone: string): string {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function JobDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
