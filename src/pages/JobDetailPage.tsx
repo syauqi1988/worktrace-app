@@ -384,18 +384,18 @@ export default function JobDetailPage() {
           </div>
           {job.scheduled_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Tarikh Dijadualkan</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.scheduledDate')}</p>
               <p className="text-sm text-foreground mt-0.5">{formatDate(job.scheduled_date)}</p>
             </div>
           )}
           {job.completed_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Tarikh Siap</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.completedDate')}</p>
               <p className="text-sm text-foreground mt-0.5">{formatDate(job.completed_date)}</p>
             </div>
           )}
           <div className="col-span-2">
-            <p className="text-xs text-muted-foreground">Dicipta</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.created')}</p>
             <p className="text-sm text-foreground mt-0.5">{formatDate(job.created_at)}</p>
           </div>
         </div>
