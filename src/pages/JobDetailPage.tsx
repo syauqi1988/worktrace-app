@@ -332,7 +332,7 @@ export default function JobDetailPage() {
       {/* Customer Card */}
       {job.customers && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pelanggan</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('jobDetail.customer')}</p>
           <p className="text-base font-semibold text-foreground">{job.customers.name}</p>
           {job.customers.phone && (
             <div className="flex items-center gap-2">
