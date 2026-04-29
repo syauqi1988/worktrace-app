@@ -424,7 +424,6 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
-
     "profile": {
       "title": "Company Profile",
       "description": "Company name, phone, address and logo",
@@ -441,7 +440,6 @@
       "save": "Save Profile",
       "saved": "Profile updated successfully!"
     },
-
     "lhdn": {
       "title": "LHDN & SST",
       "description": "Tax information and LHDN MyInvois e-Invoice",
@@ -455,7 +453,6 @@
       "save": "Save LHDN Settings",
       "saved": "LHDN settings saved!"
     },
-
     "payment": {
       "title": "Payment Methods",
       "description": "Bank accounts and QR payments for invoices",
@@ -481,7 +478,6 @@
       "qrSaved": "QR payment saved!",
       "deleted": "Payment method deleted"
     },
-
     "terms": {
       "title": "Terms & Conditions",
       "description": "T&C for Quotations, Invoices and Work Orders",
@@ -494,12 +490,10 @@
       "saveInvoice": "Save Invoice Terms",
       "saved": "Terms & conditions saved!"
     },
-
     "whatsappTemplates": {
       "title": "WhatsApp Templates",
       "description": "Customize greetings & closing lines for all WhatsApp messages"
     },
-
     "deviceNotifications": {
       "title": "Device Notifications",
       "description": "Enable push notifications on your phone or computer",
@@ -511,12 +505,10 @@
       "disable": "Turn off device notifications",
       "enable": "Enable device notifications"
     },
-
     "docNumbers": {
       "title": "Document Numbers",
       "description": "Auto-numbering format for all document types"
     },
-
     "subscription": {
       "title": "Subscription & Plan",
       "description": "Current plan and subscription management",
@@ -540,7 +532,6 @@
       "renew": "Renew Subscription — RM{{price}}/{{period}}",
       "cancelSub": "Cancel Subscription"
     },
-
     "integrations": {
       "title": "Integrations & Links",
       "description": "Approval and payment proof links",
@@ -548,7 +539,6 @@
       "body": "WorkTrace generates approval links automatically when you send a Quotation, Work Order, or Report to a customer. For Invoices, payment proof links (/bayar) are generated automatically — customers can upload their receipts directly without any external integration.",
       "noConfig": "No configuration required — all links are generated automatically."
     },
-
     "referral": {
       "title": "Referrals",
       "description": "Referral code and free month rewards",
@@ -579,7 +569,6 @@
       "monthsAwarded": "{{count}} Free Months ✓",
       "upgradeToUse": "Upgrade to Pro to use your free months."
     },
-
     "help": {
       "title": "Help",
       "description": "AI help and support",
@@ -587,7 +576,6 @@
       "sendTicket": "📧 Send Support Ticket",
       "responseTime": "Response time: < 24 hours (working days)"
     },
-
     "danger": {
       "title": "Danger Zone",
       "description": "Account deletion and irreversible actions",
@@ -660,5 +648,61 @@
     "resend": "Resend code",
     "invalidEmail": "Please enter a valid email",
     "captchaRequired": "Please complete the captcha"
+  },
+  "customerDetail": {
+    "title": "Customer Profile",
+    "edit": "Edit",
+    "customerSince": "Customer since {{date}}",
+    "tinNo": "TIN No:",
+    "tags": "Tags",
+    "noTags": "No tags",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "tagsUpdated": "Tags updated!",
+    "jobHistory": "Job History",
+    "noJobs": "No jobs for this customer",
+    "newJob": "New Job",
+    "editCustomer": "Edit Customer",
+    "delete": "Delete",
+    "notFound": "Customer not found.",
+    "back": "Back",
+    "deleteTitle": "Delete Customer?",
+    "deleteDesc": "Customer data will be deleted. Related jobs will not be deleted.",
+    "deleting": "Deleting...",
+    "deleted": "Customer deleted successfully!",
+    "customerDeleted": "Customer deleted!",
+    "error": "Error"
+  },
+  "workOrderDetail": {
+    "waitingApproval": "Waiting for Customer Approval",
+    "waitingApprovalDesc": "Customer will approve or reject via the WhatsApp link shared.",
+    "accepted": "✓ Work Order Accepted — Work can begin",
+    "confirmedAt": "Confirmed on {{date}}",
+    "createReport": "Create Completion Report",
+    "rejected": "✕ Work Order Rejected",
+    "reason": "Reason: {{reason}}",
+    "newWo": "New Work Order",
+    "info": "Information",
+    "startLabel": "Start: {{start}}",
+    "startEndLabel": "Start: {{start}} — End: {{end}}",
+    "scope": "Scope of Work",
+    "items": "Work Items",
+    "total": "Total",
+    "instructions": "Special Instructions",
+    "previewPdf": "Preview PDF",
+    "shareWa": "Share via WhatsApp",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete Work Order?",
+    "deleteDesc": "This action cannot be undone.",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "deleted": "Work Order deleted",
+    "shareFailed": "Share failed",
+    "noWo": "No Work Order for this job.",
+    "create": "Create Work Order",
+    "previewTitle": "Preview — {{number}}",
+    "waDetails": "📋 *Work Order No.:* {{number}}\n🔨 *Job Title:* {{title}}\n📅 *Start Date:* {{startDate}}\n📍 *Location:* {{location}}\n\nPlease click the link below to *view & confirm* the work order:\n🔗 {{url}}"
   }
 }
