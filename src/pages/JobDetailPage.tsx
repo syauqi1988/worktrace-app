@@ -304,8 +304,8 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Kerja tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('jobDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">{t('jobDetail.back')}</Button>
       </div>
     );
   }
