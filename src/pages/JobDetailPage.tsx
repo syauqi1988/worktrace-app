@@ -416,7 +416,7 @@ export default function JobDetailPage() {
       {/* Related Quotation */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5" /> Sebut Harga
+          <FileText className="h-3.5 w-3.5" /> {t('jobDetail.quotation')}
         </p>
         {quotation ? (
           <div className="space-y-2">
@@ -431,19 +431,19 @@ export default function JobDetailPage() {
             </div>
             <p className="text-sm font-semibold text-foreground">RM {Number(quotation.total).toFixed(2)}</p>
             {quotation.valid_until && (
-              <p className="text-xs text-muted-foreground">Sah hingga: {formatDate(quotation.valid_until)}</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.validUntil', { date: formatDate(quotation.valid_until) })}</p>
             )}
             <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
               onClick={() => navigate(`/quotations/${quotation.id}`)}>
-              Lihat Sebut Harga →
+              {t('jobDetail.viewQuote')}
             </Button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
+            <p className="text-sm text-muted-foreground">{t('jobDetail.noQuote')}</p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
-              <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
+              <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createQuote')}
             </Button>
           </div>
         )}
