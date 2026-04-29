@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getDateLocale } from '@/i18n';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -56,7 +58,7 @@ interface Quotation {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatPhone(phone: string): string {

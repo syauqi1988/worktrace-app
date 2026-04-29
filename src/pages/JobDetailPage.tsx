@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getDateLocale } from '@/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -94,10 +96,11 @@ function formatPhone(phone: string): string {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function JobDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -169,10 +172,10 @@ export default function JobDetailPage() {
     if (newStatus === 'Completed') updates.completed_date = new Date().toISOString().slice(0, 10);
     const { error } = await supabase.from('jobs').update(updates).eq('id', job.id);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: t('jobDetail.error'), description: error.message, variant: 'destructive' });
     } else {
       setJob({ ...job, status: newStatus, completed_date: updates.completed_date as string || job.completed_date });
-      toast({ title: 'Status dikemaskini!' });
+      toast({ title: t('jobDetail.statusUpdated') });
     }
   };
 
@@ -182,9 +185,9 @@ export default function JobDetailPage() {
     const { error } = await supabase.from('jobs').delete().eq('id', job.id);
     setDeleting(false);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: t('jobDetail.error'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Kerja berjaya dipadam!' });
+      toast({ title: t('jobDetail.deleted') });
       navigate('/jobs');
     }
   };
@@ -264,7 +267,12 @@ export default function JobDetailPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const details = `📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}`;
+      const details = t('jobDetail.waReportDetails', {
+        number: report.report_number,
+        title: job.title,
+        date: report.completion_date ? formatDate(report.completion_date) : '-',
+        url: shortUrl,
+      });
       const message = renderTemplate(
         (profile as any)?.whatsapp_templates,
         'completion_report',
@@ -273,7 +281,7 @@ export default function JobDetailPage() {
       );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
-      toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
+      toast({ title: t('jobDetail.reportShareFail'), variant: 'destructive' });
     } finally {
       setIsSharing(false);
     }
@@ -296,8 +304,8 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Kerja tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('jobDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">{t('jobDetail.back')}</Button>
       </div>
     );
   }
@@ -317,14 +325,14 @@ export default function JobDetailPage() {
           <p className="text-sm text-muted-foreground truncate">{job.title}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate(`/jobs/${job.id}/edit`)} className="gap-1.5 shrink-0">
-          <Edit className="h-3.5 w-3.5" /> Edit
+          <Edit className="h-3.5 w-3.5" /> {t('jobDetail.edit')}
         </Button>
       </div>
 
       {/* Customer Card */}
       {job.customers && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pelanggan</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('jobDetail.customer')}</p>
           <p className="text-base font-semibold text-foreground">{job.customers.name}</p>
           {job.customers.phone && (
             <div className="flex items-center gap-2">
@@ -355,14 +363,14 @@ export default function JobDetailPage() {
 
       {/* Job Info Card */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('jobDetail.jobInfo')}</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">Kategori</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.category')}</p>
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full inline-block mt-0.5 ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>{job.category}</span>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Status</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.status')}</p>
             <Select value={job.status} onValueChange={handleStatusChange}>
               <SelectTrigger className="h-7 w-fit mt-0.5 text-xs rounded-full border-0 px-2 py-0">
                 <SelectValue />
@@ -376,30 +384,30 @@ export default function JobDetailPage() {
           </div>
           {job.scheduled_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Tarikh Dijadualkan</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.scheduledDate')}</p>
               <p className="text-sm text-foreground mt-0.5">{formatDate(job.scheduled_date)}</p>
             </div>
           )}
           {job.completed_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Tarikh Siap</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.completedDate')}</p>
               <p className="text-sm text-foreground mt-0.5">{formatDate(job.completed_date)}</p>
             </div>
           )}
           <div className="col-span-2">
-            <p className="text-xs text-muted-foreground">Dicipta</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.created')}</p>
             <p className="text-sm text-foreground mt-0.5">{formatDate(job.created_at)}</p>
           </div>
         </div>
         {job.description && (
           <div>
-            <p className="text-xs text-muted-foreground">Penerangan</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.description')}</p>
             <p className="text-sm text-foreground mt-0.5 whitespace-pre-wrap">{job.description}</p>
           </div>
         )}
         {job.notes && (
           <div>
-            <p className="text-xs text-muted-foreground">Nota</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.notes')}</p>
             <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">{job.notes}</p>
           </div>
         )}
@@ -408,7 +416,7 @@ export default function JobDetailPage() {
       {/* Related Quotation */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5" /> Sebut Harga
+          <FileText className="h-3.5 w-3.5" /> {t('jobDetail.quotation')}
         </p>
         {quotation ? (
           <div className="space-y-2">
@@ -423,19 +431,19 @@ export default function JobDetailPage() {
             </div>
             <p className="text-sm font-semibold text-foreground">RM {Number(quotation.total).toFixed(2)}</p>
             {quotation.valid_until && (
-              <p className="text-xs text-muted-foreground">Sah hingga: {formatDate(quotation.valid_until)}</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.validUntil', { date: formatDate(quotation.valid_until) })}</p>
             )}
             <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
               onClick={() => navigate(`/quotations/${quotation.id}`)}>
-              Lihat Sebut Harga →
+              {t('jobDetail.viewQuote')}
             </Button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Belum ada sebut harga</p>
+            <p className="text-sm text-muted-foreground">{t('jobDetail.noQuote')}</p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
-              <FileText className="h-3.5 w-3.5" /> Buat Sebut Harga
+              <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createQuote')}
             </Button>
           </div>
         )}
@@ -445,7 +453,7 @@ export default function JobDetailPage() {
       {profile?.plan === 'team' && (
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <ClipboardCheck className="h-3.5 w-3.5" /> Work Order
+            <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.workOrder')}
           </p>
           {workOrder ? (
             <div className="space-y-2">
@@ -461,20 +469,20 @@ export default function JobDetailPage() {
               <p className="text-sm font-semibold text-foreground">RM {Number(workOrder.total).toFixed(2)}</p>
               <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
                 onClick={() => navigate(`/jobs/${job.id}/work-order`)}>
-                Lihat Work Order →
+                {t('jobDetail.viewWo')}
               </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
                 {quotation?.status === 'Accepted'
-                  ? 'Sedia untuk Work Order (pilihan)'
-                  : 'Sebut harga perlu diterima dahulu'}
+                  ? t('jobDetail.woReady')
+                  : t('jobDetail.woNeedsAccept')}
               </p>
               <Button variant="outline" size="sm" className="text-xs gap-1"
                 disabled={quotation?.status !== 'Accepted'}
                 onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>
-                <ClipboardCheck className="h-3.5 w-3.5" /> Buat Work Order
+                <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.createWo')}
               </Button>
             </div>
           )}
@@ -484,7 +492,7 @@ export default function JobDetailPage() {
       {/* Completion Report Card */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <ClipboardCheck className="h-3.5 w-3.5" /> Laporan Siap Kerja
+          <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.completionReport')}
         </p>
         {report ? (
           <div className="space-y-2">
@@ -496,42 +504,42 @@ export default function JobDetailPage() {
                 report.status === 'rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
                 'bg-[#F1F5F9] text-[#64748B]'
               }`}>
-                {report.status === 'accepted' ? 'Diterima' :
-                 report.status === 'submitted' ? 'Menunggu Pengesahan' :
-                 report.status === 'rejected' ? 'Ditolak' : 'Draft'}
+                {report.status === 'accepted' ? t('jobDetail.statusAccepted') :
+                 report.status === 'submitted' ? t('jobDetail.statusSubmitted') :
+                 report.status === 'rejected' ? t('jobDetail.statusRejected') : t('jobDetail.statusDraft')}
               </span>
             </div>
             {report.status === 'submitted' && (
               <div className="flex items-center gap-1.5 text-[#1D4ED8]">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span className="text-xs font-medium">Menunggu pengesahan pelanggan</span>
+                <span className="text-xs font-medium">{t('jobDetail.waitingCustomer')}</span>
               </div>
             )}
             {report.status === 'accepted' && (
               <div className="flex items-center gap-1.5 text-[#15803D]">
                 <CheckCircle className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">Disahkan oleh pelanggan</span>
+                <span className="text-xs font-medium">{t('jobDetail.confirmedByCustomer')}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-2 mt-1">
               {report.status === 'draft' ? (
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  <Edit className="h-3.5 w-3.5" /> Edit Laporan
+                  <Edit className="h-3.5 w-3.5" /> {t('jobDetail.editReport')}
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  Lihat Laporan
+                  {t('jobDetail.viewReport')}
                 </Button>
               )}
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
-                <Eye className="h-3.5 w-3.5" /> Pratonton PDF
+                <Eye className="h-3.5 w-3.5" /> {t('jobDetail.previewPdf')}
               </Button>
               {(report.status === 'submitted' || report.status === 'accepted' || report.status === 'rejected') && job.customers?.phone && (
                 <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={handleReportWhatsApp} disabled={isSharing}>
                   {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                  Kongsi via WhatsApp
+                  {t('jobDetail.shareWa')}
                 </Button>
               )}
             </div>
@@ -539,12 +547,12 @@ export default function JobDetailPage() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {quotation?.status === 'Accepted' ? 'Sedia untuk laporan' : 'Sebut harga perlu diterima dahulu'}
+              {quotation?.status === 'Accepted' ? t('jobDetail.reportReady') : t('jobDetail.reportNeedsAccept')}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               disabled={quotation?.status !== 'Accepted'}
               onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-              <ClipboardCheck className="h-3.5 w-3.5" /> Isi Laporan Siap Kerja
+              <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.fillReport')}
             </Button>
           </div>
         )}
@@ -553,7 +561,7 @@ export default function JobDetailPage() {
       {/* Related Invoice */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <Receipt className="h-3.5 w-3.5" /> Invois
+          <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.invoice')}
         </p>
         {invoice ? (
           <div className="space-y-2">
@@ -567,22 +575,22 @@ export default function JobDetailPage() {
             </div>
             <p className="text-sm font-semibold text-foreground">RM {Number(invoice.total).toFixed(2)}</p>
             {invoice.due_date && (
-              <p className="text-xs text-muted-foreground">Bayar sebelum: {formatDate(invoice.due_date)}</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.payBefore', { date: formatDate(invoice.due_date) })}</p>
             )}
             <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
               onClick={() => navigate(`/invoices/${invoice.id}`)}>
-              Lihat Invois →
+              {t('jobDetail.viewInvoice')}
             </Button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'accepted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu'}
+              {report?.status === 'accepted' ? t('jobDetail.noInvoice') : t('jobDetail.invoiceNeedsReport')}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               disabled={report?.status !== 'accepted'}
               onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
-              <Receipt className="h-3.5 w-3.5" /> Buat Invois
+              <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
             </Button>
           </div>
         )}
@@ -591,10 +599,10 @@ export default function JobDetailPage() {
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button onClick={() => navigate(`/jobs/${job.id}/edit`)} className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> Edit Kerja
+          <Edit className="h-4 w-4" /> {t('jobDetail.editJob')}
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="rounded-lg gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" /> Padam
+          <Trash2 className="h-4 w-4" /> {t('jobDetail.delete')}
         </Button>
       </div>
 
@@ -602,15 +610,15 @@ export default function JobDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Kerja?</DialogTitle>
+            <DialogTitle>{t('jobDetail.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              Tindakan ini tidak boleh dibatalkan. Sebut harga dan invois berkaitan tidak akan dipadam.
+              {t('jobDetail.deleteDesc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('jobDetail.cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Memadam...' : 'Padam'}
+              {deleting ? t('jobDetail.deleting') : t('jobDetail.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -630,7 +638,7 @@ export default function JobDetailPage() {
           }
         }}
         open={previewOpen}
-        title={`Pratonton — ${report?.report_number || 'Laporan'}`}
+        title={t('jobDetail.previewTitle', { name: report?.report_number || 'Laporan' })}
       />
     </div>
   );
