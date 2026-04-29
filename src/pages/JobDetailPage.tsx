@@ -185,9 +185,9 @@ export default function JobDetailPage() {
     const { error } = await supabase.from('jobs').delete().eq('id', job.id);
     setDeleting(false);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: t('jobDetail.error'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Kerja berjaya dipadam!' });
+      toast({ title: t('jobDetail.deleted') });
       navigate('/jobs');
     }
   };
