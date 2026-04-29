@@ -267,7 +267,12 @@ export default function JobDetailPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const details = `📋 *No. Laporan:* ${report.report_number}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${report.completion_date ? formatDate(report.completion_date) : '-'}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}`;
+      const details = t('jobDetail.waReportDetails', {
+        number: report.report_number,
+        title: job.title,
+        date: report.completion_date ? formatDate(report.completion_date) : '-',
+        url: shortUrl,
+      });
       const message = renderTemplate(
         (profile as any)?.whatsapp_templates,
         'completion_report',
@@ -276,7 +281,7 @@ export default function JobDetailPage() {
       );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
-      toast({ title: 'Gagal kongsi laporan', variant: 'destructive' });
+      toast({ title: t('jobDetail.reportShareFail'), variant: 'destructive' });
     } finally {
       setIsSharing(false);
     }
