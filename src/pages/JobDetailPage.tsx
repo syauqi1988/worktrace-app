@@ -172,10 +172,10 @@ export default function JobDetailPage() {
     if (newStatus === 'Completed') updates.completed_date = new Date().toISOString().slice(0, 10);
     const { error } = await supabase.from('jobs').update(updates).eq('id', job.id);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: t('jobDetail.error'), description: error.message, variant: 'destructive' });
     } else {
       setJob({ ...job, status: newStatus, completed_date: updates.completed_date as string || job.completed_date });
-      toast({ title: 'Status dikemaskini!' });
+      toast({ title: t('jobDetail.statusUpdated') });
     }
   };
 
