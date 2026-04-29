@@ -492,7 +492,7 @@ export default function JobDetailPage() {
       {/* Completion Report Card */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <ClipboardCheck className="h-3.5 w-3.5" /> Laporan Siap Kerja
+          <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.completionReport')}
         </p>
         {report ? (
           <div className="space-y-2">
@@ -504,42 +504,42 @@ export default function JobDetailPage() {
                 report.status === 'rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
                 'bg-[#F1F5F9] text-[#64748B]'
               }`}>
-                {report.status === 'accepted' ? 'Diterima' :
-                 report.status === 'submitted' ? 'Menunggu Pengesahan' :
-                 report.status === 'rejected' ? 'Ditolak' : 'Draft'}
+                {report.status === 'accepted' ? t('jobDetail.statusAccepted') :
+                 report.status === 'submitted' ? t('jobDetail.statusSubmitted') :
+                 report.status === 'rejected' ? t('jobDetail.statusRejected') : t('jobDetail.statusDraft')}
               </span>
             </div>
             {report.status === 'submitted' && (
               <div className="flex items-center gap-1.5 text-[#1D4ED8]">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span className="text-xs font-medium">Menunggu pengesahan pelanggan</span>
+                <span className="text-xs font-medium">{t('jobDetail.waitingCustomer')}</span>
               </div>
             )}
             {report.status === 'accepted' && (
               <div className="flex items-center gap-1.5 text-[#15803D]">
                 <CheckCircle className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">Disahkan oleh pelanggan</span>
+                <span className="text-xs font-medium">{t('jobDetail.confirmedByCustomer')}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-2 mt-1">
               {report.status === 'draft' ? (
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  <Edit className="h-3.5 w-3.5" /> Edit Laporan
+                  <Edit className="h-3.5 w-3.5" /> {t('jobDetail.editReport')}
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  Lihat Laporan
+                  {t('jobDetail.viewReport')}
                 </Button>
               )}
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
-                <Eye className="h-3.5 w-3.5" /> Pratonton PDF
+                <Eye className="h-3.5 w-3.5" /> {t('jobDetail.previewPdf')}
               </Button>
               {(report.status === 'submitted' || report.status === 'accepted' || report.status === 'rejected') && job.customers?.phone && (
                 <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={handleReportWhatsApp} disabled={isSharing}>
                   {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                  Kongsi via WhatsApp
+                  {t('jobDetail.shareWa')}
                 </Button>
               )}
             </div>
@@ -547,12 +547,12 @@ export default function JobDetailPage() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {quotation?.status === 'Accepted' ? 'Sedia untuk laporan' : 'Sebut harga perlu diterima dahulu'}
+              {quotation?.status === 'Accepted' ? t('jobDetail.reportReady') : t('jobDetail.reportNeedsAccept')}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               disabled={quotation?.status !== 'Accepted'}
               onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-              <ClipboardCheck className="h-3.5 w-3.5" /> Isi Laporan Siap Kerja
+              <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.fillReport')}
             </Button>
           </div>
         )}
