@@ -363,14 +363,14 @@ export default function JobDetailPage() {
 
       {/* Job Info Card */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('jobDetail.jobInfo')}</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">Kategori</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.category')}</p>
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full inline-block mt-0.5 ${CATEGORY_COLORS[job.category] || CATEGORY_COLORS.Other}`}>{job.category}</span>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Status</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.status')}</p>
             <Select value={job.status} onValueChange={handleStatusChange}>
               <SelectTrigger className="h-7 w-fit mt-0.5 text-xs rounded-full border-0 px-2 py-0">
                 <SelectValue />
