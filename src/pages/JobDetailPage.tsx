@@ -638,7 +638,7 @@ export default function JobDetailPage() {
           }
         }}
         open={previewOpen}
-        title={`Pratonton — ${report?.report_number || 'Laporan'}`}
+        title={t('jobDetail.previewTitle', { name: report?.report_number || 'Laporan' })}
       />
     </div>
   );
