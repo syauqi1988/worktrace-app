@@ -599,10 +599,10 @@ export default function JobDetailPage() {
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button onClick={() => navigate(`/jobs/${job.id}/edit`)} className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> Edit Kerja
+          <Edit className="h-4 w-4" /> {t('jobDetail.editJob')}
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="rounded-lg gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" /> Padam
+          <Trash2 className="h-4 w-4" /> {t('jobDetail.delete')}
         </Button>
       </div>
 
@@ -610,15 +610,15 @@ export default function JobDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Kerja?</DialogTitle>
+            <DialogTitle>{t('jobDetail.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              Tindakan ini tidak boleh dibatalkan. Sebut harga dan invois berkaitan tidak akan dipadam.
+              {t('jobDetail.deleteDesc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('jobDetail.cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Memadam...' : 'Padam'}
+              {deleting ? t('jobDetail.deleting') : t('jobDetail.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
