@@ -453,7 +453,7 @@ export default function JobDetailPage() {
       {profile?.plan === 'team' && (
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <ClipboardCheck className="h-3.5 w-3.5" /> Work Order
+            <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.workOrder')}
           </p>
           {workOrder ? (
             <div className="space-y-2">
@@ -469,20 +469,20 @@ export default function JobDetailPage() {
               <p className="text-sm font-semibold text-foreground">RM {Number(workOrder.total).toFixed(2)}</p>
               <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
                 onClick={() => navigate(`/jobs/${job.id}/work-order`)}>
-                Lihat Work Order →
+                {t('jobDetail.viewWo')}
               </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
                 {quotation?.status === 'Accepted'
-                  ? 'Sedia untuk Work Order (pilihan)'
-                  : 'Sebut harga perlu diterima dahulu'}
+                  ? t('jobDetail.woReady')
+                  : t('jobDetail.woNeedsAccept')}
               </p>
               <Button variant="outline" size="sm" className="text-xs gap-1"
                 disabled={quotation?.status !== 'Accepted'}
                 onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>
-                <ClipboardCheck className="h-3.5 w-3.5" /> Buat Work Order
+                <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.createWo')}
               </Button>
             </div>
           )}
