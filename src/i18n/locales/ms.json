@@ -424,7 +424,6 @@
     "cancel": "Batal",
     "edit": "Edit",
     "delete": "Padam",
-
     "profile": {
       "title": "Profil Syarikat",
       "description": "Nama syarikat, telefon, alamat dan logo",
@@ -441,7 +440,6 @@
       "save": "Simpan Profil",
       "saved": "Profil berjaya dikemaskini!"
     },
-
     "lhdn": {
       "title": "LHDN & SST",
       "description": "Maklumat cukai dan e-Invois LHDN MyInvois",
@@ -455,7 +453,6 @@
       "save": "Simpan Tetapan LHDN",
       "saved": "Tetapan LHDN disimpan!"
     },
-
     "payment": {
       "title": "Kaedah Pembayaran",
       "description": "Akaun bank dan QR bayaran untuk invois",
@@ -481,7 +478,6 @@
       "qrSaved": "QR payment disimpan!",
       "deleted": "Kaedah pembayaran dipadam"
     },
-
     "terms": {
       "title": "Terma & Syarat",
       "description": "T&C untuk Sebut Harga, Invois dan Work Order",
@@ -494,12 +490,10 @@
       "saveInvoice": "Simpan Terma Invois",
       "saved": "Terma & syarat berjaya disimpan!"
     },
-
     "whatsappTemplates": {
       "title": "Templet WhatsApp",
       "description": "Sesuaikan ucapan & ayat penutup untuk semua mesej WhatsApp"
     },
-
     "deviceNotifications": {
       "title": "Notifikasi Peranti",
       "description": "Aktifkan notifikasi push pada telefon atau komputer anda",
@@ -511,12 +505,10 @@
       "disable": "Matikan notifikasi peranti",
       "enable": "Aktifkan notifikasi peranti"
     },
-
     "docNumbers": {
       "title": "Nombor Dokumen",
       "description": "Format nombor auto untuk semua jenis dokumen"
     },
-
     "subscription": {
       "title": "Langganan & Pelan",
       "description": "Pelan semasa dan pengurusan langganan",
@@ -540,7 +532,6 @@
       "renew": "Perbaharui Langganan — RM{{price}}/{{period}}",
       "cancelSub": "Batalkan Langganan"
     },
-
     "integrations": {
       "title": "Integrasi & Pautan",
       "description": "Pautan pengesahan dan bukti pembayaran",
@@ -548,7 +539,6 @@
       "body": "WorkTrace menjana pautan pengesahan automatik ketika anda menghantar Sebut Harga, Work Order, atau Laporan kepada pelanggan. Untuk Invois, pautan bukti pembayaran (/bayar) dijana secara automatik — pelanggan boleh muat naik resit terus tanpa perlu sebarang integrasi luaran.",
       "noConfig": "Tiada konfigurasi diperlukan — semua pautan dijana automatik."
     },
-
     "referral": {
       "title": "Rujukan",
       "description": "Kod rujukan dan ganjaran bulan percuma",
@@ -579,7 +569,6 @@
       "monthsAwarded": "{{count}} Bulan Percuma ✓",
       "upgradeToUse": "Upgrade ke Pro untuk menggunakan bulan percuma anda."
     },
-
     "help": {
       "title": "Bantuan",
       "description": "Bantuan AI dan sokongan",
@@ -587,7 +576,6 @@
       "sendTicket": "📧 Hantar Tiket Sokongan",
       "responseTime": "Masa respons: < 24 jam (hari bekerja)"
     },
-
     "danger": {
       "title": "Zon Bahaya",
       "description": "Padam akaun dan tindakan yang tidak boleh dibatalkan",
@@ -660,5 +648,61 @@
     "resend": "Hantar semula kod",
     "invalidEmail": "Sila masukkan emel yang sah",
     "captchaRequired": "Sila lengkapkan captcha"
+  },
+  "customerDetail": {
+    "title": "Profil Pelanggan",
+    "edit": "Edit",
+    "customerSince": "Pelanggan sejak {{date}}",
+    "tinNo": "No. TIN:",
+    "tags": "Tag",
+    "noTags": "Tiada tag",
+    "saving": "Menyimpan...",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "tagsUpdated": "Tag dikemaskini!",
+    "jobHistory": "Sejarah Kerja",
+    "noJobs": "Tiada kerja untuk pelanggan ini",
+    "newJob": "Buat Kerja Baru",
+    "editCustomer": "Edit Pelanggan",
+    "delete": "Padam",
+    "notFound": "Pelanggan tidak dijumpai.",
+    "back": "Kembali",
+    "deleteTitle": "Padam Pelanggan?",
+    "deleteDesc": "Data pelanggan akan dipadam. Kerja berkaitan tidak akan dipadam.",
+    "deleting": "Memadam...",
+    "deleted": "Pelanggan berjaya dipadam!",
+    "customerDeleted": "Pelanggan berjaya dipadam!",
+    "error": "Ralat"
+  },
+  "workOrderDetail": {
+    "waitingApproval": "Menunggu Pengesahan Pelanggan",
+    "waitingApprovalDesc": "Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.",
+    "accepted": "✓ Work Order Diterima — Kerja boleh dimulakan",
+    "confirmedAt": "Disahkan pada {{date}}",
+    "createReport": "Buat Laporan Siap Kerja",
+    "rejected": "✕ Work Order Ditolak",
+    "reason": "Sebab: {{reason}}",
+    "newWo": "Buat Work Order Baru",
+    "info": "Maklumat",
+    "startLabel": "Mula: {{start}}",
+    "startEndLabel": "Mula: {{start}} — Siap: {{end}}",
+    "scope": "Skop Kerja",
+    "items": "Item Kerja",
+    "total": "Jumlah",
+    "instructions": "Arahan Khas",
+    "previewPdf": "Pratonton PDF",
+    "shareWa": "Kongsi via WhatsApp",
+    "edit": "Edit",
+    "delete": "Padam",
+    "deleteTitle": "Padam Work Order?",
+    "deleteDesc": "Tindakan ini tidak boleh dibatalkan.",
+    "deleting": "Memadam...",
+    "cancel": "Batal",
+    "deleted": "Work Order dipadam",
+    "shareFailed": "Gagal kongsi",
+    "noWo": "Tiada Work Order untuk kerja ini.",
+    "create": "Buat Work Order",
+    "previewTitle": "Pratonton — {{number}}",
+    "waDetails": "📋 *No. Work Order:* {{number}}\n🔨 *Tajuk Kerja:* {{title}}\n📅 *Tarikh Mula:* {{startDate}}\n📍 *Lokasi:* {{location}}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 {{url}}"
   }
 }

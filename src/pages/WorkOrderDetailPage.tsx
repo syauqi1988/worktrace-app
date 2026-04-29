@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getDateLocale } from '@/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,6 @@ import {
 import { pdf } from '@react-pdf/renderer';
 import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
-import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
@@ -28,13 +29,14 @@ const STATUS_COLORS: Record<string, string> = {
 
 function formatDate(d: string | null) {
   if (!d) return '-';
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatDateTime(d: string | null) {
   if (!d) return '-';
   const dt = new Date(d);
-  return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+  const loc = getDateLocale();
+  return `${dt.toLocaleDateString(loc, { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
 function formatPhone(phone: string): string {
@@ -45,6 +47,7 @@ function formatPhone(phone: string): string {
 }
 
 export default function WorkOrderDetailPage() {
+  const { t } = useTranslation();
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -120,15 +123,12 @@ export default function WorkOrderDetailPage() {
     },
   });
 
-  // Customer accept/reject is handled via PublicApprovalPage (WhatsApp link).
-
-
   const handleDelete = async () => {
     if (!wo) return;
     setActing(true);
     try {
       await supabase.from('work_orders').delete().eq('id', wo.id);
-      toast.success('Work Order dipadam');
+      toast.success(t('workOrderDetail.deleted'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
       toast.error(e.message);
@@ -173,7 +173,13 @@ export default function WorkOrderDetailPage() {
       const approvalUrl = buildPublicApprovalUrl(token);
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const details = `📋 *No. Work Order:* ${wo.wo_number}\n🔨 *Tajuk Kerja:* ${wo.title}\n📅 *Tarikh Mula:* ${formatDate(wo.scheduled_start_date)}\n📍 *Lokasi:* ${wo.location || '-'}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 ${approvalUrl}`;
+      const details = t('workOrderDetail.waDetails', {
+        number: wo.wo_number,
+        title: wo.title,
+        startDate: formatDate(wo.scheduled_start_date),
+        location: wo.location || '-',
+        url: approvalUrl,
+      });
       const msg = renderTemplate(
         (profile as any)?.whatsapp_templates,
         'work_order',
@@ -181,13 +187,12 @@ export default function WorkOrderDetailPage() {
         details,
       );
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-      // Auto-mark as Sent if Draft
       if (wo.status === 'Draft') {
         await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
         await load();
       }
     } catch {
-      toast.error('Gagal kongsi');
+      toast.error(t('workOrderDetail.shareFailed'));
     } finally {
       setSharing(false);
     }
@@ -200,8 +205,8 @@ export default function WorkOrderDetailPage() {
   if (!wo) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground mb-4">Tiada Work Order untuk kerja ini.</p>
-        <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} className="rounded-lg">Buat Work Order</Button>
+        <p className="text-muted-foreground mb-4">{t('workOrderDetail.noWo')}</p>
+        <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} className="rounded-lg">{t('workOrderDetail.create')}</Button>
       </div>
     );
   }
@@ -210,7 +215,6 @@ export default function WorkOrderDetailPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6 max-w-2xl">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate(`/jobs/${jobId}`)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
@@ -224,28 +228,25 @@ export default function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Status banners */}
       {wo.status === 'Sent' && (
         <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4">
           <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Menunggu Pengesahan Pelanggan
+            {t('workOrderDetail.waitingApproval')}
           </div>
-          <p className="text-xs text-[#1D4ED8]/80 mt-2">
-            Pelanggan akan mengesahkan atau menolak melalui pautan WhatsApp yang dikongsi.
-          </p>
+          <p className="text-xs text-[#1D4ED8]/80 mt-2">{t('workOrderDetail.waitingApprovalDesc')}</p>
         </div>
       )}
 
       {wo.status === 'Accepted' && (
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
-          <p className="text-sm font-medium text-[#15803D]">✓ Work Order Diterima — Kerja boleh dimulakan</p>
+          <p className="text-sm font-medium text-[#15803D]">{t('workOrderDetail.accepted')}</p>
           {wo.accepted_at && (
-            <p className="text-xs text-[#15803D]/80">Disahkan pada {formatDateTime(wo.accepted_at)}</p>
+            <p className="text-xs text-[#15803D]/80">{t('workOrderDetail.confirmedAt', { date: formatDateTime(wo.accepted_at) })}</p>
           )}
           {!report && (
             <Button onClick={() => navigate(`/jobs/${jobId}/completion-report`)} size="sm" className="rounded-lg gap-1.5">
-              <ClipboardCheck className="h-4 w-4" /> Buat Laporan Siap Kerja
+              <ClipboardCheck className="h-4 w-4" /> {t('workOrderDetail.createReport')}
             </Button>
           )}
         </div>
@@ -253,17 +254,16 @@ export default function WorkOrderDetailPage() {
 
       {wo.status === 'Rejected' && (
         <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
-          <p className="text-sm font-medium text-[#B91C1C]">✕ Work Order Ditolak</p>
-          {wo.rejection_reason && <p className="text-sm text-[#B91C1C]">Sebab: {wo.rejection_reason}</p>}
+          <p className="text-sm font-medium text-[#B91C1C]">{t('workOrderDetail.rejected')}</p>
+          {wo.rejection_reason && <p className="text-sm text-[#B91C1C]">{t('workOrderDetail.reason', { reason: wo.rejection_reason })}</p>}
           <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} size="sm" className="rounded-lg">
-            Buat Work Order Baru
+            {t('workOrderDetail.newWo')}
           </Button>
         </div>
       )}
 
-      {/* Details */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('workOrderDetail.info')}</p>
         {job && (
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-muted-foreground" />
@@ -281,7 +281,11 @@ export default function WorkOrderDetailPage() {
         {wo.scheduled_start_date && (
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">Mula: {formatDate(wo.scheduled_start_date)}{wo.scheduled_end_date ? ` — Siap: ${formatDate(wo.scheduled_end_date)}` : ''}</span>
+            <span className="text-sm">
+              {wo.scheduled_end_date
+                ? t('workOrderDetail.startEndLabel', { start: formatDate(wo.scheduled_start_date), end: formatDate(wo.scheduled_end_date) })
+                : t('workOrderDetail.startLabel', { start: formatDate(wo.scheduled_start_date) })}
+            </span>
           </div>
         )}
         {wo.location && (
@@ -293,13 +297,13 @@ export default function WorkOrderDetailPage() {
       </div>
 
       <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Skop Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t('workOrderDetail.scope')}</p>
         <p className="text-sm whitespace-pre-wrap text-foreground">{wo.scope_of_work}</p>
       </div>
 
       {items.length > 0 && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('workOrderDetail.items')}</p>
           {items.map((it: any, i: number) => (
             <div key={i} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
               <span>{it.description} × {it.qty}</span>
@@ -307,7 +311,7 @@ export default function WorkOrderDetailPage() {
             </div>
           ))}
           <div className="flex justify-between pt-2 border-t border-border">
-            <span className="font-bold">Jumlah</span>
+            <span className="font-bold">{t('workOrderDetail.total')}</span>
             <span className="font-bold text-primary">RM {Number(wo.total || 0).toFixed(2)}</span>
           </div>
         </div>
@@ -315,46 +319,43 @@ export default function WorkOrderDetailPage() {
 
       {wo.special_instructions && (
         <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Arahan Khas</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t('workOrderDetail.instructions')}</p>
           <p className="text-sm whitespace-pre-wrap">{wo.special_instructions}</p>
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2"><Eye className="h-4 w-4" /> Pratonton PDF</Button>
+        <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2"><Eye className="h-4 w-4" /> {t('workOrderDetail.previewPdf')}</Button>
         {job?.customers?.phone && (
           <Button onClick={handleShare} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
             {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-            Kongsi via WhatsApp
+            {t('workOrderDetail.shareWa')}
           </Button>
         )}
         <Button variant="outline" onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} className="rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> Edit
+          <Edit className="h-4 w-4" /> {t('workOrderDetail.edit')}
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2">
-          <Trash2 className="h-4 w-4" /> Padam
+          <Trash2 className="h-4 w-4" /> {t('workOrderDetail.delete')}
         </Button>
       </div>
 
-
-      {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Work Order?</DialogTitle>
-            <DialogDescription>Tindakan ini tidak boleh dibatalkan.</DialogDescription>
+            <DialogTitle>{t('workOrderDetail.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('workOrderDetail.deleteDesc')}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={acting}>{acting ? 'Memadam...' : 'Padam'}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('workOrderDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={acting}>{acting ? t('workOrderDetail.deleting') : t('workOrderDetail.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <PDFPreviewModal
         open={previewOpen}
-        title={`Pratonton — ${wo.wo_number}`}
+        title={t('workOrderDetail.previewTitle', { number: wo.wo_number })}
         loading={previewLoading}
         fileUrl={previewUrl}
         onClose={() => { setPreviewOpen(false); if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }}

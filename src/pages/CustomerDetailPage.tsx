@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getDateLocale } from '@/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
@@ -55,10 +56,11 @@ function formatPhone(phone: string): string {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function CustomerDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -68,7 +70,6 @@ export default function CustomerDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Tag editor state
   const [editingTags, setEditingTags] = useState(false);
   const [draftTags, setDraftTags] = useState<ColoredTag[]>([]);
   const [savingTags, setSavingTags] = useState(false);
@@ -99,9 +100,9 @@ export default function CustomerDetailPage() {
     const { error } = await supabase.from('customers').delete().eq('id', customer.id);
     setDeleting(false);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: t('customerDetail.error'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Pelanggan berjaya dipadam!' });
+      toast({ title: t('customerDetail.customerDeleted') });
       navigate('/customers');
     }
   };
@@ -123,11 +124,11 @@ export default function CustomerDetailPage() {
       .eq('id', customer.id);
     setSavingTags(false);
     if (error) {
-      toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+      toast({ title: t('customerDetail.error'), description: error.message, variant: 'destructive' });
     } else {
       setCustomer({ ...customer, tags: draftTags });
       setEditingTags(false);
-      toast({ title: 'Tag dikemaskini!' });
+      toast({ title: t('customerDetail.tagsUpdated') });
     }
   };
 
@@ -148,26 +149,24 @@ export default function CustomerDetailPage() {
   if (!customer) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Pelanggan tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/customers')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('customerDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/customers')} className="mt-4">{t('customerDetail.back')}</Button>
       </div>
     );
   }
 
   return (
     <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/customers')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground flex-1">Profil Pelanggan</h1>
+        <h1 className="text-xl font-bold text-foreground flex-1">{t('customerDetail.title')}</h1>
         <Button variant="outline" size="sm" onClick={() => navigate(`/customers/${customer.id}/edit`)} className="gap-1.5 shrink-0">
-          <Edit className="h-3.5 w-3.5" /> Edit
+          <Edit className="h-3.5 w-3.5" /> {t('customerDetail.edit')}
         </Button>
       </div>
 
-      {/* Customer Info Card */}
       <div className="bg-card rounded-xl border border-border p-5 space-y-3">
         <div className="flex items-center gap-3">
           <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-medium shrink-0">
@@ -175,7 +174,7 @@ export default function CustomerDetailPage() {
           </div>
           <div className="min-w-0">
             <p className="text-lg font-bold text-foreground truncate">{customer.name}</p>
-            <p className="text-xs text-muted-foreground">Pelanggan sejak {formatDate(customer.created_at)}</p>
+            <p className="text-xs text-muted-foreground">{t('customerDetail.customerSince', { date: formatDate(customer.created_at) })}</p>
           </div>
         </div>
 
@@ -209,16 +208,15 @@ export default function CustomerDetailPage() {
         {customer.tin_number && (
           <div className="flex items-center gap-2">
             <Hash className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground mr-1">No. TIN:</span>
+            <span className="text-xs text-muted-foreground mr-1">{t('customerDetail.tinNo')}</span>
             <span className="text-sm text-foreground">{customer.tin_number}</span>
           </div>
         )}
       </div>
 
-      {/* Tags Section */}
       <div className="bg-card rounded-xl border border-border p-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tag</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('customerDetail.tags')}</p>
           {!editingTags && (
             <button onClick={startEditTags} className="text-muted-foreground hover:text-foreground">
               <Pencil className="h-3.5 w-3.5" />
@@ -231,15 +229,15 @@ export default function CustomerDetailPage() {
             <TagInput tags={draftTags} onChange={setDraftTags} />
             <div className="flex gap-2">
               <Button size="sm" onClick={saveTags} disabled={savingTags} className="rounded-lg">
-                {savingTags ? 'Menyimpan...' : 'Simpan'}
+                {savingTags ? t('customerDetail.saving') : t('customerDetail.save')}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setEditingTags(false)} className="rounded-lg">Batal</Button>
+              <Button size="sm" variant="outline" onClick={() => setEditingTags(false)} className="rounded-lg">{t('customerDetail.cancel')}</Button>
             </div>
           </div>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {(customer.tags || []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">Tiada tag</p>
+              <p className="text-sm text-muted-foreground">{t('customerDetail.noTags')}</p>
             ) : (
               customer.tags!.map(tag => (
                 <TagBadge key={tag.label} tag={tag} />
@@ -249,19 +247,18 @@ export default function CustomerDetailPage() {
         )}
       </div>
 
-      {/* Job History */}
       <div className="bg-card rounded-xl border border-border p-4">
         <div className="flex items-center gap-2 mb-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Sejarah Kerja</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('customerDetail.jobHistory')}</p>
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-sidebar-background text-muted-foreground">{jobs.length}</span>
         </div>
 
         {jobs.length === 0 ? (
           <div className="text-center py-4">
             <Briefcase className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground mb-3">Tiada kerja untuk pelanggan ini</p>
+            <p className="text-sm text-muted-foreground mb-3">{t('customerDetail.noJobs')}</p>
             <Button size="sm" onClick={() => navigate(`/jobs/new?customer_id=${customer.id}`)} className="rounded-lg gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Buat Kerja Baru
+              <Plus className="h-3.5 w-3.5" /> {t('customerDetail.newJob')}
             </Button>
           </div>
         ) : (
@@ -290,29 +287,25 @@ export default function CustomerDetailPage() {
         )}
       </div>
 
-      {/* Action Buttons */}
       <div className="flex gap-3">
         <Button onClick={() => navigate(`/customers/${customer.id}/edit`)} className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> Edit Pelanggan
+          <Edit className="h-4 w-4" /> {t('customerDetail.editCustomer')}
         </Button>
         <Button variant="outline" onClick={() => setDeleteOpen(true)} className="rounded-lg gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" /> Padam
+          <Trash2 className="h-4 w-4" /> {t('customerDetail.delete')}
         </Button>
       </div>
 
-      {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Pelanggan?</DialogTitle>
-            <DialogDescription>
-              Data pelanggan akan dipadam. Kerja berkaitan tidak akan dipadam.
-            </DialogDescription>
+            <DialogTitle>{t('customerDetail.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('customerDetail.deleteDesc')}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('customerDetail.cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Memadam...' : 'Padam'}
+              {deleting ? t('customerDetail.deleting') : t('customerDetail.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
