@@ -401,13 +401,13 @@ export default function JobDetailPage() {
         </div>
         {job.description && (
           <div>
-            <p className="text-xs text-muted-foreground">Penerangan</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.description')}</p>
             <p className="text-sm text-foreground mt-0.5 whitespace-pre-wrap">{job.description}</p>
           </div>
         )}
         {job.notes && (
           <div>
-            <p className="text-xs text-muted-foreground">Nota</p>
+            <p className="text-xs text-muted-foreground">{t('jobDetail.notes')}</p>
             <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">{job.notes}</p>
           </div>
         )}
