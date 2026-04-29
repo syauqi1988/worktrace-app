@@ -561,7 +561,7 @@ export default function JobDetailPage() {
       {/* Related Invoice */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <Receipt className="h-3.5 w-3.5" /> Invois
+          <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.invoice')}
         </p>
         {invoice ? (
           <div className="space-y-2">
@@ -575,22 +575,22 @@ export default function JobDetailPage() {
             </div>
             <p className="text-sm font-semibold text-foreground">RM {Number(invoice.total).toFixed(2)}</p>
             {invoice.due_date && (
-              <p className="text-xs text-muted-foreground">Bayar sebelum: {formatDate(invoice.due_date)}</p>
+              <p className="text-xs text-muted-foreground">{t('jobDetail.payBefore', { date: formatDate(invoice.due_date) })}</p>
             )}
             <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
               onClick={() => navigate(`/invoices/${invoice.id}`)}>
-              Lihat Invois →
+              {t('jobDetail.viewInvoice')}
             </Button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'accepted' ? 'Belum ada invois' : 'Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu'}
+              {report?.status === 'accepted' ? t('jobDetail.noInvoice') : t('jobDetail.invoiceNeedsReport')}
             </p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
               disabled={report?.status !== 'accepted'}
               onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
-              <Receipt className="h-3.5 w-3.5" /> Buat Invois
+              <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
             </Button>
           </div>
         )}
