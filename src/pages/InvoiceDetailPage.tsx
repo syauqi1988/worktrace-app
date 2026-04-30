@@ -956,16 +956,16 @@ export default function InvoiceDetailPage() {
             {hasPhone && (!proof || proof.status === 'rejected') && (
               <Button onClick={requestPaymentProof} disabled={requestingProof} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
                 {requestingProof ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-                Mohon Bukti Bayaran (WhatsApp)
+                {t('invoiceDetail.requestProofWa')}
               </Button>
             )}
             {hasPhone && (
               <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
-                <MessageCircle className="h-4 w-4" /> Peringatan
+                <MessageCircle className="h-4 w-4" /> {t('invoiceDetail.reminder')}
               </Button>
             )}
             <Button onClick={() => setPayOpen(true)} variant="outline" className="rounded-lg gap-2">
-              <CheckCircle className="h-4 w-4" /> Tandakan Manual
+              <CheckCircle className="h-4 w-4" /> {t('invoiceDetail.markManually')}
             </Button>
           </>
         )}
