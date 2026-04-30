@@ -493,11 +493,11 @@ export default function QuotationDetailPage() {
           ))}
         </div>
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
-          {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
-          {quotation.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SST ({quotation.tax_rate}%)</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
+          <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.subtotal')}</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
+          {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.discount')}</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
+          {quotation.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.sst', { rate: quotation.tax_rate })}</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
-            <span className="font-bold text-foreground">Jumlah Keseluruhan</span>
+            <span className="font-bold text-foreground">{t('quotationDetail.grandTotal')}</span>
             <span className="text-lg font-bold text-primary">RM {quotation.total.toFixed(2)}</span>
           </div>
         </div>
