@@ -108,6 +108,7 @@ export default function InvoiceDetailPage() {
   const [rejectProofOpen, setRejectProofOpen] = useState(false);
   const [proofRejectReason, setProofRejectReason] = useState('');
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user || !id) return;
