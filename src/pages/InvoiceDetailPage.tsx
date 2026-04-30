@@ -494,7 +494,7 @@ export default function InvoiceDetailPage() {
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl, true);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
-      toast.error('Gagal menjana peringatan');
+      toast.error(t('invoiceDetail.reminderFailed'));
     } finally {
       setIsSharing(false);
     }
