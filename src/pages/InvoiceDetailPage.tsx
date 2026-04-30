@@ -1036,17 +1036,17 @@ export default function InvoiceDetailPage() {
       <Dialog open={payOpen} onOpenChange={setPayOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tandakan sebagai Dibayar?</DialogTitle>
-            <DialogDescription>Sahkan bahawa pembayaran telah diterima untuk invois ini.</DialogDescription>
+            <DialogTitle>{t('invoiceDetail.markPaidTitle')}</DialogTitle>
+            <DialogDescription>{t('invoiceDetail.markPaidDesc')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Tarikh Dibayar</label>
+            <label className="text-sm font-medium">{t('invoiceDetail.paidDateField')}</label>
             <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setPayOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setPayOpen(false)}>{t('invoiceDetail.cancel')}</Button>
             <Button onClick={handleMarkPaid} disabled={paying} className="bg-green-600 hover:bg-green-700">
-              {paying ? 'Menyimpan...' : 'Sahkan Bayaran'}
+              {paying ? t('invoiceDetail.saving') : t('invoiceDetail.confirmPayment')}
             </Button>
           </DialogFooter>
         </DialogContent>
