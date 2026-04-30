@@ -718,7 +718,7 @@ export default function InvoiceDetailPage() {
           </div>
           {showInlinePayDate && (
             <div className="flex items-center gap-2 mt-2">
-              <label className="text-sm text-muted-foreground">Tarikh Dibayar:</label>
+              <label className="text-sm text-muted-foreground">{t('invoiceDetail.paidDateLabel')}</label>
               <Input type="date" value={inlinePayDate} onChange={e => setInlinePayDate(e.target.value)} className="h-8 w-40 text-sm rounded-lg" />
               <Button size="sm" className="h-8 rounded-lg bg-green-600 hover:bg-green-700" onClick={async () => {
                 try {
@@ -727,13 +727,13 @@ export default function InvoiceDetailPage() {
                   if (!error) {
                     setInvoice({ ...invoice, status: 'Paid', paid_date: inlinePayDate, receipt_number: receiptNumber });
                     setShowInlinePayDate(false);
-                    toast.success('Invois ditandakan sebagai Dibayar!');
+                    toast.success(t('invoiceDetail.markedPaid'));
                   } else {
-                    toast.error('Gagal kemaskini status.');
+                    toast.error(t('invoiceDetail.statusUpdateFailed'));
                   }
-                } catch { toast.error('Gagal kemaskini status.'); }
-              }}>Sahkan</Button>
-              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>Batal</Button>
+                } catch { toast.error(t('invoiceDetail.statusUpdateFailed')); }
+              }}>{t('invoiceDetail.confirm')}</Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>{t('invoiceDetail.cancel')}</Button>
             </div>
           )}
         </div>
