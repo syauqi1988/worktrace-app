@@ -819,10 +819,10 @@ export default function InvoiceDetailPage() {
 
       {/* Line Items */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('invoiceDetail.items')}</p>
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
-            <span>Penerangan</span><span>Qty</span><span>Harga</span><span className="text-right">Jumlah</span>
+            <span>{t('invoiceDetail.description')}</span><span>{t('invoiceDetail.qty')}</span><span>{t('invoiceDetail.price')}</span><span className="text-right">{t('invoiceDetail.amount')}</span>
           </div>
           {invoice.items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_60px_100px_100px] gap-2 py-1.5 border-b border-border last:border-0 text-sm">
