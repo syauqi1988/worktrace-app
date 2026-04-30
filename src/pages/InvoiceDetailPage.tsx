@@ -845,11 +845,11 @@ export default function InvoiceDetailPage() {
           ))}
         </div>
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {invoice.subtotal.toFixed(2)}</span></div>
-          {invoice.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {invoice.discount.toFixed(2)}</span></div>}
-          {invoice.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SST ({invoice.tax_rate}%)</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
+          <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.subtotal')}</span><span>RM {invoice.subtotal.toFixed(2)}</span></div>
+          {invoice.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.discount')}</span><span>− RM {invoice.discount.toFixed(2)}</span></div>}
+          {invoice.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.sst', { rate: invoice.tax_rate })}</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
-            <span className="font-bold text-foreground">Jumlah Keseluruhan</span>
+            <span className="font-bold text-foreground">{t('invoiceDetail.grandTotal')}</span>
             <span className="text-lg font-bold text-primary">RM {invoice.total.toFixed(2)}</span>
           </div>
         </div>
