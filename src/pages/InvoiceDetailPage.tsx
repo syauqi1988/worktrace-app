@@ -188,7 +188,7 @@ export default function InvoiceDetailPage() {
     const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', invoice.id);
     if (error) { toast.error(error.message); return; }
     setInvoice({ ...invoice, status: newStatus });
-    toast.success('Invois dihantar!');
+    toast.success(t('invoiceDetail.sentToast'));
   };
 
   const generateReceiptNumber = async (): Promise<string> => {
