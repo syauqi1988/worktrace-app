@@ -263,7 +263,7 @@ export default function QuotationDetailPage() {
   const hasPhone = !!customerPhone;
 
   const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, approvalUrl: string) => {
-    const details = `📋 *No. Sebut Harga:* ${quoteNumber}\n💰 *Jumlah:* RM ${total.toFixed(2)}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 ${approvalUrl}`;
+    const details = t('quotationDetail.waDetails', { number: quoteNumber, total: total.toFixed(2), url: approvalUrl });
     return renderTemplate(
       (profile as any)?.whatsapp_templates,
       'quotation',
