@@ -303,9 +303,9 @@ export default function QuotationDetailPage() {
         await supabase.from('quotations').update({ status: 'Sent' }).eq('id', quotation.id);
         setQuotation({ ...quotation, status: 'Sent' });
       }
-      toast.success('Pautan pengesahan dijana! WhatsApp telah dibuka.');
+      toast.success(t('quotationDetail.linkGenerated'));
     } catch {
-      toast.error('Gagal menjana pautan. Semak sambungan internet anda.');
+      toast.error(t('quotationDetail.linkFailed'));
     } finally {
       setIsSharing(false);
     }
