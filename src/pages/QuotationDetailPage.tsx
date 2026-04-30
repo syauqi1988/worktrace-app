@@ -151,7 +151,7 @@ export default function QuotationDetailPage() {
       if (trigger) {
         const newJobStatus = await autoUpdateJobStatus(supabase, quotation.job_id, user.id, trigger);
         if (newJobStatus) {
-          toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
+          toast.info(t('quotationDetail.jobAutoUpdated', { status: newJobStatus }));
         }
       }
     }
