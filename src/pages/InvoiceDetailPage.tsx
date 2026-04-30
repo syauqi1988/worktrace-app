@@ -391,7 +391,13 @@ export default function InvoiceDetailPage() {
     const publicUrl = signed?.signedUrl ?? '';
     const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: publicUrl, kind: 'receipt' });
     const phone = formatPhone(customerPhone);
-    const details = `🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\n👉 Tekan sini untuk muat turun resit:\n${shortUrl}`;
+    const details = t('invoiceDetail.waReceiptDetails', {
+      receiptNumber: inv.receipt_number,
+      invoiceNumber: inv.invoice_number,
+      amount: inv.total.toFixed(2),
+      date: inv.paid_date ? formatDate(inv.paid_date) : '-',
+      url: shortUrl,
+    });
     const message = renderTemplate(
       (profile as any)?.whatsapp_templates,
       'receipt',
