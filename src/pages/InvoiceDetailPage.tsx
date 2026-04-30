@@ -413,9 +413,9 @@ export default function InvoiceDetailPage() {
     setIsSharingReceipt(true);
     try {
       await shareReceiptWhatsAppCore(invoice, receiptPdfData);
-      toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
+      toast.success(t('invoiceDetail.receiptShareSuccess'));
     } catch {
-      toast.error('Gagal kongsi resit');
+      toast.error(t('invoiceDetail.receiptShareFailed'));
     } finally {
       setIsSharingReceipt(false);
     }
