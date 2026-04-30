@@ -644,24 +644,24 @@ export default function InvoiceDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-[#15803D]" />
-              <span className="text-sm font-bold text-[#15803D]">Resit Pembayaran</span>
+              <span className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.receipt')}</span>
             </div>
             <span className="text-xs text-[#15803D] font-medium">{invoice.receipt_number}</span>
           </div>
           <p className="text-sm text-[#15803D]">
-            Bayaran RM {invoice.total.toFixed(2)} diterima pada {invoice.paid_date ? formatDate(invoice.paid_date) : '-'}
+            {t('invoiceDetail.receiptReceived', { amount: invoice.total.toFixed(2), date: invoice.paid_date ? formatDate(invoice.paid_date) : '-' })}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptPreview}>
-              <Eye className="h-3.5 w-3.5" /> Pratonton Resit
+              <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.previewReceipt')}
             </Button>
             <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptDownload}>
-              <Download className="h-3.5 w-3.5" /> Muat Turun Resit
+              <Download className="h-3.5 w-3.5" /> {t('invoiceDetail.downloadReceipt')}
             </Button>
             {hasPhone && (
               <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
                 {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                Kongsi Resit via WhatsApp
+                {t('invoiceDetail.shareReceiptWa')}
               </Button>
             )}
           </div>
