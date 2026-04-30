@@ -858,19 +858,19 @@ export default function InvoiceDetailPage() {
       {/* Payment Proof Section */}
       {invoice.status !== 'Paid' && proof && proof.submitted_at && proof.status === 'pending' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold text-blue-900">📥 Bukti Pembayaran Diterima — Sila Sahkan</p>
+          <p className="text-sm font-bold text-blue-900">{t('invoiceDetail.proofReceivedTitle')}</p>
           <div className="grid grid-cols-2 gap-2 text-sm text-blue-900">
-            <div><span className="text-blue-700">Pembayar:</span> {proof.payer_name || '-'}</div>
-            <div><span className="text-blue-700">Jumlah:</span> RM {Number(proof.amount_paid || 0).toFixed(2)}</div>
-            <div><span className="text-blue-700">Tarikh:</span> {proof.payment_date || '-'}</div>
-            <div><span className="text-blue-700">Kaedah:</span> {proof.payment_method || '-'}</div>
-            {proof.bank_name && <div><span className="text-blue-700">Bank:</span> {proof.bank_name}</div>}
-            {proof.reference_number && <div><span className="text-blue-700">Rujukan:</span> {proof.reference_number}</div>}
+            <div><span className="text-blue-700">{t('invoiceDetail.payer')}</span> {proof.payer_name || '-'}</div>
+            <div><span className="text-blue-700">{t('invoiceDetail.amountLabel')}</span> RM {Number(proof.amount_paid || 0).toFixed(2)}</div>
+            <div><span className="text-blue-700">{t('invoiceDetail.dateLabel')}</span> {proof.payment_date || '-'}</div>
+            <div><span className="text-blue-700">{t('invoiceDetail.method')}</span> {proof.payment_method || '-'}</div>
+            {proof.bank_name && <div><span className="text-blue-700">{t('invoiceDetail.bank')}</span> {proof.bank_name}</div>}
+            {proof.reference_number && <div><span className="text-blue-700">{t('invoiceDetail.reference')}</span> {proof.reference_number}</div>}
           </div>
-          {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">Nota:</span> {proof.notes}</p>}
+          {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">{t('invoiceDetail.notesLabel')}</span> {proof.notes}</p>}
           {proof.receipt_url && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-blue-700">Bukti Dimuat Naik:</p>
+              <p className="text-xs font-medium text-blue-700">{t('invoiceDetail.proofUploaded')}</p>
               {/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(proof.receipt_url) ? (
                 <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="block">
                   <img
@@ -887,16 +887,16 @@ export default function InvoiceDetailPage() {
                 />
               )}
               <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline">
-                <Eye className="h-3.5 w-3.5" /> Buka dalam tab baru
+                <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.openInNewTab')}
               </a>
             </div>
           )}
           <div className="flex gap-2">
             <Button onClick={verifyProofAndMarkPaid} disabled={verifyingProof} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 flex-1">
-              <CheckCircle className="h-4 w-4" /> Sahkan & Tandakan Dibayar
+              <CheckCircle className="h-4 w-4" /> {t('invoiceDetail.verifyAndMark')}
             </Button>
             <Button onClick={() => setRejectProofOpen(true)} variant="outline" disabled={verifyingProof} className="text-destructive border-destructive/30 rounded-lg flex-1">
-              Tolak
+              {t('invoiceDetail.reject')}
             </Button>
           </div>
         </div>
