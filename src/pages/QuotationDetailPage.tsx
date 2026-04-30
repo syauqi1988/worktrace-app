@@ -86,6 +86,7 @@ export default function QuotationDetailPage() {
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user || !id) return;
