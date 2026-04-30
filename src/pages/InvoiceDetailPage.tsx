@@ -571,11 +571,11 @@ export default function InvoiceDetailPage() {
         try {
           await shareReceiptWhatsAppCore(updatedInvoice, updatedReceiptData);
         } catch {
-          toast.error('Resit dijana tetapi gagal membuka WhatsApp');
+          toast.error(t('invoiceDetail.receiptShareWaFailed'));
         }
       }
     } catch (err: any) {
-      toast.error(err.message || 'Gagal mengesahkan');
+      toast.error(err.message || t('invoiceDetail.verifyFailed'));
     } finally {
       setVerifyingProof(false);
     }
