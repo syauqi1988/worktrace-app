@@ -537,7 +537,7 @@ export default function InvoiceDetailPage() {
       const updatedInvoice = { ...invoice, status: 'Paid', paid_date: paidDate, receipt_number: receiptNumber };
       setInvoice(updatedInvoice);
       setProof({ ...proof, status: 'verified', verified_at: new Date().toISOString() });
-      toast.success('Bukti disahkan, invois ditandakan Dibayar!');
+      toast.success(t('invoiceDetail.proofVerified'));
 
       // Auto-redirect to WhatsApp with receipt share message
       if (hasPhone && checkWhatsAppShare()) {
