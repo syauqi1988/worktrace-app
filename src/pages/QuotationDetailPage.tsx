@@ -563,12 +563,12 @@ export default function QuotationDetailPage() {
         {pdfData && (
           <>
             <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Eye className="h-4 w-4" /> Pratonton PDF
+              <Eye className="h-4 w-4" /> {t('quotationDetail.previewPdf')}
             </Button>
             <PDFDownloadLink document={<QuotationPDF {...pdfData} />} fileName={`SebuthHarga-${quotation.quote_number}.pdf`}>
               {({ loading: pdfLoading }) => (
                 <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                  <Download className="h-4 w-4" /> {pdfLoading ? t('quotationDetail.generating') : t('quotationDetail.downloadPdf')}
                 </Button>
               )}
             </PDFDownloadLink>
