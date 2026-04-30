@@ -223,7 +223,7 @@ export default function InvoiceDetailPage() {
   const handleDelete = async () => {
     if (!invoice) return;
     if (invoice.status !== 'Draft') {
-      toast.error('Invois yang telah dihantar atau dibayar tidak boleh dipadam.');
+      toast.error(t('invoiceDetail.deleteOnlyDraft'));
       setDeleteOpen(false);
       return;
     }
@@ -231,7 +231,7 @@ export default function InvoiceDetailPage() {
     const { error } = await supabase.from('invoices').delete().eq('id', invoice.id);
     setDeleting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('Invois dipadam');
+    toast.success(t('invoiceDetail.deleted'));
     navigate('/invoices');
   };
 
