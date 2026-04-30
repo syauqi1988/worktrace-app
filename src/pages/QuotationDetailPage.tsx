@@ -594,7 +594,7 @@ export default function QuotationDetailPage() {
       <Dialog open={!!existingInvoiceDialog} onOpenChange={() => setExistingInvoiceDialog(null)}>
         <DialogContent className="max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>Invois Sudah Wujud</DialogTitle>
+            <DialogTitle>{t('quotationDetail.invoiceExistsTitle')}</DialogTitle>
           </DialogHeader>
           {existingInvoiceDialog && (
             <div className="space-y-4">
@@ -605,11 +605,11 @@ export default function QuotationDetailPage() {
                 </div>
                 <p className="text-sm font-semibold mt-1">RM {existingInvoiceDialog.total.toFixed(2)}</p>
               </div>
-              <p className="text-sm text-muted-foreground">Kerja ini sudah mempunyai invois. Nak lihat atau buat baru?</p>
+              <p className="text-sm text-muted-foreground">{t('quotationDetail.invoiceExistsBody')}</p>
               <div className="flex flex-col gap-2">
-                <Button onClick={() => { navigate(`/invoices/${existingInvoiceDialog.id}`); setExistingInvoiceDialog(null); }} className="rounded-lg">Lihat Invois</Button>
-                <Button variant="outline" onClick={() => { setExistingInvoiceDialog(null); createInvoiceFromQuotation(); }} className="rounded-lg">Buat Invois Baru</Button>
-                <Button variant="ghost" onClick={() => setExistingInvoiceDialog(null)} className="rounded-lg">Batal</Button>
+                <Button onClick={() => { navigate(`/invoices/${existingInvoiceDialog.id}`); setExistingInvoiceDialog(null); }} className="rounded-lg">{t('quotationDetail.viewInvoice')}</Button>
+                <Button variant="outline" onClick={() => { setExistingInvoiceDialog(null); createInvoiceFromQuotation(); }} className="rounded-lg">{t('quotationDetail.createNewInvoice')}</Button>
+                <Button variant="ghost" onClick={() => setExistingInvoiceDialog(null)} className="rounded-lg">{t('quotationDetail.cancel')}</Button>
               </div>
             </div>
           )}
