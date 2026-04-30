@@ -1131,7 +1131,7 @@ export default function InvoiceDetailPage() {
         onDownload={handlePreviewDownload}
         onShare={() => { closePreview(); shareViaWhatsApp(); }}
         open={previewOpen}
-        title={`Pratonton — ${invoice.invoice_number}`}
+        title={t('invoiceDetail.previewTitle', { number: invoice.invoice_number })}
       />
 
       <PDFPreviewModal
