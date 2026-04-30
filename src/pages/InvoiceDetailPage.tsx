@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
+import { getDateLocale } from '@/i18n';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate } from 'react-router-dom';
