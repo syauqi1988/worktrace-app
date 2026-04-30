@@ -904,13 +904,13 @@ export default function InvoiceDetailPage() {
 
       {invoice.status !== 'Paid' && proof && !proof.submitted_at && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-900">
-          ⏳ Menunggu pelanggan muat naik bukti pembayaran.
+          {t('invoiceDetail.waitingProof')}
         </div>
       )}
 
       {invoice.status !== 'Paid' && proof && proof.status === 'rejected' && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-900">
-          ✕ Bukti terdahulu ditolak ({proof.rejection_reason || '-'}). Mohon bukti baru dari pelanggan.
+          {t('invoiceDetail.proofRejectedNotice', { reason: proof.rejection_reason || '-' })}
         </div>
       )}
 
