@@ -508,29 +508,29 @@ export default function QuotationDetailPage() {
         {quotation.status === 'Draft' && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> Edit
+              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
-            <Button onClick={() => updateStatus('Sent')} className="flex-1 rounded-lg">Hantar</Button>
+            <Button onClick={() => updateStatus('Sent')} className="flex-1 rounded-lg">{t('quotationDetail.send')}</Button>
           </>
         )}
         {quotation.status === 'Sent' && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> Edit
+              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
             <Button disabled className="flex-1 rounded-lg gap-2 bg-amber-500 text-white opacity-90 cursor-not-allowed hover:bg-amber-500">
-              <Loader2 className="h-4 w-4 animate-spin" /> Menunggu Pengesahan Pelanggan
+              <Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.waiting')}
             </Button>
-            <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">Ditolak</Button>
+            <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">{t('quotationDetail.rejected')}</Button>
           </>
         )}
         {quotation.status === 'Accepted' && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> Edit
+              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
             <Button onClick={() => navigate(`/jobs/${quotation.job_id}/completion-report`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
-              <Briefcase className="h-4 w-4" /> Isi Laporan Siap Kerja
+              <Briefcase className="h-4 w-4" /> {t('quotationDetail.fillReport')}
             </Button>
           </>
         )}
@@ -538,9 +538,9 @@ export default function QuotationDetailPage() {
           <div className="w-full space-y-3">
             <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-[#B45309]">Sebut harga yang ditolak tidak boleh diedit. Sila buat sebut harga baru.</p>
+              <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
             </div>
-            <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">Buat Sebut Harga Baru</Button>
+            <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">{t('quotationDetail.newQuote')}</Button>
           </div>
         )}
       </div>
