@@ -409,7 +409,7 @@ export default function QuotationDetailPage() {
               <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
             </div>
             {isExpired && quotation.status !== 'Accepted' && quotation.status !== 'Rejected' && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">Tamat Tempoh</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">{t('quotationDetail.expired')}</span>
             )}
           </div>
         </div>
