@@ -1056,12 +1056,12 @@ export default function InvoiceDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Invois?</DialogTitle>
-            <DialogDescription>Invois yang dipadam tidak boleh dipulihkan.</DialogDescription>
+            <DialogTitle>{t('invoiceDetail.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('invoiceDetail.deleteDesc')}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? 'Memadam...' : 'Padam'}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('invoiceDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? t('invoiceDetail.deleting') : t('invoiceDetail.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
