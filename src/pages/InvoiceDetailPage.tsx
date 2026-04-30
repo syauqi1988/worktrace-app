@@ -632,8 +632,8 @@ export default function InvoiceDetailPage() {
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 flex items-center gap-3">
           <CheckCircle className="h-5 w-5 text-[#15803D]" />
           <div>
-            <p className="text-sm font-bold text-[#15803D]">✓ Dibayar</p>
-            {invoice.paid_date && <p className="text-xs text-[#15803D]">Tarikh Bayaran: {formatDate(invoice.paid_date)}</p>}
+            <p className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.paid')}</p>
+            {invoice.paid_date && <p className="text-xs text-[#15803D]">{t('invoiceDetail.paymentDate')}: {formatDate(invoice.paid_date)}</p>}
           </div>
         </div>
       )}
