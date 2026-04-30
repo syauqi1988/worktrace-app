@@ -375,8 +375,8 @@ export default function QuotationDetailPage() {
   if (!quotation) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Sebut harga tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/quotations')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('quotationDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/quotations')} className="mt-4">{t('quotationDetail.back')}</Button>
       </div>
     );
   }
