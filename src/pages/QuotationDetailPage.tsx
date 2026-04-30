@@ -334,7 +334,7 @@ export default function QuotationDetailPage() {
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton PDF');
+      toast.error(t('quotationDetail.previewFailed'));
       setPreviewOpen(false);
     } finally {
       setPreviewLoading(false);
