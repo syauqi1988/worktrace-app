@@ -580,12 +580,12 @@ export default function QuotationDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Sebut Harga?</DialogTitle>
-            <DialogDescription>Tindakan ini tidak boleh dibatalkan.</DialogDescription>
+            <DialogTitle>{t('quotationDetail.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('quotationDetail.deleteDesc')}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? 'Memadam...' : 'Padam'}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('quotationDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? t('quotationDetail.deleting') : t('quotationDetail.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
