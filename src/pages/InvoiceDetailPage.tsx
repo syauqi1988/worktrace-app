@@ -1008,23 +1008,23 @@ export default function InvoiceDetailPage() {
             <TooltipTrigger asChild>
               <div>
                 <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</> : <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>}
+                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('invoiceDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('invoiceDetail.shareWa')}</>}
                 </Button>
               </div>
             </TooltipTrigger>
-            {!hasPhone && <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>}
+            {!hasPhone && <TooltipContent>{t('invoiceDetail.noPhoneRecord')}</TooltipContent>}
           </Tooltip>
         </TooltipProvider>
 
         {pdfData && (
           <>
             <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Eye className="h-4 w-4" /> Pratonton PDF
+              <Eye className="h-4 w-4" /> {t('invoiceDetail.previewPdf')}
             </Button>
             <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
               {({ loading: pdfLoading }) => (
                 <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                  <Download className="h-4 w-4" /> {pdfLoading ? t('invoiceDetail.generating') : t('invoiceDetail.downloadPdf')}
                 </Button>
               )}
             </PDFDownloadLink>
