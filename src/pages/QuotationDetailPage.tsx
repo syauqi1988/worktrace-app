@@ -420,11 +420,11 @@ export default function QuotationDetailPage() {
           <DropdownMenuContent align="end">
             {canEdit && (
               <DropdownMenuItem onClick={() => navigate(`/quotations/${quotation.id}/edit`)}>
-                <Edit className="h-4 w-4 mr-2" /> Edit Sebut Harga
+                <Edit className="h-4 w-4 mr-2" /> {t('quotationDetail.editQuote')}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" /> Padam
+              <Trash2 className="h-4 w-4 mr-2" /> {t('quotationDetail.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
