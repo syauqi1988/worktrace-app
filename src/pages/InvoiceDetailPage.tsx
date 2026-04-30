@@ -616,8 +616,8 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Invois tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/invoices')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('invoiceDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/invoices')} className="mt-4">{t('invoiceDetail.back')}</Button>
       </div>
     );
   }
