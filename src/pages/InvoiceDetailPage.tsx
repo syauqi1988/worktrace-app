@@ -802,16 +802,16 @@ export default function InvoiceDetailPage() {
       {profile?.lhdn_enabled && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <Landmark className="h-3.5 w-3.5" /> Maklumat LHDN
+            <Landmark className="h-3.5 w-3.5" /> {t('invoiceDetail.lhdnInfo')}
           </p>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            {profile.tin_number && <div><p className="text-xs text-muted-foreground">TIN Syarikat</p><p>{profile.tin_number}</p></div>}
-            {customer?.tin_number && <div><p className="text-xs text-muted-foreground">TIN Pelanggan</p><p>{customer.tin_number}</p></div>}
-            {profile.msic_code && <div><p className="text-xs text-muted-foreground">Kod MSIC</p><p>{profile.msic_code}</p></div>}
+            {profile.tin_number && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.tinCompany')}</p><p>{profile.tin_number}</p></div>}
+            {customer?.tin_number && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.tinCustomer')}</p><p>{customer.tin_number}</p></div>}
+            {profile.msic_code && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.msicCode')}</p><p>{profile.msic_code}</p></div>}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${invoice.lhdn_submitted ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEF3C7] text-[#B45309]'}`}>
-              {invoice.lhdn_submitted ? '✓ Dihantar' : 'Belum Dihantar'}
+              {invoice.lhdn_submitted ? t('invoiceDetail.submitted') : t('invoiceDetail.notSubmitted')}
             </span>
           </div>
         </div>
@@ -819,10 +819,10 @@ export default function InvoiceDetailPage() {
 
       {/* Line Items */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('invoiceDetail.items')}</p>
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
-            <span>Penerangan</span><span>Qty</span><span>Harga</span><span className="text-right">Jumlah</span>
+            <span>{t('invoiceDetail.description')}</span><span>{t('invoiceDetail.qty')}</span><span>{t('invoiceDetail.price')}</span><span className="text-right">{t('invoiceDetail.amount')}</span>
           </div>
           {invoice.items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_60px_100px_100px] gap-2 py-1.5 border-b border-border last:border-0 text-sm">
@@ -845,11 +845,11 @@ export default function InvoiceDetailPage() {
           ))}
         </div>
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {invoice.subtotal.toFixed(2)}</span></div>
-          {invoice.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {invoice.discount.toFixed(2)}</span></div>}
-          {invoice.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SST ({invoice.tax_rate}%)</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
+          <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.subtotal')}</span><span>RM {invoice.subtotal.toFixed(2)}</span></div>
+          {invoice.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.discount')}</span><span>− RM {invoice.discount.toFixed(2)}</span></div>}
+          {invoice.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.sst', { rate: invoice.tax_rate })}</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
-            <span className="font-bold text-foreground">Jumlah Keseluruhan</span>
+            <span className="font-bold text-foreground">{t('invoiceDetail.grandTotal')}</span>
             <span className="text-lg font-bold text-primary">RM {invoice.total.toFixed(2)}</span>
           </div>
         </div>
@@ -858,19 +858,19 @@ export default function InvoiceDetailPage() {
       {/* Payment Proof Section */}
       {invoice.status !== 'Paid' && proof && proof.submitted_at && proof.status === 'pending' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold text-blue-900">📥 Bukti Pembayaran Diterima — Sila Sahkan</p>
+          <p className="text-sm font-bold text-blue-900">{t('invoiceDetail.proofReceivedTitle')}</p>
           <div className="grid grid-cols-2 gap-2 text-sm text-blue-900">
-            <div><span className="text-blue-700">Pembayar:</span> {proof.payer_name || '-'}</div>
-            <div><span className="text-blue-700">Jumlah:</span> RM {Number(proof.amount_paid || 0).toFixed(2)}</div>
-            <div><span className="text-blue-700">Tarikh:</span> {proof.payment_date || '-'}</div>
-            <div><span className="text-blue-700">Kaedah:</span> {proof.payment_method || '-'}</div>
-            {proof.bank_name && <div><span className="text-blue-700">Bank:</span> {proof.bank_name}</div>}
-            {proof.reference_number && <div><span className="text-blue-700">Rujukan:</span> {proof.reference_number}</div>}
+            <div><span className="text-blue-700">{t('invoiceDetail.payer')}</span> {proof.payer_name || '-'}</div>
+            <div><span className="text-blue-700">{t('invoiceDetail.amountLabel')}</span> RM {Number(proof.amount_paid || 0).toFixed(2)}</div>
+            <div><span className="text-blue-700">{t('invoiceDetail.dateLabel')}</span> {proof.payment_date || '-'}</div>
+            <div><span className="text-blue-700">{t('invoiceDetail.method')}</span> {proof.payment_method || '-'}</div>
+            {proof.bank_name && <div><span className="text-blue-700">{t('invoiceDetail.bank')}</span> {proof.bank_name}</div>}
+            {proof.reference_number && <div><span className="text-blue-700">{t('invoiceDetail.reference')}</span> {proof.reference_number}</div>}
           </div>
-          {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">Nota:</span> {proof.notes}</p>}
+          {proof.notes && <p className="text-sm text-blue-900"><span className="text-blue-700">{t('invoiceDetail.notesLabel')}</span> {proof.notes}</p>}
           {proof.receipt_url && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-blue-700">Bukti Dimuat Naik:</p>
+              <p className="text-xs font-medium text-blue-700">{t('invoiceDetail.proofUploaded')}</p>
               {/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(proof.receipt_url) ? (
                 <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="block">
                   <img
@@ -887,16 +887,16 @@ export default function InvoiceDetailPage() {
                 />
               )}
               <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline">
-                <Eye className="h-3.5 w-3.5" /> Buka dalam tab baru
+                <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.openInNewTab')}
               </a>
             </div>
           )}
           <div className="flex gap-2">
             <Button onClick={verifyProofAndMarkPaid} disabled={verifyingProof} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 flex-1">
-              <CheckCircle className="h-4 w-4" /> Sahkan & Tandakan Dibayar
+              <CheckCircle className="h-4 w-4" /> {t('invoiceDetail.verifyAndMark')}
             </Button>
             <Button onClick={() => setRejectProofOpen(true)} variant="outline" disabled={verifyingProof} className="text-destructive border-destructive/30 rounded-lg flex-1">
-              Tolak
+              {t('invoiceDetail.reject')}
             </Button>
           </div>
         </div>
@@ -904,13 +904,13 @@ export default function InvoiceDetailPage() {
 
       {invoice.status !== 'Paid' && proof && !proof.submitted_at && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-900">
-          ⏳ Menunggu pelanggan muat naik bukti pembayaran.
+          {t('invoiceDetail.waitingProof')}
         </div>
       )}
 
       {invoice.status !== 'Paid' && proof && proof.status === 'rejected' && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-900">
-          ✕ Bukti terdahulu ditolak ({proof.rejection_reason || '-'}). Mohon bukti baru dari pelanggan.
+          {t('invoiceDetail.proofRejectedNotice', { reason: proof.rejection_reason || '-' })}
         </div>
       )}
 
@@ -918,13 +918,13 @@ export default function InvoiceDetailPage() {
       <div className="flex flex-wrap gap-3">
         {invoice.status === 'Draft' && (
           <>
-            <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> Edit</Button>
+            <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> {t('invoiceDetail.edit')}</Button>
             <Button
               onClick={async () => {
                 if (!checkWhatsAppShare()) return;
                 if (!invoice || !pdfData || !user) return;
                 if (!hasPhone) {
-                  toast.error('Nombor telefon pelanggan tiada dalam rekod');
+                  toast.error(t('invoiceDetail.noPhoneRecord'));
                   return;
                 }
                 setIsSharing(true);
@@ -935,9 +935,9 @@ export default function InvoiceDetailPage() {
                   const phone = formatPhone(customerPhone!);
                   const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-                  toast.success('Invois dihantar! WhatsApp telah dibuka.');
+                  toast.success(t('invoiceDetail.sentWaOpened'));
                 } catch {
-                  toast.error('Gagal menghantar invois');
+                  toast.error(t('invoiceDetail.sendFailed'));
                 } finally {
                   setIsSharing(false);
                 }
@@ -947,7 +947,7 @@ export default function InvoiceDetailPage() {
               style={{ backgroundColor: '#25D366' }}
             >
               {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-              Hantar Invois
+              {t('invoiceDetail.sendInvoice')}
             </Button>
           </>
         )}
@@ -956,16 +956,16 @@ export default function InvoiceDetailPage() {
             {hasPhone && (!proof || proof.status === 'rejected') && (
               <Button onClick={requestPaymentProof} disabled={requestingProof} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
                 {requestingProof ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-                Mohon Bukti Bayaran (WhatsApp)
+                {t('invoiceDetail.requestProofWa')}
               </Button>
             )}
             {hasPhone && (
               <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
-                <MessageCircle className="h-4 w-4" /> Peringatan
+                <MessageCircle className="h-4 w-4" /> {t('invoiceDetail.reminder')}
               </Button>
             )}
             <Button onClick={() => setPayOpen(true)} variant="outline" className="rounded-lg gap-2">
-              <CheckCircle className="h-4 w-4" /> Tandakan Manual
+              <CheckCircle className="h-4 w-4" /> {t('invoiceDetail.markManually')}
             </Button>
           </>
         )}
@@ -974,17 +974,17 @@ export default function InvoiceDetailPage() {
       {/* Payment Info Display */}
       {selectedPMs.length > 0 && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cara Pembayaran</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('invoiceDetail.paymentMethods')}</p>
           {selectedPMs.filter((m: any) => m.type === 'bank_transfer').map((b: any) => (
             <div key={b.id} className="border border-border rounded-lg p-3 space-y-1">
-              <p className="text-sm font-medium">🏦 Pindahan Bank</p>
+              <p className="text-sm font-medium">{t('invoiceDetail.bankTransfer')}</p>
               <div className="grid grid-cols-[80px_1fr] gap-1 text-sm">
-                <span className="text-muted-foreground">Bank:</span><span>{b.bank_name}</span>
-                <span className="text-muted-foreground">Nama:</span><span>{b.account_name}</span>
-                <span className="text-muted-foreground">Akaun:</span>
+                <span className="text-muted-foreground">{t('invoiceDetail.bankLabel')}</span><span>{b.bank_name}</span>
+                <span className="text-muted-foreground">{t('invoiceDetail.name')}</span><span>{b.account_name}</span>
+                <span className="text-muted-foreground">{t('invoiceDetail.account')}</span>
                 <span className="flex items-center gap-1.5">
                   {b.account_number}
-                  <button onClick={() => { navigator.clipboard.writeText(b.account_number); toast.success('Nombor akaun disalin!'); }} className="text-primary hover:text-primary/80">
+                  <button onClick={() => { navigator.clipboard.writeText(b.account_number); toast.success(t('invoiceDetail.accountCopied')); }} className="text-primary hover:text-primary/80">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
                 </span>
@@ -995,7 +995,7 @@ export default function InvoiceDetailPage() {
             <div key={q.id} className="border border-border rounded-lg p-3 flex flex-col items-center gap-2">
               <p className="text-sm font-medium">📱 {q.provider || 'QR Payment'}</p>
               {q.qr_image_url && <img src={q.qr_image_url} alt="QR" className="h-[120px] w-[120px] object-contain" />}
-              <p className="text-xs text-muted-foreground">Imbas untuk membayar</p>
+              <p className="text-xs text-muted-foreground">{t('invoiceDetail.scanToPay')}</p>
             </div>
           ))}
         </div>
@@ -1008,23 +1008,23 @@ export default function InvoiceDetailPage() {
             <TooltipTrigger asChild>
               <div>
                 <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</> : <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>}
+                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('invoiceDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('invoiceDetail.shareWa')}</>}
                 </Button>
               </div>
             </TooltipTrigger>
-            {!hasPhone && <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>}
+            {!hasPhone && <TooltipContent>{t('invoiceDetail.noPhoneRecord')}</TooltipContent>}
           </Tooltip>
         </TooltipProvider>
 
         {pdfData && (
           <>
             <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Eye className="h-4 w-4" /> Pratonton PDF
+              <Eye className="h-4 w-4" /> {t('invoiceDetail.previewPdf')}
             </Button>
             <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
               {({ loading: pdfLoading }) => (
                 <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                  <Download className="h-4 w-4" /> {pdfLoading ? t('invoiceDetail.generating') : t('invoiceDetail.downloadPdf')}
                 </Button>
               )}
             </PDFDownloadLink>
@@ -1036,17 +1036,17 @@ export default function InvoiceDetailPage() {
       <Dialog open={payOpen} onOpenChange={setPayOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tandakan sebagai Dibayar?</DialogTitle>
-            <DialogDescription>Sahkan bahawa pembayaran telah diterima untuk invois ini.</DialogDescription>
+            <DialogTitle>{t('invoiceDetail.markPaidTitle')}</DialogTitle>
+            <DialogDescription>{t('invoiceDetail.markPaidDesc')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Tarikh Dibayar</label>
+            <label className="text-sm font-medium">{t('invoiceDetail.paidDateField')}</label>
             <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setPayOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setPayOpen(false)}>{t('invoiceDetail.cancel')}</Button>
             <Button onClick={handleMarkPaid} disabled={paying} className="bg-green-600 hover:bg-green-700">
-              {paying ? 'Menyimpan...' : 'Sahkan Bayaran'}
+              {paying ? t('invoiceDetail.saving') : t('invoiceDetail.confirmPayment')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1056,12 +1056,12 @@ export default function InvoiceDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Invois?</DialogTitle>
-            <DialogDescription>Invois yang dipadam tidak boleh dipulihkan.</DialogDescription>
+            <DialogTitle>{t('invoiceDetail.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('invoiceDetail.deleteDesc')}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? 'Memadam...' : 'Padam'}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('invoiceDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? t('invoiceDetail.deleting') : t('invoiceDetail.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1070,28 +1070,32 @@ export default function InvoiceDetailPage() {
       <Dialog open={unlockOpen} onOpenChange={(o) => { if (!o) { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Buka Kunci Invois Dibayar?</DialogTitle>
+            <DialogTitle>{t('invoiceDetail.unlockTitle')}</DialogTitle>
             <DialogDescription>
-              Invois ini telah ditandakan sebagai <strong>Paid</strong>. Untuk menukar status kepada <strong>{pendingStatus}</strong>, sila taip <strong>BUKA</strong> di bawah untuk mengesahkan. Nombor resit yang dijana mungkin tidak sah selepas perubahan ini.
+              <Trans
+                i18nKey="invoiceDetail.unlockDesc"
+                values={{ status: pendingStatus }}
+                components={[<strong key="0" />, <strong key="1" />, <strong key="2" />]}
+              />
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Taip BUKA untuk mengesahkan:</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">{t('invoiceDetail.unlockPrompt')}</label>
             <Input
               value={unlockText}
               onChange={(e) => setUnlockText(e.target.value)}
-              placeholder="Taip BUKA di sini"
-              className={`h-11 rounded-lg ${unlockText === 'BUKA' ? 'border-green-500 focus:ring-green-500' : unlockText ? 'border-destructive' : ''}`}
+              placeholder={t('invoiceDetail.unlockPlaceholder')}
+              className={`h-11 rounded-lg ${unlockText === t('invoiceDetail.unlockKeyword') ? 'border-green-500 focus:ring-green-500' : unlockText ? 'border-destructive' : ''}`}
             />
-            {unlockText !== '' && unlockText !== 'BUKA' && (
-              <p className="text-xs text-destructive mt-1">Sila taip "BUKA" untuk meneruskan</p>
+            {unlockText !== '' && unlockText !== t('invoiceDetail.unlockKeyword') && (
+              <p className="text-xs text-destructive mt-1">{t('invoiceDetail.unlockHint')}</p>
             )}
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); }} disabled={unlocking}>Batal</Button>
+            <Button variant="outline" onClick={() => { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); }} disabled={unlocking}>{t('invoiceDetail.cancel')}</Button>
             <Button
               variant="destructive"
-              disabled={unlockText !== 'BUKA' || unlocking || !pendingStatus}
+              disabled={unlockText !== t('invoiceDetail.unlockKeyword') || unlocking || !pendingStatus}
               onClick={async () => {
                 if (!invoice || !pendingStatus) return;
                 setUnlocking(true);
@@ -1103,18 +1107,18 @@ export default function InvoiceDetailPage() {
                   const { error } = await supabase.from('invoices').update(updates).eq('id', invoice.id).eq('user_id', user!.id);
                   if (error) throw error;
                   setInvoice({ ...invoice, status: pendingStatus, paid_date: null, receipt_number: null });
-                  toast.success('Status invois dikemaskini!');
+                  toast.success(t('invoiceDetail.statusUpdated'));
                   setUnlockOpen(false);
                   setUnlockText('');
                   setPendingStatus(null);
                 } catch (err: any) {
-                  toast.error(err.message || 'Gagal kemaskini status.');
+                  toast.error(err.message || t('invoiceDetail.statusUpdateFailed'));
                 } finally {
                   setUnlocking(false);
                 }
               }}
             >
-              {unlocking ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Mengemaskini...</> : 'Sahkan & Tukar Status'}
+              {unlocking ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {t('invoiceDetail.updating')}</> : t('invoiceDetail.confirmAndChange')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1127,7 +1131,7 @@ export default function InvoiceDetailPage() {
         onDownload={handlePreviewDownload}
         onShare={() => { closePreview(); shareViaWhatsApp(); }}
         open={previewOpen}
-        title={`Pratonton — ${invoice.invoice_number}`}
+        title={t('invoiceDetail.previewTitle', { number: invoice.invoice_number })}
       />
 
       <PDFPreviewModal
@@ -1137,20 +1141,20 @@ export default function InvoiceDetailPage() {
         onDownload={handleReceiptDownload}
         onShare={() => { closeReceiptPreview(); shareReceiptWhatsApp(); }}
         open={receiptPreviewOpen}
-        title={`Pratonton — ${invoice.receipt_number || 'Resit'}`}
+        title={t('invoiceDetail.receiptPreviewTitle', { number: invoice.receipt_number || t('invoiceDetail.receiptDefault') })}
       />
 
       {/* Reject Proof Dialog */}
       <Dialog open={rejectProofOpen} onOpenChange={setRejectProofOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tolak Bukti Pembayaran</DialogTitle>
-            <DialogDescription>Nyatakan sebab penolakan. Pelanggan perlu hantar semula.</DialogDescription>
+            <DialogTitle>{t('invoiceDetail.rejectProofTitle')}</DialogTitle>
+            <DialogDescription>{t('invoiceDetail.rejectProofDesc')}</DialogDescription>
           </DialogHeader>
-          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder="Cth: Resit tidak jelas, jumlah salah..." />
+          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder={t('invoiceDetail.rejectPlaceholder')} />
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setRejectProofOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? 'Memproses...' : 'Sahkan Tolak'}</Button>
+            <Button variant="outline" onClick={() => setRejectProofOpen(false)}>{t('invoiceDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? t('invoiceDetail.processing') : t('invoiceDetail.confirmReject')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
