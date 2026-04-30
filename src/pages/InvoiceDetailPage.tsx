@@ -476,9 +476,9 @@ export default function InvoiceDetailPage() {
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-      toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
+      toast.success(t('invoiceDetail.shareSuccess'));
     } catch {
-      toast.error('Gagal memuat naik PDF. Semak sambungan internet anda.');
+      toast.error(t('invoiceDetail.shareFailed'));
     } finally {
       setIsSharing(false);
     }
