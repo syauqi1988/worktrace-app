@@ -695,9 +695,9 @@ export default function InvoiceDetailPage() {
                   const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', invoice.id).eq('user_id', user!.id);
                   if (!error) {
                     setInvoice({ ...invoice, status: newStatus });
-                    toast.success('Status invois dikemaskini!');
+                    toast.success(t('invoiceDetail.statusUpdated'));
                   } else {
-                    toast.error('Gagal kemaskini status.');
+                    toast.error(t('invoiceDetail.statusUpdateFailed'));
                   }
                 }}
                 className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[displayStatus]}`}
