@@ -447,19 +447,19 @@ export default function QuotationDetailPage() {
         )}
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <p className="text-xs text-muted-foreground">Dicipta</p>
+            <p className="text-xs text-muted-foreground">{t('quotationDetail.created')}</p>
             <p className="text-foreground">{formatDate(quotation.created_at)}</p>
           </div>
           {quotation.valid_until && (
             <div>
-              <p className="text-xs text-muted-foreground">Sah Hingga</p>
+              <p className="text-xs text-muted-foreground">{t('quotationDetail.validUntil')}</p>
               <p className="text-foreground">{formatDate(quotation.valid_until)}</p>
             </div>
           )}
         </div>
         {quotation.notes && (
           <div>
-            <p className="text-xs text-muted-foreground">Nota</p>
+            <p className="text-xs text-muted-foreground">{t('quotationDetail.notes')}</p>
             <p className="text-sm text-foreground whitespace-pre-wrap">{quotation.notes}</p>
           </div>
         )}
