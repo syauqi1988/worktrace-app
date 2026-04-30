@@ -1141,7 +1141,7 @@ export default function InvoiceDetailPage() {
         onDownload={handleReceiptDownload}
         onShare={() => { closeReceiptPreview(); shareReceiptWhatsApp(); }}
         open={receiptPreviewOpen}
-        title={`Pratonton — ${invoice.receipt_number || 'Resit'}`}
+        title={t('invoiceDetail.receiptPreviewTitle', { number: invoice.receipt_number || t('invoiceDetail.receiptDefault') })}
       />
 
       {/* Reject Proof Dialog */}
