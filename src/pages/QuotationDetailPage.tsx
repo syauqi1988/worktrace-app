@@ -86,6 +86,7 @@ export default function QuotationDetailPage() {
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -134,8 +135,12 @@ export default function QuotationDetailPage() {
     const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id);
     if (error) { toast.error(error.message); return; }
     setQuotation({ ...quotation, status: newStatus });
-    const messages: Record<string, string> = { Sent: 'Sebut harga dihantar!', Accepted: 'Sebut harga diterima!', Rejected: 'Sebut harga ditolak' };
-    toast.success(messages[newStatus] || 'Status dikemaskini');
+    const messages: Record<string, string> = {
+      Sent: t('quotationDetail.statusSent'),
+      Accepted: t('quotationDetail.statusAccepted'),
+      Rejected: t('quotationDetail.statusRejected'),
+    };
+    toast.success(messages[newStatus] || t('quotationDetail.statusUpdated'));
 
     // Auto-update job status
     if (quotation.job_id) {
@@ -146,7 +151,7 @@ export default function QuotationDetailPage() {
       if (trigger) {
         const newJobStatus = await autoUpdateJobStatus(supabase, quotation.job_id, user.id, trigger);
         if (newJobStatus) {
-          toast.info(`Status kerja dikemaskini secara automatik kepada "${newJobStatus}"`);
+          toast.info(t('quotationDetail.jobAutoUpdated', { status: newJobStatus }));
         }
       }
     }
@@ -158,7 +163,7 @@ export default function QuotationDetailPage() {
     const { error } = await supabase.from('quotations').delete().eq('id', quotation.id);
     setDeleting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('Sebut harga dipadam');
+    toast.success(t('quotationDetail.deleted'));
     navigate('/quotations');
   };
 
@@ -208,10 +213,10 @@ export default function QuotationDetailPage() {
         notes: quotation.notes,
       }).select('id').single();
       if (error) throw error;
-      toast.success('Invois berjaya dibuat!');
+      toast.success(t('quotationDetail.invoiceCreated'));
       navigate(`/invoices/${data.id}`);
     } catch (err: any) {
-      toast.error(err.message || 'Ralat membuat invois');
+      toast.error(err.message || t('quotationDetail.invoiceCreateError'));
     } finally {
       setConverting(false);
     }
@@ -258,7 +263,7 @@ export default function QuotationDetailPage() {
   const hasPhone = !!customerPhone;
 
   const buildWhatsAppMessage = (customerName: string, quoteNumber: string, total: number, companyName: string, approvalUrl: string) => {
-    const details = `📋 *No. Sebut Harga:* ${quoteNumber}\n💰 *Jumlah:* RM ${total.toFixed(2)}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 ${approvalUrl}`;
+    const details = t('quotationDetail.waDetails', { number: quoteNumber, total: total.toFixed(2), url: approvalUrl });
     return renderTemplate(
       (profile as any)?.whatsapp_templates,
       'quotation',
@@ -298,9 +303,9 @@ export default function QuotationDetailPage() {
         await supabase.from('quotations').update({ status: 'Sent' }).eq('id', quotation.id);
         setQuotation({ ...quotation, status: 'Sent' });
       }
-      toast.success('Pautan pengesahan dijana! WhatsApp telah dibuka.');
+      toast.success(t('quotationDetail.linkGenerated'));
     } catch {
-      toast.error('Gagal menjana pautan. Semak sambungan internet anda.');
+      toast.error(t('quotationDetail.linkFailed'));
     } finally {
       setIsSharing(false);
     }
@@ -329,7 +334,7 @@ export default function QuotationDetailPage() {
       const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton PDF');
+      toast.error(t('quotationDetail.previewFailed'));
       setPreviewOpen(false);
     } finally {
       setPreviewLoading(false);
@@ -370,8 +375,8 @@ export default function QuotationDetailPage() {
   if (!quotation) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Sebut harga tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/quotations')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('quotationDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/quotations')} className="mt-4">{t('quotationDetail.back')}</Button>
       </div>
     );
   }
@@ -404,7 +409,7 @@ export default function QuotationDetailPage() {
               <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
             </div>
             {isExpired && quotation.status !== 'Accepted' && quotation.status !== 'Rejected' && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">Tamat Tempoh</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">{t('quotationDetail.expired')}</span>
             )}
           </div>
         </div>
@@ -415,11 +420,11 @@ export default function QuotationDetailPage() {
           <DropdownMenuContent align="end">
             {canEdit && (
               <DropdownMenuItem onClick={() => navigate(`/quotations/${quotation.id}/edit`)}>
-                <Edit className="h-4 w-4 mr-2" /> Edit Sebut Harga
+                <Edit className="h-4 w-4 mr-2" /> {t('quotationDetail.editQuote')}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" /> Padam
+              <Trash2 className="h-4 w-4 mr-2" /> {t('quotationDetail.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -442,19 +447,19 @@ export default function QuotationDetailPage() {
         )}
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <p className="text-xs text-muted-foreground">Dicipta</p>
+            <p className="text-xs text-muted-foreground">{t('quotationDetail.created')}</p>
             <p className="text-foreground">{formatDate(quotation.created_at)}</p>
           </div>
           {quotation.valid_until && (
             <div>
-              <p className="text-xs text-muted-foreground">Sah Hingga</p>
+              <p className="text-xs text-muted-foreground">{t('quotationDetail.validUntil')}</p>
               <p className="text-foreground">{formatDate(quotation.valid_until)}</p>
             </div>
           )}
         </div>
         {quotation.notes && (
           <div>
-            <p className="text-xs text-muted-foreground">Nota</p>
+            <p className="text-xs text-muted-foreground">{t('quotationDetail.notes')}</p>
             <p className="text-sm text-foreground whitespace-pre-wrap">{quotation.notes}</p>
           </div>
         )}
@@ -462,10 +467,10 @@ export default function QuotationDetailPage() {
 
       {/* Line Items */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Item Kerja</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('quotationDetail.items')}</p>
         <div className="hidden md:block">
           <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
-            <span>Penerangan</span><span>Qty</span><span>Harga</span><span className="text-right">Jumlah</span>
+            <span>{t('quotationDetail.description')}</span><span>{t('quotationDetail.qty')}</span><span>{t('quotationDetail.price')}</span><span className="text-right">{t('quotationDetail.amount')}</span>
           </div>
           {quotation.items.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_60px_100px_100px] gap-2 py-1.5 border-b border-border last:border-0 text-sm">
@@ -488,11 +493,11 @@ export default function QuotationDetailPage() {
           ))}
         </div>
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
-          {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Diskaun</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
-          {quotation.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SST ({quotation.tax_rate}%)</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
+          <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.subtotal')}</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
+          {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.discount')}</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
+          {quotation.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.sst', { rate: quotation.tax_rate })}</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
-            <span className="font-bold text-foreground">Jumlah Keseluruhan</span>
+            <span className="font-bold text-foreground">{t('quotationDetail.grandTotal')}</span>
             <span className="text-lg font-bold text-primary">RM {quotation.total.toFixed(2)}</span>
           </div>
         </div>
@@ -503,29 +508,29 @@ export default function QuotationDetailPage() {
         {quotation.status === 'Draft' && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> Edit
+              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
-            <Button onClick={() => updateStatus('Sent')} className="flex-1 rounded-lg">Hantar</Button>
+            <Button onClick={() => updateStatus('Sent')} className="flex-1 rounded-lg">{t('quotationDetail.send')}</Button>
           </>
         )}
         {quotation.status === 'Sent' && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> Edit
+              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
             <Button disabled className="flex-1 rounded-lg gap-2 bg-amber-500 text-white opacity-90 cursor-not-allowed hover:bg-amber-500">
-              <Loader2 className="h-4 w-4 animate-spin" /> Menunggu Pengesahan Pelanggan
+              <Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.waiting')}
             </Button>
-            <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">Ditolak</Button>
+            <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">{t('quotationDetail.rejected')}</Button>
           </>
         )}
         {quotation.status === 'Accepted' && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> Edit
+              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
             <Button onClick={() => navigate(`/jobs/${quotation.job_id}/completion-report`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
-              <Briefcase className="h-4 w-4" /> Isi Laporan Siap Kerja
+              <Briefcase className="h-4 w-4" /> {t('quotationDetail.fillReport')}
             </Button>
           </>
         )}
@@ -533,9 +538,9 @@ export default function QuotationDetailPage() {
           <div className="w-full space-y-3">
             <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-[#B45309]">Sebut harga yang ditolak tidak boleh diedit. Sila buat sebut harga baru.</p>
+              <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
             </div>
-            <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">Buat Sebut Harga Baru</Button>
+            <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">{t('quotationDetail.newQuote')}</Button>
           </div>
         )}
       </div>
@@ -547,23 +552,23 @@ export default function QuotationDetailPage() {
             <TooltipTrigger asChild>
               <div>
                 <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</> : <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>}
+                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('quotationDetail.shareWa')}</>}
                 </Button>
               </div>
             </TooltipTrigger>
-            {!hasPhone && <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>}
+            {!hasPhone && <TooltipContent>{t('quotationDetail.noPhone')}</TooltipContent>}
           </Tooltip>
         </TooltipProvider>
 
         {pdfData && (
           <>
             <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Eye className="h-4 w-4" /> Pratonton PDF
+              <Eye className="h-4 w-4" /> {t('quotationDetail.previewPdf')}
             </Button>
             <PDFDownloadLink document={<QuotationPDF {...pdfData} />} fileName={`SebuthHarga-${quotation.quote_number}.pdf`}>
               {({ loading: pdfLoading }) => (
                 <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                  <Download className="h-4 w-4" /> {pdfLoading ? 'Menjana PDF...' : 'Muat Turun PDF'}
+                  <Download className="h-4 w-4" /> {pdfLoading ? t('quotationDetail.generating') : t('quotationDetail.downloadPdf')}
                 </Button>
               )}
             </PDFDownloadLink>
@@ -575,12 +580,12 @@ export default function QuotationDetailPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Padam Sebut Harga?</DialogTitle>
-            <DialogDescription>Tindakan ini tidak boleh dibatalkan.</DialogDescription>
+            <DialogTitle>{t('quotationDetail.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('quotationDetail.deleteDesc')}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? 'Memadam...' : 'Padam'}</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('quotationDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting ? t('quotationDetail.deleting') : t('quotationDetail.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -589,7 +594,7 @@ export default function QuotationDetailPage() {
       <Dialog open={!!existingInvoiceDialog} onOpenChange={() => setExistingInvoiceDialog(null)}>
         <DialogContent className="max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>Invois Sudah Wujud</DialogTitle>
+            <DialogTitle>{t('quotationDetail.invoiceExistsTitle')}</DialogTitle>
           </DialogHeader>
           {existingInvoiceDialog && (
             <div className="space-y-4">
@@ -600,11 +605,11 @@ export default function QuotationDetailPage() {
                 </div>
                 <p className="text-sm font-semibold mt-1">RM {existingInvoiceDialog.total.toFixed(2)}</p>
               </div>
-              <p className="text-sm text-muted-foreground">Kerja ini sudah mempunyai invois. Nak lihat atau buat baru?</p>
+              <p className="text-sm text-muted-foreground">{t('quotationDetail.invoiceExistsBody')}</p>
               <div className="flex flex-col gap-2">
-                <Button onClick={() => { navigate(`/invoices/${existingInvoiceDialog.id}`); setExistingInvoiceDialog(null); }} className="rounded-lg">Lihat Invois</Button>
-                <Button variant="outline" onClick={() => { setExistingInvoiceDialog(null); createInvoiceFromQuotation(); }} className="rounded-lg">Buat Invois Baru</Button>
-                <Button variant="ghost" onClick={() => setExistingInvoiceDialog(null)} className="rounded-lg">Batal</Button>
+                <Button onClick={() => { navigate(`/invoices/${existingInvoiceDialog.id}`); setExistingInvoiceDialog(null); }} className="rounded-lg">{t('quotationDetail.viewInvoice')}</Button>
+                <Button variant="outline" onClick={() => { setExistingInvoiceDialog(null); createInvoiceFromQuotation(); }} className="rounded-lg">{t('quotationDetail.createNewInvoice')}</Button>
+                <Button variant="ghost" onClick={() => setExistingInvoiceDialog(null)} className="rounded-lg">{t('quotationDetail.cancel')}</Button>
               </div>
             </div>
           )}
@@ -621,7 +626,7 @@ export default function QuotationDetailPage() {
           shareViaWhatsApp();
         }}
         open={previewOpen}
-        title={`Pratonton — ${quotation.quote_number}`}
+        title={t('quotationDetail.previewTitle', { number: quotation.quote_number })}
       />
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>

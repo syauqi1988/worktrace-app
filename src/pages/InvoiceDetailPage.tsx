@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
+import { getDateLocale } from '@/i18n';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -63,7 +65,7 @@ interface Invoice {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatPhone(phone: string): string {
@@ -106,6 +108,7 @@ export default function InvoiceDetailPage() {
   const [rejectProofOpen, setRejectProofOpen] = useState(false);
   const [proofRejectReason, setProofRejectReason] = useState('');
   const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -185,7 +188,7 @@ export default function InvoiceDetailPage() {
     const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', invoice.id);
     if (error) { toast.error(error.message); return; }
     setInvoice({ ...invoice, status: newStatus });
-    toast.success('Invois dihantar!');
+    toast.success(t('invoiceDetail.sentToast'));
   };
 
   const generateReceiptNumber = async (): Promise<string> => {
@@ -209,9 +212,9 @@ export default function InvoiceDetailPage() {
       if (error) throw error;
       setInvoice({ ...invoice, status: 'Paid', paid_date: payDate, receipt_number: receiptNumber });
       setPayOpen(false);
-      toast.success('Pembayaran berjaya direkodkan!');
+      toast.success(t('invoiceDetail.paidRecorded'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal rekod pembayaran');
+      toast.error(err.message || t('invoiceDetail.paidFailed'));
     } finally {
       setPaying(false);
     }
@@ -220,7 +223,7 @@ export default function InvoiceDetailPage() {
   const handleDelete = async () => {
     if (!invoice) return;
     if (invoice.status !== 'Draft') {
-      toast.error('Invois yang telah dihantar atau dibayar tidak boleh dipadam.');
+      toast.error(t('invoiceDetail.deleteOnlyDraft'));
       setDeleteOpen(false);
       return;
     }
@@ -228,7 +231,7 @@ export default function InvoiceDetailPage() {
     const { error } = await supabase.from('invoices').delete().eq('id', invoice.id);
     setDeleting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('Invois dipadam');
+    toast.success(t('invoiceDetail.deleted'));
     navigate('/invoices');
   };
 
@@ -321,7 +324,7 @@ export default function InvoiceDetailPage() {
       const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton PDF');
+      toast.error(t('invoiceDetail.previewFailed'));
       setPreviewOpen(false);
     } finally {
       setPreviewLoading(false);
@@ -355,7 +358,7 @@ export default function InvoiceDetailPage() {
       const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
       setReceiptPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton resit');
+      toast.error(t('invoiceDetail.receiptPreviewFailed'));
       setReceiptPreviewOpen(false);
     } finally {
       setReceiptPreviewLoading(false);
@@ -388,7 +391,13 @@ export default function InvoiceDetailPage() {
     const publicUrl = signed?.signedUrl ?? '';
     const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: publicUrl, kind: 'receipt' });
     const phone = formatPhone(customerPhone);
-    const details = `🧾 *No. Resit:* ${inv.receipt_number}\n🧾 *No. Invois:* ${inv.invoice_number}\n💰 *Jumlah Dibayar:* RM ${inv.total.toFixed(2)}\n📅 *Tarikh Bayaran:* ${inv.paid_date ? formatDate(inv.paid_date) : '-'}\n\n👉 Tekan sini untuk muat turun resit:\n${shortUrl}`;
+    const details = t('invoiceDetail.waReceiptDetails', {
+      receiptNumber: inv.receipt_number,
+      invoiceNumber: inv.invoice_number,
+      amount: inv.total.toFixed(2),
+      date: inv.paid_date ? formatDate(inv.paid_date) : '-',
+      url: shortUrl,
+    });
     const message = renderTemplate(
       (profile as any)?.whatsapp_templates,
       'receipt',
@@ -404,9 +413,9 @@ export default function InvoiceDetailPage() {
     setIsSharingReceipt(true);
     try {
       await shareReceiptWhatsAppCore(invoice, receiptPdfData);
-      toast.success('Resit berjaya dijana! WhatsApp telah dibuka.');
+      toast.success(t('invoiceDetail.receiptShareSuccess'));
     } catch {
-      toast.error('Gagal kongsi resit');
+      toast.error(t('invoiceDetail.receiptShareFailed'));
     } finally {
       setIsSharingReceipt(false);
     }
@@ -415,15 +424,15 @@ export default function InvoiceDetailPage() {
   // Unified invoice WhatsApp template — used for Hantar Invois, Kongsi via WhatsApp,
   // Peringatan, dan Mohon Bukti Bayaran. Sentiasa sertakan link PDF + link upload bukti.
   const buildWhatsAppInvoiceMessage = (_pdfUrl?: string, proofUrl?: string, isReminder = false) => {
-    const name = customer?.name || 'Pelanggan';
+    const name = customer?.name || '';
     const companyName = profile?.company_name || '';
     const detailLines = [
-      `🧾 *No. Invois:* ${invoice!.invoice_number}`,
-      `💰 *Jumlah:* RM ${invoice!.total.toFixed(2)}`,
-      `📅 *Bayar Sebelum:* ${invoice!.due_date ? formatDate(invoice!.due_date) : '-'}`,
+      t('invoiceDetail.waInvoiceNo', { number: invoice!.invoice_number }),
+      t('invoiceDetail.waAmount', { amount: invoice!.total.toFixed(2) }),
+      t('invoiceDetail.waPayBefore', { date: invoice!.due_date ? formatDate(invoice!.due_date) : '-' }),
     ];
     if (proofUrl) {
-      detailLines.push('', '👉 Tekan sini untuk lihat invois & hantar bukti bayaran:', proofUrl);
+      detailLines.push('', t('invoiceDetail.waProofPrompt'), proofUrl);
     }
     return renderTemplate(
       (profile as any)?.whatsapp_templates,
@@ -467,9 +476,9 @@ export default function InvoiceDetailPage() {
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-      toast.success('PDF berjaya dijana! WhatsApp telah dibuka.');
+      toast.success(t('invoiceDetail.shareSuccess'));
     } catch {
-      toast.error('Gagal memuat naik PDF. Semak sambungan internet anda.');
+      toast.error(t('invoiceDetail.shareFailed'));
     } finally {
       setIsSharing(false);
     }
@@ -485,7 +494,7 @@ export default function InvoiceDetailPage() {
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl, true);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
     } catch {
-      toast.error('Gagal menjana peringatan');
+      toast.error(t('invoiceDetail.reminderFailed'));
     } finally {
       setIsSharing(false);
     }
@@ -500,9 +509,9 @@ export default function InvoiceDetailPage() {
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-      toast.success('Pautan bukti bayaran dijana!');
+      toast.success(t('invoiceDetail.proofLinkGenerated'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal menjana pautan');
+      toast.error(err.message || t('invoiceDetail.proofLinkFailed'));
     } finally {
       setRequestingProof(false);
     }
@@ -528,7 +537,7 @@ export default function InvoiceDetailPage() {
       const updatedInvoice = { ...invoice, status: 'Paid', paid_date: paidDate, receipt_number: receiptNumber };
       setInvoice(updatedInvoice);
       setProof({ ...proof, status: 'verified', verified_at: new Date().toISOString() });
-      toast.success('Bukti disahkan, invois ditandakan Dibayar!');
+      toast.success(t('invoiceDetail.proofVerified'));
 
       // Auto-redirect to WhatsApp with receipt share message
       if (hasPhone && checkWhatsAppShare()) {
@@ -562,11 +571,11 @@ export default function InvoiceDetailPage() {
         try {
           await shareReceiptWhatsAppCore(updatedInvoice, updatedReceiptData);
         } catch {
-          toast.error('Resit dijana tetapi gagal membuka WhatsApp');
+          toast.error(t('invoiceDetail.receiptShareWaFailed'));
         }
       }
     } catch (err: any) {
-      toast.error(err.message || 'Gagal mengesahkan');
+      toast.error(err.message || t('invoiceDetail.verifyFailed'));
     } finally {
       setVerifyingProof(false);
     }
@@ -574,7 +583,7 @@ export default function InvoiceDetailPage() {
 
   const rejectProof = async () => {
     if (!proof || !proofRejectReason.trim()) {
-      toast.error('Sila nyatakan sebab penolakan');
+      toast.error(t('invoiceDetail.rejectReasonRequired'));
       return;
     }
     setVerifyingProof(true);
@@ -586,9 +595,9 @@ export default function InvoiceDetailPage() {
       setProof({ ...proof, status: 'rejected', rejection_reason: proofRejectReason.trim() });
       setRejectProofOpen(false);
       setProofRejectReason('');
-      toast.success('Bukti ditolak. Pelanggan boleh hantar semula dengan pautan baru.');
+      toast.success(t('invoiceDetail.proofRejected'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal');
+      toast.error(err.message || t('invoiceDetail.rejectFailed'));
     } finally {
       setVerifyingProof(false);
     }
@@ -607,8 +616,8 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Invois tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/invoices')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('invoiceDetail.notFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/invoices')} className="mt-4">{t('invoiceDetail.back')}</Button>
       </div>
     );
   }
@@ -623,8 +632,8 @@ export default function InvoiceDetailPage() {
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 flex items-center gap-3">
           <CheckCircle className="h-5 w-5 text-[#15803D]" />
           <div>
-            <p className="text-sm font-bold text-[#15803D]">✓ Dibayar</p>
-            {invoice.paid_date && <p className="text-xs text-[#15803D]">Tarikh Bayaran: {formatDate(invoice.paid_date)}</p>}
+            <p className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.paid')}</p>
+            {invoice.paid_date && <p className="text-xs text-[#15803D]">{t('invoiceDetail.paymentDate')}: {formatDate(invoice.paid_date)}</p>}
           </div>
         </div>
       )}
@@ -635,24 +644,24 @@ export default function InvoiceDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-[#15803D]" />
-              <span className="text-sm font-bold text-[#15803D]">Resit Pembayaran</span>
+              <span className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.receipt')}</span>
             </div>
             <span className="text-xs text-[#15803D] font-medium">{invoice.receipt_number}</span>
           </div>
           <p className="text-sm text-[#15803D]">
-            Bayaran RM {invoice.total.toFixed(2)} diterima pada {invoice.paid_date ? formatDate(invoice.paid_date) : '-'}
+            {t('invoiceDetail.receiptReceived', { amount: invoice.total.toFixed(2), date: invoice.paid_date ? formatDate(invoice.paid_date) : '-' })}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptPreview}>
-              <Eye className="h-3.5 w-3.5" /> Pratonton Resit
+              <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.previewReceipt')}
             </Button>
             <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptDownload}>
-              <Download className="h-3.5 w-3.5" /> Muat Turun Resit
+              <Download className="h-3.5 w-3.5" /> {t('invoiceDetail.downloadReceipt')}
             </Button>
             {hasPhone && (
               <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
                 {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                Kongsi Resit via WhatsApp
+                {t('invoiceDetail.shareReceiptWa')}
               </Button>
             )}
           </div>
@@ -686,9 +695,9 @@ export default function InvoiceDetailPage() {
                   const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', invoice.id).eq('user_id', user!.id);
                   if (!error) {
                     setInvoice({ ...invoice, status: newStatus });
-                    toast.success('Status invois dikemaskini!');
+                    toast.success(t('invoiceDetail.statusUpdated'));
                   } else {
-                    toast.error('Gagal kemaskini status.');
+                    toast.error(t('invoiceDetail.statusUpdateFailed'));
                   }
                 }}
                 className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[displayStatus]}`}
@@ -709,7 +718,7 @@ export default function InvoiceDetailPage() {
           </div>
           {showInlinePayDate && (
             <div className="flex items-center gap-2 mt-2">
-              <label className="text-sm text-muted-foreground">Tarikh Dibayar:</label>
+              <label className="text-sm text-muted-foreground">{t('invoiceDetail.paidDateLabel')}</label>
               <Input type="date" value={inlinePayDate} onChange={e => setInlinePayDate(e.target.value)} className="h-8 w-40 text-sm rounded-lg" />
               <Button size="sm" className="h-8 rounded-lg bg-green-600 hover:bg-green-700" onClick={async () => {
                 try {
@@ -718,13 +727,13 @@ export default function InvoiceDetailPage() {
                   if (!error) {
                     setInvoice({ ...invoice, status: 'Paid', paid_date: inlinePayDate, receipt_number: receiptNumber });
                     setShowInlinePayDate(false);
-                    toast.success('Invois ditandakan sebagai Dibayar!');
+                    toast.success(t('invoiceDetail.markedPaid'));
                   } else {
-                    toast.error('Gagal kemaskini status.');
+                    toast.error(t('invoiceDetail.statusUpdateFailed'));
                   }
-                } catch { toast.error('Gagal kemaskini status.'); }
-              }}>Sahkan</Button>
-              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>Batal</Button>
+                } catch { toast.error(t('invoiceDetail.statusUpdateFailed')); }
+              }}>{t('invoiceDetail.confirm')}</Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>{t('invoiceDetail.cancel')}</Button>
             </div>
           )}
         </div>
@@ -734,9 +743,9 @@ export default function InvoiceDetailPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {invoice.status === 'Draft' && (
-              <DropdownMenuItem onClick={() => navigate(`/invoices/${invoice.id}/edit`)}><Edit className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/invoices/${invoice.id}/edit`)}><Edit className="h-4 w-4 mr-2" /> {t('invoiceDetail.edit')}</DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Padam</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> {t('invoiceDetail.delete')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -769,23 +778,23 @@ export default function InvoiceDetailPage() {
           </button>
         )}
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div><p className="text-xs text-muted-foreground">Dicipta</p><p className="text-foreground">{formatDate(invoice.created_at)}</p></div>
-          {invoice.issued_date && <div><p className="text-xs text-muted-foreground">Tarikh Invois</p><p className="text-foreground">{formatDate(invoice.issued_date)}</p></div>}
+          <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.created')}</p><p className="text-foreground">{formatDate(invoice.created_at)}</p></div>
+          {invoice.issued_date && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.issuedDate')}</p><p className="text-foreground">{formatDate(invoice.issued_date)}</p></div>}
           {invoice.due_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Bayar Sebelum</p>
+              <p className="text-xs text-muted-foreground">{t('invoiceDetail.dueDate')}</p>
               <p className={`${isOverdue ? 'text-[#B91C1C] font-medium' : 'text-foreground'}`}>
                 {formatDate(invoice.due_date)}
-                {isOverdue && <span className="ml-1 text-xs bg-[#FEE2E2] text-[#B91C1C] px-1.5 py-0.5 rounded-full">TERTUNGGAK</span>}
+                {isOverdue && <span className="ml-1 text-xs bg-[#FEE2E2] text-[#B91C1C] px-1.5 py-0.5 rounded-full">{t('invoiceDetail.overdue')}</span>}
               </p>
             </div>
           )}
           {invoice.status === 'Paid' && invoice.paid_date && (
-            <div><p className="text-xs text-muted-foreground">Tarikh Dibayar</p><p className="text-[#15803D] font-medium">{formatDate(invoice.paid_date)}</p></div>
+            <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.paidDate')}</p><p className="text-[#15803D] font-medium">{formatDate(invoice.paid_date)}</p></div>
           )}
         </div>
         {invoice.notes && (
-          <div><p className="text-xs text-muted-foreground">Nota</p><p className="text-sm text-foreground whitespace-pre-wrap">{invoice.notes}</p></div>
+          <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.notes')}</p><p className="text-sm text-foreground whitespace-pre-wrap">{invoice.notes}</p></div>
         )}
       </div>
 
