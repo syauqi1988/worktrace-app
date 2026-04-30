@@ -1070,28 +1070,32 @@ export default function InvoiceDetailPage() {
       <Dialog open={unlockOpen} onOpenChange={(o) => { if (!o) { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Buka Kunci Invois Dibayar?</DialogTitle>
+            <DialogTitle>{t('invoiceDetail.unlockTitle')}</DialogTitle>
             <DialogDescription>
-              Invois ini telah ditandakan sebagai <strong>Paid</strong>. Untuk menukar status kepada <strong>{pendingStatus}</strong>, sila taip <strong>BUKA</strong> di bawah untuk mengesahkan. Nombor resit yang dijana mungkin tidak sah selepas perubahan ini.
+              <Trans
+                i18nKey="invoiceDetail.unlockDesc"
+                values={{ status: pendingStatus }}
+                components={[<strong key="0" />, <strong key="1" />, <strong key="2" />]}
+              />
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Taip BUKA untuk mengesahkan:</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">{t('invoiceDetail.unlockPrompt')}</label>
             <Input
               value={unlockText}
               onChange={(e) => setUnlockText(e.target.value)}
-              placeholder="Taip BUKA di sini"
-              className={`h-11 rounded-lg ${unlockText === 'BUKA' ? 'border-green-500 focus:ring-green-500' : unlockText ? 'border-destructive' : ''}`}
+              placeholder={t('invoiceDetail.unlockPlaceholder')}
+              className={`h-11 rounded-lg ${unlockText === t('invoiceDetail.unlockKeyword') ? 'border-green-500 focus:ring-green-500' : unlockText ? 'border-destructive' : ''}`}
             />
-            {unlockText !== '' && unlockText !== 'BUKA' && (
-              <p className="text-xs text-destructive mt-1">Sila taip "BUKA" untuk meneruskan</p>
+            {unlockText !== '' && unlockText !== t('invoiceDetail.unlockKeyword') && (
+              <p className="text-xs text-destructive mt-1">{t('invoiceDetail.unlockHint')}</p>
             )}
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); }} disabled={unlocking}>Batal</Button>
+            <Button variant="outline" onClick={() => { setUnlockOpen(false); setUnlockText(''); setPendingStatus(null); }} disabled={unlocking}>{t('invoiceDetail.cancel')}</Button>
             <Button
               variant="destructive"
-              disabled={unlockText !== 'BUKA' || unlocking || !pendingStatus}
+              disabled={unlockText !== t('invoiceDetail.unlockKeyword') || unlocking || !pendingStatus}
               onClick={async () => {
                 if (!invoice || !pendingStatus) return;
                 setUnlocking(true);
@@ -1103,18 +1107,18 @@ export default function InvoiceDetailPage() {
                   const { error } = await supabase.from('invoices').update(updates).eq('id', invoice.id).eq('user_id', user!.id);
                   if (error) throw error;
                   setInvoice({ ...invoice, status: pendingStatus, paid_date: null, receipt_number: null });
-                  toast.success('Status invois dikemaskini!');
+                  toast.success(t('invoiceDetail.statusUpdated'));
                   setUnlockOpen(false);
                   setUnlockText('');
                   setPendingStatus(null);
                 } catch (err: any) {
-                  toast.error(err.message || 'Gagal kemaskini status.');
+                  toast.error(err.message || t('invoiceDetail.statusUpdateFailed'));
                 } finally {
                   setUnlocking(false);
                 }
               }}
             >
-              {unlocking ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Mengemaskini...</> : 'Sahkan & Tukar Status'}
+              {unlocking ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {t('invoiceDetail.updating')}</> : t('invoiceDetail.confirmAndChange')}
             </Button>
           </DialogFooter>
         </DialogContent>
