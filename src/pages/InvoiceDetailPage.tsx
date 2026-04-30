@@ -974,17 +974,17 @@ export default function InvoiceDetailPage() {
       {/* Payment Info Display */}
       {selectedPMs.length > 0 && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cara Pembayaran</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('invoiceDetail.paymentMethods')}</p>
           {selectedPMs.filter((m: any) => m.type === 'bank_transfer').map((b: any) => (
             <div key={b.id} className="border border-border rounded-lg p-3 space-y-1">
-              <p className="text-sm font-medium">🏦 Pindahan Bank</p>
+              <p className="text-sm font-medium">{t('invoiceDetail.bankTransfer')}</p>
               <div className="grid grid-cols-[80px_1fr] gap-1 text-sm">
-                <span className="text-muted-foreground">Bank:</span><span>{b.bank_name}</span>
-                <span className="text-muted-foreground">Nama:</span><span>{b.account_name}</span>
-                <span className="text-muted-foreground">Akaun:</span>
+                <span className="text-muted-foreground">{t('invoiceDetail.bankLabel')}</span><span>{b.bank_name}</span>
+                <span className="text-muted-foreground">{t('invoiceDetail.name')}</span><span>{b.account_name}</span>
+                <span className="text-muted-foreground">{t('invoiceDetail.account')}</span>
                 <span className="flex items-center gap-1.5">
                   {b.account_number}
-                  <button onClick={() => { navigator.clipboard.writeText(b.account_number); toast.success('Nombor akaun disalin!'); }} className="text-primary hover:text-primary/80">
+                  <button onClick={() => { navigator.clipboard.writeText(b.account_number); toast.success(t('invoiceDetail.accountCopied')); }} className="text-primary hover:text-primary/80">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
                 </span>
@@ -995,7 +995,7 @@ export default function InvoiceDetailPage() {
             <div key={q.id} className="border border-border rounded-lg p-3 flex flex-col items-center gap-2">
               <p className="text-sm font-medium">📱 {q.provider || 'QR Payment'}</p>
               {q.qr_image_url && <img src={q.qr_image_url} alt="QR" className="h-[120px] w-[120px] object-contain" />}
-              <p className="text-xs text-muted-foreground">Imbas untuk membayar</p>
+              <p className="text-xs text-muted-foreground">{t('invoiceDetail.scanToPay')}</p>
             </div>
           ))}
         </div>
