@@ -358,7 +358,7 @@ export default function InvoiceDetailPage() {
       const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
       setReceiptPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton resit');
+      toast.error(t('invoiceDetail.receiptPreviewFailed'));
       setReceiptPreviewOpen(false);
     } finally {
       setReceiptPreviewLoading(false);
