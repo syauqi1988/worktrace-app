@@ -212,9 +212,9 @@ export default function InvoiceDetailPage() {
       if (error) throw error;
       setInvoice({ ...invoice, status: 'Paid', paid_date: payDate, receipt_number: receiptNumber });
       setPayOpen(false);
-      toast.success('Pembayaran berjaya direkodkan!');
+      toast.success(t('invoiceDetail.paidRecorded'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal rekod pembayaran');
+      toast.error(err.message || t('invoiceDetail.paidFailed'));
     } finally {
       setPaying(false);
     }
