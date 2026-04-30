@@ -324,7 +324,7 @@ export default function InvoiceDetailPage() {
       const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton PDF');
+      toast.error(t('invoiceDetail.previewFailed'));
       setPreviewOpen(false);
     } finally {
       setPreviewLoading(false);
