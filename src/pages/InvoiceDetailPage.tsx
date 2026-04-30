@@ -509,9 +509,9 @@ export default function InvoiceDetailPage() {
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-      toast.success('Pautan bukti bayaran dijana!');
+      toast.success(t('invoiceDetail.proofLinkGenerated'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal menjana pautan');
+      toast.error(err.message || t('invoiceDetail.proofLinkFailed'));
     } finally {
       setRequestingProof(false);
     }
