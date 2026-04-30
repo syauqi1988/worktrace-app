@@ -626,7 +626,7 @@ export default function QuotationDetailPage() {
           shareViaWhatsApp();
         }}
         open={previewOpen}
-        title={`Pratonton — ${quotation.quote_number}`}
+        title={t('quotationDetail.previewTitle', { number: quotation.quote_number })}
       />
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
