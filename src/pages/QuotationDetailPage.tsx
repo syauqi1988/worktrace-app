@@ -163,7 +163,7 @@ export default function QuotationDetailPage() {
     const { error } = await supabase.from('quotations').delete().eq('id', quotation.id);
     setDeleting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('Sebut harga dipadam');
+    toast.success(t('quotationDetail.deleted'));
     navigate('/quotations');
   };
 
