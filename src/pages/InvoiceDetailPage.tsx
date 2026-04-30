@@ -918,13 +918,13 @@ export default function InvoiceDetailPage() {
       <div className="flex flex-wrap gap-3">
         {invoice.status === 'Draft' && (
           <>
-            <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> Edit</Button>
+            <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> {t('invoiceDetail.edit')}</Button>
             <Button
               onClick={async () => {
                 if (!checkWhatsAppShare()) return;
                 if (!invoice || !pdfData || !user) return;
                 if (!hasPhone) {
-                  toast.error('Nombor telefon pelanggan tiada dalam rekod');
+                  toast.error(t('invoiceDetail.noPhoneRecord'));
                   return;
                 }
                 setIsSharing(true);
@@ -935,9 +935,9 @@ export default function InvoiceDetailPage() {
                   const phone = formatPhone(customerPhone!);
                   const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-                  toast.success('Invois dihantar! WhatsApp telah dibuka.');
+                  toast.success(t('invoiceDetail.sentWaOpened'));
                 } catch {
-                  toast.error('Gagal menghantar invois');
+                  toast.error(t('invoiceDetail.sendFailed'));
                 } finally {
                   setIsSharing(false);
                 }
@@ -947,7 +947,7 @@ export default function InvoiceDetailPage() {
               style={{ backgroundColor: '#25D366' }}
             >
               {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-              Hantar Invois
+              {t('invoiceDetail.sendInvoice')}
             </Button>
           </>
         )}
