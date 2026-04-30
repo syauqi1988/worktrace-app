@@ -802,16 +802,16 @@ export default function InvoiceDetailPage() {
       {profile?.lhdn_enabled && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-            <Landmark className="h-3.5 w-3.5" /> Maklumat LHDN
+            <Landmark className="h-3.5 w-3.5" /> {t('invoiceDetail.lhdnInfo')}
           </p>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            {profile.tin_number && <div><p className="text-xs text-muted-foreground">TIN Syarikat</p><p>{profile.tin_number}</p></div>}
-            {customer?.tin_number && <div><p className="text-xs text-muted-foreground">TIN Pelanggan</p><p>{customer.tin_number}</p></div>}
-            {profile.msic_code && <div><p className="text-xs text-muted-foreground">Kod MSIC</p><p>{profile.msic_code}</p></div>}
+            {profile.tin_number && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.tinCompany')}</p><p>{profile.tin_number}</p></div>}
+            {customer?.tin_number && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.tinCustomer')}</p><p>{customer.tin_number}</p></div>}
+            {profile.msic_code && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.msicCode')}</p><p>{profile.msic_code}</p></div>}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${invoice.lhdn_submitted ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEF3C7] text-[#B45309]'}`}>
-              {invoice.lhdn_submitted ? '✓ Dihantar' : 'Belum Dihantar'}
+              {invoice.lhdn_submitted ? t('invoiceDetail.submitted') : t('invoiceDetail.notSubmitted')}
             </span>
           </div>
         </div>
