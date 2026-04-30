@@ -135,8 +135,12 @@ export default function QuotationDetailPage() {
     const { error } = await supabase.from('quotations').update({ status: newStatus }).eq('id', quotation.id);
     if (error) { toast.error(error.message); return; }
     setQuotation({ ...quotation, status: newStatus });
-    const messages: Record<string, string> = { Sent: 'Sebut harga dihantar!', Accepted: 'Sebut harga diterima!', Rejected: 'Sebut harga ditolak' };
-    toast.success(messages[newStatus] || 'Status dikemaskini');
+    const messages: Record<string, string> = {
+      Sent: t('quotationDetail.statusSent'),
+      Accepted: t('quotationDetail.statusAccepted'),
+      Rejected: t('quotationDetail.statusRejected'),
+    };
+    toast.success(messages[newStatus] || t('quotationDetail.statusUpdated'));
 
     // Auto-update job status
     if (quotation.job_id) {
