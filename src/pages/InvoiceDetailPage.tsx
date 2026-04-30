@@ -583,7 +583,7 @@ export default function InvoiceDetailPage() {
 
   const rejectProof = async () => {
     if (!proof || !proofRejectReason.trim()) {
-      toast.error('Sila nyatakan sebab penolakan');
+      toast.error(t('invoiceDetail.rejectReasonRequired'));
       return;
     }
     setVerifyingProof(true);
@@ -595,9 +595,9 @@ export default function InvoiceDetailPage() {
       setProof({ ...proof, status: 'rejected', rejection_reason: proofRejectReason.trim() });
       setRejectProofOpen(false);
       setProofRejectReason('');
-      toast.success('Bukti ditolak. Pelanggan boleh hantar semula dengan pautan baru.');
+      toast.success(t('invoiceDetail.proofRejected'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal');
+      toast.error(err.message || t('invoiceDetail.rejectFailed'));
     } finally {
       setVerifyingProof(false);
     }
