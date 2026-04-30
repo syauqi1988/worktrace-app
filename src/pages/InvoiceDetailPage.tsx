@@ -778,23 +778,23 @@ export default function InvoiceDetailPage() {
           </button>
         )}
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div><p className="text-xs text-muted-foreground">Dicipta</p><p className="text-foreground">{formatDate(invoice.created_at)}</p></div>
-          {invoice.issued_date && <div><p className="text-xs text-muted-foreground">Tarikh Invois</p><p className="text-foreground">{formatDate(invoice.issued_date)}</p></div>}
+          <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.created')}</p><p className="text-foreground">{formatDate(invoice.created_at)}</p></div>
+          {invoice.issued_date && <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.issuedDate')}</p><p className="text-foreground">{formatDate(invoice.issued_date)}</p></div>}
           {invoice.due_date && (
             <div>
-              <p className="text-xs text-muted-foreground">Bayar Sebelum</p>
+              <p className="text-xs text-muted-foreground">{t('invoiceDetail.dueDate')}</p>
               <p className={`${isOverdue ? 'text-[#B91C1C] font-medium' : 'text-foreground'}`}>
                 {formatDate(invoice.due_date)}
-                {isOverdue && <span className="ml-1 text-xs bg-[#FEE2E2] text-[#B91C1C] px-1.5 py-0.5 rounded-full">TERTUNGGAK</span>}
+                {isOverdue && <span className="ml-1 text-xs bg-[#FEE2E2] text-[#B91C1C] px-1.5 py-0.5 rounded-full">{t('invoiceDetail.overdue')}</span>}
               </p>
             </div>
           )}
           {invoice.status === 'Paid' && invoice.paid_date && (
-            <div><p className="text-xs text-muted-foreground">Tarikh Dibayar</p><p className="text-[#15803D] font-medium">{formatDate(invoice.paid_date)}</p></div>
+            <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.paidDate')}</p><p className="text-[#15803D] font-medium">{formatDate(invoice.paid_date)}</p></div>
           )}
         </div>
         {invoice.notes && (
-          <div><p className="text-xs text-muted-foreground">Nota</p><p className="text-sm text-foreground whitespace-pre-wrap">{invoice.notes}</p></div>
+          <div><p className="text-xs text-muted-foreground">{t('invoiceDetail.notes')}</p><p className="text-sm text-foreground whitespace-pre-wrap">{invoice.notes}</p></div>
         )}
       </div>
 
