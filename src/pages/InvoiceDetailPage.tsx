@@ -1148,13 +1148,13 @@ export default function InvoiceDetailPage() {
       <Dialog open={rejectProofOpen} onOpenChange={setRejectProofOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tolak Bukti Pembayaran</DialogTitle>
-            <DialogDescription>Nyatakan sebab penolakan. Pelanggan perlu hantar semula.</DialogDescription>
+            <DialogTitle>{t('invoiceDetail.rejectProofTitle')}</DialogTitle>
+            <DialogDescription>{t('invoiceDetail.rejectProofDesc')}</DialogDescription>
           </DialogHeader>
-          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder="Cth: Resit tidak jelas, jumlah salah..." />
+          <Input value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} placeholder={t('invoiceDetail.rejectPlaceholder')} />
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setRejectProofOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? 'Memproses...' : 'Sahkan Tolak'}</Button>
+            <Button variant="outline" onClick={() => setRejectProofOpen(false)}>{t('invoiceDetail.cancel')}</Button>
+            <Button variant="destructive" onClick={rejectProof} disabled={verifyingProof}>{verifyingProof ? t('invoiceDetail.processing') : t('invoiceDetail.confirmReject')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
