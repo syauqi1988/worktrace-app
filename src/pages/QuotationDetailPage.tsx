@@ -552,11 +552,11 @@ export default function QuotationDetailPage() {
             <TooltipTrigger asChild>
               <div>
                 <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> Menjana PDF...</> : <><MessageCircle className="h-4 w-4" /> Kongsi via WhatsApp</>}
+                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('quotationDetail.shareWa')}</>}
                 </Button>
               </div>
             </TooltipTrigger>
-            {!hasPhone && <TooltipContent>Nombor telefon pelanggan tiada dalam rekod</TooltipContent>}
+            {!hasPhone && <TooltipContent>{t('quotationDetail.noPhone')}</TooltipContent>}
           </Tooltip>
         </TooltipProvider>
 
