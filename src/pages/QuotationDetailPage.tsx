@@ -213,10 +213,10 @@ export default function QuotationDetailPage() {
         notes: quotation.notes,
       }).select('id').single();
       if (error) throw error;
-      toast.success('Invois berjaya dibuat!');
+      toast.success(t('quotationDetail.invoiceCreated'));
       navigate(`/invoices/${data.id}`);
     } catch (err: any) {
-      toast.error(err.message || 'Ralat membuat invois');
+      toast.error(err.message || t('quotationDetail.invoiceCreateError'));
     } finally {
       setConverting(false);
     }
