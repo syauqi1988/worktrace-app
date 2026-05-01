@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtRM, fmtDate, COLORS } from './pdfStyles';
+import i18n from '@/i18n';
 
 export interface WorkOrderPDFProps {
   wo: {
@@ -53,12 +54,9 @@ const extra = StyleSheet.create({
   scheduleValue: { fontSize: 9, color: COLORS.BLACK, marginTop: 1 },
 });
 
-const DEFAULT_TERMS = `1. Kerja dilaksanakan mengikut spesifikasi dipersetujui.
-2. Perubahan skop memerlukan kelulusan bertulis.
-3. Pembayaran dalam 14 hari dari tarikh invois.`;
-
 export default function WorkOrderPDF({ wo, job, quotation, customer, company }: WorkOrderPDFProps) {
-  const termsText = wo.terms || DEFAULT_TERMS;
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
+  const termsText = wo.terms || t('pdf.workOrder.defaultTerms');
   const termsLines = termsText.split('\n').filter(l => l.trim());
   const logo = company.logo_base64 || company.logo_url;
   const ssm = [company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ');
