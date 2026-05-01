@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, Image } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtRM, fmtDate } from './pdfStyles';
+import i18n from '@/i18n';
 
 interface PaymentMethod {
   id: string;
@@ -46,14 +47,11 @@ export interface InvoicePDFProps {
   paymentMethods?: PaymentMethod[];
 }
 
-const DEFAULT_TERMS = `1. Invois ini adalah sah dan perlu dibayar dalam tempoh 14 hari dari tarikh invois.
-2. Pembayaran hendaklah dibuat kepada akaun syarikat seperti yang dinyatakan.
-3. Sebarang pertikaian hendaklah dimaklumkan dalam tempoh 7 hari dari tarikh invois.`;
-
 export default function InvoicePDF({ invoice, job, customer, company, paymentMethods }: InvoicePDFProps) {
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
   const afterDiscount = invoice.subtotal - invoice.discount;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
-  const termsText = invoice.terms || DEFAULT_TERMS;
+  const termsText = invoice.terms || t('pdf.invoice.defaultTerms');
   const termsLines = termsText.split('\n').filter(l => l.trim());
   const banks = paymentMethods?.filter(m => m.type === 'bank_transfer') || [];
   const qrs = paymentMethods?.filter(m => m.type === 'qr_payment') || [];
