@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtDate, COLORS } from './pdfStyles';
+import i18n from '@/i18n';
 
 // WorkTrace palette overlay
 const WT = {
@@ -147,14 +148,16 @@ export interface CompletionReportPDFProps {
 }
 
 function statusPill(status?: string | null) {
+  const t = (k: string) => i18n.t(k) as string;
   const v = (status || 'draft').toLowerCase();
-  if (v === 'accepted') return { label: 'Disahkan', bg: WT.GREEN_BG, color: WT.GREEN, dot: WT.GREEN };
-  if (v === 'rejected') return { label: 'Ditolak', bg: '#FEE2E2', color: '#B91C1C', dot: '#B91C1C' };
-  if (v === 'submitted') return { label: 'Menunggu Pengesahan', bg: WT.BLUE_BG, color: WT.BLUE, dot: WT.BLUE };
-  return { label: 'Draf', bg: WT.SURFACE, color: WT.MUTED, dot: WT.MUTED };
+  if (v === 'accepted') return { label: t('pdf.completion.statusAccepted'), bg: WT.GREEN_BG, color: WT.GREEN, dot: WT.GREEN };
+  if (v === 'rejected') return { label: t('pdf.completion.statusRejected'), bg: '#FEE2E2', color: '#B91C1C', dot: '#B91C1C' };
+  if (v === 'submitted') return { label: t('pdf.completion.statusSubmitted'), bg: WT.BLUE_BG, color: WT.BLUE, dot: WT.BLUE };
+  return { label: t('pdf.completion.statusDraft'), bg: WT.SURFACE, color: WT.MUTED, dot: WT.MUTED };
 }
 
 export default function CompletionReportPDF({ report, job, customer, company }: CompletionReportPDFProps) {
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
   const logo = company.logo_base64 || company.logo_url;
   const before = report.before_photos ?? [];
   const after = (report.after_photos && report.after_photos.length > 0)
@@ -167,10 +170,10 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
   const pill = statusPill(report.status);
 
   // Build paired photo array for 2-col rendering
-  type PhotoEntry = { src: string; kind: 'Sebelum' | 'Selepas'; caption?: string };
+  type PhotoEntry = { src: string; kind: string; caption?: string };
   const photoList: PhotoEntry[] = [
-    ...before.map((src, i) => ({ src, kind: 'Sebelum' as const, caption: beforeCaps[i] })),
-    ...after.map((src, i) => ({ src, kind: 'Selepas' as const, caption: afterCaps[i] })),
+    ...before.map((src, i) => ({ src, kind: t('pdf.completion.before'), caption: beforeCaps[i] })),
+    ...after.map((src, i) => ({ src, kind: t('pdf.completion.after'), caption: afterCaps[i] })),
   ];
   const photoRows: PhotoEntry[][] = [];
   for (let i = 0; i < photoList.length; i += 2) photoRows.push(photoList.slice(i, i + 2));
