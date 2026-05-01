@@ -934,6 +934,14 @@
     "waPayBefore": "📅 *Bayar Sebelum:* {{date}}",
     "waProofPrompt": "👉 Tekan sini untuk lihat invois & hantar bukti bayaran:"
   },
+  "pdfPreview": {
+    "title": "Pratonton PDF",
+    "generating": "Menjana pratonton...",
+    "loadingPages": "Memuatkan halaman PDF...",
+    "previewFailed": "Gagal memaparkan pratonton PDF. Sila cuba muat turun sebaliknya.",
+    "renderError": "Gagal memaparkan pratonton PDF. Sila cuba semula.",
+    "totalPages": "Jumlah halaman: {{count}}"
+  },
   "pdf": {
     "common": {
       "company": "Syarikat",

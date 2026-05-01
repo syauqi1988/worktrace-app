@@ -934,6 +934,14 @@
     "waPayBefore": "📅 *Pay Before:* {{date}}",
     "waProofPrompt": "👉 Tap here to view invoice & submit payment proof:"
   },
+  "pdfPreview": {
+    "title": "PDF Preview",
+    "generating": "Generating preview...",
+    "loadingPages": "Loading PDF pages...",
+    "previewFailed": "Failed to display PDF preview. Please try downloading instead.",
+    "renderError": "Failed to render PDF preview. Please try again.",
+    "totalPages": "Total pages: {{count}}"
+  },
   "pdf": {
     "common": {
       "company": "Company",
