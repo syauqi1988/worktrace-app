@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, Image } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtRM, fmtDate } from './pdfStyles';
+import i18n from '@/i18n';
 
 export interface ReceiptPDFProps {
   receipt: {
@@ -31,6 +32,7 @@ export interface ReceiptPDFProps {
 }
 
 export default function ReceiptPDF({ receipt, invoice, job, customer, company, paymentMethod }: ReceiptPDFProps) {
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
   const afterDiscount = invoice.subtotal - invoice.discount;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
   const logo = company.logo_base64 || company.logo_url;
@@ -44,24 +46,24 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
           <View style={s.headerLeftRow}>
             {logo ? <Image src={logo} style={s.logo} /> : null}
             <View style={s.companyBlock}>
-              <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
-              {ssm && <Text style={s.companyText}>Reg No: {ssm}</Text>}
+              <Text style={s.companyName}>{company.company_name || t('pdf.common.company')}</Text>
+              {ssm && <Text style={s.companyText}>{t('pdf.common.regNo')}: {ssm}</Text>}
               {company.address && <Text style={s.companyText}>{company.address}</Text>}
-              {company.phone && <Text style={s.companyText}>Contact: {company.phone}</Text>}
+              {company.phone && <Text style={s.companyText}>{t('pdf.common.contact')}: {company.phone}</Text>}
             </View>
           </View>
           <View style={s.headerRight}>
-            <Text style={s.docTitle}>RECEIPT</Text>
+            <Text style={s.docTitle}>{t('pdf.receipt.title')}</Text>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>No.</Text>
+              <Text style={s.metaLabel}>{t('pdf.common.no')}</Text>
               <Text style={s.metaValue}>{receipt.receipt_number}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Payment Date</Text>
+              <Text style={s.metaLabel}>{t('pdf.receipt.paymentDate')}</Text>
               <Text style={s.metaValue}>{fmtDate(receipt.payment_date)}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Invoice No.</Text>
+              <Text style={s.metaLabel}>{t('pdf.receipt.invoiceNo')}</Text>
               <Text style={s.metaValue}>{invoice.invoice_number}</Text>
             </View>
           </View>
@@ -72,25 +74,25 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
         {/* Received From / Job */}
         <View style={s.twoCol}>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>Received From</Text>
+            <Text style={s.sectionLabel}>{t('pdf.receipt.receivedFrom')}</Text>
             <Text style={s.partyName}>{(customer?.name || '-').toUpperCase()}</Text>
             {customer?.address && <Text style={s.partyText}>{customer.address}</Text>}
             {customer?.phone && (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>Phone No.</Text>
+                <Text style={s.partyMetaLabel}>{t('pdf.common.phoneNo')}</Text>
                 <Text style={s.partyMetaValue}>{customer.phone}</Text>
               </View>
             )}
             {customer?.email && (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>Email</Text>
+                <Text style={s.partyMetaLabel}>{t('pdf.common.email')}</Text>
                 <Text style={s.partyMetaValue}>{customer.email}</Text>
               </View>
             )}
           </View>
           {job && (
             <View style={s.col}>
-              <Text style={s.sectionLabel}>Reference Job</Text>
+              <Text style={s.sectionLabel}>{t('pdf.common.referenceJob')}</Text>
               <Text style={s.partyName}>{job.job_number}</Text>
               <Text style={s.partyText}>{job.title}</Text>
             </View>
@@ -99,11 +101,11 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
 
         {/* Table */}
         <View style={s.tableHeader}>
-          <Text style={[s.tableHeaderText, s.colNo]}>No.</Text>
-          <Text style={[s.tableHeaderText, s.colDesc]}>Description</Text>
-          <Text style={[s.tableHeaderText, s.colQty]}>Qty</Text>
-          <Text style={[s.tableHeaderText, s.colUnit]}>U/Price</Text>
-          <Text style={[s.tableHeaderText, s.colAmt]}>Amt</Text>
+          <Text style={[s.tableHeaderText, s.colNo]}>{t('pdf.common.no')}</Text>
+          <Text style={[s.tableHeaderText, s.colDesc]}>{t('pdf.common.description')}</Text>
+          <Text style={[s.tableHeaderText, s.colQty]}>{t('pdf.common.qty')}</Text>
+          <Text style={[s.tableHeaderText, s.colUnit]}>{t('pdf.common.uPrice')}</Text>
+          <Text style={[s.tableHeaderText, s.colAmt]}>{t('pdf.common.amt')}</Text>
         </View>
         {invoice.items.map((item, i) => (
           <View key={i} style={s.tableRow} wrap={false}>
@@ -119,31 +121,31 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
         <View style={s.summaryWrap}>
           <View style={s.summary}>
             <View style={s.summaryRow}>
-              <Text style={s.summaryLabel}>Subtotal</Text>
+              <Text style={s.summaryLabel}>{t('pdf.common.subtotal')}</Text>
               <Text style={s.summaryValue}>{fmtRM(invoice.subtotal)}</Text>
             </View>
             {invoice.discount > 0 && (
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>Discount</Text>
+                <Text style={s.summaryLabel}>{t('pdf.common.discount')}</Text>
                 <Text style={s.summaryValue}>-{fmtRM(invoice.discount)}</Text>
               </View>
             )}
             {invoice.tax_rate > 0 && (
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>SST ({invoice.tax_rate}%)</Text>
+                <Text style={s.summaryLabel}>{t('pdf.common.sst')} ({invoice.tax_rate}%)</Text>
                 <Text style={s.summaryValue}>{fmtRM(sstAmount)}</Text>
               </View>
             )}
             <View style={s.summaryTotalRow}>
-              <Text style={s.summaryTotalLabel}>Total</Text>
+              <Text style={s.summaryTotalLabel}>{t('pdf.common.total')}</Text>
               <Text style={s.summaryTotalValue}>{fmtRM(invoice.total)}</Text>
             </View>
             <View style={s.summaryRow}>
-              <Text style={s.summaryLabel}>Payment Received</Text>
+              <Text style={s.summaryLabel}>{t('pdf.common.paymentReceived')}</Text>
               <Text style={s.summaryValue}>-{fmtRM(receipt.amount_paid)}</Text>
             </View>
             <View style={s.summaryTotalRow}>
-              <Text style={s.summaryTotalLabel}>Balance</Text>
+              <Text style={s.summaryTotalLabel}>{t('pdf.common.balance')}</Text>
               <Text style={s.summaryTotalValue}>{fmtRM(invoice.total - receipt.amount_paid)}</Text>
             </View>
           </View>
@@ -152,7 +154,7 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
         {/* Payment Method */}
         {paymentMethod && (
           <View style={s.block}>
-            <Text style={s.blockLabel}>Payment Method</Text>
+            <Text style={s.blockLabel}>{t('pdf.receipt.paymentMethod')}</Text>
             <Text style={s.blockText}>{paymentMethod}</Text>
           </View>
         )}
@@ -160,7 +162,7 @@ export default function ReceiptPDF({ receipt, invoice, job, customer, company, p
         {/* Footer */}
         <View style={s.footer} fixed>
           <Text style={s.footerText}>{company.company_name || ''}</Text>
-          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
+          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `${t('pdf.common.page')} ${pageNumber} ${t('pdf.common.of')} ${totalPages}`} />
         </View>
       </Page>
     </Document>

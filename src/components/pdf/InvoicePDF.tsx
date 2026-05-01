@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, Image } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtRM, fmtDate } from './pdfStyles';
+import i18n from '@/i18n';
 
 interface PaymentMethod {
   id: string;
@@ -46,14 +47,11 @@ export interface InvoicePDFProps {
   paymentMethods?: PaymentMethod[];
 }
 
-const DEFAULT_TERMS = `1. Invois ini adalah sah dan perlu dibayar dalam tempoh 14 hari dari tarikh invois.
-2. Pembayaran hendaklah dibuat kepada akaun syarikat seperti yang dinyatakan.
-3. Sebarang pertikaian hendaklah dimaklumkan dalam tempoh 7 hari dari tarikh invois.`;
-
 export default function InvoicePDF({ invoice, job, customer, company, paymentMethods }: InvoicePDFProps) {
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
   const afterDiscount = invoice.subtotal - invoice.discount;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
-  const termsText = invoice.terms || DEFAULT_TERMS;
+  const termsText = invoice.terms || t('pdf.invoice.defaultTerms');
   const termsLines = termsText.split('\n').filter(l => l.trim());
   const banks = paymentMethods?.filter(m => m.type === 'bank_transfer') || [];
   const qrs = paymentMethods?.filter(m => m.type === 'qr_payment') || [];
@@ -70,32 +68,32 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
           <View style={s.headerLeftRow}>
             {logo ? <Image src={logo} style={s.logo} /> : null}
             <View style={s.companyBlock}>
-              <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
-              {ssm && <Text style={s.companyText}>Reg No: {ssm}</Text>}
-              {company.tin_number && <Text style={s.companyText}>TIN: {company.tin_number}</Text>}
+              <Text style={s.companyName}>{company.company_name || t('pdf.common.company')}</Text>
+              {ssm && <Text style={s.companyText}>{t('pdf.common.regNo')}: {ssm}</Text>}
+              {company.tin_number && <Text style={s.companyText}>{t('pdf.common.tin')}: {company.tin_number}</Text>}
               {company.address && <Text style={s.companyText}>{company.address}</Text>}
-              {company.phone && <Text style={s.companyText}>Contact: {company.phone}</Text>}
+              {company.phone && <Text style={s.companyText}>{t('pdf.common.contact')}: {company.phone}</Text>}
             </View>
           </View>
           <View style={s.headerRight}>
-            <Text style={s.docTitle}>INVOICE</Text>
+            <Text style={s.docTitle}>{t('pdf.invoice.title')}</Text>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>No.</Text>
+              <Text style={s.metaLabel}>{t('pdf.common.no')}</Text>
               <Text style={s.metaValue}>{invoice.invoice_number}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Date</Text>
+              <Text style={s.metaLabel}>{t('pdf.common.date')}</Text>
               <Text style={s.metaValue}>{fmtDate(invoice.issued_date || invoice.created_at)}</Text>
             </View>
             {invoice.due_date && (
               <View style={s.metaRow}>
-                <Text style={s.metaLabel}>Due Date</Text>
+                <Text style={s.metaLabel}>{t('pdf.invoice.dueDate')}</Text>
                 <Text style={s.metaValue}>{fmtDate(invoice.due_date)}</Text>
               </View>
             )}
             {isPaid && (
               <View style={s.metaRow}>
-                <Text style={s.metaLabel}>Paid Date</Text>
+                <Text style={s.metaLabel}>{t('pdf.invoice.paidDate')}</Text>
                 <Text style={s.metaValue}>{fmtDate(invoice.paid_date)}</Text>
               </View>
             )}
@@ -107,31 +105,31 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         {/* Bill To / Job */}
         <View style={s.twoCol}>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>Bill To</Text>
+            <Text style={s.sectionLabel}>{t('pdf.invoice.billTo')}</Text>
             <Text style={s.partyName}>{(customer?.name || '-').toUpperCase()}</Text>
             {customer?.address && <Text style={s.partyText}>{customer.address}</Text>}
             {customer?.tin_number && (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>TIN No.</Text>
+                <Text style={s.partyMetaLabel}>{t('pdf.common.tinNo')}</Text>
                 <Text style={s.partyMetaValue}>{customer.tin_number}</Text>
               </View>
             )}
             {customer?.phone && (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>Phone No.</Text>
+                <Text style={s.partyMetaLabel}>{t('pdf.common.phoneNo')}</Text>
                 <Text style={s.partyMetaValue}>{customer.phone}</Text>
               </View>
             )}
             {customer?.email && (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>Email</Text>
+                <Text style={s.partyMetaLabel}>{t('pdf.common.email')}</Text>
                 <Text style={s.partyMetaValue}>{customer.email}</Text>
               </View>
             )}
           </View>
           {job && (
             <View style={s.col}>
-              <Text style={s.sectionLabel}>Reference Job</Text>
+              <Text style={s.sectionLabel}>{t('pdf.common.referenceJob')}</Text>
               <Text style={s.partyName}>{job.job_number}</Text>
               <Text style={s.partyText}>{job.title}</Text>
             </View>
@@ -142,11 +140,11 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
 
         {/* Table */}
         <View style={s.tableHeader}>
-          <Text style={[s.tableHeaderText, s.colNo]}>No.</Text>
-          <Text style={[s.tableHeaderText, s.colDesc]}>Description</Text>
-          <Text style={[s.tableHeaderText, s.colQty]}>Qty</Text>
-          <Text style={[s.tableHeaderText, s.colUnit]}>U/Price</Text>
-          <Text style={[s.tableHeaderText, s.colAmt]}>Amt</Text>
+          <Text style={[s.tableHeaderText, s.colNo]}>{t('pdf.common.no')}</Text>
+          <Text style={[s.tableHeaderText, s.colDesc]}>{t('pdf.common.description')}</Text>
+          <Text style={[s.tableHeaderText, s.colQty]}>{t('pdf.common.qty')}</Text>
+          <Text style={[s.tableHeaderText, s.colUnit]}>{t('pdf.common.uPrice')}</Text>
+          <Text style={[s.tableHeaderText, s.colAmt]}>{t('pdf.common.amt')}</Text>
         </View>
         {invoice.items.map((item, i) => (
           <View key={i} style={s.tableRow} wrap={false}>
@@ -162,33 +160,33 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         <View style={s.summaryWrap}>
           <View style={s.summary}>
             <View style={s.summaryRow}>
-              <Text style={s.summaryLabel}>Subtotal</Text>
+              <Text style={s.summaryLabel}>{t('pdf.common.subtotal')}</Text>
               <Text style={s.summaryValue}>{fmtRM(invoice.subtotal)}</Text>
             </View>
             {invoice.discount > 0 && (
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>Discount</Text>
+                <Text style={s.summaryLabel}>{t('pdf.common.discount')}</Text>
                 <Text style={s.summaryValue}>-{fmtRM(invoice.discount)}</Text>
               </View>
             )}
             {invoice.tax_rate > 0 && (
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>SST ({invoice.tax_rate}%)</Text>
+                <Text style={s.summaryLabel}>{t('pdf.common.sst')} ({invoice.tax_rate}%)</Text>
                 <Text style={s.summaryValue}>{fmtRM(sstAmount)}</Text>
               </View>
             )}
             <View style={s.summaryTotalRow}>
-              <Text style={s.summaryTotalLabel}>Total</Text>
+              <Text style={s.summaryTotalLabel}>{t('pdf.common.total')}</Text>
               <Text style={s.summaryTotalValue}>{fmtRM(invoice.total)}</Text>
             </View>
             {isPaid && (
               <>
                 <View style={s.summaryRow}>
-                  <Text style={s.summaryLabel}>Payment Received</Text>
+                  <Text style={s.summaryLabel}>{t('pdf.common.paymentReceived')}</Text>
                   <Text style={s.summaryValue}>-{fmtRM(invoice.total)}</Text>
                 </View>
                 <View style={s.summaryTotalRow}>
-                  <Text style={s.summaryTotalLabel}>Balance</Text>
+                  <Text style={s.summaryTotalLabel}>{t('pdf.common.balance')}</Text>
                   <Text style={s.summaryTotalValue}>{fmtRM(balance)}</Text>
                 </View>
               </>
@@ -199,25 +197,25 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         {/* Payment Methods */}
         {(banks.length > 0 || qrs.length > 0) && (
           <View style={s.block}>
-            <Text style={s.blockLabel}>Payment Methods</Text>
+            <Text style={s.blockLabel}>{t('pdf.invoice.paymentMethods')}</Text>
             {banks.map((b, i) => (
               <View key={i} style={s.paymentBox} wrap={false}>
-                <Text style={s.paymentTitle}>Bank Transfer</Text>
+                <Text style={s.paymentTitle}>{t('pdf.invoice.bankTransfer')}</Text>
                 {b.bank_name && (
                   <View style={s.paymentRow}>
-                    <Text style={s.paymentLabel}>Bank</Text>
+                    <Text style={s.paymentLabel}>{t('pdf.invoice.bank')}</Text>
                     <Text style={s.paymentValue}>{b.bank_name}</Text>
                   </View>
                 )}
                 {b.account_name && (
                   <View style={s.paymentRow}>
-                    <Text style={s.paymentLabel}>Account Name</Text>
+                    <Text style={s.paymentLabel}>{t('pdf.invoice.accountName')}</Text>
                     <Text style={s.paymentValue}>{b.account_name}</Text>
                   </View>
                 )}
                 {b.account_number && (
                   <View style={s.paymentRow}>
-                    <Text style={s.paymentLabel}>Account No.</Text>
+                    <Text style={s.paymentLabel}>{t('pdf.invoice.accountNo')}</Text>
                     <Text style={s.paymentValue}>{b.account_number}</Text>
                   </View>
                 )}
@@ -225,7 +223,7 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
             ))}
             {qrs.map((q, i) => (
               <View key={i} style={s.paymentBox} wrap={false}>
-                <Text style={s.paymentTitle}>{q.provider || 'QR Payment'}</Text>
+                <Text style={s.paymentTitle}>{q.provider || t('pdf.invoice.qrPayment')}</Text>
                 {q.qr_image_url && <Image src={q.qr_image_url} style={s.qrImage} />}
               </View>
             ))}
@@ -235,14 +233,14 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         {/* Notes */}
         {invoice.notes && (
           <View style={s.block}>
-            <Text style={s.blockLabel}>Remarks</Text>
+            <Text style={s.blockLabel}>{t('pdf.common.remarks')}</Text>
             <Text style={s.blockText}>{invoice.notes}</Text>
           </View>
         )}
 
         {/* Terms */}
         <View style={s.block}>
-          <Text style={s.blockLabel}>Terms and Conditions</Text>
+          <Text style={s.blockLabel}>{t('pdf.common.termsTitle')}</Text>
           {termsLines.map((line, i) => {
             const match = line.match(/^\s*(\d+)[\.\)]\s*(.*)$/);
             if (match) {
@@ -260,7 +258,7 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         {/* Footer */}
         <View style={s.footer} fixed>
           <Text style={s.footerText}>{company.company_name || ''}</Text>
-          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
+          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `${t('pdf.common.page')} ${pageNumber} ${t('pdf.common.of')} ${totalPages}`} />
         </View>
       </Page>
     </Document>

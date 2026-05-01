@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtRM, fmtDate, COLORS } from './pdfStyles';
+import i18n from '@/i18n';
 
 export interface WorkOrderPDFProps {
   wo: {
@@ -53,12 +54,9 @@ const extra = StyleSheet.create({
   scheduleValue: { fontSize: 9, color: COLORS.BLACK, marginTop: 1 },
 });
 
-const DEFAULT_TERMS = `1. Kerja dilaksanakan mengikut spesifikasi dipersetujui.
-2. Perubahan skop memerlukan kelulusan bertulis.
-3. Pembayaran dalam 14 hari dari tarikh invois.`;
-
 export default function WorkOrderPDF({ wo, job, quotation, customer, company }: WorkOrderPDFProps) {
-  const termsText = wo.terms || DEFAULT_TERMS;
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
+  const termsText = wo.terms || t('pdf.workOrder.defaultTerms');
   const termsLines = termsText.split('\n').filter(l => l.trim());
   const logo = company.logo_base64 || company.logo_url;
   const ssm = [company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ');
@@ -71,24 +69,24 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
           <View style={s.headerLeftRow}>
             {logo ? <Image src={logo} style={s.logo} /> : null}
             <View style={s.companyBlock}>
-              <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
-              {ssm ? <Text style={s.companyText}>Reg No: {ssm}</Text> : null}
+              <Text style={s.companyName}>{company.company_name || t('pdf.common.company')}</Text>
+              {ssm ? <Text style={s.companyText}>{t('pdf.common.regNo')}: {ssm}</Text> : null}
               {company.address ? <Text style={s.companyText}>{company.address}</Text> : null}
-              {company.phone ? <Text style={s.companyText}>Contact: {company.phone}</Text> : null}
+              {company.phone ? <Text style={s.companyText}>{t('pdf.common.contact')}: {company.phone}</Text> : null}
             </View>
           </View>
           <View style={s.headerRight}>
-            <Text style={s.docTitle}>WORK ORDER</Text>
+            <Text style={s.docTitle}>{t('pdf.workOrder.title')}</Text>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>No.</Text>
+              <Text style={s.metaLabel}>{t('pdf.common.no')}</Text>
               <Text style={s.metaValue}>{wo.wo_number}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Date</Text>
+              <Text style={s.metaLabel}>{t('pdf.common.date')}</Text>
               <Text style={s.metaValue}>{fmtDate(wo.created_at)}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Status</Text>
+              <Text style={s.metaLabel}>{t('pdf.common.status')}</Text>
               <Text style={s.metaValue}>{wo.status}</Text>
             </View>
           </View>
@@ -99,18 +97,18 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
         {/* Job + Customer */}
         <View style={s.twoCol}>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>Butiran Kerja</Text>
+            <Text style={s.sectionLabel}>{t('pdf.workOrder.jobDetails')}</Text>
             {job ? <Text style={s.partyName}>{job.job_number}</Text> : null}
             <Text style={s.partyText}>{wo.title}</Text>
             {quotation ? (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>Sebut Harga</Text>
+                <Text style={s.partyMetaLabel}>{t('pdf.workOrder.quotation')}</Text>
                 <Text style={s.partyMetaValue}>{quotation.quote_number}</Text>
               </View>
             ) : null}
           </View>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>Maklumat Pelanggan</Text>
+            <Text style={s.sectionLabel}>{t('pdf.workOrder.customerInfo')}</Text>
             <Text style={s.partyName}>{(customer?.name || '-').toUpperCase()}</Text>
             {customer?.phone ? <Text style={s.partyText}>{customer.phone}</Text> : null}
             {customer?.email ? <Text style={s.partyText}>{customer.email}</Text> : null}
@@ -119,31 +117,31 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
         </View>
 
         {/* Schedule */}
-        <Text style={s.sectionLabel}>Jadual Kerja</Text>
+        <Text style={s.sectionLabel}>{t('pdf.workOrder.schedule')}</Text>
         <View style={extra.scheduleBox}>
           <View style={extra.scheduleCell}>
-            <Text style={extra.scheduleLabel}>Tarikh Mula</Text>
+            <Text style={extra.scheduleLabel}>{t('pdf.workOrder.startDate')}</Text>
             <Text style={extra.scheduleValue}>{fmtDate(wo.scheduled_start_date)}</Text>
           </View>
           <View style={extra.scheduleCell}>
-            <Text style={extra.scheduleLabel}>Tarikh Siap Anggaran</Text>
+            <Text style={extra.scheduleLabel}>{t('pdf.workOrder.endDate')}</Text>
             <Text style={extra.scheduleValue}>{fmtDate(wo.scheduled_end_date)}</Text>
           </View>
           {wo.estimated_duration ? (
             <View style={extra.scheduleCell}>
-              <Text style={extra.scheduleLabel}>Tempoh Anggaran</Text>
+              <Text style={extra.scheduleLabel}>{t('pdf.workOrder.duration')}</Text>
               <Text style={extra.scheduleValue}>{wo.estimated_duration}</Text>
             </View>
           ) : null}
           {wo.technician_name ? (
             <View style={extra.scheduleCell}>
-              <Text style={extra.scheduleLabel}>Juruteknik</Text>
+              <Text style={extra.scheduleLabel}>{t('pdf.workOrder.technician')}</Text>
               <Text style={extra.scheduleValue}>{wo.technician_name}</Text>
             </View>
           ) : null}
           {wo.location ? (
             <View style={{ width: '100%', marginTop: 4 }}>
-              <Text style={extra.scheduleLabel}>Lokasi</Text>
+              <Text style={extra.scheduleLabel}>{t('pdf.workOrder.location')}</Text>
               <Text style={extra.scheduleValue}>{wo.location}</Text>
             </View>
           ) : null}
@@ -151,7 +149,7 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
 
         {/* Scope */}
         <View style={{ marginTop: 12 }}>
-          <Text style={s.sectionLabel}>Skop Kerja</Text>
+          <Text style={s.sectionLabel}>{t('pdf.workOrder.scope')}</Text>
           <View style={extra.greyBox}>
             <Text style={extra.greyText}>{wo.scope_of_work}</Text>
           </View>
@@ -161,11 +159,11 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
         {wo.items && wo.items.length > 0 ? (
           <View style={{ marginTop: 12 }}>
             <View style={s.tableHeader}>
-              <Text style={[s.tableHeaderText, s.colNo]}>No.</Text>
-              <Text style={[s.tableHeaderText, s.colDesc]}>Description</Text>
-              <Text style={[s.tableHeaderText, s.colQty]}>Qty</Text>
-              <Text style={[s.tableHeaderText, s.colUnit]}>U/Price</Text>
-              <Text style={[s.tableHeaderText, s.colAmt]}>Amt</Text>
+              <Text style={[s.tableHeaderText, s.colNo]}>{t('pdf.common.no')}</Text>
+              <Text style={[s.tableHeaderText, s.colDesc]}>{t('pdf.common.description')}</Text>
+              <Text style={[s.tableHeaderText, s.colQty]}>{t('pdf.common.qty')}</Text>
+              <Text style={[s.tableHeaderText, s.colUnit]}>{t('pdf.common.uPrice')}</Text>
+              <Text style={[s.tableHeaderText, s.colAmt]}>{t('pdf.common.amt')}</Text>
             </View>
             {wo.items.map((item, i) => (
               <View key={i} style={s.tableRow} wrap={false}>
@@ -181,7 +179,7 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
             <View style={s.summaryWrap}>
               <View style={s.summary}>
                 <View style={s.summaryTotalRow}>
-                  <Text style={s.summaryTotalLabel}>Total</Text>
+                  <Text style={s.summaryTotalLabel}>{t('pdf.common.total')}</Text>
                   <Text style={s.summaryTotalValue}>{fmtRM(wo.total)}</Text>
                 </View>
               </View>
@@ -192,7 +190,7 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
         {/* Special instructions */}
         {wo.special_instructions ? (
           <View style={{ marginTop: 12 }}>
-            <Text style={s.sectionLabel}>Arahan Khas</Text>
+            <Text style={s.sectionLabel}>{t('pdf.workOrder.specialInstructions')}</Text>
             <View style={extra.greyBox}>
               <Text style={extra.greyText}>{wo.special_instructions}</Text>
             </View>
@@ -201,7 +199,7 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
 
         {/* Terms */}
         <View style={s.block}>
-          <Text style={s.blockLabel}>Syarat & Terma</Text>
+          <Text style={s.blockLabel}>{t('pdf.workOrder.termsTitle')}</Text>
           {termsLines.map((line, i) => {
             const m = line.match(/^\s*(\d+)[\.\)]\s*(.*)$/);
             if (m) {
@@ -219,8 +217,8 @@ export default function WorkOrderPDF({ wo, job, quotation, customer, company }: 
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>Jana oleh WorkTrace</Text>
-          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
+          <Text style={s.footerText}>{t('pdf.common.generatedBy')}</Text>
+          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `${t('pdf.common.page')} ${pageNumber} ${t('pdf.common.of')} ${totalPages}`} />
         </View>
       </Page>
     </Document>

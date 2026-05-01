@@ -3,6 +3,7 @@ import { Document as PreviewDocument, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { Loader2, MessageCircle, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 
@@ -29,6 +30,7 @@ export default function PDFPreviewModal({
   onDownload,
   onShare,
 }: PDFPreviewModalProps) {
+  const { t } = useTranslation();
   const [numPages, setNumPages] = useState(0);
   const [pageWidth, setPageWidth] = useState(720);
   const [renderError, setRenderError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export default function PDFPreviewModal({
 
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={onDownload} className="h-8 text-xs">
-              Muat Turun
+              {t('common.download')}
             </Button>
 
             {onShare ? (
@@ -94,7 +96,7 @@ export default function PDFPreviewModal({
           {loading ? (
             <div className="flex h-full flex-col items-center justify-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Menjana pratonton...</span>
+              <span className="text-sm text-muted-foreground">{t('pdfPreview.generating')}</span>
             </div>
           ) : documentFile ? (
             <PreviewDocument
@@ -102,12 +104,12 @@ export default function PDFPreviewModal({
               loading={
                 <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Memuatkan halaman PDF...</span>
+                  <span className="text-sm text-muted-foreground">{t('pdfPreview.loadingPages')}</span>
                 </div>
               }
               error={
                 <div className="flex h-full min-h-[320px] items-center justify-center text-center text-sm text-destructive">
-                  Gagal memaparkan pratonton PDF. Sila cuba muat turun sebaliknya.
+                  {t('pdfPreview.previewFailed')}
                 </div>
               }
               onLoadSuccess={({ numPages: totalPages }) => {
@@ -117,7 +119,7 @@ export default function PDFPreviewModal({
               onLoadError={(err) => {
                 console.error('PDF load error:', err);
                 setNumPages(0);
-                setRenderError('Gagal memaparkan pratonton PDF. Sila cuba semula.');
+                setRenderError(t('pdfPreview.renderError'));
               }}
             >
               <div className="mx-auto flex w-full max-w-fit flex-col gap-4">
@@ -144,7 +146,7 @@ export default function PDFPreviewModal({
 
         <div className="border-t border-border bg-background px-4 py-2 text-center shrink-0">
           <span className="text-xs text-muted-foreground">
-            {numPages > 0 ? `Jumlah halaman: ${numPages}` : 'Pratonton PDF'}
+            {numPages > 0 ? t('pdfPreview.totalPages', { count: numPages }) : t('pdfPreview.title')}
           </span>
         </div>
       </div>

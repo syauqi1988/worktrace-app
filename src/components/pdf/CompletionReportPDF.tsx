@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { pdfStyles as s, fmtDate, COLORS } from './pdfStyles';
+import i18n from '@/i18n';
 
 // WorkTrace palette overlay
 const WT = {
@@ -147,14 +148,16 @@ export interface CompletionReportPDFProps {
 }
 
 function statusPill(status?: string | null) {
+  const t = (k: string) => i18n.t(k) as string;
   const v = (status || 'draft').toLowerCase();
-  if (v === 'accepted') return { label: 'Disahkan', bg: WT.GREEN_BG, color: WT.GREEN, dot: WT.GREEN };
-  if (v === 'rejected') return { label: 'Ditolak', bg: '#FEE2E2', color: '#B91C1C', dot: '#B91C1C' };
-  if (v === 'submitted') return { label: 'Menunggu Pengesahan', bg: WT.BLUE_BG, color: WT.BLUE, dot: WT.BLUE };
-  return { label: 'Draf', bg: WT.SURFACE, color: WT.MUTED, dot: WT.MUTED };
+  if (v === 'accepted') return { label: t('pdf.completion.statusAccepted'), bg: WT.GREEN_BG, color: WT.GREEN, dot: WT.GREEN };
+  if (v === 'rejected') return { label: t('pdf.completion.statusRejected'), bg: '#FEE2E2', color: '#B91C1C', dot: '#B91C1C' };
+  if (v === 'submitted') return { label: t('pdf.completion.statusSubmitted'), bg: WT.BLUE_BG, color: WT.BLUE, dot: WT.BLUE };
+  return { label: t('pdf.completion.statusDraft'), bg: WT.SURFACE, color: WT.MUTED, dot: WT.MUTED };
 }
 
 export default function CompletionReportPDF({ report, job, customer, company }: CompletionReportPDFProps) {
+  const t = (k: string, o?: any) => i18n.t(k, o) as string;
   const logo = company.logo_base64 || company.logo_url;
   const before = report.before_photos ?? [];
   const after = (report.after_photos && report.after_photos.length > 0)
@@ -167,10 +170,10 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
   const pill = statusPill(report.status);
 
   // Build paired photo array for 2-col rendering
-  type PhotoEntry = { src: string; kind: 'Sebelum' | 'Selepas'; caption?: string };
+  type PhotoEntry = { src: string; kind: string; caption?: string };
   const photoList: PhotoEntry[] = [
-    ...before.map((src, i) => ({ src, kind: 'Sebelum' as const, caption: beforeCaps[i] })),
-    ...after.map((src, i) => ({ src, kind: 'Selepas' as const, caption: afterCaps[i] })),
+    ...before.map((src, i) => ({ src, kind: t('pdf.completion.before'), caption: beforeCaps[i] })),
+    ...after.map((src, i) => ({ src, kind: t('pdf.completion.after'), caption: afterCaps[i] })),
   ];
   const photoRows: PhotoEntry[][] = [];
   for (let i = 0; i < photoList.length; i += 2) photoRows.push(photoList.slice(i, i + 2));
@@ -184,12 +187,12 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
             {logo ? <Image src={logo} style={x.hLogo} /> : <View style={x.hLogoFallback} />}
             <View>
               <Text style={x.hCompany}>{company.company_name || 'WorkTrace'}</Text>
-              <Text style={x.hTag}>LAPORAN SIAP KERJA</Text>
+              <Text style={x.hTag}>{t('pdf.completion.tag')}</Text>
             </View>
           </View>
           <View style={x.hRight}>
-            <Text style={x.hTitle}>Completion Report</Text>
-            <Text style={x.hNum}>No. {report.report_number}</Text>
+            <Text style={x.hTitle}>{t('pdf.completion.title')}</Text>
+            <Text style={x.hNum}>{t('pdf.common.no')} {report.report_number}</Text>
           </View>
         </View>
 
@@ -203,36 +206,36 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
 
         {/* Title block */}
         <View style={x.titleBlock}>
-          <Text style={x.jobTitle}>{job?.title || 'Laporan Siap Kerja'}</Text>
+          <Text style={x.jobTitle}>{job?.title || t('pdf.completion.defaultTitle')}</Text>
           <Text style={x.jobSubtitle}>
-            {job?.job_number ? `Kerja: ${job.job_number}` : ''}
-            {report.project_ref ? `   ·   Ref: ${report.project_ref}` : ''}
+            {job?.job_number ? `${t('pdf.completion.job')}: ${job.job_number}` : ''}
+            {report.project_ref ? `   ·   ${t('pdf.completion.ref')}: ${report.project_ref}` : ''}
           </Text>
         </View>
 
         {/* Meta strip */}
         <View style={x.metaStrip}>
           <View style={x.metaCell}>
-            <Text style={x.metaLabel}>Tarikh Siap</Text>
+            <Text style={x.metaLabel}>{t('pdf.completion.completionDate')}</Text>
             <Text style={x.metaValue}>{fmtDate(report.completion_date)}</Text>
           </View>
           <View style={x.metaCell}>
-            <Text style={x.metaLabel}>Kategori</Text>
+            <Text style={x.metaLabel}>{t('pdf.completion.category')}</Text>
             <Text style={x.metaValue}>{job?.category || '—'}</Text>
           </View>
           <View style={x.metaCell}>
-            <Text style={x.metaLabel}>Lokasi</Text>
+            <Text style={x.metaLabel}>{t('pdf.completion.location')}</Text>
             <Text style={x.metaValue}>{report.location_label || '—'}</Text>
           </View>
           <View style={x.metaCell}>
-            <Text style={x.metaLabel}>Disediakan</Text>
+            <Text style={x.metaLabel}>{t('pdf.completion.preparedBy')}</Text>
             <Text style={x.metaValue}>{report.technician_name || '—'}</Text>
           </View>
         </View>
 
         {/* Customer */}
         <View style={x.sectionHead}>
-          <Text style={x.sectionLabel}>Pelanggan</Text>
+          <Text style={x.sectionLabel}>{t('pdf.completion.customer')}</Text>
           <View style={x.sectionLine} />
         </View>
         <View style={x.card}>
@@ -245,7 +248,7 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
         {report.work_description ? (
           <>
             <View style={x.sectionHead}>
-              <Text style={x.sectionLabel}>Kerja Dilaksanakan</Text>
+              <Text style={x.sectionLabel}>{t('pdf.completion.workDone')}</Text>
               <View style={x.sectionLine} />
             </View>
             <View style={x.softCard}>
@@ -258,7 +261,7 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
         {report.materials_used ? (
           <>
             <View style={x.sectionHead}>
-              <Text style={x.sectionLabel}>Bahan / Alatan</Text>
+              <Text style={x.sectionLabel}>{t('pdf.completion.materials')}</Text>
               <View style={x.sectionLine} />
             </View>
             <View style={x.softCard}>
@@ -271,8 +274,8 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
         {totalPhotos > 0 ? (
           <>
             <View style={x.sectionHead}>
-              <Text style={x.sectionLabel}>Gambar Kerja</Text>
-              <Text style={x.sectionCount}>{totalPhotos} gambar</Text>
+              <Text style={x.sectionLabel}>{t('pdf.completion.photos')}</Text>
+              <Text style={x.sectionCount}>{t('pdf.completion.photosCount', { count: totalPhotos })}</Text>
               <View style={x.sectionLine} />
             </View>
             {photoRows.map((row, ri) => (
@@ -303,8 +306,8 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
         {checklist.length > 0 ? (
           <>
             <View style={x.sectionHead}>
-              <Text style={x.sectionLabel}>Senarai Semak</Text>
-              <Text style={x.sectionCount}>{checklist.length} item</Text>
+              <Text style={x.sectionLabel}>{t('pdf.completion.checklist')}</Text>
+              <Text style={x.sectionCount}>{t('pdf.completion.itemsCount', { count: checklist.length })}</Text>
               <View style={x.sectionLine} />
             </View>
             {checklist.map((item, i) => {
@@ -318,7 +321,7 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
                     <Text style={x.checkTitle}>{item.title}</Text>
                     {item.note ? <Text style={x.checkNote}>{item.note}</Text> : null}
                   </View>
-                  {!done ? <Text style={x.checkPending}>Pending</Text> : null}
+                  {!done ? <Text style={x.checkPending}>{t('pdf.completion.pending')}</Text> : null}
                 </View>
               );
             })}
@@ -329,7 +332,7 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
         {report.notes ? (
           <>
             <View style={x.sectionHead}>
-              <Text style={x.sectionLabel}>Catatan / Nota Tapak</Text>
+              <Text style={x.sectionLabel}>{t('pdf.completion.siteNotes')}</Text>
               <View style={x.sectionLine} />
             </View>
             <View style={x.card}>
@@ -340,34 +343,34 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
 
         {/* Sign-off */}
         <View style={x.sectionHead} wrap={false}>
-          <Text style={x.sectionLabel}>Pengesahan</Text>
+          <Text style={x.sectionLabel}>{t('pdf.completion.verification')}</Text>
           <View style={x.sectionLine} />
         </View>
         <View style={x.signRow} wrap={false}>
           <View style={x.signCard}>
-            <Text style={x.signRole}>Disediakan oleh (Juruteknik)</Text>
+            <Text style={x.signRole}>{t('pdf.completion.preparedByTech')}</Text>
             <Text style={x.signName}>{report.technician_name || company.company_name || '—'}</Text>
             <Text style={x.signDate}>{fmtDate(report.completion_date)}</Text>
             <View style={x.signLine} />
             <Text style={x.signSub}>{company.company_name || ''}</Text>
           </View>
           <View style={x.signCard}>
-            <Text style={x.signRole}>Disahkan oleh (Pelanggan)</Text>
+            <Text style={x.signRole}>{t('pdf.completion.verifiedByCustomer')}</Text>
             {report.status === 'accepted' ? (
               <>
-                <Text style={x.signName}>{customer?.name || report.customer_signature || 'Pelanggan'}</Text>
+                <Text style={x.signName}>{customer?.name || report.customer_signature || t('pdf.completion.customer')}</Text>
                 <Text style={x.signDate}>{fmtDate(report.accepted_at || null)}</Text>
                 <View style={x.signLine} />
-                <Text style={x.signSub}>Disahkan via WhatsApp</Text>
+                <Text style={x.signSub}>{t('pdf.completion.verifiedViaWa')}</Text>
               </>
             ) : (
               <>
                 <Text style={x.signNamePending}>
-                  {report.customer_signature || 'Menunggu pengesahan'}
+                  {report.customer_signature || t('pdf.completion.awaitingVerification')}
                 </Text>
                 <Text style={x.signDate}>— — —</Text>
                 <View style={x.signLine} />
-                <Text style={x.signSub}>Belum disahkan</Text>
+                <Text style={x.signSub}>{t('pdf.completion.notVerified')}</Text>
               </>
             )}
           </View>
@@ -379,7 +382,7 @@ export default function CompletionReportPDF({ report, job, customer, company }: 
             <Text style={x.ftrBrand}>WorkTrace</Text> · {report.report_number}
             {company.address ? `  ·  ${company.address}` : ''}
           </Text>
-          <Text style={x.ftrText} render={({ pageNumber, totalPages }) => `Halaman ${pageNumber} / ${totalPages}`} />
+          <Text style={x.ftrText} render={({ pageNumber, totalPages }) => `${t('pdf.common.page')} ${pageNumber} ${t('pdf.common.of')} ${totalPages}`} />
         </View>
       </Page>
     </Document>
