@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +9,7 @@ export default function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { profile, refreshProfile } = useAuth();
+  const { t } = useTranslation();
   const [countdown, setCountdown] = useState(5);
   const [isSyncing, setIsSyncing] = useState(true);
   const [syncTimedOut, setSyncTimedOut] = useState(false);
@@ -16,7 +18,7 @@ export default function PaymentSuccessPage() {
   const period = searchParams.get('period') || 'monthly';
 
   const planLabel = plan === 'team' ? 'Team' : 'Pro';
-  const periodLabel = period === 'yearly' ? 'Tahunan' : 'Bulanan';
+  const periodLabel = period === 'yearly' ? t('paymentSuccess.yearly') : t('paymentSuccess.monthly');
   const isPlanSynced = useMemo(() => {
     return profile?.plan === plan && profile?.subscription_status === 'active';
   }, [plan, profile?.plan, profile?.subscription_status]);
@@ -83,48 +85,42 @@ export default function PaymentSuccessPage() {
         )}
 
         <h1 className="text-2xl font-bold text-foreground">
-          {isPlanSynced ? 'Pembayaran Berjaya!' : 'Sedang sync pembayaran...'}
+          {isPlanSynced ? t('paymentSuccess.successTitle') : t('paymentSuccess.syncingTitle')}
         </h1>
 
         <p className="text-muted-foreground">
           {isPlanSynced
-            ? `Selamat datang ke WorkTrace ${planLabel}!`
-            : 'Kami sedang tunggu pengesahan BillPlz dan kemas kini pelan anda.'}
+            ? t('paymentSuccess.successBody', { plan: planLabel })
+            : t('paymentSuccess.syncingBody')}
         </p>
 
         <div className="space-y-2 text-sm text-foreground">
-          <p><span className="text-muted-foreground">Pelan:</span> {planLabel}</p>
-          <p><span className="text-muted-foreground">Tempoh:</span> {periodLabel}</p>
+          <p><span className="text-muted-foreground">{t('paymentSuccess.plan')}</span> {planLabel}</p>
+          <p><span className="text-muted-foreground">{t('paymentSuccess.period')}</span> {periodLabel}</p>
         </div>
 
         {syncTimedOut ? (
-          <p className="text-sm text-muted-foreground">
-            Pembayaran anda mungkin berjaya tetapi pelan belum dikemas kini. Sila semak semula dalam beberapa saat atau hubungi sokongan jika masih belum berubah.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('paymentSuccess.syncTimedOut')}</p>
         ) : isPlanSynced ? (
-          <p className="text-sm text-muted-foreground">
-            Akaun anda telah dinaik taraf. Semua ciri {planLabel} kini aktif.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('paymentSuccess.synced', { plan: planLabel })}</p>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Jangan tutup halaman ini sementara kami sedang semak status langganan anda.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('paymentSuccess.doNotClose')}</p>
         )}
 
         <div className="flex flex-col gap-3">
           <Button onClick={() => navigate('/dashboard')} className="w-full rounded-lg">
-            Pergi ke Dashboard
+            {t('paymentSuccess.goDashboard')}
           </Button>
           {!isPlanSynced && (
             <Button variant="outline" onClick={() => refreshProfile()} className="w-full rounded-lg">
-              Semak Semula Status
+              {t('paymentSuccess.recheckStatus')}
             </Button>
           )}
         </div>
 
         {isPlanSynced && (
           <p className="text-xs text-muted-foreground">
-            Akan ke dashboard dalam {countdown} saat...
+            {t('paymentSuccess.redirectingIn', { count: countdown })}
           </p>
         )}
       </div>
