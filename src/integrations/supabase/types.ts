@@ -295,6 +295,30 @@ export type Database = {
         }
         Relationships: []
       }
+      features: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           created_at: string
@@ -553,6 +577,63 @@ export type Database = {
           user_id?: string
           verified_at?: string | null
           verified_by?: string | null
+        }
+        Relationships: []
+      }
+      plan_feature_flags: {
+        Row: {
+          feature_id: string
+          is_unlocked: boolean
+          limit_value: number | null
+          plan_id: string
+        }
+        Insert: {
+          feature_id: string
+          is_unlocked?: boolean
+          limit_value?: number | null
+          plan_id: string
+        }
+        Update: {
+          feature_id?: string
+          is_unlocked?: boolean
+          limit_value?: number | null
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_feature_flags_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_feature_flags_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -1058,6 +1139,64 @@ export type Database = {
           },
         ]
       }
+      user_feature_overrides: {
+        Row: {
+          feature_id: string
+          is_unlocked: boolean
+          limit_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          feature_id: string
+          is_unlocked: boolean
+          limit_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          feature_id?: string
+          is_unlocked?: boolean
+          limit_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feature_overrides_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_plans: {
+        Row: {
+          created_at: string
+          plan_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          plan_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          plan_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_plans_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_orders: {
         Row: {
           accepted_at: string | null
@@ -1188,6 +1327,7 @@ export type Database = {
         Returns: undefined
       }
       increment_referral_count: { Args: { row_id: string }; Returns: undefined }
+      is_active_admin: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }

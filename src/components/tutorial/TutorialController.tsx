@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { driver, type Driver } from 'driver.js';
 import { useTutorial, type TutorialPage } from '@/hooks/useTutorial';
 import WelcomeModal from './WelcomeModal';
@@ -39,6 +40,7 @@ export default function TutorialController({
   onComplete,
 }: TutorialControllerProps) {
   const [showWelcome, setShowWelcome] = useState(false);
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const currentPage = getCurrentPage(pathname);
   const {
@@ -73,10 +75,10 @@ export default function TutorialController({
 
     const driverObj = driver({
       showProgress: true,
-      progressText: 'Langkah {{current}} daripada {{total}}',
-      nextBtnText: 'Seterusnya →',
-      prevBtnText: '← Sebelum',
-      doneBtnText: 'Selesai! 🎉',
+      progressText: t('tutorialUi.stepProgress', { current: '{{current}}', total: '{{total}}' }),
+      nextBtnText: t('tutorialUi.next'),
+      prevBtnText: t('tutorialUi.prev'),
+      doneBtnText: t('tutorialUi.done'),
       allowClose: true,
       overlayOpacity: 0.6,
       stagePadding: 8,

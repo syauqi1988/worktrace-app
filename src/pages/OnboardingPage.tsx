@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,7 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const { user, profile, updateProfile, refreshProfile } = useAuth();
   const { initiatePayment, isLoading } = useBillPlz();
+  const { t } = useTranslation();
 
   // Fallback: process referral if not yet saved
   useEffect(() => {
@@ -104,30 +106,30 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Cerita sikit pasal syarikat anda</h2>
+                <h2 className="text-2xl font-bold text-foreground">{t('onboarding.step1Title')}</h2>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Syarikat *</label>
-                  <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Contoh: Ali Aircond Services" className="h-11 rounded-lg" />
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t('onboarding.companyName')}</label>
+                  <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder={t('onboarding.companyPlaceholder')} className="h-11 rounded-lg" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">No. Telefon</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t('onboarding.phoneLabel')}</label>
                   <Input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0123456789" className="h-11 rounded-lg" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Alamat</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t('onboarding.addressLabel')}</label>
                   <textarea
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    placeholder="Alamat syarikat (pilihan)"
+                    placeholder={t('onboarding.addressPlaceholder')}
                     className="w-full min-h-[80px] px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                <Button onClick={handleStep1Next} className="w-full h-11 rounded-lg" disabled={!companyName.trim()}>Seterusnya</Button>
-                <button onClick={() => setStep(2)} className="text-sm text-muted-foreground hover:text-foreground">Langkau buat masa ni</button>
+                <Button onClick={handleStep1Next} className="w-full h-11 rounded-lg" disabled={!companyName.trim()}>{t('onboarding.next')}</Button>
+                <button onClick={() => setStep(2)} className="text-sm text-muted-foreground hover:text-foreground">{t('onboarding.skipForNow')}</button>
               </div>
             </div>
           )}
@@ -135,37 +137,37 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Siapkan profil anda</h2>
+                <h2 className="text-2xl font-bold text-foreground">{t('onboarding.step2Title')}</h2>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Logo Syarikat (pilihan)</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t('onboarding.logoLabel')}</label>
                   <div className="flex items-center gap-4">
                     {logoPreview ? (
                       <img src={logoPreview} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
                     ) : (
-                      <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs">Logo</div>
+                      <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs">{t('onboarding.logoFallback')}</div>
                     )}
                     <label className="cursor-pointer">
-                      <span className="text-sm text-primary hover:underline">Muat naik logo</span>
+                      <span className="text-sm text-primary hover:underline">{t('onboarding.uploadLogo')}</span>
                       <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                     </label>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-3">
-                  <span className="text-sm font-medium text-foreground">SST Berdaftar?</span>
+                  <span className="text-sm font-medium text-foreground">{t('onboarding.sstRegistered')}</span>
                   <Switch checked={sstRegistered} onCheckedChange={setSstRegistered} />
                 </div>
                 {sstRegistered && (
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">No. SST</label>
-                    <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} placeholder="No. pendaftaran SST" className="h-11 rounded-lg" />
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">{t('onboarding.sstNumber')}</label>
+                    <Input value={sstNumber} onChange={e => setSstNumber(e.target.value)} placeholder={t('onboarding.sstPlaceholder')} className="h-11 rounded-lg" />
                   </div>
                 )}
               </div>
               <div className="flex flex-col gap-3">
-                <Button onClick={handleStep2Next} className="w-full h-11 rounded-lg">Seterusnya</Button>
-                <button onClick={() => setStep(3)} className="text-sm text-muted-foreground hover:text-foreground">Langkau buat masa ni</button>
+                <Button onClick={handleStep2Next} className="w-full h-11 rounded-lg">{t('onboarding.next')}</Button>
+                <button onClick={() => setStep(3)} className="text-sm text-muted-foreground hover:text-foreground">{t('onboarding.skipForNow')}</button>
               </div>
             </div>
           )}
@@ -173,7 +175,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Pilih pelan yang sesuai</h2>
+                <h2 className="text-2xl font-bold text-foreground">{t('onboarding.step3Title')}</h2>
               </div>
               <PlanCards onSelect={handlePlanSelect} />
             </div>
