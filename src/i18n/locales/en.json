@@ -1548,5 +1548,58 @@
     "next": "Next →",
     "prev": "← Previous",
     "done": "Done! 🎉"
+  },
+  "teamOnly": {
+    "badge": "Team Plan Only",
+    "locked": "{{feature}} is locked",
+    "body": "<1>{{feature}}</1> is only available for users on the <3>Team</3> plan. Upgrade for full access including team management, work orders and more.",
+    "upgrade": "Upgrade to Team",
+    "reason": "{{feature}} is only available for users on the Team plan."
+  },
+  "tagInput": {
+    "pickColor": "Pick tag color",
+    "newTagPlaceholder": "New tag + Enter",
+    "suggestions": "Suggestions:"
+  },
+  "docTypes": {
+    "quotation": "Quotation",
+    "work_order": "Work Order",
+    "invoice": "Invoice",
+    "completion_report": "Completion Report",
+    "receipt": "Receipt"
+  },
+  "completionView": {
+    "title": "Completion Report",
+    "statusAccepted": "Customer Verified",
+    "statusRejected": "Rejected",
+    "statusSubmitted": "Awaiting Verification",
+    "statusDraft": "Draft",
+    "before": "Before",
+    "after": "After",
+    "job": "Job",
+    "ref": "Ref",
+    "reportNo": "Report No.",
+    "completionDate": "Completion Date",
+    "category": "Category",
+    "location": "Location",
+    "preparedBy": "Prepared by",
+    "customer": "Customer",
+    "workDone": "Work Performed",
+    "materials": "Materials / Tools",
+    "photos": "Work Photos",
+    "photosCount": "{{count}} photos",
+    "checklist": "Checklist",
+    "checklistCount": "{{count}} items",
+    "pending": "Pending",
+    "notes": "Notes / Site Notes",
+    "techNote": "Technician Notes",
+    "signoff": "Sign-off",
+    "techRole": "Prepared by (Technician)",
+    "custRole": "Verified by (Customer)",
+    "waitingCust": "Awaiting verification",
+    "customerFallback": "Customer",
+    "viaWa": "Verified via WhatsApp",
+    "rejectedSub": "Rejected — please review report",
+    "notVerified": "Not verified"
   }
 }
