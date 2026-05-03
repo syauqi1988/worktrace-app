@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ function fillPreview(text: string, vars: Record<string, string>): string {
 }
 
 export default function WhatsAppTemplatesSection() {
+  const { t } = useTranslation();
   const { profile, updateProfile } = useAuth();
   const { isTeam, upgradeOpen, setUpgradeOpen, upgradeReason, checkTeamFeature } = usePlanGate();
   const [activeKey, setActiveKey] = useState<TemplateKey>("quotation");
@@ -38,11 +40,11 @@ export default function WhatsAppTemplatesSection() {
 
   const previewVars = useMemo(
     () => ({
-      customer_name: "Encik Ali",
-      company_name: profile?.company_name || "Syarikat Anda",
-      job_number: "JOB-0001",
+      customer_name: t('settingsExtra.previewCustomer'),
+      company_name: profile?.company_name || 'WorkTrace',
+      job_number: t('settingsExtra.previewJob'),
     }),
-    [profile?.company_name],
+    [profile?.company_name, t],
   );
 
   const previewMessage = useMemo(() => {
@@ -60,28 +62,28 @@ export default function WhatsAppTemplatesSection() {
 
   const handleSave = async () => {
     if (isWorkOrderLocked) {
-      checkTeamFeature("Templet WhatsApp Work Order");
+      checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
     setSaving(true);
     const next: TemplatesState = { ...templates, [activeKey]: { ...draft } };
     await updateProfile({ whatsapp_templates: next as any });
     setSaving(false);
-    toast.success(`Templet ${meta.label} disimpan!`);
+    toast.success(t('settingsExtra.tplSaved', { label: meta.label }));
   };
 
   const handleReset = () => {
     if (isWorkOrderLocked) {
-      checkTeamFeature("Templet WhatsApp Work Order");
+      checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
     setDraft({ ...meta.defaults });
-    toast.info("Templet dikembalikan ke asal. Tekan Simpan untuk sahkan.");
+    toast.info(t('settingsExtra.tplReset'));
   };
 
   const handleSelectTemplate = (key: TemplateKey) => {
     if (key === "work_order" && !isTeam) {
-      checkTeamFeature("Templet WhatsApp Work Order");
+      checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
     setActiveKey(key);
@@ -90,30 +92,28 @@ export default function WhatsAppTemplatesSection() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Sesuaikan ucapan & ayat penutup untuk setiap mesej WhatsApp anda. Bahagian butiran (nombor
-        dokumen, jumlah, pautan) dikunci supaya mesej anda sentiasa tepat.
+        {t('settingsExtra.waTplDescription')}
       </p>
 
-      {/* Template selector — dropdown style matching native selects in this page */}
+      {/* Template selector */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Pilih Templet</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">{t('settingsExtra.selectTemplate')}</label>
         <select
           value={activeKey}
           onChange={(e) => handleSelectTemplate(e.target.value as TemplateKey)}
           className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
         >
-          {TEMPLATES.map((t) => (
-            <option key={t.key} value={t.key}>
-              {t.label}{t.key === "work_order" && !isTeam ? " 🔒 (Team)" : ""}
+          {TEMPLATES.map((tpl) => (
+            <option key={tpl.key} value={tpl.key}>
+              {tpl.label}{tpl.key === "work_order" && !isTeam ? " 🔒 (Team)" : ""}
             </option>
           ))}
         </select>
         <p className="text-xs text-muted-foreground mt-1">{meta.description}</p>
       </div>
 
-      {/* Placeholders helper */}
       <div className="rounded-lg bg-muted/40 border border-border p-3">
-        <p className="text-xs font-semibold text-foreground mb-1.5">Placeholder yang boleh digunakan:</p>
+        <p className="text-xs font-semibold text-foreground mb-1.5">{t('settingsExtra.placeholdersAvailable')}</p>
         <div className="flex flex-wrap gap-1.5">
           {meta.placeholders.map((p) => (
             <code
@@ -131,16 +131,14 @@ export default function WhatsAppTemplatesSection() {
         <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 flex items-start gap-2">
           <Lock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
           <div className="text-xs text-amber-800 dark:text-amber-200">
-            Templet WhatsApp untuk <b>Work Order</b> hanya boleh diedit pada pelan <b>Team</b>.
-            Naik taraf untuk membuka kunci.
+            {t('settingsExtra.woLockedTitle')} <b>Work Order</b> — {t('settingsExtra.woLockedBody')}
           </div>
         </div>
       )}
 
-      {/* Editable fields */}
       <div className={isWorkOrderLocked ? "opacity-60 pointer-events-none select-none" : ""}>
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Ucapan Pembukaan</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t('settingsExtra.greeting')}</label>
           <Textarea
             value={draft.greeting}
             onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
@@ -151,7 +149,7 @@ export default function WhatsAppTemplatesSection() {
         </div>
 
         <div className="mt-4">
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Ayat Pengenalan</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t('settingsExtra.intro')}</label>
           <Textarea
             value={draft.intro}
             onChange={(e) => setDraft({ ...draft, intro: e.target.value })}
@@ -160,10 +158,9 @@ export default function WhatsAppTemplatesSection() {
           />
         </div>
 
-        {/* Locked details preview */}
         <div className="mt-4">
           <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-            Butiran Dokumen (dikunci automatik)
+            {t('settingsExtra.lockedDetails')}
           </label>
           <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
             <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
@@ -171,12 +168,12 @@ export default function WhatsAppTemplatesSection() {
             </pre>
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Bahagian ini dijana automatik dari data dokumen sebenar dan tidak boleh diubah.
+            {t('settingsExtra.lockedDetailsHelp')}
           </p>
         </div>
 
         <div className="mt-4">
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Ayat Penutup</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t('settingsExtra.closing')}</label>
           <Textarea
             value={draft.closing}
             onChange={(e) => setDraft({ ...draft, closing: e.target.value })}
@@ -185,9 +182,8 @@ export default function WhatsAppTemplatesSection() {
           />
         </div>
 
-        {/* Live preview */}
         <div className="mt-4">
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Pratonton Mesej</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{t('settingsExtra.messagePreview')}</label>
           <div className="rounded-lg border border-border bg-[#E7FFD9]/30 p-3">
             <pre className="whitespace-pre-wrap text-[13px] text-foreground font-sans leading-relaxed">
               {previewMessage}
@@ -203,7 +199,7 @@ export default function WhatsAppTemplatesSection() {
           className="rounded-lg gap-1.5"
         >
           {isWorkOrderLocked && <Lock className="h-3.5 w-3.5" />}
-          {saving ? "Menyimpan..." : `Simpan Templet ${meta.label}`}
+          {saving ? t('settingsExtra.uploading') : t('settingsExtra.saveTpl', { label: meta.label })}
         </Button>
         <Button
           variant="outline"
@@ -211,7 +207,7 @@ export default function WhatsAppTemplatesSection() {
           disabled={isWorkOrderLocked}
           className="rounded-lg gap-1.5"
         >
-          <RotateCcw className="h-3.5 w-3.5" /> Kembalikan ke Asal
+          <RotateCcw className="h-3.5 w-3.5" /> {t('settingsExtra.resetTpl')}
         </Button>
       </div>
 

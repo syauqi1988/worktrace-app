@@ -1548,5 +1548,58 @@
     "next": "Seterusnya →",
     "prev": "← Sebelum",
     "done": "Selesai! 🎉"
+  },
+  "teamOnly": {
+    "badge": "Untuk Pelan Team Sahaja",
+    "locked": "{{feature}} dikunci",
+    "body": "Ciri <1>{{feature}}</1> hanya tersedia untuk pengguna pelan <3>Team</3>. Naik taraf untuk akses penuh termasuk pengurusan pasukan, work order, dan banyak lagi.",
+    "upgrade": "Naik Taraf ke Team",
+    "reason": "{{feature}} hanya tersedia untuk pengguna pelan Team."
+  },
+  "tagInput": {
+    "pickColor": "Pilih warna tag",
+    "newTagPlaceholder": "Tag baru + Enter",
+    "suggestions": "Cadangan:"
+  },
+  "docTypes": {
+    "quotation": "Sebut Harga",
+    "work_order": "Work Order",
+    "invoice": "Invois",
+    "completion_report": "Laporan Siap Kerja",
+    "receipt": "Resit Bayaran"
+  },
+  "completionView": {
+    "title": "Laporan Siap Kerja",
+    "statusAccepted": "Disahkan Pelanggan",
+    "statusRejected": "Ditolak",
+    "statusSubmitted": "Menunggu Pengesahan",
+    "statusDraft": "Draf",
+    "before": "Sebelum",
+    "after": "Selepas",
+    "job": "Kerja",
+    "ref": "Ref",
+    "reportNo": "No. Laporan",
+    "completionDate": "Tarikh Siap",
+    "category": "Kategori",
+    "location": "Lokasi",
+    "preparedBy": "Disediakan oleh",
+    "customer": "Pelanggan",
+    "workDone": "Kerja Dilaksanakan",
+    "materials": "Bahan / Alatan",
+    "photos": "Gambar Kerja",
+    "photosCount": "{{count}} gambar",
+    "checklist": "Senarai Semak",
+    "checklistCount": "{{count}} item",
+    "pending": "Pending",
+    "notes": "Catatan / Nota Tapak",
+    "techNote": "Nota Juruteknik",
+    "signoff": "Pengesahan",
+    "techRole": "Disediakan oleh (Juruteknik)",
+    "custRole": "Disahkan oleh (Pelanggan)",
+    "waitingCust": "Menunggu pengesahan",
+    "customerFallback": "Pelanggan",
+    "viaWa": "Disahkan via WhatsApp",
+    "rejectedSub": "Ditolak — sila semak laporan",
+    "notVerified": "Belum disahkan"
   }
 }

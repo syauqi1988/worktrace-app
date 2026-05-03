@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ interface TagInputProps {
 }
 
 export default function TagInput({ tags, onChange }: TagInputProps) {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [color, setColor] = useState(TAG_PALETTE[4]); // default blue
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -62,7 +64,7 @@ export default function TagInput({ tags, onChange }: TagInputProps) {
             onClick={() => setPaletteOpen(o => !o)}
             className="h-8 w-8 rounded-full border-2 border-border shrink-0"
             style={{ backgroundColor: color }}
-            aria-label="Pilih warna tag"
+            aria-label={t('tagInput.pickColor')}
           />
           {paletteOpen && (
             <div className="absolute z-30 top-10 left-0 bg-popover border border-border rounded-lg shadow-lg p-2 grid grid-cols-3 gap-1.5 w-32">
@@ -82,7 +84,7 @@ export default function TagInput({ tags, onChange }: TagInputProps) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } }}
-          placeholder="Tag baru + Enter"
+          placeholder={t('tagInput.newTagPlaceholder')}
           className="h-8 text-sm flex-1"
         />
         <Button size="sm" type="button" variant="outline" onClick={addCustom} className="h-8 px-2">
@@ -92,7 +94,7 @@ export default function TagInput({ tags, onChange }: TagInputProps) {
 
       {tags.length === 0 && unusedSuggestions.length > 0 && (
         <div className="pt-1">
-          <p className="text-[11px] text-muted-foreground mb-1.5">Cadangan:</p>
+          <p className="text-[11px] text-muted-foreground mb-1.5">{t('tagInput.suggestions')}</p>
           <div className="flex flex-wrap gap-1.5">
             {unusedSuggestions.map(s => (
               <button

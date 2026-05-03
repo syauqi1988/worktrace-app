@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation, Trans } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Lock, Crown } from 'lucide-react';
@@ -12,6 +13,7 @@ interface TeamOnlyRouteProps {
 
 export default function TeamOnlyRoute({ children, featureName = 'Work Order' }: TeamOnlyRouteProps) {
   const { profile, loading } = useAuth();
+  const { t } = useTranslation();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   if (loading) {
@@ -34,23 +36,22 @@ export default function TeamOnlyRoute({ children, featureName = 'Work Order' }: 
           <Lock className="h-8 w-8 text-primary" />
         </div>
         <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-          <Crown className="h-3.5 w-3.5" /> Untuk Pelan Team Sahaja
+          <Crown className="h-3.5 w-3.5" /> {t('teamOnly.badge')}
         </div>
-        <h1 className="text-xl font-bold text-foreground">{featureName} dikunci</h1>
+        <h1 className="text-xl font-bold text-foreground">{t('teamOnly.locked', { feature: featureName })}</h1>
         <p className="text-sm text-muted-foreground">
-          Ciri <strong>{featureName}</strong> hanya tersedia untuk pengguna pelan <strong>Team</strong>.
-          Naik taraf untuk akses penuh termasuk pengurusan pasukan, work order, dan banyak lagi.
+          <Trans i18nKey="teamOnly.body" values={{ feature: featureName }} components={[<strong key="0" />, <span key="1" />, <strong key="2" />]} />
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
           <Button onClick={() => setUpgradeOpen(true)} className="rounded-lg gap-2">
-            <Crown className="h-4 w-4" /> Naik Taraf ke Team
+            <Crown className="h-4 w-4" /> {t('teamOnly.upgrade')}
           </Button>
         </div>
       </div>
       <UpgradeModal
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
-        reason={`${featureName} hanya tersedia untuk pengguna pelan Team.`}
+        reason={t('teamOnly.reason', { feature: featureName })}
       />
     </div>
   );

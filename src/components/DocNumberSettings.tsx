@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,31 +9,31 @@ import { toast } from 'sonner';
 import { Hash, Eye } from 'lucide-react';
 import {
   DEFAULT_DOC_SETTINGS,
-  DOC_TYPE_LABELS,
   previewDocNumber,
   type DocType,
   type DocNumberSettings,
 } from '@/utils/generateDocNumber';
 
 const TABS: DocType[] = ['quotation', 'work_order', 'invoice', 'completion_report', 'receipt'];
-
-const SEPARATORS: { value: string; label: string }[] = [
-  { value: '-', label: '- (Sempang)' },
-  { value: '/', label: '/ (Garis miring)' },
-  { value: '.', label: '. (Titik)' },
-  { value: '', label: '(Tiada)' },
-];
-
 const PADDINGS = [3, 4, 5, 6];
 
 export default function DocNumberSettings() {
+  const { t } = useTranslation();
   const { user, profile, refreshProfile } = useAuth();
   const [settings, setSettings] = useState<Record<DocType, DocNumberSettings>>(DEFAULT_DOC_SETTINGS);
   const [activeTab, setActiveTab] = useState<DocType>('quotation');
   const [saving, setSaving] = useState(false);
   const [originalNext, setOriginalNext] = useState<number>(1);
 
-  // Load settings + backfill next_number from existing counts when null
+  const SEPARATORS = useMemo(() => ([
+    { value: '-', label: t('settingsExtra.sepDash') },
+    { value: '/', label: t('settingsExtra.sepSlash') },
+    { value: '.', label: t('settingsExtra.sepDot') },
+    { value: '', label: t('settingsExtra.sepNone') },
+  ]), [t]);
+
+  const labelFor = (type: DocType) => t(`docTypes.${type}`);
+
   useEffect(() => {
     if (!profile || !user) return;
     const loaded = (profile as any).doc_number_settings as Partial<Record<DocType, DocNumberSettings>> | null;
@@ -46,7 +47,6 @@ export default function DocNumberSettings() {
       });
       return;
     }
-    // Backfill: pull counts and derive next_number = count + 1
     (async () => {
       const [qc, wc, ic, rc, recc] = await Promise.all([
         supabase.from('quotations').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
@@ -90,8 +90,8 @@ export default function DocNumberSettings() {
 
   const handleSave = async () => {
     if (!user) return;
-    if (!current.prefix.trim()) { toast.error('Awalan diperlukan'); return; }
-    if (current.next_number < 1) { toast.error('Nombor seterusnya mestilah 1 atau lebih'); return; }
+    if (!current.prefix.trim()) { toast.error(t('settingsExtra.prefixRequired')); return; }
+    if (current.next_number < 1) { toast.error(t('settingsExtra.minOne')); return; }
     setSaving(true);
     try {
       const { error } = await supabase.from('profiles').update({
@@ -99,23 +99,23 @@ export default function DocNumberSettings() {
       }).eq('id', user.id);
       if (error) throw error;
       await refreshProfile();
-      toast.success(`Tetapan ${DOC_TYPE_LABELS[activeTab]} disimpan! Seterusnya: ${previewNext}`);
+      toast.success(t('settingsExtra.saved', { label: labelFor(activeTab), preview: previewNext }));
     } catch (e: any) {
-      toast.error(e.message || 'Gagal simpan');
+      toast.error(e.message || t('settingsExtra.saveFailed'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = () => {
-    if (!confirm(`Pulihkan format ${DOC_TYPE_LABELS[activeTab]} kepada lalai?`)) return;
+    if (!confirm(t('settingsExtra.resetConfirm', { label: labelFor(activeTab) }))) return;
     update({
       prefix: DEFAULT_DOC_SETTINGS[activeTab].prefix,
       padding: DEFAULT_DOC_SETTINGS[activeTab].padding,
       separator: DEFAULT_DOC_SETTINGS[activeTab].separator,
       suffix: DEFAULT_DOC_SETTINGS[activeTab].suffix,
     });
-    toast.info('Format dipulihkan ke lalai (nombor seterusnya tidak diubah)');
+    toast.info(t('settingsExtra.resetDone'));
   };
 
   const lowered = current.next_number < originalNext;
@@ -124,36 +124,32 @@ export default function DocNumberSettings() {
     <section className="bg-card rounded-xl border border-border p-5 space-y-4">
       <div className="flex items-center gap-2 mb-1">
         <Hash className="h-5 w-5 text-primary" />
-        <h2 className="text-base font-bold text-foreground">Nombor Dokumen</h2>
+        <h2 className="text-base font-bold text-foreground">{t('settingsExtra.docNumTitle')}</h2>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Sesuaikan format nombor dokumen mengikut standard syarikat anda.
-      </p>
+      <p className="text-sm text-muted-foreground">{t('settingsExtra.docNumDesc')}</p>
 
-      {/* Pill tabs */}
       <div className="flex flex-wrap gap-2">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setActiveTab(t)}
+        {TABS.map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
-              activeTab === t ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-accent'
+              activeTab === tab ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-accent'
             }`}>
-            {DOC_TYPE_LABELS[t]}
+            {labelFor(tab)}
           </button>
         ))}
       </div>
 
-      {/* Form */}
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label>Awalan (Prefix)</Label>
+          <Label>{t('settingsExtra.prefix')}</Label>
           <Input value={current.prefix} maxLength={15}
             onChange={e => update({ prefix: e.target.value.toUpperCase() })}
             placeholder="QUO" />
-          <p className="text-xs text-muted-foreground">Huruf atau kod sebelum nombor</p>
+          <p className="text-xs text-muted-foreground">{t('settingsExtra.prefixHelp')}</p>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Pemisah (Separator)</Label>
+          <Label>{t('settingsExtra.separator')}</Label>
           <div className="grid grid-cols-2 gap-2">
             {SEPARATORS.map(s => (
               <button key={s.label} onClick={() => update({ separator: s.value })}
@@ -168,63 +164,62 @@ export default function DocNumberSettings() {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Panjang Nombor</Label>
+          <Label>{t('settingsExtra.numLength')}</Label>
           <div className="flex flex-wrap gap-2">
             {PADDINGS.map(p => (
               <button key={p} onClick={() => update({ padding: p })}
                 className={`px-3 py-2 rounded-lg border text-sm ${
                   current.padding === p ? 'bg-primary/10 border-primary text-foreground' : 'border-border hover:bg-accent'
                 }`}>
-                {p} digit ({String(1).padStart(p, '0')})
+                {t('settingsExtra.digitsExample', { n: p, example: String(1).padStart(p, '0') })}
               </button>
             ))}
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Akhiran (Suffix) — Opsional</Label>
+          <Label>{t('settingsExtra.suffix')}</Label>
           <Input value={current.suffix} maxLength={15}
             onChange={e => update({ suffix: e.target.value })}
-            placeholder="/2025 atau -KL" />
-          <p className="text-xs text-muted-foreground">Huruf selepas nombor (opsional)</p>
+            placeholder="/2025 / -KL" />
+          <p className="text-xs text-muted-foreground">{t('settingsExtra.suffixHelp')}</p>
         </div>
 
         <div className="space-y-1.5">
-          <Label>Nombor Seterusnya</Label>
+          <Label>{t('settingsExtra.nextNumber')}</Label>
           <Input type="number" min={1} max={999999} value={current.next_number}
             onChange={e => update({ next_number: Math.max(1, Number(e.target.value) || 1) })} />
-          <p className="text-xs text-muted-foreground">Nombor untuk dokumen seterusnya. Ubah jika ada dokumen luar sistem.</p>
+          <p className="text-xs text-muted-foreground">{t('settingsExtra.nextHelp')}</p>
           {lowered && (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
-              ⚠️ Menurunkan nombor boleh menyebabkan nombor berganda.
+              {t('settingsExtra.loweredWarn')}
             </p>
           )}
         </div>
 
-        {/* Preview */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-medium text-blue-700">
-            <Eye className="h-3.5 w-3.5" /> Pratonton
+            <Eye className="h-3.5 w-3.5" /> {t('settingsExtra.preview')}
           </div>
           <div>
-            <p className="text-xs text-blue-700">Nombor seterusnya:</p>
+            <p className="text-xs text-blue-700">{t('settingsExtra.nextLabel')}</p>
             <p className="text-2xl font-bold text-blue-700">{previewNext}</p>
           </div>
-          <p className="text-xs text-blue-700">Nombor selepasnya: {previewN1}, {previewN2}, ...</p>
+          <p className="text-xs text-blue-700">{t('settingsExtra.afterPreview', { a: previewN1, b: previewN2 })}</p>
         </div>
 
         <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-          <p className="font-medium">Contoh format syarikat lain:</p>
-          <p>• Klasik: <span className="font-mono">INV-0001</span> (Prefix=INV, Sep=-, Pad=4)</p>
-          <p>• Dengan tahun: <span className="font-mono">INV/2025/001</span> (Prefix=INV/2025, Sep=/, Pad=3)</p>
-          <p>• Kod area: <span className="font-mono">KL-INV-0001</span> (Prefix=KL-INV, Sep=-, Pad=4)</p>
+          <p className="font-medium">{t('settingsExtra.examplesTitle')}</p>
+          <p>{t('settingsExtra.exClassic', { ex: 'INV-0001' })}</p>
+          <p>{t('settingsExtra.exYear', { ex: 'INV/2025/001' })}</p>
+          <p>{t('settingsExtra.exArea', { ex: 'KL-INV-0001' })}</p>
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full rounded-lg">
-          {saving ? 'Menyimpan...' : 'Simpan Tetapan Nombor'}
+          {saving ? t('settingsExtra.savingDocNum') : t('settingsExtra.saveDocNum')}
         </Button>
         <button onClick={handleReset} className="w-full text-xs text-muted-foreground hover:underline">
-          Pulihkan Lalai
+          {t('settingsExtra.restoreDefault')}
         </button>
       </div>
     </section>

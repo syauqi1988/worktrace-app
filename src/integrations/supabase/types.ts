@@ -98,6 +98,21 @@ export type Database = {
         }
         Relationships: []
       }
+      app_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_counters: {
         Row: {
           key: string
@@ -292,6 +307,36 @@ export type Database = {
           tin_number?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          key: string
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key: string
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key?: string
+          name?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -583,18 +628,21 @@ export type Database = {
       plan_feature_flags: {
         Row: {
           feature_id: string
+          feature_name: string | null
           is_unlocked: boolean
           limit_value: number | null
           plan_id: string
         }
         Insert: {
           feature_id: string
+          feature_name?: string | null
           is_unlocked?: boolean
           limit_value?: number | null
           plan_id: string
         }
         Update: {
           feature_id?: string
+          feature_name?: string | null
           is_unlocked?: boolean
           limit_value?: number | null
           plan_id?: string
@@ -1330,6 +1378,7 @@ export type Database = {
       is_active_admin: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
+      is_app_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       set_onboarding_plan: {
         Args: { p_billing_period: string; p_plan: string }
