@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check, Lock } from 'lucide-react';
@@ -12,6 +13,7 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProps) {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { initiatePayment, isLoading } = useBillPlz();
   const { getPlan, isLoading: plansLoading } = usePricingPlans();
@@ -23,9 +25,7 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
 
   const isYearly = period === 'yearly';
   const price = isYearly ? yearlyPrice : monthlyPrice;
-  // Effective monthly price when paying yearly
   const yearlyMonthly = yearlyPrice > 0 ? yearlyPrice / 12 : 0;
-  // Original (undiscounted) yearly price for strikethrough
   const originalYearly = discount > 0 && yearlyPrice > 0
     ? Math.round(yearlyPrice / (1 - discount / 100))
     : 0;
@@ -45,10 +45,10 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
             <Lock className="h-10 w-10 text-primary mx-auto" />
           </div>
           <DialogTitle className="text-xl font-bold text-foreground">
-            Had Pelan Free Dicapai
+            {t('upgrade.limitTitle')}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground mt-2">
-            {reason || 'Anda telah mencapai had pelan Free. Naik taraf ke Pro untuk akses tanpa had.'}
+            {reason || t('upgrade.limitDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -57,13 +57,13 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
             onClick={() => setPeriod('monthly')}
             className={`flex-1 py-2 text-sm font-medium transition-colors ${period === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}
           >
-            Bulanan
+            {t('upgrade.monthly')}
           </button>
           <button
             onClick={() => setPeriod('yearly')}
             className={`flex-1 py-2 text-sm font-medium transition-colors ${period === 'yearly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}
           >
-            Tahunan{discount > 0 ? ` -${discount}%` : ''}
+            {t('upgrade.yearly')}{discount > 0 ? ` -${discount}%` : ''}
           </button>
         </div>
 
@@ -83,23 +83,23 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
                 <span className="text-sm text-muted-foreground line-through mr-1">RM{originalYearly}</span>
               )}
               <span className="text-2xl font-bold text-primary">RM{formatPrice(yearlyPrice)}</span>
-              <span className="text-sm text-muted-foreground">/tahun</span>
+              <span className="text-sm text-muted-foreground">{t('upgrade.perYear')}</span>
               {yearlyMonthly > 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Setara RM{formatPrice(yearlyMonthly)}/bulan
+                  {t('upgrade.equivalentMonth', { price: formatPrice(yearlyMonthly) })}
                 </p>
               )}
               {discount > 0 && (
-                <p className="text-xs text-green-600 font-medium mt-1">Jimat {discount}% dengan pelan tahunan!</p>
+                <p className="text-xs text-green-600 font-medium mt-1">{t('upgrade.yearlySave', { pct: discount })}</p>
               )}
             </>
           ) : (
             <>
               <span className="text-2xl font-bold text-primary">RM{formatPrice(monthlyPrice)}</span>
-              <span className="text-sm text-muted-foreground">/bulan</span>
+              <span className="text-sm text-muted-foreground">{t('upgrade.perMonth')}</span>
               {discount > 0 && (
                 <p className="text-xs text-green-600 font-medium mt-1">
-                  Tukar ke tahunan dan jimat {discount}%
+                  {t('upgrade.switchYearly', { pct: discount })}
                 </p>
               )}
             </>
@@ -113,11 +113,15 @@ export default function UpgradeModal({ open, onClose, reason }: UpgradeModalProp
             className="w-full rounded-lg"
           >
             {isLoading
-              ? 'Memproses...'
-              : `Upgrade ke ${proPlan?.name ?? 'Pro'}${isYearly && discount > 0 ? ` (-${discount}%)` : ''} — RM${formatPrice(price)}/${isYearly ? 'tahun' : 'bulan'}`}
+              ? t('upgrade.processing')
+              : t('upgrade.upgradeBtn', {
+                  plan: `${proPlan?.name ?? 'Pro'}${isYearly && discount > 0 ? ` (-${discount}%)` : ''}`,
+                  price: formatPrice(price),
+                  period: isYearly ? t('upgrade.perYear').replace('/', '') : t('upgrade.perMonth').replace('/', ''),
+                })}
           </Button>
           <Button variant="ghost" onClick={onClose} className="w-full rounded-lg text-muted-foreground">
-            Mungkin lain kali
+            {t('upgrade.maybeLater')}
           </Button>
         </div>
       </DialogContent>
