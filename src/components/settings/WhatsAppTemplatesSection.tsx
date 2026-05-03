@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ function fillPreview(text: string, vars: Record<string, string>): string {
 }
 
 export default function WhatsAppTemplatesSection() {
+  const { t } = useTranslation();
   const { profile, updateProfile } = useAuth();
   const { isTeam, upgradeOpen, setUpgradeOpen, upgradeReason, checkTeamFeature } = usePlanGate();
   const [activeKey, setActiveKey] = useState<TemplateKey>("quotation");
