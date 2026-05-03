@@ -40,11 +40,11 @@ export default function WhatsAppTemplatesSection() {
 
   const previewVars = useMemo(
     () => ({
-      customer_name: "Encik Ali",
-      company_name: profile?.company_name || "Syarikat Anda",
-      job_number: "JOB-0001",
+      customer_name: t('settingsExtra.previewCustomer'),
+      company_name: profile?.company_name || 'WorkTrace',
+      job_number: t('settingsExtra.previewJob'),
     }),
-    [profile?.company_name],
+    [profile?.company_name, t],
   );
 
   const previewMessage = useMemo(() => {
@@ -62,28 +62,28 @@ export default function WhatsAppTemplatesSection() {
 
   const handleSave = async () => {
     if (isWorkOrderLocked) {
-      checkTeamFeature("Templet WhatsApp Work Order");
+      checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
     setSaving(true);
     const next: TemplatesState = { ...templates, [activeKey]: { ...draft } };
     await updateProfile({ whatsapp_templates: next as any });
     setSaving(false);
-    toast.success(`Templet ${meta.label} disimpan!`);
+    toast.success(t('settingsExtra.tplSaved', { label: meta.label }));
   };
 
   const handleReset = () => {
     if (isWorkOrderLocked) {
-      checkTeamFeature("Templet WhatsApp Work Order");
+      checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
     setDraft({ ...meta.defaults });
-    toast.info("Templet dikembalikan ke asal. Tekan Simpan untuk sahkan.");
+    toast.info(t('settingsExtra.tplReset'));
   };
 
   const handleSelectTemplate = (key: TemplateKey) => {
     if (key === "work_order" && !isTeam) {
-      checkTeamFeature("Templet WhatsApp Work Order");
+      checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
     setActiveKey(key);
