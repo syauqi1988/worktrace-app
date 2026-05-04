@@ -539,7 +539,7 @@ function buildRevenueSeries(paid: any[], start: Date, end: Date, days: number) {
     }
   } else {
     formatKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    formatLabel = d => `${MONTH_SHORT[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`;
+    formatLabel = d => `${d.toLocaleDateString(getDateLocale(), { month: 'short' })} ${String(d.getFullYear()).slice(-2)}`;
     const cur = new Date(start.getFullYear(), start.getMonth(), 1);
     while (cur <= end) {
       buckets.set(formatKey(cur), 0);
