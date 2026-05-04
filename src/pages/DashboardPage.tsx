@@ -137,9 +137,7 @@ export default function DashboardPage() {
         <Button onClick={() => navigate('/customers/new')} variant="outline" className="h-10 rounded-lg gap-2">
           <Users className="h-4 w-4" /> {t('nav.newCustomer')}
         </Button>
-        <Button onClick={() => navigate('/invoices/new')} variant="outline" className="h-10 rounded-lg gap-2">
-          <Receipt className="h-4 w-4" /> {t('nav.newInvoice')}
-        </Button>
+    
       </div>
 
       {/* Recent Jobs */}
