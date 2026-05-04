@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, XCircle, Upload, Loader2, Receipt, FileText, Download, Eye } from 'lucide-react';
+import { CheckCircle2, XCircle, Upload, Loader2, Receipt, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProofRow {
@@ -46,17 +46,18 @@ export default function PublicPaymentProofPage() {
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [receiptUploaded, setReceiptUploaded] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     (async () => {
-      const { data } = await supabase.from('payment_proofs').select('*').eq('token', token).maybeSingle();
-      if (!data) { setLoading(false); return; }
-      const r = data as ProofRow;
+      const { data } = await supabase.rpc('get_payment_proof_by_token', { p_token: token });
+      const payload: any = data;
+      if (!payload?.proof) { setLoading(false); return; }
+      const r = payload.proof as ProofRow;
       setRow(r);
 
       if (r.submitted_at) {
-        // Already submitted — fill form readonly view
         setPayerName(r.payer_name || '');
         setAmount(String(r.amount_paid ?? ''));
         setMethod(r.payment_method || 'bank_transfer');
@@ -65,27 +66,17 @@ export default function PublicPaymentProofPage() {
         setReference(r.reference_number || '');
         setNotes(r.notes || '');
         setReceiptUrl(r.receipt_url);
+        setReceiptUploaded(!!r.receipt_url);
       }
 
-      const { data: inv } = await supabase
-        .from('invoices')
-        .select('invoice_number, total, jobs(customers(name))')
-        .eq('id', r.invoice_id)
-        .maybeSingle();
-      if (inv) {
-        setInvoice(inv);
+      if (payload.invoice) {
+        setInvoice(payload.invoice);
         if (!r.submitted_at) {
-          setAmount(String((inv as any).total || ''));
-          setPayerName((inv as any)?.jobs?.customers?.name || '');
+          setAmount(String(payload.invoice.total || ''));
+          setPayerName(payload.invoice.customer_name || '');
         }
       }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_name, logo_url, payment_methods')
-        .eq('id', r.user_id)
-        .maybeSingle();
-      setCompany(profile);
+      setCompany(payload.company || null);
 
       setLoading(false);
     })();
@@ -104,8 +95,9 @@ export default function PublicPaymentProofPage() {
       const path = `${row.user_id}/${row.invoice_id}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('payment-receipts').upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw error;
-      const { data: signed } = await supabase.storage.from('payment-receipts').createSignedUrl(path, 60 * 60 * 24 * 365);
-      setReceiptUrl(signed?.signedUrl ?? null);
+      // Store the storage path; owner views via signed URL from their dashboard
+      setReceiptUrl(path);
+      setReceiptUploaded(true);
       toast.success('Resit dimuat naik');
     } catch (err: any) {
       toast.error(err.message || 'Gagal muat naik');
@@ -125,23 +117,17 @@ export default function PublicPaymentProofPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase
-      .from('payment_proofs')
-      .update({
-        payer_name: payerName.trim(),
-        amount_paid: Number(amount) || 0,
-        payment_method: method,
-        payment_date: payDate,
-        bank_name: bankName.trim() || null,
-        reference_number: reference.trim() || null,
-        receipt_url: receiptUrl,
-        notes: notes.trim() || null,
-        submitted_at: new Date().toISOString(),
-        // If previously rejected, move back to pending so the owner can re-verify
-        status: 'pending',
-        rejection_reason: null,
-      } as any)
-      .eq('token', row.token);
+    const { error } = await supabase.rpc('submit_payment_proof', {
+      p_token: row.token,
+      p_payer_name: payerName.trim(),
+      p_amount: Number(amount) || 0,
+      p_method: method,
+      p_payment_date: payDate,
+      p_bank_name: bankName.trim() || null,
+      p_reference: reference.trim() || null,
+      p_receipt_url: receiptUrl,
+      p_notes: notes.trim() || null,
+    });
     setSubmitting(false);
     if (error) { toast.error('Gagal menghantar'); return; }
     toast.success('Bukti pembayaran dihantar!');
@@ -169,10 +155,9 @@ export default function PublicPaymentProofPage() {
 
   const verified = row.status === 'verified';
   const rejected = row.status === 'rejected';
-  // Customer can edit when: never submitted, or rejected (resubmit allowed). Locked once verified or pending review.
   const canEdit = !row.submitted_at || rejected;
   const isLocked = !canEdit;
-  const isSubmitted = isLocked; // alias for legacy UI gating
+  const isSubmitted = isLocked;
   const paymentMethods: any[] = Array.isArray(company?.payment_methods) ? company.payment_methods : [];
 
   return (
@@ -199,19 +184,10 @@ export default function PublicPaymentProofPage() {
             <p className="text-2xl font-bold text-primary mt-1">RM {Number(invoice.total || 0).toFixed(2)}</p>
             {row.invoice_pdf_url && (
               <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={row.invoice_pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/5"
-                >
+                <a href={row.invoice_pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/5">
                   <Eye className="h-4 w-4" /> Lihat Invois
                 </a>
-                <a
-                  href={row.invoice_pdf_url}
-                  download
-                  className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-border text-foreground hover:bg-muted"
-                >
+                <a href={row.invoice_pdf_url} download className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-border text-foreground hover:bg-muted">
                   <Download className="h-4 w-4" /> Muat Turun PDF
                 </a>
               </div>
@@ -219,7 +195,6 @@ export default function PublicPaymentProofPage() {
           </div>
         )}
 
-        {/* Status banner */}
         {verified && (
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center text-green-800">
             <CheckCircle2 className="h-10 w-10 mx-auto mb-2" />
@@ -242,7 +217,6 @@ export default function PublicPaymentProofPage() {
           </div>
         )}
 
-        {/* Payment instructions */}
         {!isSubmitted && paymentMethods.length > 0 && (
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cara Bayar</p>
@@ -256,7 +230,6 @@ export default function PublicPaymentProofPage() {
           </div>
         )}
 
-        {/* Form */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
           <p className="text-sm font-bold">{isLocked ? 'Maklumat Bayaran Anda' : (rejected ? 'Hantar Semula Bukti Pembayaran' : 'Hantar Bukti Pembayaran')}</p>
 
@@ -300,9 +273,9 @@ export default function PublicPaymentProofPage() {
 
           <div>
             <Label>Resit / Bukti Bayaran</Label>
-            {receiptUrl && (
-              <div className="mt-1">
-                <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline">Lihat fail dimuat naik</a>
+            {receiptUploaded && (
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-green-700">
+                <CheckCircle2 className="h-4 w-4" /> Fail dimuat naik
               </div>
             )}
             {!isSubmitted && (
