@@ -1339,6 +1339,24 @@ export type Database = {
       expire_subscriptions: { Args: never; Returns: undefined }
       generate_approval_token: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
+      get_approval_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          action: string
+          customer_name: string
+          document_id: string
+          document_type: string
+          expires_at: string
+          id: string
+          pdf_url: string
+          reason: string
+          responded_at: string
+          token: string
+          user_id: string
+        }[]
+      }
+      get_payment_proof_by_token: { Args: { p_token: string }; Returns: Json }
+      get_public_document_summary: { Args: { p_token: string }; Returns: Json }
       increment_free_months: { Args: { row_id: string }; Returns: undefined }
       increment_free_months_by: {
         Args: { p_months: number; row_id: string }
@@ -1350,8 +1368,31 @@ export type Database = {
       is_admin_user: { Args: never; Returns: boolean }
       is_app_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      mark_approval_viewed: { Args: { p_token: string }; Returns: undefined }
+      respond_to_approval: {
+        Args: { p_action: string; p_reason: string; p_token: string }
+        Returns: undefined
+      }
       set_onboarding_plan: {
         Args: { p_billing_period: string; p_plan: string }
+        Returns: undefined
+      }
+      submit_payment_proof: {
+        Args: {
+          p_amount: number
+          p_bank_name: string
+          p_method: string
+          p_notes: string
+          p_payer_name: string
+          p_payment_date: string
+          p_receipt_url: string
+          p_reference: string
+          p_token: string
+        }
+        Returns: undefined
+      }
+      upload_payment_receipt_signed_url: {
+        Args: { p_path: string; p_token: string }
         Returns: undefined
       }
     }
