@@ -35,11 +35,8 @@ export default function PublicApprovalPage() {
   useEffect(() => {
     if (!token) return;
     (async () => {
-      const { data } = await supabase
-        .from('customer_approvals')
-        .select('*')
-        .eq('token', token)
-        .maybeSingle();
+      const { data: approvalRows } = await supabase.rpc('get_approval_by_token', { p_token: token });
+      const data = Array.isArray(approvalRows) ? approvalRows[0] : approvalRows;
 
       if (!data) {
         setLoading(false);
@@ -50,44 +47,20 @@ export default function PublicApprovalPage() {
 
       // Mark viewed once
       if (!r.action) {
-        await supabase
-          .from('customer_approvals')
-          .update({ viewed_at: new Date().toISOString() } as any)
-          .eq('token', token);
+        await supabase.rpc('mark_approval_viewed', { p_token: token });
       }
 
-      // Load company
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_name, logo_url')
-        .eq('id', r.user_id)
-        .maybeSingle();
-      if (profile) setCompany(profile as any);
-
-      // Load doc summary (only fields needed for display)
-      const tableName =
-        r.document_type === 'quotation' ? 'quotations'
-        : r.document_type === 'work_order' ? 'work_orders'
-        : 'completion_reports';
-      const numberCol =
-        r.document_type === 'quotation' ? 'quote_number'
-        : r.document_type === 'work_order' ? 'wo_number'
-        : 'report_number';
-      if (r.document_type === 'completion_report') {
-        const { data: docData } = await supabase
-          .from('completion_reports')
-          .select('*, jobs(job_number, title, category, customers(name, phone, address))')
-          .eq('id', r.document_id)
-          .maybeSingle();
-        setDoc(docData);
-      } else {
-        const selectCols = `id, ${numberCol}, total, created_at, status`;
-        const { data: docData } = await supabase
-          .from(tableName as any)
-          .select(selectCols)
-          .eq('id', r.document_id)
-          .maybeSingle();
-        setDoc(docData);
+      // Load doc + company via RPC
+      const { data: summary } = await supabase.rpc('get_public_document_summary', { p_token: token });
+      const s: any = summary;
+      if (s?.company) setCompany(s.company);
+      if (s?.data) {
+        if (r.document_type === 'completion_report') {
+          const merged = { ...(s.data.doc || {}), jobs: { ...(s.data.job || {}), customers: s.data.customer || null } };
+          setDoc(merged);
+        } else {
+          setDoc(s.data.doc);
+        }
       }
       setLoading(false);
     })();
@@ -100,36 +73,17 @@ export default function PublicApprovalPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase
-      .from('customer_approvals')
-      .update({
-        action,
-        reason: action === 'rejected' ? reason.trim() : null,
-        responded_at: new Date().toISOString(),
-      } as any)
-      .eq('token', row.token);
+    const { error } = await supabase.rpc('respond_to_approval', {
+      p_token: row.token,
+      p_action: action,
+      p_reason: action === 'rejected' ? reason.trim() : null,
+    });
 
     if (error) {
       toast.error('Gagal menghantar respons');
       setSubmitting(false);
       return;
     }
-
-    // Mirror status to source document
-    const tableName =
-      row.document_type === 'quotation' ? 'quotations'
-      : row.document_type === 'work_order' ? 'work_orders'
-      : 'completion_reports';
-    // completion_reports uses lowercase status values; quotations/work_orders use Capitalized
-    const newStatus = row.document_type === 'completion_report'
-      ? (action === 'accepted' ? 'accepted' : 'rejected')
-      : (action === 'accepted' ? 'Accepted' : 'Rejected');
-    const updates: any = { status: newStatus };
-    if (row.document_type === 'work_order' || row.document_type === 'completion_report') {
-      if (action === 'accepted') updates.accepted_at = new Date().toISOString();
-      else { updates.rejected_at = new Date().toISOString(); updates.rejection_reason = reason.trim() || null; }
-    }
-    await supabase.from(tableName as any).update(updates).eq('id', row.document_id);
 
     setRow({ ...row, action, responded_at: new Date().toISOString(), reason });
     setSubmitting(false);
