@@ -310,36 +310,6 @@ export type Database = {
         }
         Relationships: []
       }
-      feature_flags: {
-        Row: {
-          created_at: string
-          description: string | null
-          enabled: boolean
-          id: string
-          key: string
-          name: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          enabled?: boolean
-          id?: string
-          key: string
-          name?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          enabled?: boolean
-          id?: string
-          key?: string
-          name?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       features: {
         Row: {
           created_at: string
