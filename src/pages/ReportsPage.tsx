@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Download, Loader2, FileBarChart } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import MonthlySummaryReportPDF, { MonthlySummaryData } from '@/components/pdf/MonthlySummaryReportPDF';
 import { toast } from 'sonner';
+import { getDateLocale } from '@/i18n';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, Legend,
@@ -14,8 +16,10 @@ import {
 
 type Preset = 'week' | 'month' | 'lastMonth' | '3m' | 'year' | 'custom';
 
-const MONTH_NAMES = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
-const MONTH_SHORT = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+const MONTH_NAMES_MS = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+const MONTH_SHORT_MS = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+const MONTH_NAMES_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_SHORT_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const STATUS_COLORS_HEX: Record<string, string> = {
   Lead: '#94A3B8',
@@ -93,6 +97,10 @@ interface ReportData {
 
 export default function ReportsPage() {
   const { user, profile } = useAuth();
+  const { t, i18n } = useTranslation();
+  const isEN = i18n.language === 'en';
+  const MONTH_NAMES = isEN ? MONTH_NAMES_EN : MONTH_NAMES_MS;
+  const MONTH_SHORT = isEN ? MONTH_SHORT_EN : MONTH_SHORT_MS;
   const [preset, setPreset] = useState<Preset>('month');
   const initial = getRangeForPreset('month');
   const [start, setStart] = useState<Date>(initial.start);
@@ -122,7 +130,7 @@ export default function ReportsPage() {
     const s = startOfDay(new Date(customStart));
     const e = endOfDay(new Date(customEnd));
     if (isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) {
-      toast.error('Julat tarikh tidak sah');
+      toast.error(t('reports.invalidRange'));
       return;
     }
     setPreset('custom');
@@ -199,7 +207,7 @@ export default function ReportsPage() {
       // Top customers (by paid invoice revenue in range)
       const custMap = new Map<string, { name: string; jobs: Set<string>; revenue: number; lastDeal: string | null }>();
       paid.forEach((inv: any) => {
-        const name = inv.customers?.name || 'Tanpa Nama';
+        const name = inv.customers?.name || (isEN ? 'Unnamed' : 'Tanpa Nama');
         const key = inv.customer_id || name;
         const cur = custMap.get(key) || { name, jobs: new Set(), revenue: 0, lastDeal: null };
         cur.revenue += Number(inv.total || 0);
@@ -255,9 +263,9 @@ export default function ReportsPage() {
   const periodLabel = useMemo(() => {
     if (preset === 'month') return `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
     if (preset === 'lastMonth') return `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
-    if (preset === 'year') return `Tahun ${start.getFullYear()}`;
+    if (preset === 'year') return t('reports.year', { year: start.getFullYear() });
     return `${start.getDate()} ${MONTH_SHORT[start.getMonth()]} – ${end.getDate()} ${MONTH_SHORT[end.getMonth()]} ${end.getFullYear()}`;
-  }, [preset, start, end]);
+  }, [preset, start, end, isEN]);
 
   async function handleDownloadPDF() {
     if (!data) return;
@@ -265,7 +273,7 @@ export default function ReportsPage() {
     try {
       const pdfData: MonthlySummaryData = {
         company: {
-          name: profile?.company_name || 'Syarikat Anda',
+          name: profile?.company_name || t('reports.yourCompany'),
           logo_url: profile?.logo_url,
           address: profile?.address,
           phone: profile?.phone,
@@ -295,12 +303,12 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Laporan-${periodLabel.replace(/\s+/g, '-')}.pdf`;
+      a.download = `${isEN ? 'Report' : 'Laporan'}-${periodLabel.replace(/\s+/g, '-')}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('Laporan dimuat turun');
+      toast.success(t('reports.downloaded'));
     } catch (e: any) {
-      toast.error(e.message || 'Gagal menjana laporan');
+      toast.error(e.message || t('reports.generateFailed'));
     } finally {
       setGenerating(false);
     }
@@ -310,12 +318,12 @@ export default function ReportsPage() {
     <div className="p-4 md:p-6 space-y-5 max-w-6xl">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Laporan Ringkasan</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Pratonton prestasi perniagaan anda</p>
+          <h1 className="text-xl font-bold text-foreground">{t('reports.title')}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t('reports.subtitle')}</p>
         </div>
         <Button data-tutorial="reports-export" onClick={handleDownloadPDF} disabled={generating || loading} className="rounded-lg gap-2">
           {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          Eksport PDF
+          {t('reports.exportPdf')}
         </Button>
       </div>
 
@@ -323,12 +331,12 @@ export default function ReportsPage() {
       <div className="bg-card rounded-xl border border-border p-3 space-y-3">
         <div data-tutorial="reports-presets" className="flex flex-wrap gap-1.5">
           {([
-            ['week', 'Minggu Ini'],
-            ['month', 'Bulan Ini'],
-            ['lastMonth', 'Bulan Lepas'],
-            ['3m', '3 Bulan'],
-            ['year', 'Tahun Ini'],
-            ['custom', 'Suai Sendiri'],
+            ['week', t('reports.weekThis')],
+            ['month', t('reports.monthThis')],
+            ['lastMonth', t('reports.monthLast')],
+            ['3m', t('reports.months3')],
+            ['year', t('reports.yearThis')],
+            ['custom', t('reports.custom')],
           ] as [Preset, string][]).map(([p, lbl]) => (
             <button
               key={p}
@@ -347,19 +355,19 @@ export default function ReportsPage() {
         {preset === 'custom' && (
           <div className="flex flex-wrap items-end gap-2 pt-2 border-t border-border">
             <div>
-              <label className="text-[11px] text-muted-foreground block mb-1">Dari</label>
+              <label className="text-[11px] text-muted-foreground block mb-1">{t('reports.from')}</label>
               <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
                 className="h-9 px-2 text-sm rounded border border-input bg-background" />
             </div>
             <div>
-              <label className="text-[11px] text-muted-foreground block mb-1">Hingga</label>
+              <label className="text-[11px] text-muted-foreground block mb-1">{t('reports.to')}</label>
               <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
                 className="h-9 px-2 text-sm rounded border border-input bg-background" />
             </div>
-            <Button size="sm" onClick={applyCustom} className="h-9 rounded-lg">Guna Tarikh Ini</Button>
+            <Button size="sm" onClick={applyCustom} className="h-9 rounded-lg">{t('reports.useDates')}</Button>
           </div>
         )}
-        <p className="text-xs text-muted-foreground">Tempoh: <span className="font-medium text-foreground">{periodLabel}</span></p>
+        <p className="text-xs text-muted-foreground">{t('reports.period')} <span className="font-medium text-foreground">{periodLabel}</span></p>
       </div>
 
       {loading || !data ? (
@@ -369,12 +377,12 @@ export default function ReportsPage() {
       ) : (
         <>
           {/* Section 1: Revenue */}
-          <Section title="Ringkasan Pendapatan" icon="💰">
+          <Section title={t('reports.secRevenue')} icon="💰">
             <StatGrid items={[
-              { label: 'Jumlah Pendapatan', value: `RM ${data.totalRevenue.toFixed(2)}` },
-              { label: 'Bil Invois Dibayar', value: data.paidCount },
-              { label: 'Invois Belum Bayar', value: `RM ${data.outstandingAmount.toFixed(2)}` },
-              { label: 'Purata Nilai Invois', value: `RM ${data.avgInvoice.toFixed(2)}` },
+              { label: t('reports.totalRevenue'), value: `RM ${data.totalRevenue.toFixed(2)}` },
+              { label: t('reports.paidInvoices'), value: data.paidCount },
+              { label: t('reports.outstanding'), value: `RM ${data.outstandingAmount.toFixed(2)}` },
+              { label: t('reports.avgInvoice'), value: `RM ${data.avgInvoice.toFixed(2)}` },
             ]} />
             {data.revenueSeries.length > 0 && (
               <div className="h-56 mt-4">
@@ -392,17 +400,17 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 2: Jobs */}
-          <Section title="Ringkasan Kerja" icon="📋">
+          <Section title={t('reports.secJobs')} icon="📋">
             <StatGrid items={[
-              { label: 'Jumlah Kerja Baru', value: data.jobsTotal },
-              { label: 'Kerja Selesai', value: data.jobsCompleted },
-              { label: 'Dalam Proses', value: data.jobsInProgress },
-              { label: 'Kadar Penyelesaian', value: `${data.completionRate}%` },
+              { label: t('reports.totalJobs'), value: data.jobsTotal },
+              { label: t('reports.completedJobs'), value: data.jobsCompleted },
+              { label: t('reports.inProgressJobs'), value: data.jobsInProgress },
+              { label: t('reports.completionRate'), value: `${data.completionRate}%` },
             ]} />
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               {data.jobsByStatus.length > 0 && (
                 <div className="h-56">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Status Kerja</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">{t('reports.jobStatus')}</p>
                   <ResponsiveContainer width="100%" height="90%">
                     <PieChart>
                       <Pie data={data.jobsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%"
@@ -420,7 +428,7 @@ export default function ReportsPage() {
               )}
               {data.jobsByCategory.length > 0 && (
                 <div className="h-56">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Kategori Kerja</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">{t('reports.jobCategory')}</p>
                   <ResponsiveContainer width="100%" height="90%">
                     <BarChart data={data.jobsByCategory} layout="vertical" margin={{ left: 8, right: 8, top: 4, bottom: 4 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
@@ -436,22 +444,22 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 3: Customers */}
-          <Section title="Ringkasan Pelanggan" icon="👥">
+          <Section title={t('reports.secCustomers')} icon="👥">
             <StatGrid items={[
-              { label: 'Pelanggan Baru', value: data.newCustomers },
-              { label: 'Pelanggan Aktif', value: data.activeCustomers },
-              { label: 'Jumlah Pelanggan', value: data.totalCustomers },
+              { label: t('reports.newCustomers'), value: data.newCustomers },
+              { label: t('reports.activeCustomers'), value: data.activeCustomers },
+              { label: t('reports.totalCustomers'), value: data.totalCustomers },
             ]} />
             {data.topCustomers.length > 0 && (
               <div className="mt-4 overflow-x-auto">
-                <p className="text-xs font-medium text-muted-foreground mb-2">5 Pelanggan Teratas</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">{t('reports.topCustomers')}</p>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left border-b border-border">
-                      <th className="py-2 font-medium text-muted-foreground text-xs">Nama</th>
-                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">Bil Kerja</th>
-                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">Nilai Invois</th>
-                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">Terakhir</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs">{t('reports.tName')}</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">{t('reports.tJobs')}</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">{t('reports.tValue')}</th>
+                      <th className="py-2 font-medium text-muted-foreground text-xs text-right">{t('reports.tLast')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -461,7 +469,7 @@ export default function ReportsPage() {
                         <td className="py-2 text-right text-foreground">{c.jobs}</td>
                         <td className="py-2 text-right text-foreground">RM {c.revenue.toFixed(2)}</td>
                         <td className="py-2 text-right text-muted-foreground text-xs">
-                          {c.lastDeal ? new Date(c.lastDeal).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' }) : '–'}
+                          {c.lastDeal ? new Date(c.lastDeal).toLocaleDateString(getDateLocale(), { day: 'numeric', month: 'short' }) : '–'}
                         </td>
                       </tr>
                     ))}
@@ -472,24 +480,24 @@ export default function ReportsPage() {
           </Section>
 
           {/* Section 4: Documents */}
-          <Section title="Ringkasan Dokumen" icon="📄">
+          <Section title={t('reports.secDocs')} icon="📄">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <StatBox label="Sebut Harga Dihantar" value={data.quotesSent} />
-              <StatBox label="Sebut Harga Diterima" value={data.quotesAccepted} />
-              <StatBox label="Work Order Diterima" value={data.workOrdersAccepted} />
-              <StatBox label="Laporan Dihantar" value={data.reportsSent} />
-              <StatBox label="Resit Dijana" value={data.receiptsGenerated} />
+              <StatBox label={t('reports.quotesSent')} value={data.quotesSent} />
+              <StatBox label={t('reports.quotesAccepted')} value={data.quotesAccepted} />
+              <StatBox label={t('reports.wosAccepted')} value={data.workOrdersAccepted} />
+              <StatBox label={t('reports.reportsSent')} value={data.reportsSent} />
+              <StatBox label={t('reports.receiptsGen')} value={data.receiptsGenerated} />
             </div>
 
             {/* Conversion funnel */}
             <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-xs font-medium text-muted-foreground mb-3">Funnel Penukaran</p>
+              <p className="text-xs font-medium text-muted-foreground mb-3">{t('reports.funnel')}</p>
               <FunnelStages stages={[
-                { label: 'Sebut Harga', count: data.quotesSent },
-                { label: 'Diterima', count: data.quotesAccepted },
-                { label: 'Work Order', count: data.workOrdersAccepted },
-                { label: 'Laporan', count: data.reportsSent },
-                { label: 'Invois Dibayar', count: data.paidCount },
+                { label: t('reports.fQuote'), count: data.quotesSent },
+                { label: t('reports.fAccepted'), count: data.quotesAccepted },
+                { label: t('reports.fWorkOrder'), count: data.workOrdersAccepted },
+                { label: t('reports.fReport'), count: data.reportsSent },
+                { label: t('reports.fPaid'), count: data.paidCount },
               ]} />
             </div>
           </Section>
@@ -531,7 +539,7 @@ function buildRevenueSeries(paid: any[], start: Date, end: Date, days: number) {
     }
   } else {
     formatKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    formatLabel = d => `${MONTH_SHORT[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`;
+    formatLabel = d => `${d.toLocaleDateString(getDateLocale(), { month: 'short' })} ${String(d.getFullYear()).slice(-2)}`;
     const cur = new Date(start.getFullYear(), start.getMonth(), 1);
     while (cur <= end) {
       buckets.set(formatKey(cur), 0);

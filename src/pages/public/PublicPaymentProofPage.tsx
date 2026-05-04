@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ interface ProofRow {
 
 export default function PublicPaymentProofPage() {
   const { token } = useParams<{ token: string }>();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [row, setRow] = useState<ProofRow | null>(null);
   const [invoice, setInvoice] = useState<any>(null);
@@ -37,7 +39,6 @@ export default function PublicPaymentProofPage() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Form state
   const [payerName, setPayerName] = useState('');
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('bank_transfer');
@@ -86,7 +87,7 @@ export default function PublicPaymentProofPage() {
     const file = e.target.files?.[0];
     if (!file || !row) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Saiz fail melebihi 5MB');
+      toast.error(t('publicProof.errSize'));
       return;
     }
     setUploading(true);
@@ -95,12 +96,11 @@ export default function PublicPaymentProofPage() {
       const path = `${row.user_id}/${row.invoice_id}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('payment-receipts').upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw error;
-      // Store the storage path; owner views via signed URL from their dashboard
       setReceiptUrl(path);
       setReceiptUploaded(true);
-      toast.success('Resit dimuat naik');
+      toast.success(t('publicProof.uploadedToast'));
     } catch (err: any) {
-      toast.error(err.message || 'Gagal muat naik');
+      toast.error(err.message || t('publicProof.errUpload'));
     } finally {
       setUploading(false);
     }
@@ -109,11 +109,11 @@ export default function PublicPaymentProofPage() {
   const handleSubmit = async () => {
     if (!row) return;
     if (!payerName.trim() || !amount || !payDate) {
-      toast.error('Sila lengkapkan nama, jumlah dan tarikh');
+      toast.error(t('publicProof.errFields'));
       return;
     }
     if (!receiptUrl) {
-      toast.error('Sila muat naik resit / bukti bayaran terlebih dahulu');
+      toast.error(t('publicProof.errReceipt'));
       return;
     }
     setSubmitting(true);
@@ -129,8 +129,8 @@ export default function PublicPaymentProofPage() {
       p_notes: notes.trim() || null,
     });
     setSubmitting(false);
-    if (error) { toast.error('Gagal menghantar'); return; }
-    toast.success('Bukti pembayaran dihantar!');
+    if (error) { toast.error(t('publicProof.errSubmit')); return; }
+    toast.success(t('publicProof.submittedToast'));
     setRow({ ...row, submitted_at: new Date().toISOString(), status: 'pending', rejection_reason: null });
   };
 
@@ -146,8 +146,8 @@ export default function PublicPaymentProofPage() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <XCircle className="h-12 w-12 text-destructive mx-auto mb-3" />
-          <h1 className="text-xl font-bold mb-1">Pautan tidak sah</h1>
-          <p className="text-muted-foreground text-sm">Pautan ini tidak dijumpai.</p>
+          <h1 className="text-xl font-bold mb-1">{t('publicProof.invalidLinkTitle')}</h1>
+          <p className="text-muted-foreground text-sm">{t('publicProof.invalidLinkBody')}</p>
         </div>
       </div>
     );
@@ -172,23 +172,23 @@ export default function PublicPaymentProofPage() {
             </div>
           )}
           <div>
-            <p className="text-xs text-muted-foreground">Bayaran kepada</p>
-            <p className="font-semibold">{company?.company_name || 'Syarikat'}</p>
+            <p className="text-xs text-muted-foreground">{t('publicProof.payTo')}</p>
+            <p className="font-semibold">{company?.company_name || t('publicProof.company')}</p>
           </div>
         </div>
 
         {invoice && (
           <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Invois</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('publicProof.invoice')}</p>
             <p className="text-lg font-bold">{invoice.invoice_number}</p>
             <p className="text-2xl font-bold text-primary mt-1">RM {Number(invoice.total || 0).toFixed(2)}</p>
             {row.invoice_pdf_url && (
               <div className="mt-3 flex flex-wrap gap-2">
                 <a href={row.invoice_pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/5">
-                  <Eye className="h-4 w-4" /> Lihat Invois
+                  <Eye className="h-4 w-4" /> {t('publicProof.viewInvoice')}
                 </a>
                 <a href={row.invoice_pdf_url} download className="inline-flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg border border-border text-foreground hover:bg-muted">
-                  <Download className="h-4 w-4" /> Muat Turun PDF
+                  <Download className="h-4 w-4" /> {t('publicProof.downloadPdf')}
                 </a>
               </div>
             )}
@@ -198,28 +198,28 @@ export default function PublicPaymentProofPage() {
         {verified && (
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center text-green-800">
             <CheckCircle2 className="h-10 w-10 mx-auto mb-2" />
-            <p className="font-bold">Bayaran disahkan</p>
-            <p className="text-sm mt-1">Terima kasih!</p>
+            <p className="font-bold">{t('publicProof.verified')}</p>
+            <p className="text-sm mt-1">{t('publicProof.thanks')}</p>
           </div>
         )}
         {rejected && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center text-red-800">
             <XCircle className="h-10 w-10 mx-auto mb-2" />
-            <p className="font-bold">Bukti pembayaran ditolak</p>
-            {row.rejection_reason && <p className="text-sm mt-1">Sebab: {row.rejection_reason}</p>}
-            <p className="text-sm mt-2">Sila semak maklumat di bawah dan hantar semula bukti pembayaran.</p>
+            <p className="font-bold">{t('publicProof.rejectedTitle')}</p>
+            {row.rejection_reason && <p className="text-sm mt-1">{t('publicProof.rejectedReason')} {row.rejection_reason}</p>}
+            <p className="text-sm mt-2">{t('publicProof.rejectedHelp')}</p>
           </div>
         )}
         {isSubmitted && !verified && !rejected && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center text-blue-800">
-            <p className="font-bold">Bukti diterima — menunggu pengesahan</p>
-            <p className="text-sm mt-1">Anda akan dimaklumkan apabila disahkan.</p>
+            <p className="font-bold">{t('publicProof.submittedTitle')}</p>
+            <p className="text-sm mt-1">{t('publicProof.submittedHelp')}</p>
           </div>
         )}
 
         {!isSubmitted && paymentMethods.length > 0 && (
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cara Bayar</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('publicProof.howToPay')}</p>
             {paymentMethods.filter((m: any) => m.type === 'bank_transfer').map((b: any) => (
               <div key={b.id} className="text-sm border rounded-lg p-2">
                 <p className="font-medium">🏦 {b.bank_name}</p>
@@ -231,57 +231,57 @@ export default function PublicPaymentProofPage() {
         )}
 
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold">{isLocked ? 'Maklumat Bayaran Anda' : (rejected ? 'Hantar Semula Bukti Pembayaran' : 'Hantar Bukti Pembayaran')}</p>
+          <p className="text-sm font-bold">{isLocked ? t('publicProof.yourInfoTitle') : (rejected ? t('publicProof.resubmitTitle') : t('publicProof.submitTitle'))}</p>
 
           <div>
-            <Label>Nama Pembayar *</Label>
+            <Label>{t('publicProof.payerName')} *</Label>
             <Input value={payerName} onChange={(e) => setPayerName(e.target.value)} disabled={isSubmitted} />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Jumlah Dibayar (RM) *</Label>
+              <Label>{t('publicProof.amountPaid')} *</Label>
               <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={isSubmitted} />
             </div>
             <div>
-              <Label>Tarikh Bayaran *</Label>
+              <Label>{t('publicProof.payDate')} *</Label>
               <Input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} disabled={isSubmitted} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Kaedah</Label>
+              <Label>{t('publicProof.method')}</Label>
               <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={method} onChange={(e) => setMethod(e.target.value)} disabled={isSubmitted}>
-                <option value="bank_transfer">Pindahan Bank</option>
-                <option value="qr_payment">QR Payment</option>
-                <option value="cash">Tunai</option>
-                <option value="cheque">Cek</option>
+                <option value="bank_transfer">{t('publicProof.mBank')}</option>
+                <option value="qr_payment">{t('publicProof.mQr')}</option>
+                <option value="cash">{t('publicProof.mCash')}</option>
+                <option value="cheque">{t('publicProof.mCheque')}</option>
               </select>
             </div>
             <div>
-              <Label>Bank (jika ada)</Label>
+              <Label>{t('publicProof.bank')}</Label>
               <Input value={bankName} onChange={(e) => setBankName(e.target.value)} disabled={isSubmitted} />
             </div>
           </div>
           <div>
-            <Label>No. Rujukan</Label>
+            <Label>{t('publicProof.reference')}</Label>
             <Input value={reference} onChange={(e) => setReference(e.target.value)} disabled={isSubmitted} />
           </div>
           <div>
-            <Label>Nota</Label>
+            <Label>{t('publicProof.notes')}</Label>
             <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={isSubmitted} />
           </div>
 
           <div>
-            <Label>Resit / Bukti Bayaran</Label>
+            <Label>{t('publicProof.receipt')}</Label>
             {receiptUploaded && (
               <div className="mt-1 flex items-center gap-1.5 text-sm text-green-700">
-                <CheckCircle2 className="h-4 w-4" /> Fail dimuat naik
+                <CheckCircle2 className="h-4 w-4" /> {t('publicProof.uploaded')}
               </div>
             )}
             {!isSubmitted && (
               <div className="mt-2">
                 <Input type="file" accept="image/*,application/pdf" onChange={handleUpload} disabled={uploading} />
-                {uploading && <p className="text-xs text-muted-foreground mt-1">Memuat naik...</p>}
+                {uploading && <p className="text-xs text-muted-foreground mt-1">{t('publicProof.uploading')}</p>}
               </div>
             )}
           </div>
@@ -289,12 +289,12 @@ export default function PublicPaymentProofPage() {
           {!isLocked && (
             <Button onClick={handleSubmit} disabled={submitting || !receiptUrl} className="w-full rounded-lg gap-2 h-12">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              {receiptUrl ? (rejected ? 'Hantar Semula Bukti' : 'Hantar Bukti Pembayaran') : 'Muat naik resit dahulu'}
+              {receiptUrl ? (rejected ? t('publicProof.resubmit') : t('publicProof.submit')) : t('publicProof.uploadFirst')}
             </Button>
           )}
         </div>
 
-        <p className="text-xs text-muted-foreground text-center">Powered by WorkTrace</p>
+        <p className="text-xs text-muted-foreground text-center">{t('publicProof.poweredBy')}</p>
       </div>
     </div>
   );
