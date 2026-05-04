@@ -97,6 +97,10 @@ interface ReportData {
 
 export default function ReportsPage() {
   const { user, profile } = useAuth();
+  const { t, i18n } = useTranslation();
+  const isEN = i18n.language === 'en';
+  const MONTH_NAMES = isEN ? MONTH_NAMES_EN : MONTH_NAMES_MS;
+  const MONTH_SHORT = isEN ? MONTH_SHORT_EN : MONTH_SHORT_MS;
   const [preset, setPreset] = useState<Preset>('month');
   const initial = getRangeForPreset('month');
   const [start, setStart] = useState<Date>(initial.start);
