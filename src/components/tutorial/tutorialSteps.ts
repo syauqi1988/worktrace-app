@@ -1,7 +1,9 @@
 import type { DriveStep } from 'driver.js';
 import type { TutorialPage } from '@/hooks/useTutorial';
+import i18n from '@/i18n';
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 768;
+const t = (key: string) => i18n.t(`tutorialSteps.${key}`);
 
 export function buildPageTutorialSteps(page: TutorialPage): DriveStep[] {
   switch (page) {
@@ -26,66 +28,35 @@ export function buildPageTutorialSteps(page: TutorialPage): DriveStep[] {
 // DASHBOARD
 // ──────────────────────────────────────────────────────────
 function buildDashboardSteps(): DriveStep[] {
+  const mobile = isMobile();
   return [
-    {
-      popover: {
-        title: '👋 Selamat datang ke WorkTrace!',
-        description: 'Aplikasi mudah untuk uruskan kerja, pelanggan, sebut harga, invois dan resit — semua dalam satu tempat. Mari kita mulakan dengan pantas.',
-      },
-    },
+    { popover: { title: t('dashboard.welcomeTitle'), description: t('dashboard.welcomeDesc') } },
     {
       element: '[data-tutorial="dashboard-stats"]',
-      popover: {
-        title: '📊 Ringkasan Bisnes',
-        description: 'Di sini anda boleh lihat berapa kerja aktif, berapa siap bulan ini dan jumlah pendapatan — terus dari satu skrin.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('dashboard.statsTitle'), description: t('dashboard.statsDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="dashboard-quick-actions"]',
-      popover: {
-        title: '⚡ Tindakan Pantas',
-        description: 'Tekan butang ini bila anda nak terus buat kerja baru, daftar pelanggan atau jana invois — tak perlu masuk menu.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('dashboard.quickActionsTitle'), description: t('dashboard.quickActionsDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="dashboard-recent-jobs"]',
-      popover: {
-        title: '🔨 Kerja Terkini',
-        description: '10 kerja terbaru anda muncul di sini. Tekan mana-mana kerja untuk lihat butiran penuh, sebut harga dan invois berkaitan.',
-        side: 'top',
-        align: 'start',
-      },
+      popover: { title: t('dashboard.recentJobsTitle'), description: t('dashboard.recentJobsDesc'), side: 'top', align: 'start' },
     },
     {
-      element: isMobile() ? '[data-tutorial="hamburger-menu"]' : '[data-tutorial="sidebar"]',
+      element: mobile ? '[data-tutorial="hamburger-menu"]' : '[data-tutorial="sidebar"]',
       popover: {
-        title: isMobile() ? '📱 Buka Menu' : '📂 Menu Navigasi',
-        description: isMobile()
-          ? 'Tekan ikon menu (☰) di atas kiri untuk buka semua modul: Kerja, Pelanggan, Sebut Harga, Invois, Resit dan Laporan.'
-          : 'Semua modul ada di sidebar kiri — Kerja, Pelanggan, Sebut Harga, Work Order, Invois, Resit, Laporan dan Tetapan.',
-        side: isMobile() ? 'bottom' : 'right',
+        title: mobile ? t('dashboard.menuTitleMobile') : t('dashboard.menuTitleDesktop'),
+        description: mobile ? t('dashboard.menuDescMobile') : t('dashboard.menuDescDesktop'),
+        side: mobile ? 'bottom' : 'right',
         align: 'start',
       },
     },
     {
       element: '[data-tutorial="help-btn"]',
-      popover: {
-        title: '❓ Butang Bantuan',
-        description: 'Tertekan-tekan? Tekan ikon ❓ di atas pada bila-bila masa untuk tonton tutorial halaman semasa anda.',
-        side: 'bottom',
-        align: 'end',
-      },
+      popover: { title: t('dashboard.helpTitle'), description: t('dashboard.helpDesc'), side: 'bottom', align: 'end' },
     },
-    {
-      popover: {
-        title: '✅ Aliran Kerja Penuh WorkTrace',
-        description: 'Ikut urutan ini untuk hasil terbaik:\n\n1️⃣ Pelanggan — daftar maklumat pelanggan\n2️⃣ Kerja — buka kerja baru untuk pelanggan\n3️⃣ Sebut Harga — hantar tawaran kepada pelanggan\n4️⃣ Work Order — arahan kerja untuk team/subkon\n5️⃣ Completion Report — laporan kerja siap\n6️⃣ Invois — bil pembayaran\n7️⃣ Resit — auto-jana selepas dibayar\n\nMari mulakan! 🚀',
-      },
-    },
+    { popover: { title: t('dashboard.flowTitle'), description: t('dashboard.flowDesc') } },
   ];
 }
 
@@ -93,48 +64,27 @@ function buildDashboardSteps(): DriveStep[] {
 // JOBS LIST
 // ──────────────────────────────────────────────────────────
 function buildJobsSteps(): DriveStep[] {
+  const mobile = isMobile();
   return [
-    {
-      popover: {
-        title: '🔨 Modul Kerja (Langkah 2)',
-        description: 'Selepas daftar pelanggan, buka "Kerja" baru untuk setiap projek. Dari satu kerja, semua dokumen lain akan terhasil: Sebut Harga → Work Order → Completion Report → Invois → Resit.',
-      },
-    },
+    { popover: { title: t('jobs.introTitle'), description: t('jobs.introDesc') } },
     {
       element: '[data-tutorial="jobs-search"]',
-      popover: {
-        title: '🔍 Cari Kerja',
-        description: 'Taip nombor kerja, tajuk atau nama pelanggan untuk cari dengan cepat.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('jobs.searchTitle'), description: t('jobs.searchDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="jobs-status-tabs"]',
-      popover: {
-        title: '📋 Tapis Ikut Status',
-        description: 'Tekan tab untuk lihat kerja mengikut peringkat: Lead, Scheduled, In Progress, Completed atau Cancelled.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('jobs.statusTitle'), description: t('jobs.statusDesc'), side: 'bottom', align: 'start' },
     },
     {
-      element: isMobile() ? '[data-tutorial="jobs-fab"]' : '[data-tutorial="jobs-new-btn"]',
+      element: mobile ? '[data-tutorial="jobs-fab"]' : '[data-tutorial="jobs-new-btn"]',
       popover: {
-        title: '➕ Tambah Kerja Baru',
-        description: isMobile()
-          ? 'Tekan butang + bulat di bawah untuk cipta kerja baru. Nombor kerja dijana secara automatik.'
-          : 'Tekan "Kerja Baru" untuk cipta projek baru. Pilih pelanggan, kategori dan tarikh — nombor kerja dijana auto.',
-        side: isMobile() ? 'top' : 'left',
+        title: t('jobs.newTitle'),
+        description: mobile ? t('jobs.newDescMobile') : t('jobs.newDescDesktop'),
+        side: mobile ? 'top' : 'left',
         align: 'center',
       },
     },
-    {
-      popover: {
-        title: '✅ Selepas Cipta Kerja',
-        description: 'Masuk halaman butiran kerja dan ikut urutan:\n3️⃣ Sebut Harga → 4️⃣ Work Order → 5️⃣ Completion Report → 6️⃣ Invois → 7️⃣ Resit (auto).\n\nStatus kerja dikemaskini secara automatik mengikut dokumen yang dihasilkan.',
-      },
-    },
+    { popover: { title: t('jobs.afterTitle'), description: t('jobs.afterDesc') } },
   ];
 }
 
@@ -143,60 +93,15 @@ function buildJobsSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildJobDetailSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '📄 Pusat Kawalan Kerja',
-        description: 'Inilah tempat anda urus SEMUA dokumen untuk satu kerja, mengikut urutan: Sebut Harga → Work Order → Completion Report → Invois → Resit.',
-      },
-    },
-    {
-      popover: {
-        title: '1️⃣ Pelanggan ✅',
-        description: 'Pelanggan sudah dipilih semasa cipta kerja ini. Maklumat mereka akan keluar automatik dalam semua dokumen di bawah.',
-      },
-    },
-    {
-      popover: {
-        title: '2️⃣ Kerja ✅',
-        description: 'Kerja ini sudah dicipta. Sekarang masa untuk hasilkan dokumen-dokumen berkaitan dalam urutan yang betul.',
-      },
-    },
-    {
-      popover: {
-        title: '3️⃣ Hasilkan Sebut Harga',
-        description: 'Mulakan dengan tawaran harga rasmi. Tambah item kerja, kuantiti, harga, diskaun & SST — total dikira auto. Hantar via WhatsApp untuk pelanggan terima/tolak.',
-      },
-    },
-    {
-      popover: {
-        title: '4️⃣ Hasilkan Work Order',
-        description: 'Selepas pelanggan setuju sebut harga, hasilkan Work Order — arahan kerja rasmi untuk team atau subkontraktor anda. Mengandungi senarai tugas, tarikh & terma.',
-      },
-    },
-    {
-      popover: {
-        title: '5️⃣ Completion Report',
-        description: 'Bila kerja sudah siap di lapangan, jana Completion Report. Tambah gambar before/after, catatan kerja & tandatangan pelanggan sebagai bukti kerja siap.',
-      },
-    },
-    {
-      popover: {
-        title: '6️⃣ Tukar ke Invois',
-        description: 'Bila siap, tukar sebut harga ke Invois dengan satu klik — semua item dipindah automatik. Hantar invois via WhatsApp dengan pautan ringkas (Tekan sini).',
-      },
-    },
-    {
-      popover: {
-        title: '7️⃣ Resit (Auto-Jana)',
-        description: 'Bila pelanggan upload bukti bayaran & anda sahkan (atau tandakan manual), invois jadi PAID dan resit terus dijana automatik. Tekan "Kongsi Resit via WhatsApp" untuk hantar kepada pelanggan.',
-      },
-    },
-    {
-      popover: {
-        title: '✅ Status Kerja Auto-Update',
-        description: 'Status kerja (Lead → In Progress → Completed) berubah sendiri ikut dokumen yang anda hasilkan. Anda hanya fokus pada kerja sebenar — sistem uruskan paperwork.',
-      },
-    },
+    { popover: { title: t('jobDetail.introTitle'), description: t('jobDetail.introDesc') } },
+    { popover: { title: t('jobDetail.customerTitle'), description: t('jobDetail.customerDesc') } },
+    { popover: { title: t('jobDetail.jobTitle'), description: t('jobDetail.jobDesc') } },
+    { popover: { title: t('jobDetail.quotationTitle'), description: t('jobDetail.quotationDesc') } },
+    { popover: { title: t('jobDetail.workOrderTitle'), description: t('jobDetail.workOrderDesc') } },
+    { popover: { title: t('jobDetail.reportTitle'), description: t('jobDetail.reportDesc') } },
+    { popover: { title: t('jobDetail.invoiceTitle'), description: t('jobDetail.invoiceDesc') } },
+    { popover: { title: t('jobDetail.receiptTitle'), description: t('jobDetail.receiptDesc') } },
+    { popover: { title: t('jobDetail.autoStatusTitle'), description: t('jobDetail.autoStatusDesc') } },
   ];
 }
 
@@ -205,45 +110,20 @@ function buildJobDetailSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildCustomersSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '👥 Modul Pelanggan (Langkah 1)',
-        description: 'Ini langkah PERTAMA dalam aliran kerja WorkTrace. Daftar pelanggan dahulu, kemudian baru boleh buka kerja, sebut harga, invois & resit untuk mereka.',
-      },
-    },
+    { popover: { title: t('customers.introTitle'), description: t('customers.introDesc') } },
     {
       element: '[data-tutorial="customers-search"]',
-      popover: {
-        title: '🔍 Cari Pelanggan',
-        description: 'Cari mengikut nama atau nombor telefon. Senang nak jumpa pelanggan lama untuk job berulang.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('customers.searchTitle'), description: t('customers.searchDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="customers-tags"]',
-      popover: {
-        title: '🏷️ Tag Pelanggan',
-        description: 'Tandakan pelanggan VIP atau Repeat dengan tag. Tag bantu anda kenalpasti pelanggan penting dengan satu pandangan.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('customers.tagsTitle'), description: t('customers.tagsDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="customers-new-btn"]',
-      popover: {
-        title: '➕ Tambah Pelanggan',
-        description: 'Tekan untuk daftar pelanggan baru. Nombor telefon penting — ia akan digunakan untuk hantar invois & resit melalui WhatsApp.',
-        side: 'left',
-        align: 'center',
-      },
+      popover: { title: t('customers.newTitle'), description: t('customers.newDesc'), side: 'left', align: 'center' },
     },
-    {
-      popover: {
-        title: '✅ Tip Mudah',
-        description: 'Selepas pelanggan didaftar, anda boleh terus pilih mereka semasa cipta kerja baru. Tak perlu taip nama dan telefon berulang kali.',
-      },
-    },
+    { popover: { title: t('customers.tipTitle'), description: t('customers.tipDesc') } },
   ];
 }
 
@@ -252,45 +132,20 @@ function buildCustomersSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildQuotationsSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '📝 Sebut Harga (Langkah 3)',
-        description: 'Lepas daftar Pelanggan (1) & buka Kerja (2), kini hantar tawaran harga rasmi kepada pelanggan. Selepas mereka setuju, baru sambung ke Work Order & Invois.',
-      },
-    },
+    { popover: { title: t('quotations.introTitle'), description: t('quotations.introDesc') } },
     {
       element: '[data-tutorial="quotations-status-tabs"]',
-      popover: {
-        title: '📊 Status Sebut Harga',
-        description: 'Tab untuk tapis: Draft (belum hantar), Sent (sudah hantar), Accepted (diterima) atau Rejected (ditolak).',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('quotations.statusTitle'), description: t('quotations.statusDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="quotations-search"]',
-      popover: {
-        title: '🔍 Cari',
-        description: 'Cari dengan nombor sebut harga atau nama pelanggan.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('quotations.searchTitle'), description: t('quotations.searchDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="quotations-new-btn"]',
-      popover: {
-        title: '➕ Buat Sebut Harga',
-        description: 'Tekan untuk cipta sebut harga baru. Pilih kerja, tambah item dengan harga dan kuantiti — total dikira auto termasuk SST.',
-        side: 'left',
-        align: 'center',
-      },
+      popover: { title: t('quotations.newTitle'), description: t('quotations.newDesc'), side: 'left', align: 'center' },
     },
-    {
-      popover: {
-        title: '✅ Aliran Sebut Harga',
-        description: 'Cipta → Hantar via WhatsApp → Pelanggan terima → Hasilkan Work Order (Langkah 4) → Tukar ke Invois (Langkah 6). Status kerja akan dikemaskini secara automatik.',
-      },
-    },
+    { popover: { title: t('quotations.flowTitle'), description: t('quotations.flowDesc') } },
   ];
 }
 
@@ -299,24 +154,9 @@ function buildQuotationsSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildQuotationDetailSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '📋 Butiran Sebut Harga',
-        description: 'Di sini anda boleh edit, hantar, dan tukar sebut harga ini ke invois.',
-      },
-    },
-    {
-      popover: {
-        title: '📲 Hantar via WhatsApp',
-        description: 'Tekan butang WhatsApp untuk hantar pautan PDF sebut harga terus kepada pelanggan. Mereka boleh terima atau tolak melalui pautan tersebut.',
-      },
-    },
-    {
-      popover: {
-        title: '✅ Tukar ke Invois',
-        description: 'Bila pelanggan setuju, tekan "Tukar ke Invois" — semua item akan dipindah ke invois baru. Mudah dan pantas.',
-      },
-    },
+    { popover: { title: t('quotationDetail.introTitle'), description: t('quotationDetail.introDesc') } },
+    { popover: { title: t('quotationDetail.sendTitle'), description: t('quotationDetail.sendDesc') } },
+    { popover: { title: t('quotationDetail.convertTitle'), description: t('quotationDetail.convertDesc') } },
   ];
 }
 
@@ -325,36 +165,16 @@ function buildQuotationDetailSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildWorkOrdersSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '📋 Work Order (Langkah 4)',
-        description: 'Selepas sebut harga (Langkah 3) diterima pelanggan, hasilkan Work Order — arahan kerja rasmi untuk team atau subkontraktor anda. Kemudian sambung ke Completion Report (Langkah 5).',
-      },
-    },
+    { popover: { title: t('workOrders.introTitle'), description: t('workOrders.introDesc') } },
     {
       element: '[data-tutorial="workorders-search"]',
-      popover: {
-        title: '🔍 Cari Work Order',
-        description: 'Cari mengikut nombor work order, tajuk kerja atau nama pelanggan.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('workOrders.searchTitle'), description: t('workOrders.searchDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="workorders-status-tabs"]',
-      popover: {
-        title: '📊 Tapis Mengikut Status',
-        description: 'Lihat work order ikut status: Draft, Sent (sudah hantar kepada team), Accepted atau Rejected.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('workOrders.statusTitle'), description: t('workOrders.statusDesc'), side: 'bottom', align: 'start' },
     },
-    {
-      popover: {
-        title: '✅ Cara Hasilkan',
-        description: 'Work order dihasilkan dari halaman butiran kerja. Pergi ke Kerja → pilih satu kerja → tekan "Hasilkan Work Order".',
-      },
-    },
+    { popover: { title: t('workOrders.howTitle'), description: t('workOrders.howDesc') } },
   ];
 }
 
@@ -363,45 +183,20 @@ function buildWorkOrdersSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildInvoicesSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '🧾 Invois (Langkah 6)',
-        description: 'Selepas Completion Report (Langkah 5), masa untuk minta bayaran. Invois ialah bil rasmi kepada pelanggan. Bila dibayar, Resit (Langkah 7) dijana automatik.',
-      },
-    },
+    { popover: { title: t('invoices.introTitle'), description: t('invoices.introDesc') } },
     {
       element: '[data-tutorial="invoices-status-tabs"]',
-      popover: {
-        title: '💰 Status Invois',
-        description: 'Tab status: Draft, Sent (sudah hantar), Paid (sudah dibayar) dan Overdue (lewat bayar — paparan merah).',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('invoices.statusTitle'), description: t('invoices.statusDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="invoices-search"]',
-      popover: {
-        title: '🔍 Cari Invois',
-        description: 'Cari dengan nombor invois atau nama pelanggan.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('invoices.searchTitle'), description: t('invoices.searchDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="invoices-new-btn"]',
-      popover: {
-        title: '➕ Buat Invois',
-        description: 'Buat invois baru dari awal, atau lebih senang — tukar dari sebut harga yang sudah diterima. Item akan dipindah secara automatik.',
-        side: 'left',
-        align: 'center',
-      },
+      popover: { title: t('invoices.newTitle'), description: t('invoices.newDesc'), side: 'left', align: 'center' },
     },
-    {
-      popover: {
-        title: '💳 Maklumat Bayaran',
-        description: 'Maklumat bank dan QR pembayaran anda akan keluar dalam setiap invois. Setup dahulu di Tetapan → Kaedah Pembayaran.',
-      },
-    },
+    { popover: { title: t('invoices.paymentTitle'), description: t('invoices.paymentDesc') } },
   ];
 }
 
@@ -410,42 +205,12 @@ function buildInvoicesSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildInvoiceDetailSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '🧾 Butiran Invois',
-        description: 'Inilah pusat kawalan invois. Anda boleh hantar invois, mohon bukti bayaran, sahkan pembayaran, dan kongsi resit — semua di sini.',
-      },
-    },
-    {
-      popover: {
-        title: '1️⃣ Hantar Invois',
-        description: 'Tekan "Hantar Invois" untuk WhatsApp pelanggan dengan pautan ringkas (Tekan sini). Pautan tersebut bagi mereka lihat invois & muat naik bukti bayaran.',
-      },
-    },
-    {
-      popover: {
-        title: '2️⃣ Mohon Bukti Bayaran',
-        description: 'Belum dibayar? Tekan "Mohon Bukti Bayaran (WhatsApp)" untuk hantar peringatan kepada pelanggan dengan pautan upload bukti.',
-      },
-    },
-    {
-      popover: {
-        title: '3️⃣ Sahkan Bukti',
-        description: 'Bila pelanggan upload bukti, ia akan muncul di atas. Tekan "Sahkan & Tandakan Dibayar" — invois akan jadi Paid dan resit dijana auto.',
-      },
-    },
-    {
-      popover: {
-        title: '4️⃣ Kongsi Resit',
-        description: 'Selepas dibayar, satu butang baru akan muncul: "Kongsi Resit via WhatsApp". Tekan untuk hantar resit kepada pelanggan dengan satu klik.',
-      },
-    },
-    {
-      popover: {
-        title: '✅ Tandakan Manual',
-        description: 'Pelanggan bayar tunai atau bank-in tanpa upload bukti? Tekan "Tandakan Manual" untuk tandakan dibayar sendiri.',
-      },
-    },
+    { popover: { title: t('invoiceDetail.introTitle'), description: t('invoiceDetail.introDesc') } },
+    { popover: { title: t('invoiceDetail.sendTitle'), description: t('invoiceDetail.sendDesc') } },
+    { popover: { title: t('invoiceDetail.requestTitle'), description: t('invoiceDetail.requestDesc') } },
+    { popover: { title: t('invoiceDetail.verifyTitle'), description: t('invoiceDetail.verifyDesc') } },
+    { popover: { title: t('invoiceDetail.shareTitle'), description: t('invoiceDetail.shareDesc') } },
+    { popover: { title: t('invoiceDetail.manualTitle'), description: t('invoiceDetail.manualDesc') } },
   ];
 }
 
@@ -454,36 +219,16 @@ function buildInvoiceDetailSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildReceiptsSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '🧾 Resit (Langkah 7 — Akhir)',
-        description: 'Ini langkah TERAKHIR dalam aliran kerja. Semua invois yang sudah dibayar muncul di sini sebagai resit. Resit dijana SECARA AUTOMATIK — tak perlu buat manual.',
-      },
-    },
+    { popover: { title: t('receipts.introTitle'), description: t('receipts.introDesc') } },
     {
       element: '[data-tutorial="receipts-summary"]',
-      popover: {
-        title: '💰 Ringkasan',
-        description: 'Lihat jumlah resit dan jumlah duit yang sudah masuk — sekilas pandang.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('receipts.summaryTitle'), description: t('receipts.summaryDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="receipts-search"]',
-      popover: {
-        title: '🔍 Cari Resit',
-        description: 'Cari mengikut nombor resit, nombor invois atau nama pelanggan.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('receipts.searchTitle'), description: t('receipts.searchDesc'), side: 'bottom', align: 'start' },
     },
-    {
-      popover: {
-        title: '✅ Cara Hasilkan Resit',
-        description: 'Pergi ke Invois → pilih invois → tekan "Tandakan Dibayar" atau "Sahkan Bukti". Resit akan terus muncul di sini dengan nombor resit auto.',
-      },
-    },
+    { popover: { title: t('receipts.howTitle'), description: t('receipts.howDesc') } },
   ];
 }
 
@@ -492,36 +237,16 @@ function buildReceiptsSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildReportsSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '📊 Laporan Ringkasan',
-        description: 'Lihat prestasi bisnes anda — pendapatan, kerja siap, pelanggan baru dan banyak lagi. Sesuai untuk semakan bulanan.',
-      },
-    },
+    { popover: { title: t('reports.introTitle'), description: t('reports.introDesc') } },
     {
       element: '[data-tutorial="reports-presets"]',
-      popover: {
-        title: '📅 Pilih Tempoh',
-        description: 'Tekan pill ini untuk pilih tempoh laporan: Minggu Ini, Bulan Ini, 3 Bulan, Tahun Ini, atau set tarikh sendiri.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('reports.presetsTitle'), description: t('reports.presetsDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="reports-export"]',
-      popover: {
-        title: '📥 Eksport PDF',
-        description: 'Tekan untuk muat turun laporan dalam format PDF — sesuai untuk simpan rekod atau hantar kepada akauntan anda.',
-        side: 'left',
-        align: 'center',
-      },
+      popover: { title: t('reports.exportTitle'), description: t('reports.exportDesc'), side: 'left', align: 'center' },
     },
-    {
-      popover: {
-        title: '✅ Tip',
-        description: 'Laporan dikira berdasarkan invois yang sudah berstatus PAID. Pastikan semua invois yang dibayar sudah ditandakan dengan betul.',
-      },
-    },
+    { popover: { title: t('reports.tipTitle'), description: t('reports.tipDesc') } },
   ];
 }
 
@@ -530,27 +255,12 @@ function buildReportsSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildSupportSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '🆘 Pusat Sokongan',
-        description: 'Ada masalah atau cadangan? Hantar tiket di sini, team kami akan bantu anda secepat mungkin.',
-      },
-    },
+    { popover: { title: t('support.introTitle'), description: t('support.introDesc') } },
     {
       element: '[data-tutorial="support-new-btn"]',
-      popover: {
-        title: '➕ Tiket Baru',
-        description: 'Tekan untuk hantar tiket baru. Pilih kategori (Bug, Bil, Cadangan, Akaun atau Am) dan terangkan masalah anda.',
-        side: 'left',
-        align: 'center',
-      },
+      popover: { title: t('support.newTitle'), description: t('support.newDesc'), side: 'left', align: 'center' },
     },
-    {
-      popover: {
-        title: '✅ Apa Berlaku Selepas Itu?',
-        description: 'Anda akan terima notifikasi bila admin balas. Tekan tiket di senarai untuk lihat perbualan dan balas semula. Bantuan dalam Bahasa Melayu disediakan.',
-      },
-    },
+    { popover: { title: t('support.afterTitle'), description: t('support.afterDesc') } },
   ];
 }
 
@@ -559,62 +269,27 @@ function buildSupportSteps(): DriveStep[] {
 // ──────────────────────────────────────────────────────────
 function buildSettingsSteps(): DriveStep[] {
   return [
-    {
-      popover: {
-        title: '⚙️ Halaman Tetapan',
-        description: 'Setup di sini sekali sahaja — selepas itu maklumat anda akan keluar automatik dalam semua dokumen, invois & mesej WhatsApp. Mari kita lihat satu per satu.',
-      },
-    },
+    { popover: { title: t('settings.introTitle'), description: t('settings.introDesc') } },
     {
       element: '[data-tutorial="settings-profile"]',
-      popover: {
-        title: '🏢 Profil Syarikat',
-        description: 'Isi nama syarikat, telefon, alamat, logo dan nombor SSM. Maklumat ini muncul pada SETIAP sebut harga, invois, work order dan resit. Tekan untuk buka & edit.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('settings.profileTitle'), description: t('settings.profileDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="settings-payment"]',
-      popover: {
-        title: '💳 Kaedah Pembayaran',
-        description: 'Tambah akaun bank dan QR pembayaran. Tetapkan satu akaun sebagai "Utama" — ia akan jadi default pada invois. Pelanggan akan nampak cara bayar pada setiap invois.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('settings.paymentTitle'), description: t('settings.paymentDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="settings-terms"]',
-      popover: {
-        title: '📄 Terma & Syarat',
-        description: 'Edit T&C berasingan untuk Sebut Harga, Invois dan Work Order. Ada tab di dalam — pilih dokumen, edit teks, simpan. T&C ini muncul di bahagian bawah PDF.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('settings.termsTitle'), description: t('settings.termsDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="settings-whatsapp"]',
-      popover: {
-        title: '💬 Templet WhatsApp (BARU)',
-        description: 'Sesuaikan ucapan & ayat penutup untuk SEMUA jenis mesej WhatsApp anda — Sebut Harga, Invois, Peringatan, Work Order, Laporan Kerja, Resit & Follow-up. Pilih templet dari dropdown, edit, dan tengok pratonton secara langsung. Bahagian butiran (nombor, jumlah, pautan) dikunci automatik supaya mesej anda sentiasa tepat.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('settings.whatsappTitle'), description: t('settings.whatsappDesc'), side: 'bottom', align: 'start' },
     },
     {
       element: '[data-tutorial="settings-docnum"]',
-      popover: {
-        title: '🔢 Nombor Dokumen',
-        description: 'Tetapkan format nombor (contoh: INV-2026-001, QUO-0001). Pilih awalan, panjang nombor dan nombor permulaan. Sistem akan jana nombor secara automatik mengikut format anda.',
-        side: 'bottom',
-        align: 'start',
-      },
+      popover: { title: t('settings.docNumTitle'), description: t('settings.docNumDesc'), side: 'bottom', align: 'start' },
     },
-    {
-      popover: {
-        title: '✅ Tip Penting',
-        description: 'Setiap accordion boleh dibuka/tutup dengan tekan tajuk. Pilihan buka/tutup anda diingati untuk lawatan akan datang.\n\nLepas setup tetapan ini, anda dah sedia mula guna WorkTrace dengan penuh. Selamat berniaga! 🎉',
-      },
-    },
+    { popover: { title: t('settings.tipTitle'), description: t('settings.tipDesc') } },
   ];
 }
