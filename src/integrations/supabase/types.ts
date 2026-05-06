@@ -1313,6 +1313,57 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_plan_matrix: {
+        Args: never
+        Returns: {
+          feature_kind: string
+          feature_name: string
+          feature_slug: string
+          is_unlocked: boolean
+          limit_value: number
+          plan_name: string
+          plan_slug: string
+        }[]
+      }
+      admin_upsert_plan_feature: {
+        Args: {
+          p_feature_slug: string
+          p_is_unlocked: boolean
+          p_limit_value: number
+          p_plan_slug: string
+        }
+        Returns: undefined
+      }
+      admin_upsert_pricing_plan: {
+        Args: { p_patch: Json; p_plan_key: string }
+        Returns: {
+          badge_color: string | null
+          badge_text: string | null
+          created_at: string | null
+          currency: string
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          max_customers: number | null
+          max_jobs: number | null
+          monthly_price: number
+          name: string
+          plan_key: string
+          sort_order: number | null
+          tagline: string | null
+          updated_at: string | null
+          updated_by: string | null
+          yearly_discount_pct: number
+          yearly_price: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pricing_plans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cleanup_deleted_user_email: {
         Args: { p_user_id: string }
         Returns: undefined
