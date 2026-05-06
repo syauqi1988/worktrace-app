@@ -1,93 +1,100 @@
-# Dual-Language Support (BM / EN) with Header Toggle
 
-Add an English translation alongside the existing Bahasa Malaysia UI, with a toggle button in the header to switch between them. Selection is persisted per device.
+## Context
 
-## What the user will see
+Your admin panel lives in a **separate Lovable project** at `admin.worktrace.my`, which I do not have access to from this workspace. So the work splits in two:
 
-- A new compact toggle in the top header (next to the support / notification / help buttons) showing **BM | EN**. Tapping it instantly switches all UI text.
-- Language preference is saved in `localStorage` and restored on next visit.
-- Default language: **Bahasa Malaysia** (current behavior preserved for existing users).
-- All in-app screens translate: navigation, dashboard, jobs, customers, quotations, invoices, receipts, work orders, completion reports, reports, support, settings, login/onboarding, dialogs, toasts, empty states, expiry banner, tutorial modal.
+1. **In this WorkTrace app (I can edit):** prepare the database — extend the feature catalog, seed missing rows, and add admin-only RPCs so the admin UI has a clean API.
+2. **In your admin app (you paste the code I generate):** add a "Features" editor to the existing **Harga & Pelan** page.
 
-## What stays in Bahasa only (out of scope, called out so there's no surprise)
+## Audit of what already exists
 
-- **Generated PDFs** (invoices, quotations, receipts, work orders, completion reports) — these are customer-facing documents printed for end customers; switching their language needs a separate decision (per-document? follow user pref? follow customer pref?). Left as Bahasa for now.
-- **Database content** the user typed themselves (customer names, job descriptions, ticket bodies, etc.).
-- **Email templates** sent from edge functions (support replies, deletion notices) — server-side, separate task.
-- **Admin notification messages** stored in the `notifications` table (already written in Bahasa by triggers/edge functions).
+- `pricing_plans` — pricing/tagline/limits/features JSON. Already used by `usePricingPlans`, `usePlanConfig`, `usePlanGate`. Has admin RLS (`is_admin()`).
+- `plans` (slugs: `free`, `pro`) — used to link feature flags.
+- `features` table — currently only 5 rows: `company_logo`, `limit_kerja`, `limit_pelanggan`, `whatsapp`, `workorder`.
+- `plan_feature_flags` — per-plan unlock + limit_value, RLS allows admin upsert. Already wired.
+- `is_admin()` / `is_admin_user()` SECURITY DEFINER functions exist.
 
-If you want any of the above translated too, say so and I'll add a follow-up.
+The plumbing is mostly there. What's missing: a complete feature catalog covering everything you asked for, and a single admin-friendly RPC.
 
-## Approach
+## Part 1 — Changes in THIS project (database)
 
-Use **react-i18next** (the standard React i18n library, ~30KB, well-supported).
+### 1a. Seed the full feature catalog
+Insert into `features` (idempotent on `slug`):
 
-1. Install `i18next` + `react-i18next` + `i18next-browser-languagedetector`.
-2. Create `src/i18n/index.ts` to initialize i18next with `ms` (default) and `en`, detecting from localStorage key `worktrace_lang`.
-3. Create translation files:
-   - `src/i18n/locales/ms.json` — extracted from current hardcoded Bahasa strings
-   - `src/i18n/locales/en.json` — English equivalents
-   Organized by namespace: `common`, `nav`, `auth`, `dashboard`, `jobs`, `customers`, `quotations`, `invoices`, `receipts`, `workOrders`, `reports`, `support`, `settings`, `tutorial`, `notifications`.
-4. Import `./i18n` once in `src/main.tsx` so it boots before React.
-5. Add `<LanguageToggle />` component to `AppShell.tsx` header (also on `LoginPage` and `OnboardingPage` since those render outside `AppShell`).
-6. Replace hardcoded strings page-by-page using the `useTranslation()` hook: `t('jobs.title')` instead of `'Kerja'`.
+| slug | name | kind |
+|---|---|---|
+| whatsapp_share | WhatsApp Share | boolean |
+| whatsapp_template_quotation | WA Template: Quotation | boolean |
+| whatsapp_template_invoice | WA Template: Invoice | boolean |
+| whatsapp_template_receipt | WA Template: Receipt | boolean |
+| whatsapp_template_work_order | WA Template: Work Order | boolean |
+| company_logo_pdf | Logo on PDF | boolean |
+| custom_doc_numbering | Custom Doc Numbering | boolean |
+| work_order_module | Work Order Module | boolean |
+| completion_report | Completion Report | boolean |
+| lhdn_einvoice | LHDN e-Invoice | boolean |
+| push_notifications | Push Notifications | boolean |
+| customer_approval_links | Customer Approval Links | boolean |
+| payment_proof | Payment Proof Collection | boolean |
+| support_priority | Priority Support | boolean |
+| max_jobs_per_month | Max Jobs / Month | limit |
+| max_customers_per_month | Max Customers / Month | limit |
 
-## Header toggle design
+Also ensure `plans` has a `team` row alongside `free` and `pro`.
 
-Compact pill button matching the existing circular header buttons:
+### 1b. Seed default `plan_feature_flags`
+For every (plan × feature) combo, insert a default row (free=locked except basic, pro=mostly unlocked, team=all unlocked) on conflict do nothing — preserves existing edits.
 
-```text
-[ BM | EN ]   ← active side highlighted with bg-primary text-primary-foreground
+### 1c. New admin RPCs (SECURITY DEFINER, gated by `is_admin()`)
+
+```sql
+admin_list_plan_matrix()
+  → returns rows of {plan_slug, plan_name, feature_slug, feature_name,
+                     feature_kind, is_unlocked, limit_value}
+
+admin_upsert_plan_feature(p_plan_slug text, p_feature_slug text,
+                          p_is_unlocked bool, p_limit_value int)
+  → upserts plan_feature_flags after checking is_admin()
+
+admin_upsert_pricing_plan(p_plan_key, p_patch jsonb)
+  → updates allowed columns of pricing_plans (price/tagline/badge/limits/features/...)
 ```
 
-Single click toggles between the two languages. Uses the same height (h-8) and rounded styling as neighboring buttons.
+These give the admin UI a single clean surface and avoid relying on raw table RLS from a different domain.
 
-## File-by-file scope
+### 1d. Keep `usePlanGate` / `usePlanConfig` working
+Add a tiny `useFeatureFlag(slug)` hook in this project that reads `plan_feature_flags` for the current user's plan via the existing `plan flags read for my plan` RLS policy. So toggling "whatsapp_share = false" on Free actually disables the feature in the user app. (Optional follow-up — call this out but don't gate on it.)
 
-**New files**
-- `src/i18n/index.ts` — i18next config
-- `src/i18n/locales/ms.json` — Bahasa strings (extracted)
-- `src/i18n/locales/en.json` — English strings
-- `src/components/LanguageToggle.tsx` — header button
+## Part 2 — Code to paste into your admin project (admin.worktrace.my)
 
-**Edited files (high-traffic, full translation)**
-- `src/main.tsx` — import i18n
-- `src/components/AppShell.tsx` — mount toggle, translate nav labels & quick actions
-- `src/pages/LoginPage.tsx`, `OnboardingPage.tsx` — toggle + translate
-- `src/pages/DashboardPage.tsx`
-- `src/pages/JobsListPage.tsx`, `JobFormPage.tsx`, `JobDetailPage.tsx`
-- `src/pages/CustomersListPage.tsx`, `CustomerFormPage.tsx`, `CustomerDetailPage.tsx`
-- `src/pages/QuotationsListPage.tsx`, `QuotationFormPage.tsx`, `QuotationDetailPage.tsx`
-- `src/pages/InvoicesListPage.tsx`, `InvoiceFormPage.tsx`, `InvoiceDetailPage.tsx`
-- `src/pages/ReceiptsListPage.tsx`
-- `src/pages/WorkOrdersListPage.tsx`, `WorkOrderFormPage.tsx`, `WorkOrderDetailPage.tsx`
-- `src/pages/CompletionReportsListPage.tsx`, `CompletionReportPage.tsx`
-- `src/pages/ReportsPage.tsx`
-- `src/pages/SupportPage.tsx`, `SupportNewPage.tsx`, `SupportDetailPage.tsx`
-- `src/pages/SettingsPage.tsx`
-- `src/pages/AccountDeletedPage.tsx`, `GoodbyePage.tsx`, `PaymentSuccessPage.tsx`, `PaymentFailedPage.tsx`, `NotFound.tsx`
-- All `src/components/settings/*`, `NotificationBell`, `ExpiryBanner`, `InstallPromptBanner`, `AccountDeletionDialog`, `CancellationDialog`, `ReactivateDialog`, `UpgradeModal`, `PlanCards`, `BulkActionBar`, `EmptyState`
-- `src/components/tutorial/tutorialSteps.ts`, `WelcomeModal.tsx`
+I'll output a single drop-in folder once you approve:
 
-**Not edited**
-- PDF components in `src/components/pdf/*` (out of scope as noted)
-- Public pages (`PublicApprovalPage`, `PublicPaymentProofPage`) — these are customer-facing; will translate UI chrome but keep document-context Bahasa
-- Edge functions
-- shadcn/ui primitives in `src/components/ui/*` (no user-facing copy there)
+```
+src/features/plan-editor/
+  PlanEditorPage.tsx          ← mount on /admin/harga-pelan
+  PricingPlanCard.tsx         ← edit name/tagline/prices/limits/badge
+  FeatureMatrix.tsx           ← grid: rows=features, cols=plans
+                                bool→Switch, limit→numeric input
+  hooks/usePlanMatrix.ts      ← calls admin_list_plan_matrix
+  hooks/useUpdatePlanFeature.ts ← calls admin_upsert_plan_feature
+  hooks/useUpdatePricingPlan.ts ← calls admin_upsert_pricing_plan
+```
+
+UI behaviour:
+- Two stacked sections on the Harga & Pelan page:
+  1. **Pricing cards** (one per plan) with inline editable fields + Save.
+  2. **Feature Matrix** table — features down the left, plans across the top, toggles/inputs in cells, autosaves on change with optimistic update + toast.
+- Uses the same Supabase client (just point the admin app at the same project; it already is, since RLS uses the same `is_admin()`).
 
 ## Technical notes
 
-- Translation key style: `namespace.key` (e.g. `nav.jobs`, `jobs.list.empty.title`, `common.save`).
-- Use `Trans` component for strings with embedded React (links, bold).
-- For pluralization (e.g. "1 day left" / "3 days left"), use i18next's built-in `count` interpolation.
-- Date/number formatting: keep `toLocaleDateString('ms-MY' | 'en-MY', ...)` driven by current language. Currency stays MYR/RM.
-- `last_support_visit` and similar DB fields: unchanged.
-- No DB migration needed.
-- Bundle impact: ~35KB gzipped for i18next + locale JSON.
+- All mutations route through SECURITY DEFINER RPCs that re-check `is_admin()`, so even if RLS on `pricing_plans` / `plan_feature_flags` ever changes, the admin path stays correct and auditable.
+- `features.slug` becomes the contract between the two apps — never rename, only add.
+- No changes to existing pricing_plans rows' data; only schema-additive seeding.
 
-## Out of scope (ask if you want these)
+## What I'll do once you approve
 
-- Translating PDFs, emails, and server-generated notification messages
-- Adding more languages (Mandarin, Tamil) — easy to add later, same structure
-- Translating user-entered data
-- RTL layout (not needed for EN/BM)
+1. Run one migration in this project: features seed + plans seed + plan_feature_flags defaults + 3 admin RPCs.
+2. Generate the admin folder above as a single message you paste into `admin.worktrace.my` (or you can grant me access to that project and I'll commit it directly).
+
+**To let me commit straight into the admin app instead of pasting:** open it in Lovable and either share its project ID here, or invite this account so it shows up under cross-project tools.
