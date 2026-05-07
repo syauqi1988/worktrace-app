@@ -98,6 +98,83 @@ export type Database = {
         }
         Relationships: []
       }
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          body_en: string | null
+          body_ms: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          link: string | null
+          published_at: string
+          severity: string
+          show_popup: boolean
+          title_en: string
+          title_ms: string
+          updated_at: string
+        }
+        Insert: {
+          body_en?: string | null
+          body_ms?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          link?: string | null
+          published_at?: string
+          severity?: string
+          show_popup?: boolean
+          title_en: string
+          title_ms: string
+          updated_at?: string
+        }
+        Update: {
+          body_en?: string | null
+          body_ms?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          link?: string | null
+          published_at?: string
+          severity?: string
+          show_popup?: boolean
+          title_en?: string
+          title_ms?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_admins: {
         Row: {
           created_at: string
@@ -497,6 +574,7 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          i18n: Json | null
           id: string
           link: string | null
           read_at: string | null
@@ -508,6 +586,7 @@ export type Database = {
         Insert: {
           body?: string | null
           created_at?: string
+          i18n?: Json | null
           id?: string
           link?: string | null
           read_at?: string | null
@@ -519,6 +598,7 @@ export type Database = {
         Update: {
           body?: string | null
           created_at?: string
+          i18n?: Json | null
           id?: string
           link?: string | null
           read_at?: string | null
@@ -1420,6 +1500,7 @@ export type Database = {
       is_app_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       mark_approval_viewed: { Args: { p_token: string }; Returns: undefined }
+      publish_announcement: { Args: { p_id: string }; Returns: number }
       respond_to_approval: {
         Args: { p_action: string; p_reason: string; p_token: string }
         Returns: undefined
