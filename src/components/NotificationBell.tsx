@@ -90,7 +90,11 @@ export default function NotificationBell() {
                   {t('notifications.empty')}
                 </div>
               ) : (
-                items.map((n) => (
+                items.map((n) => {
+                  const lang = i18n.language === 'en' ? 'en' : 'ms';
+                  const title = n.i18n?.title?.[lang] || n.title;
+                  const body = n.i18n?.body?.[lang] || n.body;
+                  return (
                   <button
                     key={n.id}
                     onClick={() => onClick(n)}
@@ -100,13 +104,14 @@ export default function NotificationBell() {
                   >
                     <div className="mt-0.5 shrink-0">{iconFor(n.type)}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{n.title}</p>
-                      {n.body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>}
+                      <p className="text-sm font-medium text-foreground truncate">{title}</p>
+                      {body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{body}</p>}
                       <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(n.created_at, justNow)}</p>
                     </div>
                     {!n.read_at && <span className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />}
                   </button>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
