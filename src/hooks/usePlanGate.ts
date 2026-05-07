@@ -116,6 +116,13 @@ export function usePlanGate() {
   };
 
   const checkWhatsAppShare = (): boolean => {
+    // Admin-controlled flag wins. While loading (undefined), fall back to plan-based default.
+    if (whatsappUnlocked === true) return true;
+    if (whatsappUnlocked === false) {
+      setUpgradeReason('WhatsApp share hanya tersedia untuk pengguna Pro.');
+      setUpgradeOpen(true);
+      return false;
+    }
     if (!isFree) return true;
     setUpgradeReason('WhatsApp share hanya tersedia untuk pengguna Pro.');
     setUpgradeOpen(true);
