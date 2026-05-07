@@ -12,6 +12,7 @@ export type AppNotification = {
   ref_id: string | null;
   read_at: string | null;
   created_at: string;
+  i18n?: { title?: { ms?: string; en?: string }; body?: { ms?: string; en?: string }; severity?: string } | null;
 };
 
 export function useNotifications() {

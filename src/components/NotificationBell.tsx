@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check } from 'lucide-react';
+import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check, Megaphone } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNotifications, type AppNotification } from '@/hooks/useNotifications';
 
@@ -11,6 +11,7 @@ function iconFor(type: string) {
     case 'approval_rejected': return <XCircle className="h-4 w-4 text-destructive" />;
     case 'payment_proof': return <Wallet className="h-4 w-4 text-primary" />;
     case 'ticket_reply': return <MessageSquare className="h-4 w-4 text-primary" />;
+    case 'announcement': return <Megaphone className="h-4 w-4 text-primary" />;
     default: return <Bell className="h-4 w-4 text-muted-foreground" />;
   }
 }
@@ -89,7 +90,11 @@ export default function NotificationBell() {
                   {t('notifications.empty')}
                 </div>
               ) : (
-                items.map((n) => (
+                items.map((n) => {
+                  const lang = i18n.language === 'en' ? 'en' : 'ms';
+                  const title = n.i18n?.title?.[lang] || n.title;
+                  const body = n.i18n?.body?.[lang] || n.body;
+                  return (
                   <button
                     key={n.id}
                     onClick={() => onClick(n)}
@@ -99,13 +104,14 @@ export default function NotificationBell() {
                   >
                     <div className="mt-0.5 shrink-0">{iconFor(n.type)}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{n.title}</p>
-                      {n.body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>}
+                      <p className="text-sm font-medium text-foreground truncate">{title}</p>
+                      {body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{body}</p>}
                       <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(n.created_at, justNow)}</p>
                     </div>
                     {!n.read_at && <span className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />}
                   </button>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
