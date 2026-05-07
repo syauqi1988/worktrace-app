@@ -20,6 +20,7 @@ import InstallPromptBanner from '@/components/InstallPromptBanner';
 import NotificationBell from '@/components/NotificationBell';
 import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
+import AnnouncementModal from '@/components/AnnouncementModal';
 import { useTutorial } from '@/hooks/useTutorial';
 
 type NavItem = {
