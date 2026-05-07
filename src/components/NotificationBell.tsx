@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check } from 'lucide-react';
+import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check, Megaphone } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNotifications, type AppNotification } from '@/hooks/useNotifications';
 
@@ -11,6 +11,7 @@ function iconFor(type: string) {
     case 'approval_rejected': return <XCircle className="h-4 w-4 text-destructive" />;
     case 'payment_proof': return <Wallet className="h-4 w-4 text-primary" />;
     case 'ticket_reply': return <MessageSquare className="h-4 w-4 text-primary" />;
+    case 'announcement': return <Megaphone className="h-4 w-4 text-primary" />;
     default: return <Bell className="h-4 w-4 text-muted-foreground" />;
   }
 }
