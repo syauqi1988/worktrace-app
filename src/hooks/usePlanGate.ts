@@ -22,6 +22,8 @@ export function usePlanGate() {
   // null = unlimited; undefined = still loading (fall back to safe defaults).
   const [maxJobs, setMaxJobs] = useState<number | null | undefined>(undefined);
   const [maxCustomers, setMaxCustomers] = useState<number | null | undefined>(undefined);
+  // Admin-controlled feature flags for the current user's plan.
+  const [whatsappUnlocked, setWhatsappUnlocked] = useState<boolean | undefined>(undefined);
 
   const isFree = !profile || profile.plan === 'free';
   const isPro = profile?.plan === 'pro';
@@ -44,6 +46,30 @@ export function usePlanGate() {
       cancelled = true;
     };
   }, []);
+
+  // Read whatsapp_share flag for the current user's plan from plan_feature_flags.
+  useEffect(() => {
+    if (!profile?.plan) return;
+    let cancelled = false;
+    (async () => {
+      const { data: feature } = await supabase
+        .from('features').select('id').eq('slug', 'whatsapp_share').maybeSingle();
+      const { data: plan } = await supabase
+        .from('plans').select('id').eq('slug', profile.plan).maybeSingle();
+      if (!feature || !plan) {
+        if (!cancelled) setWhatsappUnlocked(false);
+        return;
+      }
+      const { data: flag } = await supabase
+        .from('plan_feature_flags')
+        .select('is_unlocked')
+        .eq('plan_id', plan.id)
+        .eq('feature_id', feature.id)
+        .maybeSingle();
+      if (!cancelled) setWhatsappUnlocked(flag?.is_unlocked ?? false);
+    })();
+    return () => { cancelled = true; };
+  }, [profile?.plan]);
 
   const checkJobLimit = async (userId: string): Promise<boolean> => {
     if (!isFree) return true;
