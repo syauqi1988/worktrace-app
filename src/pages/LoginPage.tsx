@@ -17,13 +17,15 @@ const HCAPTCHA_SITE_KEY = '71b8e45e-eee4-4054-8f94-121a300c9072';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(getRememberedEmail());
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [bioSupported, setBioSupported] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const captchaRef = useRef<HCaptcha>(null);
   const navigate = useNavigate();
@@ -32,10 +34,32 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const refCode = searchParams.get('ref');
 
+  useEffect(() => { isPasskeySupported().then(setBioSupported); }, []);
+
   // Capture referral code
   useEffect(() => {
     if (refCode) localStorage.setItem('worktrace_ref', refCode);
   }, [refCode]);
+
+  const handleBiometric = async () => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError(t('login.invalidEmail'));
+      return;
+    }
+    setError('');
+    setBioBusy(true);
+    const res = await signInWithPasskey(email.trim().toLowerCase());
+    setBioBusy(false);
+    if (res.ok) {
+      rememberEmail(email.trim().toLowerCase());
+      try { await applyReferralFromUrl(); } catch {}
+      navigate('/dashboard');
+      return;
+    }
+    if (res.error === 'cancelled') { toast.info(t('login.biometricCancelled')); return; }
+    if (res.error === 'no_passkey') { setError(t('login.biometricNoPasskey')); return; }
+    setError(t('login.biometricFailed'));
+  };
 
   useEffect(() => {
     if (resendTimer > 0) {
