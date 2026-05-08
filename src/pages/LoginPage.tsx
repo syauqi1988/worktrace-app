@@ -210,6 +210,18 @@ export default function LoginPage() {
               <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending || !captchaToken}>
                 {sending ? t('login.sending') : t('login.sendOtp')}
               </Button>
+              {bioSupported && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBiometric}
+                  disabled={bioBusy || !email}
+                  className="w-full h-11 rounded-lg"
+                >
+                  <Fingerprint className="h-4 w-4 mr-2" />
+                  {t('login.useBiometric')}
+                </Button>
+              )}
             </form>
           ) : (
             <div className="space-y-6">
