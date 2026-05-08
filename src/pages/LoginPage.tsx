@@ -5,11 +5,13 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Gift } from 'lucide-react';
+import { ArrowLeft, Gift, Fingerprint } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
 import LanguageToggle from '@/components/LanguageToggle';
 import { applyReferralFromUrl } from '@/lib/applyReferral';
+import { isPasskeySupported, signInWithPasskey, getRememberedEmail, rememberEmail } from '@/lib/passkeys';
+import { toast } from 'sonner';
 
 const HCAPTCHA_SITE_KEY = '71b8e45e-eee4-4054-8f94-121a300c9072';
 
