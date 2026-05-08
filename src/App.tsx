@@ -10,7 +10,6 @@ import LoginPage from "@/pages/LoginPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import AuthCallback from "@/pages/AuthCallback";
 import DashboardPage from "@/pages/DashboardPage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
 import SettingsPage from "@/pages/SettingsPage";
 import TeamPlaceholderPage from "@/pages/TeamPlaceholderPage";
 import InvoicesListPage from "@/pages/InvoicesListPage";
@@ -44,7 +43,6 @@ import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
 import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const queryClient = new QueryClient();
 
