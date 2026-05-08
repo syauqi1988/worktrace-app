@@ -647,7 +647,31 @@
     "resendIn": "Hantar semula dalam {{seconds}}s",
     "resend": "Hantar semula kod",
     "invalidEmail": "Sila masukkan emel yang sah",
-    "captchaRequired": "Sila lengkapkan captcha"
+    "captchaRequired": "Sila lengkapkan captcha",
+    "useBiometric": "Log masuk dengan biometrik",
+    "useEmailInstead": "Guna kod emel sebagai ganti",
+    "biometricCancelled": "Log masuk biometrik dibatalkan",
+    "biometricNoPasskey": "Tiada biometrik untuk emel ini pada peranti ini. Guna kod emel dahulu, kemudian aktifkan biometrik di Tetapan.",
+    "biometricFailed": "Log masuk biometrik gagal. Sila guna kod emel."
+  },
+  "passkey": {
+    "promptTitle": "Aktifkan log masuk pantas?",
+    "promptBody": "Guna Face ID, cap jari atau PIN peranti untuk log masuk lain kali — tanpa kod emel.",
+    "enableNow": "Aktifkan pada peranti ini",
+    "notNow": "Bukan sekarang",
+    "dontAskAgain": "Jangan tanya lagi",
+    "enrolling": "Sedang menyediakan...",
+    "enrolledOk": "Log masuk biometrik diaktifkan",
+    "enrollFailed": "Tidak dapat aktifkan log masuk biometrik",
+    "settingsTitle": "Biometrik & Passkey",
+    "settingsDesc": "Log masuk dengan Face ID, cap jari atau PIN peranti pada peranti dipercayai.",
+    "addThisDevice": "Tambah peranti ini",
+    "noDevices": "Tiada peranti didaftarkan lagi.",
+    "remove": "Buang",
+    "removed": "Peranti dibuang",
+    "lastUsed": "Kali terakhir digunakan {{when}}",
+    "neverUsed": "Belum pernah digunakan",
+    "notSupported": "Pelayar ini tidak menyokong log masuk biometrik."
   },
   "customerDetail": {
     "title": "Profil Pelanggan",
