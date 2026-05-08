@@ -56,7 +56,7 @@ export default function LoginPage() {
       navigate('/dashboard');
       return;
     }
-    const err = res.error;
+    const err = (res as { ok: false; error: string }).error;
     if (err === 'cancelled') { toast.info(t('login.biometricCancelled')); return; }
     if (err === 'no_passkey') { setError(t('login.biometricNoPasskey')); return; }
     setError(t('login.biometricFailed'));
