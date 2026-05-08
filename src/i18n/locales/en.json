@@ -647,7 +647,31 @@
     "resendIn": "Resend in {{seconds}}s",
     "resend": "Resend code",
     "invalidEmail": "Please enter a valid email",
-    "captchaRequired": "Please complete the captcha"
+    "captchaRequired": "Please complete the captcha",
+    "useBiometric": "Sign in with biometrics",
+    "useEmailInstead": "Use email code instead",
+    "biometricCancelled": "Biometric sign-in cancelled",
+    "biometricNoPasskey": "No biometric set up for this email on this device. Use the email code, then enable biometrics in Settings.",
+    "biometricFailed": "Biometric sign-in failed. Please try the email code."
+  },
+  "passkey": {
+    "promptTitle": "Enable quick sign-in?",
+    "promptBody": "Use Face ID, fingerprint or your device PIN to sign in next time — no email code needed.",
+    "enableNow": "Enable on this device",
+    "notNow": "Not now",
+    "dontAskAgain": "Don't ask again",
+    "enrolling": "Setting up...",
+    "enrolledOk": "Biometric sign-in enabled",
+    "enrollFailed": "Could not enable biometric sign-in",
+    "settingsTitle": "Biometric & Passkeys",
+    "settingsDesc": "Sign in with Face ID, fingerprint or device PIN on trusted devices.",
+    "addThisDevice": "Add this device",
+    "noDevices": "No devices enrolled yet.",
+    "remove": "Remove",
+    "removed": "Device removed",
+    "lastUsed": "Last used {{when}}",
+    "neverUsed": "Never used",
+    "notSupported": "This browser does not support biometric sign-in."
   },
   "customerDetail": {
     "title": "Customer Profile",
