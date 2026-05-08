@@ -44,6 +44,7 @@ import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
 import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const queryClient = new QueryClient();
 
