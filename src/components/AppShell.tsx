@@ -21,6 +21,7 @@ import NotificationBell from '@/components/NotificationBell';
 import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
 import AnnouncementModal from '@/components/AnnouncementModal';
+import PasskeyEnrollPrompt from '@/components/PasskeyEnrollPrompt';
 import { useTutorial } from '@/hooks/useTutorial';
 
 type NavItem = {
