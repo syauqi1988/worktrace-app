@@ -18,6 +18,7 @@ import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
 import AiHelpButton from "@/components/settings/AiHelpButton";
 import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
 import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
+import SecuritySection from "@/components/settings/SecuritySection";
 import { getDateLocale } from "@/i18n";
 import {
   Building2,
@@ -1122,6 +1123,15 @@ export default function SettingsPage() {
         >
           {t("settings.danger.deleteAccount")}
         </Button>
+      </SettingsAccordion>
+
+      <SettingsAccordion
+        id="security"
+        icon={<Shield className="h-5 w-5" />}
+        title={t('passkey.settingsTitle')}
+        description={t('passkey.settingsDesc')}
+      >
+        <SecuritySection />
       </SettingsAccordion>
 
       <AccountDeletionDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} />

@@ -21,6 +21,7 @@ import NotificationBell from '@/components/NotificationBell';
 import ExpiryBanner from '@/components/ExpiryBanner';
 import TutorialController from '@/components/tutorial/TutorialController';
 import AnnouncementModal from '@/components/AnnouncementModal';
+import PasskeyEnrollPrompt from '@/components/PasskeyEnrollPrompt';
 import { useTutorial } from '@/hooks/useTutorial';
 
 type NavItem = {
@@ -145,6 +146,7 @@ export default function AppShell() {
       <InstallPromptBanner />
       <ExpiryBanner />
       <AnnouncementModal />
+      <PasskeyEnrollPrompt />
       {/* Top Header */}
       <header className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 shrink-0">
         <button data-tutorial="hamburger-menu" onClick={() => setSidebarOpen(true)} className="md:hidden text-muted-foreground mr-3">

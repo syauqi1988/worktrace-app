@@ -5,23 +5,27 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Gift } from 'lucide-react';
+import { ArrowLeft, Gift, Fingerprint } from 'lucide-react';
 import logo from '@/assets/logo-new.png';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
 import LanguageToggle from '@/components/LanguageToggle';
 import { applyReferralFromUrl } from '@/lib/applyReferral';
+import { isPasskeySupported, signInWithPasskey, getRememberedEmail, rememberEmail } from '@/lib/passkeys';
+import { toast } from 'sonner';
 
 const HCAPTCHA_SITE_KEY = '71b8e45e-eee4-4054-8f94-121a300c9072';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(getRememberedEmail());
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [bioSupported, setBioSupported] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const captchaRef = useRef<HCaptcha>(null);
   const navigate = useNavigate();
@@ -30,10 +34,33 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const refCode = searchParams.get('ref');
 
+  useEffect(() => { isPasskeySupported().then(setBioSupported); }, []);
+
   // Capture referral code
   useEffect(() => {
     if (refCode) localStorage.setItem('worktrace_ref', refCode);
   }, [refCode]);
+
+  const handleBiometric = async () => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError(t('login.invalidEmail'));
+      return;
+    }
+    setError('');
+    setBioBusy(true);
+    const res = await signInWithPasskey(email.trim().toLowerCase());
+    setBioBusy(false);
+    if (res.ok) {
+      rememberEmail(email.trim().toLowerCase());
+      try { await applyReferralFromUrl(); } catch {}
+      navigate('/dashboard');
+      return;
+    }
+    const err = (res as { ok: false; error: string }).error;
+    if (err === 'cancelled') { toast.info(t('login.biometricCancelled')); return; }
+    if (err === 'no_passkey') { setError(t('login.biometricNoPasskey')); return; }
+    setError(t('login.biometricFailed'));
+  };
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -107,6 +134,7 @@ export default function LoginPage() {
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } else {
+      rememberEmail(email.trim().toLowerCase());
       try { await applyReferralFromUrl(); } catch (e) { console.error('applyReferral failed', e); }
       navigate(result.isNewUser ? '/onboarding' : '/dashboard');
     }
@@ -182,6 +210,18 @@ export default function LoginPage() {
               <Button type="submit" className="w-full h-11 rounded-lg" disabled={sending || !captchaToken}>
                 {sending ? t('login.sending') : t('login.sendOtp')}
               </Button>
+              {bioSupported && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBiometric}
+                  disabled={bioBusy || !email}
+                  className="w-full h-11 rounded-lg"
+                >
+                  <Fingerprint className="h-4 w-4 mr-2" />
+                  {t('login.useBiometric')}
+                </Button>
+              )}
             </form>
           ) : (
             <div className="space-y-6">
