@@ -1,81 +1,75 @@
-# Announcements (admin-managed, bilingual)
+## Add Passkey (Biometric) Login
 
-Admin posts an announcement once → every active user sees a pop-up on next app load AND gets a row in their notification bell. Title/body stored in both MS and EN; user sees the language they've selected (`i18n.language`).
+OTP stays as the signup + recovery method. After first OTP login, users can enroll a passkey on their device (Face ID / fingerprint / Windows Hello / device PIN). On return visits they tap "Sign in with biometrics" and the device unlocks the app — no email code needed.
 
-## 1. Database (migration in this project)
+### How it will work
 
-### New table: `announcements`
-- `id uuid pk default gen_random_uuid()`
-- `title_ms text not null`, `title_en text not null`
-- `body_ms text`, `body_en text`
-- `link text` (optional CTA, e.g. `/settings`)
-- `severity text default 'info'` (`info` | `success` | `warning`)
-- `is_active bool default true`
-- `show_popup bool default true` (if false → notification only, no modal)
-- `published_at timestamptz default now()`
-- `expires_at timestamptz` (nullable)
-- `created_by uuid`, `created_at`, `updated_at`
+```text
+First-time user                     Returning user (enrolled)
+───────────────                     ───────────────────────────
+1. Enter email                      1. Tap "Sign in with biometrics"
+2. Get OTP code                     2. Face ID / fingerprint prompt
+3. Verify → logged in               3. Edge function verifies signature
+4. Prompt: "Enable quick sign-in?"  4. Issued a Supabase session
+5. Face ID / fingerprint enrolled   
+                                    Fallback: "Use email code instead" → OTP flow
+```
 
-RLS:
-- `SELECT`: any authenticated user where `is_active = true AND (expires_at IS NULL OR expires_at > now())` — OR `is_admin()`
-- `ALL`: `is_admin()` (full CRUD for admin app)
+### Database (1 new table)
 
-### New table: `announcement_reads`
-Tracks per-user dismissal of the pop-up so it doesn't re-show.
-- `announcement_id uuid`, `user_id uuid`, `seen_at timestamptz default now()`
-- PK (announcement_id, user_id)
-- RLS: user can insert/select own rows.
+`user_passkeys`
+- `id` uuid PK
+- `user_id` uuid → profiles.id
+- `credential_id` text unique (the WebAuthn credential ID)
+- `public_key` bytea
+- `counter` bigint
+- `transports` text[]
+- `device_label` text (e.g. "iPhone 15 — Safari")
+- `created_at`, `last_used_at`
+- RLS: users can read/delete only their own rows; inserts via edge function only.
 
-### RPC: `publish_announcement(p_id uuid)` (SECURITY DEFINER, admin only)
-Fans out a row into `notifications` for every active user (excluding deleted/cancelled), using MS or EN copy based on each user's `profiles` (we don't store user lang server-side → store BOTH languages in the notification body as JSON, see below). Simpler approach: insert one notification per user with `body = title_ms || ' | ' || title_en` is ugly. Instead:
+Plus a small `webauthn_challenges` table (or short-lived in-memory map keyed by email) to hold the per-attempt challenge.
 
-**Cleaner:** Add `i18n` jsonb column to `notifications` (`{title:{ms,en}, body:{ms,en}}`). When present, the bell renders the language-specific copy; otherwise falls back to `title`/`body`. The RPC populates both `title`/`body` (MS as default for backwards compat) and `i18n`.
+### Edge functions (4 new)
 
-Notification `type = 'announcement'`, `link = announcements.link`, `ref_id = announcement.id`.
+Using `@simplewebauthn/server` (Deno-compatible).
 
-## 2. User-facing app (this project)
+1. **`passkey-register-options`** — authed. Generates registration challenge, stores it, returns options to browser.
+2. **`passkey-register-verify`** — authed. Verifies the attestation, saves credential to `user_passkeys`.
+3. **`passkey-auth-options`** — public. Takes email, returns allowed credential IDs + challenge.
+4. **`passkey-auth-verify`** — public. Verifies assertion, then uses service role to `admin.generateLink({ type: 'magiclink' })` and returns the session tokens to the client, which calls `supabase.auth.setSession(...)`.
 
-### `src/hooks/useActiveAnnouncement.ts`
-- Queries `announcements` for the latest active row not yet in `announcement_reads` for the current user.
-- Returns `{ announcement, dismiss() }` where `dismiss` inserts into `announcement_reads`.
+### Frontend changes
 
-### `src/components/AnnouncementModal.tsx`
-- Mounted in `AppShell`. If hook returns an announcement with `show_popup`, render a Dialog with severity-styled header, localized title/body (`i18n.language === 'en' ? title_en : title_ms`), optional CTA button → navigate to `link`, and "Dismiss" closing the modal + calling `dismiss()`.
+- **`src/lib/passkeys.ts`** — wrappers around `navigator.credentials.create()` / `.get()` and the 4 edge functions. Feature-detect `window.PublicKeyCredential` and `isUserVerifyingPlatformAuthenticatorAvailable()`.
+- **`src/pages/LoginPage.tsx`** — add a "Sign in with biometrics" button on the email step. On click: ask for email (or remember last-used email in localStorage), call auth-options → `navigator.credentials.get()` → auth-verify → set session → navigate. "Use email code instead" link always visible as fallback.
+- **`src/components/PasskeyEnrollPrompt.tsx`** (new) — modal shown once after first successful OTP login if the device supports platform authenticator and user has no passkey yet. "Enable" / "Not now" / "Don't ask again" (stored on profile).
+- **`src/pages/SettingsPage.tsx`** — new "Security" section listing enrolled devices with "Add this device" and "Remove" actions.
+- **i18n** — add MS/EN strings for all new copy.
+- **`profiles`** — add `passkey_prompt_dismissed boolean default false` so we don't nag.
 
-### `src/hooks/useNotifications.ts` + `NotificationBell.tsx`
-- Extend `AppNotification` type with optional `i18n` field.
-- In `NotificationBell`, when rendering an item, prefer `i18n[lang].title` / `i18n[lang].body` if present.
-- Add `'announcement'` icon case (Megaphone).
+### Caveats to know
 
-## 3. Admin app (`admin.worktrace.my`, separate codebase)
+- Per-device. New phone/browser → user falls back to OTP, then can enroll the new device.
+- Requires HTTPS (preview + production already are).
+- iOS: best inside the installed PWA; Safari tab also works on iOS 16+.
+- The "email" entered on the biometric path is only used to look up allowed credentials — actual identity is proven by the signed challenge.
 
-Provide drop-in code for a new page `/admin/announcements`:
-- `useAnnouncements` (list query)
-- `useUpsertAnnouncement` (insert/update)
-- `usePublishAnnouncement` (calls RPC → fans out notifications)
-- `AnnouncementsPage.tsx`: table + form (title/body MS+EN, severity, link, show_popup, is_active, expires_at) + "Publish to all users" button per row.
+### Files touched
 
-Add link in admin sidebar near "Harga & Pelan".
+**New**
+- `supabase/migrations/<ts>_passkeys.sql`
+- `supabase/functions/passkey-register-options/index.ts`
+- `supabase/functions/passkey-register-verify/index.ts`
+- `supabase/functions/passkey-auth-options/index.ts`
+- `supabase/functions/passkey-auth-verify/index.ts`
+- `src/lib/passkeys.ts`
+- `src/components/PasskeyEnrollPrompt.tsx`
 
-## 4. i18n keys (MS/EN)
-Add to `src/i18n/locales/{ms,en}.json`:
-- `announcement.dismiss` ("Tutup" / "Dismiss")
-- `announcement.viewMore` ("Lihat lagi" / "Learn more")
-- `notifications.types.announcement` ("Pengumuman" / "Announcement")
+**Edited**
+- `src/pages/LoginPage.tsx` (biometric button + fallback link)
+- `src/pages/SettingsPage.tsx` (Security section)
+- `src/components/AppShell.tsx` (mount enroll prompt)
+- `src/i18n/locales/en.json`, `ms.json`
 
-## Files
-
-This project:
-- migration: create `announcements`, `announcement_reads`, add `notifications.i18n jsonb`, add `publish_announcement` RPC, RLS policies
-- new: `src/hooks/useActiveAnnouncement.ts`, `src/components/AnnouncementModal.tsx`
-- edit: `src/components/AppShell.tsx` (mount modal), `src/hooks/useNotifications.ts` (i18n field), `src/components/NotificationBell.tsx` (localized render + megaphone icon), `src/i18n/locales/{ms,en}.json`
-
-Admin app (delivered as paste-in code):
-- `src/features/announcements/{hooks,AnnouncementsPage.tsx,AnnouncementForm.tsx}`
-- sidebar link snippet
-
-## Notes
-- Pop-up shows only once per user per announcement (tracked in `announcement_reads`).
-- If admin sets `show_popup=false`, users only get the bell notification (silent broadcast).
-- `expires_at` lets the modal/bell auto-hide stale announcements.
-- Fan-out is a single RPC call; for very large user bases this is a synchronous insert — fine up to ~100k rows. Can be moved to an edge function later if needed.
+Approve and I'll build it.
