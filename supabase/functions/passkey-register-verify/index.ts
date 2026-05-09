@@ -4,6 +4,7 @@ import { verifyRegistrationResponse } from "https://esm.sh/@simplewebauthn/serve
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -81,16 +82,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { credential } = verification.registrationInfo as any;
-    const credentialID: string = credential.id; // base64url string in v10+
-    const credentialPublicKey: Uint8Array = credential.publicKey;
-    const counter: number = credential.counter;
-    const transports: string[] = credential.transports ?? attResp.response?.transports ?? [];
+    const registrationInfo = verification.registrationInfo;
+    const credentialID: string = registrationInfo.credentialID;
+    const credentialPublicKey: Uint8Array = registrationInfo.credentialPublicKey;
+    const counter: number = registrationInfo.counter;
+    const transports: string[] = attResp.response?.transports ?? [];
 
     // Encode public key as base64
     const pkB64 = btoa(String.fromCharCode(...credentialPublicKey));
 
-    await admin.from("user_passkeys").insert({
+    const { error: insertErr } = await admin.from("user_passkeys").insert({
       user_id: userId,
       credential_id: credentialID,
       public_key: pkB64,
@@ -98,6 +99,14 @@ Deno.serve(async (req) => {
       transports,
       device_label: deviceLabel,
     });
+
+    if (insertErr) {
+      console.error("passkey insert failed", insertErr);
+      return new Response(JSON.stringify({ error: "Could not save passkey" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Cleanup challenge
     await admin.from("webauthn_challenges").delete().eq("id", chRow.id);
