@@ -4,6 +4,7 @@ import { verifyAuthenticationResponse } from "https://esm.sh/@simplewebauthn/ser
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -83,9 +84,9 @@ Deno.serve(async (req) => {
       expectedChallenge: chRow.challenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
-      credential: {
-        id: keyRow.credential_id,
-        publicKey: pkBytes,
+      authenticator: {
+        credentialID: keyRow.credential_id,
+        credentialPublicKey: pkBytes,
         counter: Number(keyRow.counter),
         transports: keyRow.transports ?? [],
       },
