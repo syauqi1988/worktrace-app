@@ -1,75 +1,41 @@
-## Add Passkey (Biometric) Login
+## Goal
 
-OTP stays as the signup + recovery method. After first OTP login, users can enroll a passkey on their device (Face ID / fingerprint / Windows Hello / device PIN). On return visits they tap "Sign in with biometrics" and the device unlocks the app — no email code needed.
+You already have an admin panel in a separate app. This project just needs to **consume** the announcements created there and display them as a popup to logged-in users.
 
-### How it will work
+Good news: the consumer side is **already wired up** in this codebase. This plan verifies it end-to-end and adds small polish so it works cleanly with your external admin panel.
 
-```text
-First-time user                     Returning user (enrolled)
-───────────────                     ───────────────────────────
-1. Enter email                      1. Tap "Sign in with biometrics"
-2. Get OTP code                     2. Face ID / fingerprint prompt
-3. Verify → logged in               3. Edge function verifies signature
-4. Prompt: "Enable quick sign-in?"  4. Issued a Supabase session
-5. Face ID / fingerprint enrolled   
-                                    Fallback: "Use email code instead" → OTP flow
-```
+## What already exists
 
-### Database (1 new table)
+- `announcements` table + `announcement_reads` table (with RLS letting any authed user read active, non-expired rows).
+- `useActiveAnnouncement` hook — fetches the latest active, unread, non-expired popup announcement.
+- `AnnouncementModal` — renders title/body in EN/MS based on `i18n.language`, with severity icon, optional "Learn more" link, and dismiss (writes to `announcement_reads`).
+- Modal is mounted globally inside `AppShell` so every authenticated page shows it.
+- `publish_announcement(p_id)` RPC exists for fan-out to `notifications`.
 
-`user_passkeys`
-- `id` uuid PK
-- `user_id` uuid → profiles.id
-- `credential_id` text unique (the WebAuthn credential ID)
-- `public_key` bytea
-- `counter` bigint
-- `transports` text[]
-- `device_label` text (e.g. "iPhone 15 — Safari")
-- `created_at`, `last_used_at`
-- RLS: users can read/delete only their own rows; inserts via edge function only.
+## What this plan changes
 
-Plus a small `webauthn_challenges` table (or short-lived in-memory map keyed by email) to hold the per-attempt challenge.
+Small consumer-side improvements only — no admin UI built here (it lives in your other app).
 
-### Edge functions (4 new)
+1. **Realtime updates** — subscribe to `announcements` INSERT/UPDATE so a freshly published announcement pops up without requiring a page refresh. Update `useActiveAnnouncement` to re-run `load()` on any insert/update event.
 
-Using `@simplewebauthn/server` (Deno-compatible).
+2. **Respect `published_at`** — current query orders by `published_at DESC` but doesn't filter future-dated rows. Add `.lte('published_at', now)` so scheduled announcements only appear once their publish time arrives.
 
-1. **`passkey-register-options`** — authed. Generates registration challenge, stores it, returns options to browser.
-2. **`passkey-register-verify`** — authed. Verifies the attestation, saves credential to `user_passkeys`.
-3. **`passkey-auth-options`** — public. Takes email, returns allowed credential IDs + challenge.
-4. **`passkey-auth-verify`** — public. Verifies assertion, then uses service role to `admin.generateLink({ type: 'magiclink' })` and returns the session tokens to the client, which calls `supabase.auth.setSession(...)`.
+3. **Severity styling polish** — extend `AnnouncementModal` so the header background tint matches severity (info/success/warning/critical), keeping it within design tokens (no hardcoded colors).
 
-### Frontend changes
+4. **Link handling** — current code uses `navigate(link)` which only works for internal paths. Detect external `http(s)://` links and open in a new tab instead.
 
-- **`src/lib/passkeys.ts`** — wrappers around `navigator.credentials.create()` / `.get()` and the 4 edge functions. Feature-detect `window.PublicKeyCredential` and `isUserVerifyingPlatformAuthenticatorAvailable()`.
-- **`src/pages/LoginPage.tsx`** — add a "Sign in with biometrics" button on the email step. On click: ask for email (or remember last-used email in localStorage), call auth-options → `navigator.credentials.get()` → auth-verify → set session → navigate. "Use email code instead" link always visible as fallback.
-- **`src/components/PasskeyEnrollPrompt.tsx`** (new) — modal shown once after first successful OTP login if the device supports platform authenticator and user has no passkey yet. "Enable" / "Not now" / "Don't ask again" (stored on profile).
-- **`src/pages/SettingsPage.tsx`** — new "Security" section listing enrolled devices with "Add this device" and "Remove" actions.
-- **i18n** — add MS/EN strings for all new copy.
-- **`profiles`** — add `passkey_prompt_dismissed boolean default false` so we don't nag.
+5. **Empty-state safety** — when `seenIds` is empty the current `.not('id','in','()')` is skipped correctly; add a fallback `or` filter to ignore expired rows server-side instead of only client-side.
 
-### Caveats to know
+6. **Quick smoke test doc** — short note in `README.md` describing the row shape your external admin panel must insert (required columns, what `is_active` / `show_popup` / `expires_at` / `severity` mean) so the two apps stay aligned.
 
-- Per-device. New phone/browser → user falls back to OTP, then can enroll the new device.
-- Requires HTTPS (preview + production already are).
-- iOS: best inside the installed PWA; Safari tab also works on iOS 16+.
-- The "email" entered on the biometric path is only used to look up allowed credentials — actual identity is proven by the signed challenge.
+## Files touched
 
-### Files touched
+- `src/hooks/useActiveAnnouncement.ts` — realtime subscription, `published_at` filter, expiry filter.
+- `src/components/AnnouncementModal.tsx` — severity styling, external link handling.
+- `README.md` — short "Announcements contract" section.
 
-**New**
-- `supabase/migrations/<ts>_passkeys.sql`
-- `supabase/functions/passkey-register-options/index.ts`
-- `supabase/functions/passkey-register-verify/index.ts`
-- `supabase/functions/passkey-auth-options/index.ts`
-- `supabase/functions/passkey-auth-verify/index.ts`
-- `src/lib/passkeys.ts`
-- `src/components/PasskeyEnrollPrompt.tsx`
+## Out of scope
 
-**Edited**
-- `src/pages/LoginPage.tsx` (biometric button + fallback link)
-- `src/pages/SettingsPage.tsx` (Security section)
-- `src/components/AppShell.tsx` (mount enroll prompt)
-- `src/i18n/locales/en.json`, `ms.json`
-
-Approve and I'll build it.
+- No admin form/page in this app (you build that in your separate admin app).
+- No schema changes — the table already supports everything needed.
+- No changes to `publish_announcement` RPC.

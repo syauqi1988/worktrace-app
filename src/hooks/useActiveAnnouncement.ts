@@ -27,32 +27,44 @@ export function useActiveAnnouncement() {
       .eq('user_id', user.id);
     const seenIds = (reads || []).map((r: any) => r.announcement_id);
 
+    const nowIso = new Date().toISOString();
     let q = supabase
       .from('announcements')
       .select('*')
       .eq('is_active', true)
       .eq('show_popup', true)
+      .lte('published_at', nowIso)
+      .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
       .order('published_at', { ascending: false })
       .limit(1);
     if (seenIds.length) q = q.not('id', 'in', `(${seenIds.join(',')})`);
 
     const { data } = await q;
     const row = data?.[0] as Announcement | undefined;
-    if (row && (!row.expires_at || new Date(row.expires_at) > new Date())) {
-      setAnnouncement(row);
-    } else {
-      setAnnouncement(null);
-    }
+    setAnnouncement(row ?? null);
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
 
+  // Realtime: pop new announcements without requiring a refresh
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('announcements-feed')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, load]);
+
   const dismiss = useCallback(async () => {
     if (!user || !announcement) return;
+    const id = announcement.id;
     setAnnouncement(null);
     await supabase
       .from('announcement_reads')
-      .insert({ announcement_id: announcement.id, user_id: user.id });
+      .insert({ announcement_id: id, user_id: user.id });
   }, [user, announcement]);
 
   return { announcement, dismiss };
