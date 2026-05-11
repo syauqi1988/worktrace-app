@@ -1172,6 +1172,7 @@ export default function SettingsPage() {
         onCancelled={() => setCancelOpen(false)}
       />
       <ReactivateDialog open={reactivateOpen} onClose={() => setReactivateOpen(false)} />
+      <RefundRequestDialog open={refundOpen} onClose={() => setRefundOpen(false)} />
     </div>
   );
 }
