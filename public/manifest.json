@@ -3,8 +3,8 @@
   "short_name": "WorkTrace",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#2563EB",
-  "background_color": "#F0F4F8",
+  "theme_color": "#1B4FD8",
+  "background_color": "#F7F9FC",
   "icons": [
     {
       "src": "/logo.svg",
