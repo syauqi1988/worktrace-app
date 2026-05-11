@@ -41,6 +41,9 @@ import {
 import { useTutorial } from "@/hooks/useTutorial";
 import CancellationDialog from "@/components/CancellationDialog";
 import ReactivateDialog from "@/components/ReactivateDialog";
+import RefundRequestDialog from "@/components/RefundRequestDialog";
+import { getRefundEligibility } from "@/lib/refundEligibility";
+import { Link } from "react-router-dom";
 import { useBillPlz } from "@/hooks/useBillPlz";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 
@@ -131,6 +134,7 @@ export default function SettingsPage() {
 
   // Cancellation
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
   const [renewPeriod, setRenewPeriod] = useState<"monthly" | "yearly">(
     (profile?.billing_period as "monthly" | "yearly") || "monthly",
