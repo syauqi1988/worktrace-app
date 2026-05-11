@@ -41,6 +41,9 @@ import {
 import { useTutorial } from "@/hooks/useTutorial";
 import CancellationDialog from "@/components/CancellationDialog";
 import ReactivateDialog from "@/components/ReactivateDialog";
+import RefundRequestDialog from "@/components/RefundRequestDialog";
+import { getRefundEligibility } from "@/lib/refundEligibility";
+import { Link } from "react-router-dom";
 import { useBillPlz } from "@/hooks/useBillPlz";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 
@@ -131,6 +134,7 @@ export default function SettingsPage() {
 
   // Cancellation
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
   const [renewPeriod, setRenewPeriod] = useState<"monthly" | "yearly">(
     (profile?.billing_period as "monthly" | "yearly") || "monthly",
@@ -902,12 +906,39 @@ export default function SettingsPage() {
                 </>
               );
             })()}
-            <button
-              onClick={() => setCancelOpen(true)}
-              className="w-full text-center text-[13px] font-medium text-destructive hover:underline"
-            >
-              {t("settings.subscription.cancelSub")}
-            </button>
+            {(() => {
+              const elig = getRefundEligibility({
+                plan: profile?.plan,
+                billing_period: profile?.billing_period,
+                subscription_start_date: profile?.subscription_start_date,
+              });
+              if (elig.status === 'full' || elig.status === 'prorated') {
+                const until = elig.status === 'full' ? elig.fullRefundUntil : elig.proratedRefundUntil;
+                const tone = elig.status === 'full' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800';
+                const label = elig.status === 'full'
+                  ? `Anda layak bayaran balik penuh sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`
+                  : `Anda layak bayaran balik pro-rated sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                return <div className={`text-xs rounded-lg border p-2.5 ${tone}`}>{label}</div>;
+              }
+              return null;
+            })()}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <button
+                onClick={() => setCancelOpen(true)}
+                className="text-[13px] font-medium text-destructive hover:underline"
+              >
+                {t("settings.subscription.cancelSub")}
+              </button>
+              <button
+                onClick={() => setRefundOpen(true)}
+                className="text-[13px] font-medium text-foreground hover:underline"
+              >
+                Mohon Bayaran Balik
+              </button>
+            </div>
+            <Link to="/refund-policy" className="block text-center text-[12px] text-muted-foreground hover:underline">
+              Lihat Dasar Bayaran Balik
+            </Link>
           </div>
         ) : null}
 
@@ -1141,6 +1172,7 @@ export default function SettingsPage() {
         onCancelled={() => setCancelOpen(false)}
       />
       <ReactivateDialog open={reactivateOpen} onClose={() => setReactivateOpen(false)} />
+      <RefundRequestDialog open={refundOpen} onClose={() => setRefundOpen(false)} />
     </div>
   );
 }

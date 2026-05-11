@@ -43,6 +43,7 @@ import PublicApprovalPage from "@/pages/public/PublicApprovalPage";
 import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
+import RefundPolicyPage from "@/pages/RefundPolicyPage";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/public/approval/:token" element={<PublicApprovalPage />} />
             <Route path="/public/payment-proof/:token" element={<PublicPaymentProofPage />} />
             <Route path="/r/:code" element={<ShortLinkRedirectPage />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage />} />
             <Route path="/onboarding" element={
               <ProtectedRoute><OnboardingPage /></ProtectedRoute>
             } />

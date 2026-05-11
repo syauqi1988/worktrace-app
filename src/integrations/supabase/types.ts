@@ -1082,6 +1082,72 @@ export type Database = {
         }
         Relationships: []
       }
+      refund_requests: {
+        Row: {
+          account_name: string | null
+          admin_notes: string | null
+          amount_myr: number | null
+          billing_period: string | null
+          billplz_bill_id: string | null
+          created_at: string
+          eligibility: string
+          id: string
+          notes: string | null
+          payment_date: string | null
+          plan: string | null
+          processed_at: string | null
+          processed_by: string | null
+          reason_category: string
+          status: string
+          transaction_ref: string | null
+          updated_at: string
+          user_email: string
+          user_id: string
+        }
+        Insert: {
+          account_name?: string | null
+          admin_notes?: string | null
+          amount_myr?: number | null
+          billing_period?: string | null
+          billplz_bill_id?: string | null
+          created_at?: string
+          eligibility: string
+          id?: string
+          notes?: string | null
+          payment_date?: string | null
+          plan?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          reason_category: string
+          status?: string
+          transaction_ref?: string | null
+          updated_at?: string
+          user_email: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string | null
+          admin_notes?: string | null
+          amount_myr?: number | null
+          billing_period?: string | null
+          billplz_bill_id?: string | null
+          created_at?: string
+          eligibility?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string | null
+          plan?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          reason_category?: string
+          status?: string
+          transaction_ref?: string | null
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       short_links: {
         Row: {
           code: string
