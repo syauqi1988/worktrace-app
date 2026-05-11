@@ -1448,7 +1448,7 @@
     "invoices": "🧾 Invoices",
     "reports": "📷 Completion Reports",
     "receipts": "🧾 Receipts",
-    "paidPlanWarn": "⚠️ You have an active Pro subscription. The subscription will be cancelled immediately. No refund for unused time.",
+    "paidPlanWarn": "⚠️ You have an active Pro subscription. Access continues until end of billing cycle. Refund eligibility per Refund Policy (full within 14 days; yearly pro-rated 15–30 days).",
     "considerTitle": "💡 Before deleting, consider:",
     "considerExport": "Export / screenshot important invoices",
     "considerCustomers": "Save customer information",
