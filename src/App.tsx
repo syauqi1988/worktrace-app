@@ -44,6 +44,7 @@ import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
 import RefundPolicyPage from "@/pages/RefundPolicyPage";
+import ProductsPage from "@/pages/ProductsPage";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const App = () => (
               <Route path="customers/new" element={<CustomerFormPage />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />
               <Route path="customers/:id/edit" element={<CustomerFormPage />} />
+              <Route path="products" element={<ProductsPage />} />
               <Route path="quotations" element={<QuotationsListPage />} />
               <Route path="quotations/new" element={<QuotationFormPage />} />
               <Route path="quotations/:id" element={<QuotationDetailPage />} />
