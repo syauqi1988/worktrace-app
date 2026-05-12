@@ -58,6 +58,7 @@
     "dashboard": "Dashboard",
     "jobs": "Jobs",
     "customers": "Customers",
+    "products": "Products",
     "quotations": "Quotations",
     "workOrders": "Work Orders",
     "completionReports": "Completion Reports",
