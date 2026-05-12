@@ -44,6 +44,7 @@ import PublicPaymentProofPage from "@/pages/public/PublicPaymentProofPage";
 import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
 import RefundPolicyPage from "@/pages/RefundPolicyPage";
+import ProductsPage from "@/pages/ProductsPage";
 
 const queryClient = new QueryClient();
 
