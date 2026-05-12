@@ -1,103 +1,75 @@
-# Align App with Refund Policy
+# Product Library + VO / Deduction Workflow
 
-The app already has cancellation (`CancellationDialog.tsx`) but doesn't reflect the new refund policy. Refunds themselves are processed manually via `customerservice@worktrace.my` (per policy), so the app's job is to **surface eligibility, guide the user, and capture the request** — not to auto-issue refunds.
+This is a large two-feature build. I'll split it into 4 phases so you can review/test as we go. Each phase is independently shippable.
 
-## Goals
+## Phase 1 — Product Library (foundation)
 
-1. Show the user, in plain language, whether they qualify for a refund right now.
-2. Add a "Request Refund" flow that pre-fills an email with all required info.
-3. Log refund requests in Supabase so admin panel can track them.
-4. Update cancellation copy so it matches policy (no more "no refund" blanket warning).
-5. Add a public **Refund Policy** page accessible from Settings & Login footer.
+**Database**
+- New `products` table: `code`, `name`, `description`, `category`, `unit_price`, `uom`, `is_active`, RLS (own rows only), updated_at trigger.
 
-## Eligibility Logic (computed client-side from `profile`)
+**UI**
+- New route `/products` + sidebar entry "Produk" (Package icon, between Pelanggan and Sebut Harga).
+- Products page: 4 stat cards (total / active / categories / latest), search + category filter + status pills, responsive card grid (3/2/1 cols).
+- Create/Edit modal: code, category combo, name, long description, price, UOM combo (predefined groups + custom typing), active toggle.
+- Soft delete (sets `is_active=false`) with confirm dialog.
 
-Inputs: `subscription_start_date`, `billing_period`, `plan`, `subscription_status`.
+## Phase 2 — Product Picker + line item enhancements
 
-```text
-daysSincePayment = today - subscription_start_date
-isPaidPlan       = plan in ('pro','team')
+**Quotation & Invoice line items (additive, non-breaking)**
+- Extend item JSON shape with `description_detail` and `uom` (existing rows without keys still render as before).
+- Add "🔍 Cari dari Katalog Produk..." trigger above each line's description input → popover with grouped-by-category, searchable list (name/code/description, max 20).
+- Selecting a product pre-fills description, description_detail, unit_price, uom (qty=1). All fields stay editable. Small "Dari katalog: X" badge below description.
+- Add UOM input next to Qty in line item rows.
 
-if !isPaidPlan                  -> "not_eligible_free"
-elif daysSincePayment <= 14     -> "full_refund"        (14-day guarantee)
-elif billing_period == 'yearly'
-     and daysSincePayment <= 30 -> "prorated_refund"    (yearly only, day 15-30)
-else                            -> "not_eligible_window_closed"
-```
+**PDF updates** (`InvoicePDF.tsx`, `QuotationPDF.tsx`)
+- Render `description_detail` in italic 9px gray under item name, line-by-line with `•` bullets.
+- Quantity column shows `"{qty} {uom}"` when uom present.
+- No layout change when fields empty.
 
-Special-case banners (informational only, not auto-detected):
-- Double charge / unauthorized charge / 7-day outage → always full refund (manual review).
+## Phase 3 — VO / Deduction database + form
 
-## UI Changes
+**Database**
+- New `variation_orders` table: `job_id`, `vo_number`, `type` (addition/deduction), `items` jsonb, `subtotal`, `discount`, `discount_type`, `sst`, `sst_rate`, `total`, `reason`, `status`, `customer_approval_token`, `pdf_url`, `notes`. RLS own rows.
+- Storage bucket `vo-pdfs` (private) with owner-folder policy.
+- Add `vo` doc type to `DEFAULT_DOC_SETTINGS` (prefix VO, padding 4) and to the doc-number Settings tabs.
 
-### 1. New component `src/components/RefundRequestDialog.tsx`
-Three-step dialog launched from Settings → Subscription:
-- Step 1: Show eligibility result with policy summary (full / pro-rated / not eligible).
-- Step 2: Reason dropdown (technical issue, double charge, unauthorized, no longer needed, other) + optional notes + transaction ref input.
-- Step 3: Confirm → insert row into `refund_requests` table AND open `mailto:` to `customerservice@worktrace.my` with subject `Permohonan Bayaran Balik — [account]` and body pre-filled with account id, payment date, amount, reason, transaction ref. Show toast "Permohonan dihantar — kami balas dalam 1 hari bekerja."
+**UI**
+- Job Detail page: new "Variasi & Potongan" section, visible only after Completion Report submitted. Shows `[+ Tambah VO]` and `[+ Tambah Potongan]` buttons + compact list of existing VOs with status pill and edit/send actions.
+- New route `/jobs/:jobId/vo/new` and `/jobs/:jobId/vo/:voId/edit`: type badge, header (auto VO number, reason textarea), line item builder reusing the catalogue picker from Phase 2, totals (negative red for deductions), notes, Save Draft / Generate PDF & Send.
 
-### 2. Update `src/components/CancellationDialog.tsx`
-- Step 2 lose-list stays.
-- Replace blanket "no refund" wording in `paidPlanWarn` with policy-aware text:
-  - If within 14 days → "Anda layak bayaran balik penuh. Klik 'Mohon Bayaran Balik'."
-  - If yearly, 15-30 days → "Anda layak bayaran balik pro-rated."
-  - Else → "Tempoh bayaran balik telah tamat. Akses kekal sehingga {date}."
-- Add secondary "Mohon Bayaran Balik" button when eligible, opening RefundRequestDialog instead of pure cancel.
+## Phase 4 — VO PDF, approval flow, invoice integration
 
-### 3. Update `src/pages/SettingsPage.tsx`
-Subscription card: add small line under plan info:
-- "Layak bayaran balik penuh sehingga {date+14d}" (green) if within 14 days.
-- "Layak bayaran balik pro-rated sehingga {date+30d}" (amber) if yearly within 15–30 days.
-- Add "Mohon Bayaran Balik" link beside "Batal Langganan" when eligible.
+**VO PDF** (mirrors Work Order PDF style)
+- Header (logo, "VARIASI ORDER" / "BORANG POTONGAN", VO number, date).
+- Job ref box (customer, job number, original quotation number).
+- Reason box, line items table, totals.
+- Impact summary: Original / VO+ / Deduction- / Final.
+- Two signature boxes.
+- Upload to `vo-pdfs` bucket.
 
-### 4. New page `src/pages/RefundPolicyPage.tsx`
-Static page rendering the 8 sections from the user's policy text (MS + EN via i18n). Route `/refund-policy`. Linked from:
-- Settings → Subscription footer ("Lihat dasar bayaran balik").
-- Login page footer.
-- Cancellation & Refund dialogs (small link).
+**Approval flow**
+- Reuse existing `customer_approvals` system with `document_type='variation_order'`.
+- WhatsApp templates for VO addition + deduction with PDF + approval link.
+- On accept/reject, `variation_orders.status` updates via existing `respond_to_approval` flow (extend the SQL function to handle `variation_order`).
 
-### 5. i18n keys
-Add namespace `refund.*` in `src/i18n/locales/ms.json` and `en.json` covering eligibility messages, dialog labels, and policy page sections.
+**Invoice integration**
+- Invoice form detects accepted VOs/deductions for the job → shows "⚡ Variasi & Potongan Diterima" box with `[Import ke Invois]`.
+- Import inserts grouped line items with section header rows: `--- Kerja Asal ---`, `--- Variasi Order (VO-XXXX) ---`, `--- Potongan (DED-XXXX) ---`.
+- Job Detail financial summary shows Original + VO + Deduction = Final.
 
-## Database Changes (separate migration step, requires approval)
+## Notes / decisions I'll apply
 
-New table `refund_requests`:
-- `user_id` (uuid, FK auth.users)
-- `billplz_bill_id` (text, nullable)
-- `payment_date` (date)
-- `amount_myr` (numeric)
-- `eligibility` (enum: full | prorated | special | none)
-- `reason_category` (text)
-- `notes` (text)
-- `transaction_ref` (text)
-- `status` (enum: pending | approved | rejected | processed, default pending)
-- `admin_notes` (text)
-- timestamps
+- Soft delete for products (per the brief — safer for historical docs).
+- Description detail rendered in PDF prefixing `•` only when the line doesn't already start with `-` or `•`.
+- Single VO number sequence; deductions can use a different prefix later if you want — for v1 both use the `vo` doc-number setting.
+- All theming uses existing semantic tokens; no new colors added to `index.css`.
+- No changes to auth, BillPlz, referrals, tutorial, admin app, or existing PDF styles beyond additive changes listed above.
 
-RLS:
-- User can `SELECT`/`INSERT` own rows.
-- Admin (via existing `is_admin()` function used by announcements) can `SELECT`/`UPDATE` all.
+## Recommended order to ship
 
-The existing admin panel app (already integrated via shared Supabase) can immediately list/process refund requests using the same `is_admin()` pattern as announcements.
+1. **Phase 1** — migration + Products page (you can start cataloguing immediately).
+2. **Phase 2** — picker + PDF additive changes.
+3. **Phase 3** — VO migration + form (drafts work end-to-end).
+4. **Phase 4** — VO PDF, approval, invoice import.
 
-## Out of Scope
-
-- Auto-issuing refunds via BillPlz API (policy keeps it manual via email).
-- Pro-rated refund amount **calculation** server-side — we only flag eligibility; finance computes the exact refund.
-- Editing existing BillPlz callback / payment flow.
-- Dark mode pass.
-
-## Files Touched
-
-New:
-- `src/components/RefundRequestDialog.tsx`
-- `src/lib/refundEligibility.ts` (pure function + tests)
-- `src/pages/RefundPolicyPage.tsx`
-- Migration: `refund_requests` table + RLS
-
-Edited:
-- `src/components/CancellationDialog.tsx` (copy + eligible-action button)
-- `src/pages/SettingsPage.tsx` (eligibility banner, refund link)
-- `src/pages/LoginPage.tsx` (footer link)
-- `src/App.tsx` (add `/refund-policy` route)
-- `src/i18n/locales/ms.json`, `en.json` (refund namespace + policy text)
+**Approve this plan and I'll start with Phase 1 (DB migration + Products page).** If you'd rather I bundle phases differently or skip something (e.g. you don't need the catalogue picker badge), tell me before I start.
