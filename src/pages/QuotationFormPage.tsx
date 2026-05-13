@@ -158,8 +158,11 @@ export default function QuotationFormPage() {
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
     setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
   };
-  const addItem = () => { if (items.length >= 20) return; setItems(prev => [...prev, { description: '', qty: 1, unit_price: 0 }]); };
+  const addItem = () => { if (items.length >= 20) return; setItems(prev => [...prev, { description: '', description_detail: '', qty: 1, uom: '', unit_price: 0 }]); };
   const removeItem = (index: number) => { if (items.length <= 1) return; setItems(prev => prev.filter((_, i) => i !== index)); };
+  const applyProduct = (index: number, p: { description: string; description_detail: string; unit_price: number; uom: string }) => {
+    setItems(prev => prev.map((it, i) => i === index ? { ...it, description: p.description, description_detail: p.description_detail, unit_price: p.unit_price, uom: p.uom } : it));
+  };
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
     const newErrors: Record<string, string> = {};
