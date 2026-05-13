@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Landmark, ClipboardCheck, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
+import { ProductPicker } from '@/components/ProductPicker';
 
 interface Job {
   id: string;
