@@ -33,7 +33,7 @@ const STATUS_COLORS: Record<string, string> = {
   Overdue: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-interface LineItem { description: string; qty: number; unit_price: number; }
+interface LineItem { description: string; description_detail?: string; qty: number; uom?: string; unit_price: number; }
 
 interface Invoice {
   id: string;
@@ -252,7 +252,9 @@ export default function InvoiceDetailPage() {
       status: invoice.status,
       items: invoice.items.map(item => ({
         description: item.description,
+        description_detail: item.description_detail,
         qty: item.qty,
+        uom: item.uom,
         unit_price: Number(item.unit_price) || 0,
         amount: (item.qty || 0) * (Number(item.unit_price) || 0),
       })),
