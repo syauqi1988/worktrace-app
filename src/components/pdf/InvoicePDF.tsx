@@ -21,7 +21,7 @@ export interface InvoicePDFProps {
     due_date: string | null;
     paid_date: string | null;
     status: string;
-    items: Array<{ description: string; qty: number; unit_price: number; amount: number }>;
+    items: Array<{ description: string; description_detail?: string; qty: number; uom?: string; unit_price: number; amount: number }>;
     subtotal: number;
     discount: number;
     tax_rate: number;
