@@ -33,7 +33,7 @@ const STATUS_COLORS: Record<string, string> = {
   Overdue: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-interface LineItem { description: string; qty: number; unit_price: number; }
+interface LineItem { description: string; description_detail?: string; qty: number; uom?: string; unit_price: number; }
 
 interface Invoice {
   id: string;
