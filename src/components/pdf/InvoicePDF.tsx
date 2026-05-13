@@ -21,7 +21,7 @@ export interface InvoicePDFProps {
     due_date: string | null;
     paid_date: string | null;
     status: string;
-    items: Array<{ description: string; qty: number; unit_price: number; amount: number }>;
+    items: Array<{ description: string; description_detail?: string; qty: number; uom?: string; unit_price: number; amount: number }>;
     subtotal: number;
     discount: number;
     tax_rate: number;
@@ -146,15 +146,23 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
           <Text style={[s.tableHeaderText, s.colUnit]}>{t('pdf.common.uPrice')}</Text>
           <Text style={[s.tableHeaderText, s.colAmt]}>{t('pdf.common.amt')}</Text>
         </View>
-        {invoice.items.map((item, i) => (
-          <View key={i} style={s.tableRow} wrap={false}>
-            <Text style={[s.tableText, s.colNo]}>{i + 1}</Text>
-            <Text style={[s.tableText, s.colDesc]}>{item.description}</Text>
-            <Text style={[s.tableText, s.colQty]}>{item.qty}</Text>
-            <Text style={[s.tableText, s.colUnit]}>{(item.unit_price || 0).toFixed(2)}</Text>
-            <Text style={[s.tableText, s.colAmt]}>{(item.amount || 0).toFixed(2)}</Text>
-          </View>
-        ))}
+        {invoice.items.map((item, i) => {
+          const detailLines = (item.description_detail || '').split('\n').map(l => l.trim()).filter(Boolean);
+          return (
+            <View key={i} style={s.tableRow} wrap={false}>
+              <Text style={[s.tableText, s.colNo]}>{i + 1}</Text>
+              <View style={s.colDesc}>
+                <Text style={s.tableText}>{item.description}</Text>
+                {detailLines.map((line, j) => (
+                  <Text key={j} style={[s.tableText, { fontStyle: 'italic', color: '#555', marginTop: 1 }]}>• {line}</Text>
+                ))}
+              </View>
+              <Text style={[s.tableText, s.colQty]}>{item.qty}{item.uom ? ` ${item.uom}` : ''}</Text>
+              <Text style={[s.tableText, s.colUnit]}>{(item.unit_price || 0).toFixed(2)}</Text>
+              <Text style={[s.tableText, s.colAmt]}>{(item.amount || 0).toFixed(2)}</Text>
+            </View>
+          );
+        })}
 
         {/* Summary */}
         <View style={s.summaryWrap}>
