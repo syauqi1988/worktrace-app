@@ -151,15 +151,21 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
           return (
             <View key={i} style={s.tableRow} wrap={false}>
               <Text style={[s.tableText, s.colNo]}>{i + 1}</Text>
-              <View style={s.colDesc}>
-                <Text style={s.tableText}>{item.description}</Text>
+              <View style={s.itemDescWrap}>
+                <Text style={s.itemDescMain}>{item.description}</Text>
                 {detailLines.map((line, j) => (
-                  <Text key={j} style={[s.tableText, { fontStyle: 'italic', color: '#555', marginTop: 1 }]}>• {line}</Text>
+                  <Text key={j} style={s.itemDescDetail}>— {line}</Text>
                 ))}
               </View>
-              <Text style={[s.tableText, s.colQty]}>{item.qty}{item.uom ? ` ${item.uom}` : ''}</Text>
-              <Text style={[s.tableText, s.colUnit]}>{(item.unit_price || 0).toFixed(2)}</Text>
-              <Text style={[s.tableText, s.colAmt]}>{(item.amount || 0).toFixed(2)}</Text>
+              <View style={s.itemQtyWrap}>
+                <Text style={s.itemQtyNum}>{item.qty}</Text>
+                {item.uom && <Text style={s.itemQtyUom}>{item.uom}</Text>}
+              </View>
+              <View style={s.itemPriceWrap}>
+                <Text style={s.itemPriceNum}>{(item.unit_price || 0).toFixed(2)}</Text>
+                {item.uom && <Text style={s.itemPricePer}>/{item.uom}</Text>}
+              </View>
+              <Text style={s.itemAmt}>{(item.amount || 0).toFixed(2)}</Text>
             </View>
           );
         })}
