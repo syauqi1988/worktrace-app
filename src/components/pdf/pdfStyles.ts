@@ -61,7 +61,19 @@ export const pdfStyles = StyleSheet.create({
   tableText: { fontSize: 9, color: C.TEXT },
   tableSection: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.BLACK, paddingVertical: 6, paddingHorizontal: 2 },
 
-  // Columns
+  // Item row new format
+  itemDescWrap: { flex: 1, paddingRight: 6, flexDirection: 'column' },
+  itemDescMain: { fontSize: 9, color: C.TEXT, fontFamily: 'Helvetica-Bold' },
+  itemDescDetail: { fontSize: 8, color: C.MUTED, marginTop: 2, paddingLeft: 8 },
+  itemQtyWrap: { width: 36, textAlign: 'right', flexDirection: 'column', alignItems: 'flex-end' },
+  itemQtyNum: { fontSize: 9, color: C.TEXT },
+  itemQtyUom: { fontSize: 7.5, color: C.MUTED, marginTop: 1 },
+  itemPriceWrap: { width: 60, textAlign: 'right', flexDirection: 'column', alignItems: 'flex-end' },
+  itemPriceNum: { fontSize: 9, color: C.TEXT },
+  itemPricePer: { fontSize: 7.5, color: C.MUTED, marginTop: 1 },
+  itemAmt: { width: 70, textAlign: 'right', fontSize: 9, color: C.TEXT, fontFamily: 'Helvetica-Bold' },
+
+  // Columns (legacy, kept for compatibility)
   colNo: { width: 28 },
   colDesc: { flex: 1, paddingRight: 6 },
   colQty: { width: 36, textAlign: 'right' },
