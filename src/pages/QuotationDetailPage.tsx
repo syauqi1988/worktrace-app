@@ -31,7 +31,9 @@ const STATUS_COLORS: Record<string, string> = {
 
 interface LineItem {
   description: string;
+  description_detail?: string;
   qty: number;
+  uom?: string;
   unit_price: number;
 }
 
