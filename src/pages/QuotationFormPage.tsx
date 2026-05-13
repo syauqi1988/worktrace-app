@@ -26,7 +26,9 @@ interface Job {
 
 interface LineItem {
   description: string;
+  description_detail?: string;
   qty: number;
+  uom?: string;
   unit_price: number;
 }
 
