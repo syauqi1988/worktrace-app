@@ -252,7 +252,9 @@ export default function InvoiceDetailPage() {
       status: invoice.status,
       items: invoice.items.map(item => ({
         description: item.description,
+        description_detail: item.description_detail,
         qty: item.qty,
+        uom: item.uom,
         unit_price: Number(item.unit_price) || 0,
         amount: (item.qty || 0) * (Number(item.unit_price) || 0),
       })),
