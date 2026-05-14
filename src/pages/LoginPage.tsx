@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Gift, Fingerprint } from 'lucide-react';
-import logo from '@/assets/logo-new.png';
+import logo from '@/assets/logo.svg';
 import InstallPromptBanner from '@/components/InstallPromptBanner';
 import LanguageToggle from '@/components/LanguageToggle';
 import { applyReferralFromUrl } from '@/lib/applyReferral';
