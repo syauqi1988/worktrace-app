@@ -20,6 +20,7 @@ import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement } from '@/utils/generateDocNumber';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -297,7 +298,8 @@ export default function QuotationDetailPage() {
         pdfUrl,
         expiresInDays: quotation.valid_until ? undefined : 30,
       });
-      const approvalUrl = buildPublicApprovalUrl(token);
+      const fullUrl = buildPublicApprovalUrl(token);
+      const approvalUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullUrl, kind: 'approval' });
       const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
       const companyName = profile?.company_name || '';
       const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, approvalUrl);
