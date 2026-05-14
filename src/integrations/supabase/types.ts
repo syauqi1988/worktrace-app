@@ -1677,6 +1677,10 @@ export type Database = {
       is_app_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       mark_approval_viewed: { Args: { p_token: string }; Returns: undefined }
+      payment_receipt_path_is_valid: {
+        Args: { p_invoice_id: string; p_user_id: string }
+        Returns: boolean
+      }
       publish_announcement: { Args: { p_id: string }; Returns: number }
       respond_to_approval: {
         Args: { p_action: string; p_reason: string; p_token: string }

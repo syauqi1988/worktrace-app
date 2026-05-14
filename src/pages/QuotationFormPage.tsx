@@ -346,7 +346,7 @@ export default function QuotationFormPage() {
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
                 <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
               </div>
-              <Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" />
+              <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" />
               <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" />
               <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" />
               <div className="flex items-center px-3 text-sm font-medium text-foreground bg-muted rounded-md h-10">RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
@@ -366,7 +366,7 @@ export default function QuotationFormPage() {
               </div>
               <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
               <div className="grid grid-cols-3 gap-2">
-                <div><p className="text-xs text-muted-foreground mb-1">Qty</p><Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" /></div>
+                <div><p className="text-xs text-muted-foreground mb-1">Qty</p><Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" /></div>
                 <div><p className="text-xs text-muted-foreground mb-1">UOM</p><Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" /></div>
                 <div><p className="text-xs text-muted-foreground mb-1">Harga (RM)</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" /></div>
               </div>

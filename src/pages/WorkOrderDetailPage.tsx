@@ -18,6 +18,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -170,7 +171,8 @@ export default function WorkOrderDetailPage() {
         pdfUrl,
         expiresInDays: 30,
       });
-      const approvalUrl = buildPublicApprovalUrl(token);
+      const fullUrl = buildPublicApprovalUrl(token);
+      const approvalUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullUrl, kind: 'approval' });
       const phone = formatPhone(job.customers.phone);
       const companyName = profile?.company_name || '';
       const details = t('workOrderDetail.waDetails', {
