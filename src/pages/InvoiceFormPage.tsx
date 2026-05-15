@@ -109,7 +109,14 @@ export default function InvoiceFormPage() {
     }
   };
 
-  // Fetch jobs
+  const fetchAvailableVos = async (jobId: string) => {
+    if (!user) return;
+    const { data } = await (supabase as any).from('variation_orders')
+      .select('id, vo_number, type, items')
+      .eq('job_id', jobId).eq('user_id', user.id).eq('status', 'Accepted');
+    setAvailableVos((data as any) || []);
+  };
+
   useEffect(() => {
     if (!user) return;
     supabase.from('jobs').select('id, job_number, title, customer_id, customers(name, phone, tin_number)').order('created_at', { ascending: false })
