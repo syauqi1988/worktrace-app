@@ -1748,6 +1748,10 @@
       "invoiceDesc": "Bila siap, tukar sebut harga ke Invois dengan satu klik — semua item dipindah automatik. Hantar invois via WhatsApp dengan pautan ringkas (Tekan sini).",
       "receiptTitle": "7️⃣ Resit (Auto-Jana)",
       "receiptDesc": "Bila pelanggan upload bukti bayaran & anda sahkan (atau tandakan manual), invois jadi PAID dan resit terus dijana automatik. Tekan \"Kongsi Resit via WhatsApp\" untuk hantar kepada pelanggan.",
+      "voTitle": "➕ Variation Order / Potongan",
+      "voDesc": "Kalau pelanggan minta kerja tambahan atau nak buang item di tengah jalan, buat Variation Order (VO). Pilih jenis: Variasi (tambah) atau Potongan (tolak). Selepas pelanggan terima VO, item itu boleh diimport ke Invois dengan satu tekan dan dipaparkan dalam seksyen (Asal / Variasi / Potongan).",
+      "financialTitle": "💰 Ringkasan Kewangan",
+      "financialDesc": "Halaman kerja menunjukkan: Sebut Harga Asal + Variasi − Potongan = Jumlah Akhir. Gambaran masa nyata jumlah sebenar kerja ini.",
       "autoStatusTitle": "✅ Status Kerja Auto-Update",
       "autoStatusDesc": "Status kerja (Lead → In Progress → Completed) berubah sendiri ikut dokumen yang anda hasilkan. Anda hanya fokus pada kerja sebenar — sistem uruskan paperwork."
     },
