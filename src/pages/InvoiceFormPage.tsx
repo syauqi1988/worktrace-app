@@ -386,7 +386,7 @@ export default function InvoiceFormPage() {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
+          <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
           <h1 className="text-xl font-bold text-foreground">{t('invoiceForm.new')}</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
@@ -409,7 +409,7 @@ export default function InvoiceFormPage() {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
+          <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
           <h1 className="text-xl font-bold text-foreground">{t('invoiceForm.new')}</h1>
         </div>
         <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">

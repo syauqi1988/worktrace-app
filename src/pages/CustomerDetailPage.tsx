@@ -158,7 +158,7 @@ export default function CustomerDetailPage() {
   return (
     <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6">
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/customers')} className="text-muted-foreground hover:text-foreground">
+        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold text-foreground flex-1">{t('customerDetail.title')}</h1>
