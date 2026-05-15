@@ -21,7 +21,7 @@ export default function PaymentFailedPage() {
           <Button
             variant="outline"
             className="w-full rounded-lg gap-2"
-            onClick={() => openWhatsApp('60123456789', decodeURIComponent('Saya+perlu+bantuan+pembayaran+WorkTrace'))}
+            onClick={() => openWhatsApp('60123456789', 'Saya perlu bantuan pembayaran WorkTrace')}
           >
             <MessageCircle className="h-4 w-4" /> {t('paymentFailed.contactSupport')}
           </Button>
