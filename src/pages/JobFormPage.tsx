@@ -89,6 +89,7 @@ export default function JobFormPage() {
         setScheduledDate(job.scheduled_date ? new Date(job.scheduled_date) : undefined);
         setDescription(job.description || '');
         setNotes(job.notes || '');
+        setProducts(Array.isArray(job.products) ? job.products : []);
       }
       setLoading(false);
     }
@@ -125,6 +126,7 @@ export default function JobFormPage() {
 
     setSubmitting(true);
     try {
+      const cleanedProducts = products.filter((p) => p.description.trim());
       if (isEdit) {
         const { error } = await supabase.from('jobs').update({
           customer_id: customerId,
@@ -134,6 +136,7 @@ export default function JobFormPage() {
           scheduled_date: scheduledDate ? scheduledDate.toISOString().slice(0, 10) : null,
           description: description.trim() || null,
           notes: notes.trim() || null,
+          products: cleanedProducts as any,
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
         }).eq('id', id);
         if (error) throw error;
@@ -153,6 +156,7 @@ export default function JobFormPage() {
           scheduled_date: scheduledDate ? scheduledDate.toISOString().slice(0, 10) : null,
           description: description.trim() || null,
           notes: notes.trim() || null,
+          products: cleanedProducts as any,
         }).select('id').single();
         if (error) throw error;
         toast({ title: t('jobForm.savedNew') });
