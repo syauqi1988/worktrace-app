@@ -277,6 +277,7 @@ export default function InvoiceFormPage() {
       else { setAvailableQuote(null); }
       // Check completion report
       await checkCompletionReport(j.id);
+      await fetchAvailableVos(j.id);
     }
   };
 
