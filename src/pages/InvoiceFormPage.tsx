@@ -271,6 +271,7 @@ export default function InvoiceFormPage() {
     setImportedVoIds(prev => [...prev, vo.id]);
   };
 
+  const handleSelectJob = async (j: Job) => {
     setSelectedJob(j);
     setJobDropdownOpen(false);
     setJobSearch('');
