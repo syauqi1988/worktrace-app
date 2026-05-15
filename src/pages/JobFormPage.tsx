@@ -159,6 +159,33 @@ export default function JobFormPage() {
           products: cleanedProducts as any,
         }).select('id').single();
         if (error) throw error;
+        // Auto-save as preset (idempotent on name per user)
+        try {
+          const presetName = title.trim();
+          const { data: existing } = await supabase
+            .from('job_presets' as any)
+            .select('id')
+            .eq('user_id', user!.id)
+            .eq('name', presetName)
+            .maybeSingle();
+          const presetPayload = {
+            user_id: user!.id,
+            name: presetName,
+            title: presetName,
+            category,
+            description: description.trim() || null,
+            notes: notes.trim() || null,
+            products: cleanedProducts as any,
+            is_active: true,
+          };
+          if (existing && (existing as any).id) {
+            await supabase.from('job_presets' as any).update(presetPayload).eq('id', (existing as any).id);
+          } else {
+            await supabase.from('job_presets' as any).insert(presetPayload);
+          }
+        } catch (e) {
+          console.warn('Auto-save preset failed', e);
+        }
         toast({ title: t('jobForm.savedNew') });
         navigate(`/jobs/${data.id}`);
       }
