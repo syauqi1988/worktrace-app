@@ -172,7 +172,7 @@ export default function PlanCards({ currentPlan, onSelect, showToggle = true, co
                 <Button
                   variant="outline"
                   className="w-full rounded-lg gap-2"
-                  onClick={() => window.open(`https://wa.me/60123456789?text=Saya+berminat+dengan+pelan+${plan.name}+WorkTrace`, '_blank')}
+                  onClick={() => openWhatsApp('60123456789', `Saya berminat dengan pelan ${plan.name} WorkTrace`)}
                 >
                   <Clock className="h-4 w-4" />
                   Beritahu saya bila siap
