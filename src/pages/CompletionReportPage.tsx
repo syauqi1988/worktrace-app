@@ -496,9 +496,8 @@ export default function CompletionReportPage() {
         details,
       );
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-      openWhatsAppUrl(waUrl, prewin);
+      openWhatsAppUrl(waUrl);
     } catch (e: any) {
-      try { prewin?.close(); } catch {}
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
