@@ -562,6 +562,7 @@ export type Database = {
           is_active: boolean
           name: string
           notes: string | null
+          products: Json
           title: string
           updated_at: string
           user_id: string
@@ -574,6 +575,7 @@ export type Database = {
           is_active?: boolean
           name: string
           notes?: string | null
+          products?: Json
           title: string
           updated_at?: string
           user_id: string
@@ -586,6 +588,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           notes?: string | null
+          products?: Json
           title?: string
           updated_at?: string
           user_id?: string
@@ -603,6 +606,7 @@ export type Database = {
           id: string
           job_number: string
           notes: string | null
+          products: Json
           scheduled_date: string | null
           status: string
           title: string
@@ -619,6 +623,7 @@ export type Database = {
           id?: string
           job_number: string
           notes?: string | null
+          products?: Json
           scheduled_date?: string | null
           status?: string
           title: string
@@ -635,6 +640,7 @@ export type Database = {
           id?: string
           job_number?: string
           notes?: string | null
+          products?: Json
           scheduled_date?: string | null
           status?: string
           title?: string
