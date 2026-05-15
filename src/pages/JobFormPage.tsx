@@ -17,6 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, CalendarDays, Search, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { JobPresetPicker } from '@/components/JobPresetPicker';
 
 const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 const STATUSES = ['Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
@@ -234,6 +235,25 @@ export default function JobFormPage() {
         </div>
         {errors.customer && <p className="text-xs text-destructive">{errors.customer}</p>}
       </div>
+
+      {!isEdit && (
+        <div className="space-y-1.5">
+          <Label>Preset Kerja (opsional)</Label>
+          <JobPresetPicker
+            onPick={(p) => {
+              setTitle(p.title);
+              setCategory(CATEGORIES.includes(p.category) ? p.category : 'Other');
+              if (p.description) setDescription(p.description);
+              if (p.notes) setNotes(p.notes);
+              setErrors((prev) => ({ ...prev, title: '' }));
+              toast({ title: `Preset "${p.name}" digunakan` });
+            }}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Pilih untuk auto-isi tajuk, kategori, keterangan & nota
+          </p>
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label>{t('jobForm.titleLabel')}</Label>
