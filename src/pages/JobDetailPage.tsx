@@ -690,11 +690,24 @@ export default function JobDetailPage() {
             <p className="text-sm text-muted-foreground">
               {report?.status === 'accepted' ? t('jobDetail.noInvoice') : t('jobDetail.invoiceNeedsReport')}
             </p>
-            <Button variant="outline" size="sm" className="text-xs gap-1"
-              disabled={report?.status !== 'accepted'}
-              onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
-              <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
-            </Button>
+            {report?.status === 'accepted' ? (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="text-xs gap-1"
+                  onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
+                  <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs gap-1"
+                  onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
+                  <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" className="text-xs gap-1"
+                disabled
+                onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
+                <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
+              </Button>
+            )}
           </div>
         )}
       </div>

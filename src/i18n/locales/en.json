@@ -773,6 +773,7 @@
     "noInvoice": "No invoice yet",
     "invoiceNeedsReport": "Completion Report must be confirmed by customer first",
     "createInvoice": "Create Invoice",
+    "createVo": "VO / Deduction",
     "editJob": "Edit Job",
     "delete": "Delete",
     "deleteTitle": "Delete Job?",
