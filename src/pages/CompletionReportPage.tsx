@@ -18,7 +18,7 @@ import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { usePlanGate } from '@/hooks/usePlanGate';
-import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 
@@ -453,15 +453,13 @@ export default function CompletionReportPage() {
           },
       });
       const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
-      const fileName = `${user.id}/${reportNumber}.pdf`;
-      await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, {
-        contentType: 'application/pdf',
-        upsert: true,
+      const pdfUrl = await uploadApprovalPdf({
+        bucket: 'completion-report-pdfs',
+        userId: user.id,
+        documentId: rid,
+        documentNumber: reportNumber,
+        blob,
       });
-      const { data: signed } = await supabase.storage
-        .from('completion-report-pdfs')
-        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const pdfUrl = signed?.signedUrl ?? '';
 
       const token = await getOrCreateApprovalToken({
         userId: user.id,
