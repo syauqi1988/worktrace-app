@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { openWhatsApp } from "@/lib/whatsapp";
 
 export default function TeamPlaceholderPage() {
   const { t } = useTranslation();
