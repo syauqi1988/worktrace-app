@@ -1,11 +1,19 @@
-/* WorkTrace Tutorial Theme */
+/* WorkTrace Tutorial Theme — mobile-first */
 .worktrace-tutorial-popover {
   background: #FFFFFF !important;
   border: 1px solid #E2E8F0 !important;
   border-radius: 12px !important;
-  box-shadow: none !important;
-  max-width: 320px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+  max-width: calc(100vw - 24px) !important;
+  width: min(320px, calc(100vw - 24px)) !important;
   font-family: 'Inter', sans-serif !important;
+}
+
+@media (min-width: 768px) {
+  .worktrace-tutorial-popover {
+    max-width: 360px !important;
+    width: 360px !important;
+  }
 }
 
 .worktrace-tutorial-popover .driver-popover-title {

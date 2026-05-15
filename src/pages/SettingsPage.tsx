@@ -1111,6 +1111,21 @@ export default function SettingsPage() {
         </div>
 
         <div className="border-t border-border pt-4 space-y-2">
+          <button
+            onClick={() => navigate("/faq")}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            <BookOpen className="h-4 w-4" /> {i18n.language?.startsWith("ms") ? "Lihat Soalan Lazim (FAQ)" : "View FAQ"}
+          </button>
+          <button
+            onClick={() => window.__startWorkTraceTutorial?.()}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            <Play className="h-4 w-4" /> {i18n.language?.startsWith("ms") ? "Main Semula Tutorial" : "Replay Tutorial"}
+          </button>
+        </div>
+
+        <div className="border-t border-border pt-4 space-y-2">
           <p className="text-sm text-muted-foreground">{t("settings.help.needHuman")}</p>
           <button
             onClick={() => navigate("/support/new")}

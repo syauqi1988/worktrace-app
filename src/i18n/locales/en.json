@@ -1748,6 +1748,10 @@
       "invoiceDesc": "When ready, convert the quotation to an Invoice with one click — all items move over automatically. Send the invoice via WhatsApp with a short link (Tap here).",
       "receiptTitle": "7️⃣ Receipt (Auto-Generated)",
       "receiptDesc": "When the customer uploads payment proof and you confirm it (or you mark it manually), the invoice becomes PAID and the receipt is generated automatically. Tap \"Share Receipt via WhatsApp\" to send it to the customer.",
+      "voTitle": "➕ Variation Order / Deduction",
+      "voDesc": "If the customer asks for extra work or wants to remove items mid-job, create a Variation Order (VO). Pick type: Variation (add) or Deduction (subtract). After the customer accepts the VO, the items can be imported into the Invoice with one tap and shown in grouped sections (Original / Variation / Deduction).",
+      "financialTitle": "💰 Financial Summary",
+      "financialDesc": "The job page shows: Original Quote + Variations − Deductions = Final Total. Live snapshot of the real billable amount for this job.",
       "autoStatusTitle": "✅ Job Status Auto-Updates",
       "autoStatusDesc": "Job status (Lead → In Progress → Completed) changes itself based on the documents you generate. You focus on the actual work — the system handles the paperwork."
     },

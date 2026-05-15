@@ -99,8 +99,10 @@ function buildJobDetailSteps(): DriveStep[] {
     { popover: { title: t('jobDetail.quotationTitle'), description: t('jobDetail.quotationDesc') } },
     { popover: { title: t('jobDetail.workOrderTitle'), description: t('jobDetail.workOrderDesc') } },
     { popover: { title: t('jobDetail.reportTitle'), description: t('jobDetail.reportDesc') } },
+    { popover: { title: t('jobDetail.voTitle'), description: t('jobDetail.voDesc') } },
     { popover: { title: t('jobDetail.invoiceTitle'), description: t('jobDetail.invoiceDesc') } },
     { popover: { title: t('jobDetail.receiptTitle'), description: t('jobDetail.receiptDesc') } },
+    { popover: { title: t('jobDetail.financialTitle'), description: t('jobDetail.financialDesc') } },
     { popover: { title: t('jobDetail.autoStatusTitle'), description: t('jobDetail.autoStatusDesc') } },
   ];
 }
