@@ -187,6 +187,24 @@ export default function CompletionReportPage() {
     fetch();
   }, [user, jobId, profile]);
 
+  // Realtime updates when customer accepts/rejects
+  useEffect(() => {
+    if (!user || !jobId) return;
+    const ch = supabase
+      .channel(`completion-report-${jobId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'completion_reports', filter: `job_id=eq.${jobId}` }, (payload: any) => {
+        const r = payload.new;
+        if (!r) return;
+        const status = (r.status as 'draft' | 'submitted' | 'accepted' | 'rejected') || 'draft';
+        setReportStatus(status);
+        setRejectionReason(r.rejection_reason || null);
+        setAcceptedAt(r.accepted_at || null);
+        setIsSubmitted(status === 'submitted' || status === 'accepted');
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, jobId]);
+
   const handlePhotoUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     kind: 'before' | 'after'

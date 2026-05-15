@@ -113,11 +113,12 @@ export default function InvoiceDetailPage() {
 
   useEffect(() => {
     if (!user || !id) return;
+    let active = true;
     async function fetch() {
       const { data } = await supabase.from('invoices')
         .select('*, jobs(id, job_number, title, customer_id, customers(name, phone, email, address, tin_number))')
         .eq('id', id).single();
-      if (data) {
+      if (active && data) {
         const inv = data as any;
         setInvoice({
           ...inv,
@@ -133,12 +134,17 @@ export default function InvoiceDetailPage() {
         });
         if (inv.quote_id) {
           supabase.from('quotations').select('id, quote_number').eq('id', inv.quote_id).single()
-            .then(({ data: q }) => { if (q) setLinkedQuote(q); });
+            .then(({ data: q }) => { if (active && q) setLinkedQuote(q); });
         }
       }
-      setLoading(false);
+      if (active) setLoading(false);
     }
     fetch();
+    const ch = supabase
+      .channel(`invoice-detail-${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'invoices', filter: `id=eq.${id}` }, () => fetch())
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(ch); };
   }, [user, id]);
 
   useEffect(() => {
