@@ -92,7 +92,16 @@ export default function WorkOrderDetailPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [user, jobId]);
+  useEffect(() => {
+    load();
+    if (!user || !jobId) return;
+    const ch = supabase
+      .channel(`work-order-detail-${jobId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'work_orders', filter: `job_id=eq.${jobId}` }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'completion_reports', filter: `job_id=eq.${jobId}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, jobId]);
 
   const buildPdfData = () => ({
     wo: {
