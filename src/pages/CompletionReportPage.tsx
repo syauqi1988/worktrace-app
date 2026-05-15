@@ -51,6 +51,24 @@ function formatDateTimeMs(d: string | null) {
   return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
+function openPendingWhatsAppWindow(): Window | null {
+  try {
+    const win = window.open('', '_blank');
+    win?.document.write('<!doctype html><title>WhatsApp</title><body style="font-family:sans-serif;padding:24px">Opening WhatsApp...</body>');
+    return win;
+  } catch {
+    return null;
+  }
+}
+
+function openWhatsAppUrl(url: string, pendingWindow?: Window | null) {
+  if (pendingWindow && !pendingWindow.closed) {
+    pendingWindow.location.href = url;
+    return;
+  }
+  window.open(url, '_blank');
+}
+
 function parseChecklist(raw: string): ChecklistItem[] {
   return raw
     .split('\n')
@@ -273,6 +291,9 @@ export default function CompletionReportPage() {
     }
 
     const isSaving = status === 'draft';
+    const pendingWhatsAppWindow = status === 'submitted' && job?.customers?.phone
+      ? openPendingWhatsAppWindow()
+      : null;
     if (isSaving) setSaving(true);
     else setSubmitting(true);
 
@@ -333,12 +354,15 @@ export default function CompletionReportPage() {
         toast.success('Laporan dihantar! Membuka WhatsApp...');
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
-          await shareReportViaWhatsApp(savedId);
+          await shareReportViaWhatsApp(savedId, pendingWhatsAppWindow);
+        } else if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) {
+          pendingWhatsAppWindow.close();
         }
       } else {
         toast.success('Draf laporan disimpan!');
       }
     } catch (err: any) {
+      if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) pendingWhatsAppWindow.close();
       toast.error(err.message || 'Ralat menyimpan');
     } finally {
       setSaving(false);
@@ -415,60 +439,73 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    await shareReportViaWhatsApp(reportId);
+    const pendingWhatsAppWindow = job?.customers?.phone ? openPendingWhatsAppWindow() : null;
+    await shareReportViaWhatsApp(reportId, pendingWhatsAppWindow);
   };
 
-  const shareReportViaWhatsApp = async (rid: string) => {
-    if (!job || !user) return;
+  const shareReportViaWhatsApp = async (rid: string, pendingWindow?: Window | null) => {
+    if (!job || !user) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
+      return;
+    }
     if (!job.customers?.phone) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error('Pelanggan tiada nombor telefon');
       return;
     }
-    if (!checkWhatsAppShare()) return;
+    if (!checkWhatsAppShare()) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
+      return;
+    }
     setSharing(true);
     try {
-      const [beforeBase64, afterBase64] = await Promise.all([
-        Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
-        Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
-      ]);
-      const pdfData = await embedPdfCompanyLogo({
-        report: {
-            report_number: reportNumber,
-            completion_date: completionDate,
-            technician_name: technicianName,
-            work_description: workDescription,
-            materials_used: materialsUsed,
-            customer_signature: customerSignature,
-            notes,
-            status: reportStatus,
-            accepted_at: acceptedAt,
-            before_photos: beforeBase64.filter(Boolean),
-            after_photos: afterBase64.filter(Boolean),
-            location_label: locationLabel || null,
-            project_ref: projectRef || null,
-            checklist: parseChecklist(checklistText),
-            photo_captions: { before: beforeCaptions, after: afterCaptions },
-          },
-          job: { job_number: job.job_number, title: job.title, category: job.category },
-          customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
-          company: {
-            company_name: profile?.company_name || null,
-            phone: profile?.phone || null,
-            address: profile?.address || null,
-            logo_url: profile?.logo_url || null,
-            logo_base64: logoBase64,
-            ssm_number_new: profile?.ssm_number_new || null,
-            ssm_number_old: profile?.ssm_number_old || null,
-          },
-      });
-      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
-      const pdfUrl = await uploadApprovalPdf({
-        bucket: 'completion-report-pdfs',
-        userId: user.id,
-        documentId: rid,
-        documentNumber: reportNumber,
-        blob,
-      });
+      let pdfUrl: string | null = null;
+      try {
+        const [beforeBase64, afterBase64] = await Promise.all([
+          Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+          Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+        ]);
+        const pdfData = await embedPdfCompanyLogo({
+          report: {
+              report_number: reportNumber,
+              completion_date: completionDate,
+              technician_name: technicianName,
+              work_description: workDescription,
+              materials_used: materialsUsed,
+              customer_signature: customerSignature,
+              notes,
+              status: reportStatus,
+              accepted_at: acceptedAt,
+              before_photos: beforeBase64.filter(Boolean),
+              after_photos: afterBase64.filter(Boolean),
+              location_label: locationLabel || null,
+              project_ref: projectRef || null,
+              checklist: parseChecklist(checklistText),
+              photo_captions: { before: beforeCaptions, after: afterCaptions },
+            },
+            job: { job_number: job.job_number, title: job.title, category: job.category },
+            customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
+            company: {
+              company_name: profile?.company_name || null,
+              phone: profile?.phone || null,
+              address: profile?.address || null,
+              logo_url: profile?.logo_url || null,
+              logo_base64: logoBase64,
+              ssm_number_new: profile?.ssm_number_new || null,
+              ssm_number_old: profile?.ssm_number_old || null,
+            },
+        });
+        const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
+        pdfUrl = await uploadApprovalPdf({
+          bucket: 'completion-report-pdfs',
+          userId: user.id,
+          documentId: rid,
+          documentNumber: reportNumber,
+          blob,
+        });
+      } catch (pdfError) {
+        console.warn('Completion report PDF generation skipped; sharing approval link only:', pdfError);
+      }
 
       const token = await getOrCreateApprovalToken({
         userId: user.id,
@@ -490,8 +527,9 @@ export default function CompletionReportPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      openWhatsAppUrl(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, pendingWindow);
     } catch (e: any) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
