@@ -210,7 +210,7 @@ export default function JobFormPage() {
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-xl pb-28 md:pb-6">
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate(isEdit ? `/jobs/${id}` : '/jobs')} className="text-muted-foreground hover:text-foreground">
+        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold text-foreground">{isEdit ? t('jobForm.edit') : t('jobForm.new')}</h1>

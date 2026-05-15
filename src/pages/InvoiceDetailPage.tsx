@@ -746,7 +746,7 @@ export default function InvoiceDetailPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/invoices')} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
+        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{invoice.invoice_number}</h1>
