@@ -264,7 +264,7 @@ export default function WorkOrderDetailPage() {
         <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium text-[#B91C1C]">{t('workOrderDetail.rejected')}</p>
           {wo.rejection_reason && <p className="text-sm text-[#B91C1C]">{t('workOrderDetail.reason', { reason: wo.rejection_reason })}</p>}
-          <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} size="sm" className="rounded-lg">
+          <Button onClick={async () => { await supabase.from('work_orders').update({ status: 'Draft' }).eq('id', wo.id); navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`); }} size="sm" className="rounded-lg">
             {t('common.edit')}
           </Button>
         </div>
