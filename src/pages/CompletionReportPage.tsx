@@ -439,7 +439,7 @@ export default function CompletionReportPage() {
     await shareReportViaWhatsApp(reportId);
   };
 
-  const shareReportViaWhatsApp = async (rid: string) => {
+  const shareReportViaWhatsApp = async (rid: string, pendingWindow?: Window | null) => {
     if (!job || !user) return;
     if (!job.customers?.phone) {
       toast.error('Pelanggan tiada nombor telefon');
@@ -511,7 +511,7 @@ export default function CompletionReportPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      openWhatsAppUrl(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, pendingWindow);
     } catch (e: any) {
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
