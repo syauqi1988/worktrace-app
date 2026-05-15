@@ -260,9 +260,7 @@ Sila semak ${docLabel} berkaitan kerja anda:
 📝 *Sebab:* ${reason}
 💰 *${isDed ? 'Potongan' : 'Tambahan Kos'}:* ${amount}
 
-📄 Lihat PDF: ${pdfUrl}
-
-✅ Untuk TERIMA atau TOLAK, klik:
+✅ Untuk Lihat PDF dan TERIMA atau TOLAK, klik:
 🔗 ${shortUrl}
 
 Pautan sah selama 30 hari.
