@@ -17,7 +17,7 @@ import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
-import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 
@@ -161,10 +161,13 @@ export default function WorkOrderDetailPage() {
     try {
       const pdfData = await embedPdfCompanyLogo(buildPdfData());
       const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
-      const fileName = `${user.id}/${wo.wo_number}.pdf`;
-      await supabase.storage.from('work-order-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('work-order-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const pdfUrl = signed?.signedUrl ?? '';
+      const pdfUrl = await uploadApprovalPdf({
+        bucket: 'work-order-pdfs',
+        userId: user.id,
+        documentId: wo.id,
+        documentNumber: wo.wo_number,
+        blob,
+      });
       const token = await getOrCreateApprovalToken({
         userId: user.id,
         documentId: wo.id,
