@@ -47,6 +47,7 @@ import NotFound from "@/pages/NotFound";
 import RefundPolicyPage from "@/pages/RefundPolicyPage";
 import ProductsPage from "@/pages/ProductsPage";
 import JobPresetsPage from "@/pages/JobPresetsPage";
+import FaqPage from "@/pages/FaqPage";
 
 const queryClient = new QueryClient();
 

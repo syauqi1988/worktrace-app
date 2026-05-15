@@ -23,6 +23,7 @@ import TutorialController from '@/components/tutorial/TutorialController';
 import AnnouncementModal from '@/components/AnnouncementModal';
 import PasskeyEnrollPrompt from '@/components/PasskeyEnrollPrompt';
 import { useTutorial } from '@/hooks/useTutorial';
+import HelpMenu from '@/components/HelpMenu';
 
 type NavItem = {
   to: string;
@@ -182,19 +183,8 @@ export default function AppShell() {
         {/* Notification bell */}
         <NotificationBell />
 
-        {/* Tutorial help button — available on every page */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              data-tutorial="help-btn"
-              onClick={() => window.__startWorkTraceTutorial?.()}
-              className="h-8 w-8 rounded-full border border-border bg-transparent text-muted-foreground text-sm font-medium flex items-center justify-center hover:bg-accent transition-colors mr-2"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{t('header.tutorial')}</TooltipContent>
-        </Tooltip>
+        {/* Help dropdown — Tutorial / FAQ */}
+        <HelpMenu />
 
         <div className="relative">
           <button
