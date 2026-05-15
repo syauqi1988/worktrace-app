@@ -339,6 +339,7 @@ export default function CompletionReportPage() {
       }
 
       if (status === 'submitted') {
+        const whatsAppWindow = job?.customers?.phone ? openPendingWhatsAppWindow() : null;
         // Auto-update job status to Completed
         await autoUpdateJobStatus(supabase as any, jobId!, user!.id, 'report_submitted', {
           completed_date: completionDate,
@@ -351,7 +352,9 @@ export default function CompletionReportPage() {
         toast.success('Laporan dihantar! Membuka WhatsApp...');
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
-          await shareReportViaWhatsApp(savedId);
+          await shareReportViaWhatsApp(savedId, whatsAppWindow);
+        } else if (whatsAppWindow && !whatsAppWindow.closed) {
+          whatsAppWindow.close();
         }
       } else {
         toast.success('Draf laporan disimpan!');
