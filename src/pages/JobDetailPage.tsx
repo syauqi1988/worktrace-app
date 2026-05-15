@@ -109,6 +109,7 @@ export default function JobDetailPage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [report, setReport] = useState<CompletionReport | null>(null);
   const [workOrder, setWorkOrder] = useState<{ id: string; wo_number: string; status: string; total: number } | null>(null);
+  const [vos, setVos] = useState<Array<{ id: string; vo_number: string; type: string; status: string; total: number; reason: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -155,6 +156,11 @@ export default function JobDetailPage() {
       setInvoice(invRes.data as Invoice | null);
       setReport(reportRes.data as CompletionReport | null);
       setWorkOrder(woRes.data as any);
+      const { data: voData } = await (supabase as any).from('variation_orders')
+        .select('id, vo_number, type, status, total, reason')
+        .eq('job_id', id).eq('user_id', user!.id)
+        .order('created_at', { ascending: false });
+      setVos((voData as any) || []);
       setLoading(false);
     }
     fetch();
