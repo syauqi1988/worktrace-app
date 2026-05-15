@@ -40,11 +40,6 @@ function formatPhoneIntl(phone: string): string {
   return cleaned;
 }
 
-function openWhatsAppUrl(waUrl: string) {
-  const opened = window.open(waUrl, '_blank');
-  if (!opened) window.location.href = waUrl;
-}
-
 function formatDateMs(d: string | null) {
   if (!d) return '-';
   return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -495,8 +490,7 @@ export default function CompletionReportPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-      openWhatsAppUrl(waUrl);
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } catch (e: any) {
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
