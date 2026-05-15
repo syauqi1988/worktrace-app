@@ -1442,6 +1442,72 @@ export type Database = {
           },
         ]
       }
+      variation_orders: {
+        Row: {
+          created_at: string
+          customer_approval_token: string | null
+          discount: number | null
+          discount_type: string | null
+          id: string
+          items: Json
+          job_id: string
+          notes: string | null
+          pdf_url: string | null
+          reason: string | null
+          sst: number | null
+          sst_rate: number | null
+          status: string
+          subtotal: number
+          total: number
+          type: string
+          updated_at: string
+          user_id: string
+          vo_number: string
+        }
+        Insert: {
+          created_at?: string
+          customer_approval_token?: string | null
+          discount?: number | null
+          discount_type?: string | null
+          id?: string
+          items?: Json
+          job_id: string
+          notes?: string | null
+          pdf_url?: string | null
+          reason?: string | null
+          sst?: number | null
+          sst_rate?: number | null
+          status?: string
+          subtotal?: number
+          total?: number
+          type?: string
+          updated_at?: string
+          user_id: string
+          vo_number: string
+        }
+        Update: {
+          created_at?: string
+          customer_approval_token?: string | null
+          discount?: number | null
+          discount_type?: string | null
+          id?: string
+          items?: Json
+          job_id?: string
+          notes?: string | null
+          pdf_url?: string | null
+          reason?: string | null
+          sst?: number | null
+          sst_rate?: number | null
+          status?: string
+          subtotal?: number
+          total?: number
+          type?: string
+          updated_at?: string
+          user_id?: string
+          vo_number?: string
+        }
+        Relationships: []
+      }
       webauthn_challenges: {
         Row: {
           challenge: string
