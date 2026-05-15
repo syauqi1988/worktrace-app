@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, Trash2, Loader2, MessageCircle, Eye } from 'lucide-react';
 import { ProductPicker } from '@/components/ProductPicker';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { pdf } from '@react-pdf/renderer';
 import VariationOrderPDF from '@/components/pdf/VariationOrderPDF';
