@@ -21,6 +21,7 @@ interface Job {
   job_number: string;
   title: string;
   customer_id: string | null;
+  products?: any[] | null;
   customers: { name: string; phone: string | null } | null;
 }
 
@@ -68,9 +69,25 @@ export default function QuotationFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, customers(name, phone)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, customer_id, products, customers(name, phone)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
+
+  // Helper: auto-fill items from job.products if current items are empty/default
+  const tryAutoFillFromJob = (j: any) => {
+    const jobProducts = Array.isArray(j?.products) ? j.products : [];
+    if (!jobProducts.length) return;
+    const isDefaultEmpty = items.length === 1 && !items[0].description.trim() && !items[0].unit_price;
+    if (!isDefaultEmpty) return;
+    setItems(jobProducts.map((p: any) => ({
+      description: p.description || '',
+      description_detail: p.description_detail || '',
+      qty: Number(p.qty) || 1,
+      uom: p.uom || '',
+      unit_price: Number(p.unit_price) || 0,
+    })));
+    toast.success('Produk dari kerja diisi automatik');
+  };
 
   // Preview the next quote number from user's doc_number_settings (no increment)
   useEffect(() => {
@@ -87,7 +104,10 @@ export default function QuotationFormPage() {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
-      if (found) setSelectedJob(found);
+      if (found) {
+        setSelectedJob(found);
+        if (!isEdit) tryAutoFillFromJob(found);
+      }
       if (user && !isEdit) {
         supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
           .then(({ data }) => {
@@ -290,6 +310,7 @@ export default function QuotationFormPage() {
                   {filteredJobs.map(j => (
                     <button key={j.id} onClick={async () => {
                       setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' }));
+                      if (!isEdit) tryAutoFillFromJob(j);
                       if (!isEdit && user) {
                         const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
                         if (existing) {

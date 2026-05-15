@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Briefcase, Search, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { JobProductItem } from '@/components/JobProductsEditor';
 
 export interface PickedPreset {
   name: string;
@@ -11,6 +12,7 @@ export interface PickedPreset {
   category: string;
   description: string;
   notes: string;
+  products: JobProductItem[];
 }
 
 interface Preset {
@@ -20,6 +22,7 @@ interface Preset {
   category: string;
   description: string | null;
   notes: string | null;
+  products?: JobProductItem[] | null;
 }
 
 export function JobPresetPicker({ onPick }: { onPick: (p: PickedPreset) => void }) {
@@ -33,7 +36,7 @@ export function JobPresetPicker({ onPick }: { onPick: (p: PickedPreset) => void 
     if (!open || !user) return;
     setLoading(true);
     supabase.from('job_presets' as any)
-      .select('id, name, title, category, description, notes')
+      .select('id, name, title, category, description, notes, products')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .order('name', { ascending: true })
@@ -100,6 +103,7 @@ export function JobPresetPicker({ onPick }: { onPick: (p: PickedPreset) => void 
                   category: p.category || 'Other',
                   description: p.description || '',
                   notes: p.notes || '',
+                  products: Array.isArray(p.products) ? p.products : [],
                 });
                 setOpen(false);
                 setSearch('');

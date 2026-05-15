@@ -14,8 +14,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Briefcase, Plus, Search, Edit2, Trash2, Tag } from 'lucide-react';
+import { Briefcase, Plus, Search, Edit2, Trash2, Tag, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
 
 const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 
@@ -57,9 +58,10 @@ type FormState = {
   description: string;
   notes: string;
   is_active: boolean;
+  products: JobProductItem[];
 };
 const emptyForm: FormState = {
-  name: '', title: '', category: 'Other', description: '', notes: '', is_active: true,
+  name: '', title: '', category: 'Other', description: '', notes: '', is_active: true, products: [],
 };
 
 export default function JobPresetsPage() {
@@ -118,6 +120,7 @@ export default function JobPresetsPage() {
     setForm({
       id: p.id, name: p.name, title: p.title, category: p.category || 'Other',
       description: p.description ?? '', notes: p.notes ?? '', is_active: p.is_active,
+      products: Array.isArray((p as any).products) ? (p as any).products : [],
     });
     setErrors({}); setOpen(true);
   };
@@ -141,6 +144,7 @@ export default function JobPresetsPage() {
       description: form.description.trim() || null,
       notes: form.notes.trim() || null,
       is_active: form.is_active,
+      products: form.products.filter((p) => p.description.trim()) as any,
     };
     const q = form.id
       ? supabase.from('job_presets' as any).update(payload).eq('id', form.id)
@@ -284,9 +288,14 @@ export default function JobPresetsPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Keterangan (opsional)</Label>
-              <Textarea rows={4} value={form.description}
+              <Textarea rows={3} value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Skop kerja yang biasa dilakukan..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item</Label>
+              <p className="text-[11px] text-muted-foreground -mt-1">Produk yang dipilih akan auto-isi ke sebut harga apabila kerja dicipta.</p>
+              <JobProductsEditor items={form.products} onChange={(p) => setForm({ ...form, products: p })} />
             </div>
             <div className="space-y-1.5">
               <Label>Nota Dalaman (opsional)</Label>
