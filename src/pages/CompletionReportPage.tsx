@@ -409,7 +409,7 @@ export default function CompletionReportPage() {
     await shareReportViaWhatsApp(reportId, prewin);
   };
 
-  const shareReportViaWhatsApp = async (rid: string) => {
+  const shareReportViaWhatsApp = async (rid: string, prewin?: Window | null) => {
     if (!job || !user) {
       return;
     }
