@@ -21,6 +21,7 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
+import { openWhatsApp } from '@/lib/whatsapp';
 
 interface Job {
   id: string;
