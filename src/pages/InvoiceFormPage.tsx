@@ -85,6 +85,10 @@ export default function InvoiceFormPage() {
   const [availableQuote, setAvailableQuote] = useState<{ id: string; quote_number: string; items: LineItem[]; subtotal: number; discount: number; tax_rate: number; total: number } | null>(null);
   const [importDismissed, setImportDismissed] = useState(false);
 
+  // VO import
+  const [availableVos, setAvailableVos] = useState<Array<{ id: string; vo_number: string; type: string; items: LineItem[] }>>([]);
+  const [importedVoIds, setImportedVoIds] = useState<string[]>([]);
+
   // Check completion report for job
   const checkCompletionReport = async (jobId: string) => {
     if (!user) return;
