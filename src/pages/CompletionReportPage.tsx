@@ -420,24 +420,16 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    const prewin = window.open('about:blank', '_blank');
-    await shareReportViaWhatsApp(reportId, prewin);
+    await shareReportViaWhatsApp(reportId);
   };
 
-  const shareReportViaWhatsApp = async (rid: string, prewin?: Window | null) => {
-    if (!job || !user) {
-      try { prewin?.close(); } catch {}
-      return;
-    }
+  const shareReportViaWhatsApp = async (rid: string) => {
+    if (!job || !user) return;
     if (!job.customers?.phone) {
-      try { prewin?.close(); } catch {}
       toast.error('Pelanggan tiada nombor telefon');
       return;
     }
-    if (!checkWhatsAppShare()) {
-      try { prewin?.close(); } catch {}
-      return;
-    }
+    if (!checkWhatsAppShare()) return;
     setSharing(true);
     try {
       const [beforeBase64, afterBase64] = await Promise.all([
