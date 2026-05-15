@@ -40,8 +40,11 @@ function formatPhoneIntl(phone: string): string {
   return cleaned;
 }
 
-function openWhatsAppUrl(waUrl: string) {
-  const opened = window.open(waUrl, '_blank', 'noopener,noreferrer');
+function openWhatsAppUrl(waUrl: string, prewin?: Window | null) {
+  if (prewin && !prewin.closed) {
+    try { prewin.location.href = waUrl; return; } catch {}
+  }
+  const opened = window.open(waUrl, '_blank');
   if (!opened) window.location.href = waUrl;
 }
 
