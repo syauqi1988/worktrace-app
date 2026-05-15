@@ -103,7 +103,10 @@ export default function QuotationFormPage() {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
-      if (found) setSelectedJob(found);
+      if (found) {
+        setSelectedJob(found);
+        if (!isEdit) tryAutoFillFromJob(found);
+      }
       if (user && !isEdit) {
         supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
           .then(({ data }) => {
