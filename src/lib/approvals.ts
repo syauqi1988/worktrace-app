@@ -12,6 +12,32 @@ function generateToken(): string {
 
 export type ApprovalDocType = 'quotation' | 'work_order' | 'completion_report';
 
+export type ApprovalPdfBucket = 'quotation-pdfs' | 'work-order-pdfs' | 'completion-report-pdfs';
+
+const safePdfName = (name: string) => name.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'document';
+
+/**
+ * Stores each approval-link PDF at a unique path so customers never see an older cached PDF.
+ */
+export async function uploadApprovalPdf(args: {
+  bucket: ApprovalPdfBucket;
+  userId: string;
+  documentId: string;
+  documentNumber: string;
+  blob: Blob;
+}): Promise<string> {
+  const fileName = `${args.userId}/approvals/${args.documentId}-${Date.now()}-${safePdfName(args.documentNumber)}.pdf`;
+  const { error } = await supabase.storage.from(args.bucket).upload(fileName, args.blob, {
+    contentType: 'application/pdf',
+    upsert: false,
+  });
+  if (error) throw error;
+
+  const { data, error: signedError } = await supabase.storage.from(args.bucket).createSignedUrl(fileName, 60 * 60 * 24 * 365);
+  if (signedError) throw signedError;
+  return data?.signedUrl ?? '';
+}
+
 interface CreateApprovalArgs {
   userId: string;
   documentId: string;
