@@ -40,8 +40,11 @@ function formatPhoneIntl(phone: string): string {
   return cleaned;
 }
 
-function openWhatsAppUrl(waUrl: string) {
-  const opened = window.open(waUrl, '_blank', 'noopener,noreferrer');
+function openWhatsAppUrl(waUrl: string, prewin?: Window | null) {
+  if (prewin && !prewin.closed) {
+    try { prewin.location.href = waUrl; return; } catch {}
+  }
+  const opened = window.open(waUrl, '_blank');
   if (!opened) window.location.href = waUrl;
 }
 
@@ -402,18 +405,22 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    await shareReportViaWhatsApp(reportId);
+    const prewin = window.open('about:blank', '_blank');
+    await shareReportViaWhatsApp(reportId, prewin);
   };
 
-  const shareReportViaWhatsApp = async (rid: string) => {
+  const shareReportViaWhatsApp = async (rid: string, prewin?: Window | null) => {
     if (!job || !user) {
+      try { prewin?.close(); } catch {}
       return;
     }
     if (!job.customers?.phone) {
+      try { prewin?.close(); } catch {}
       toast.error('Pelanggan tiada nombor telefon');
       return;
     }
     if (!checkWhatsAppShare()) {
+      try { prewin?.close(); } catch {}
       return;
     }
     setSharing(true);
@@ -482,8 +489,9 @@ export default function CompletionReportPage() {
         details,
       );
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-      openWhatsAppUrl(waUrl);
+      openWhatsAppUrl(waUrl, prewin);
     } catch (e: any) {
+      try { prewin?.close(); } catch {}
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
