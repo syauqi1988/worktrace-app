@@ -380,7 +380,7 @@ export default function QuotationDetailPage() {
   };
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
-  const whatsappUrl = hasPhone ? `https://wa.me/${formatPhone(customerPhone)}` : null;
+  const whatsappUrl = hasPhone ? buildWhatsAppUrl(formatPhone(customerPhone)) : null;
   const canEdit = !!quotation;
 
   if (loading) {
