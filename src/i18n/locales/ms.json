@@ -773,6 +773,7 @@
     "noInvoice": "Belum ada invois",
     "invoiceNeedsReport": "Laporan Siap Kerja perlu disahkan oleh pelanggan dahulu",
     "createInvoice": "Buat Invois",
+    "createVo": "VO / Potongan",
     "editJob": "Edit Kerja",
     "delete": "Padam",
     "deleteTitle": "Padam Kerja?",
