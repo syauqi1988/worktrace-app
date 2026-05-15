@@ -570,6 +570,63 @@ export default function JobDetailPage() {
         )}
       </div>
 
+      {/* Variation Orders / Deductions */}
+      {report?.status === 'accepted' && (
+        <div className="bg-card rounded-xl border border-border p-4">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5" /> Variasi & Potongan
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Tambah Variation Order atau Potongan sebelum menjana invois akhir.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Button variant="outline" size="sm" className="text-xs gap-1"
+              onClick={() => navigate(`/jobs/${job.id}/vo/new?type=addition`)}>
+              <FileText className="h-3.5 w-3.5" /> + Tambah VO
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
+              onClick={() => navigate(`/jobs/${job.id}/vo/new?type=deduction`)}>
+              <FileText className="h-3.5 w-3.5" /> + Tambah Potongan
+            </Button>
+          </div>
+          {vos.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Tiada variasi.</p>
+          ) : (
+            <div className="space-y-2">
+              {vos.map(v => {
+                const isDed = v.type === 'deduction';
+                return (
+                  <div key={v.id} className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-primary">{v.vo_number}</span>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                          isDed ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                        }`}>{isDed ? 'Potongan' : 'VO'}</span>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                          v.status === 'Accepted' ? 'bg-green-100 text-green-700' :
+                          v.status === 'Sent' ? 'bg-blue-100 text-blue-700' :
+                          v.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>{v.status}</span>
+                      </div>
+                      <p className={`text-sm font-semibold ${isDed ? 'text-red-700' : 'text-foreground'}`}>
+                        {isDed ? '-' : '+'}RM {Number(v.total).toFixed(2)}
+                      </p>
+                      {v.reason && <p className="text-xs text-muted-foreground truncate">{v.reason}</p>}
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-xs"
+                      onClick={() => navigate(`/jobs/${job.id}/vo/${v.id}/edit`)}>
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Related Invoice */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
