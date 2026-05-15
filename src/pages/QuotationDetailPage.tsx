@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement } from '@/utils/generateDocNumber';
-import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 
@@ -286,10 +286,13 @@ export default function QuotationDetailPage() {
     try {
       const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
       const blob = await pdf(<QuotationPDF {...pdfWithLogo} />).toBlob();
-      const fileName = `${user.id}/${quotation.quote_number}.pdf`;
-      await supabase.storage.from('quotation-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('quotation-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const pdfUrl = signed?.signedUrl ?? '';
+      const pdfUrl = await uploadApprovalPdf({
+        bucket: 'quotation-pdfs',
+        userId: user.id,
+        documentId: quotation.id,
+        documentNumber: quotation.quote_number,
+        blob,
+      });
       const customerName = (quotation.jobs as any)?.customers?.name || '';
       const customerEmail = (quotation.jobs as any)?.customers?.email || null;
       const token = await getOrCreateApprovalToken({
