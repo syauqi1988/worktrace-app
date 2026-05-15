@@ -28,10 +28,11 @@ export function JobProductsEditor({ items, onChange }: Props) {
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
   const addBlank = () =>
     onChange([...items, { description: '', description_detail: '', qty: 1, uom: 'unit', unit_price: 0 }]);
-  const applyProduct = (i: number, p: JobProductItem) => {
+  const applyProduct = (i: number, p: { description: string; description_detail: string; unit_price: number; uom: string }) => {
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...p } : it)));
   };
-  const addFromProduct = (p: JobProductItem) => onChange([...items, { ...p, qty: 1 }]);
+  const addFromProduct = (p: { description: string; description_detail: string; unit_price: number; uom: string }) =>
+    onChange([...items, { ...p, qty: 1 }]);
 
   return (
     <div className="space-y-2">
