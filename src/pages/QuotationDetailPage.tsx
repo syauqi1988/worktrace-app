@@ -554,7 +554,7 @@ export default function QuotationDetailPage() {
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
               <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
             </div>
-            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="w-full rounded-lg gap-2"><Pencil className="h-4 w-4" /> {t('common.edit')}</Button>
+            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="w-full rounded-lg gap-2"><Edit className="h-4 w-4" /> {t('common.edit')}</Button>
           </div>
         )}
       </div>
