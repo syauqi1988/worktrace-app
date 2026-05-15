@@ -3,7 +3,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -79,6 +79,8 @@ export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [autoShareDone, setAutoShareDone] = useState(false);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -542,6 +544,20 @@ export default function InvoiceDetailPage() {
       setIsSharing(false);
     }
   };
+
+  // Auto-trigger WhatsApp share when arriving with ?share=1 (e.g. from Sent action in form)
+  useEffect(() => {
+    if (autoShareDone) return;
+    if (searchParams.get('share') !== '1') return;
+    if (!invoice || !pdfData || !user || !hasPhone) return;
+    setAutoShareDone(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('share');
+    setSearchParams(next, { replace: true });
+    shareViaWhatsApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invoice, pdfData, user, hasPhone, searchParams, autoShareDone]);
+
 
   const sendPaymentReminder = async () => {
     if (!checkWhatsAppShare()) return;
