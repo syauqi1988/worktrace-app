@@ -21,6 +21,7 @@ interface Job {
   job_number: string;
   title: string;
   customer_id: string | null;
+  products?: any[] | null;
   customers: { name: string; phone: string | null } | null;
 }
 
