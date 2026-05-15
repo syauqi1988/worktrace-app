@@ -93,7 +93,7 @@ export default function PublicPaymentProofPage() {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${row.user_id}/${row.invoice_id}/${Date.now()}.${ext}`;
+      const path = `proof/${row.token}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('payment-receipts').upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw error;
       setReceiptUrl(path);
