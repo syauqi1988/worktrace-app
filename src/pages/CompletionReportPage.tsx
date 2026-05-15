@@ -558,7 +558,7 @@ export default function CompletionReportPage() {
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate(`/jobs/${jobId}`)} className="text-muted-foreground hover:text-foreground">
+        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
