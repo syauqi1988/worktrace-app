@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useTranslation, Trans } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
 import { usePlanGate } from '@/hooks/usePlanGate';
@@ -464,7 +465,7 @@ export default function InvoiceDetailPage() {
       { customer_name: customer?.name || '', company_name: profile?.company_name || '' },
       details,
     );
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    openWhatsApp(phone, message);
   };
 
   const shareReceiptWhatsApp = async () => {
@@ -536,7 +537,7 @@ export default function InvoiceDetailPage() {
       const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      openWhatsApp(phone, message);
       toast.success(t('invoiceDetail.shareSuccess'));
     } catch {
       toast.error(t('invoiceDetail.shareFailed'));
@@ -567,7 +568,7 @@ export default function InvoiceDetailPage() {
       const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl, true);
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      openWhatsApp(phone, message);
     } catch {
       toast.error(t('invoiceDetail.reminderFailed'));
     } finally {
@@ -583,7 +584,7 @@ export default function InvoiceDetailPage() {
       const { pdfUrl, proofUrl } = await prepareInvoiceLinks();
       const phone = formatPhone(customerPhone);
       const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      openWhatsApp(phone, message);
       toast.success(t('invoiceDetail.proofLinkGenerated'));
     } catch (err: any) {
       toast.error(err.message || t('invoiceDetail.proofLinkFailed'));
@@ -1016,7 +1017,7 @@ export default function InvoiceDetailPage() {
                   setInvoice({ ...invoice, status: 'Sent' });
                   const phone = formatPhone(customerPhone!);
                   const message = buildWhatsAppInvoiceMessage(pdfUrl, proofUrl);
-                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                  openWhatsApp(phone, message);
                   toast.success(t('invoiceDetail.sentWaOpened'));
                 } catch {
                   toast.error(t('invoiceDetail.sendFailed'));

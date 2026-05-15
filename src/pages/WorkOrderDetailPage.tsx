@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
@@ -203,7 +204,7 @@ export default function WorkOrderDetailPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      openWhatsApp(phone, msg);
       if (wo.status === 'Draft') {
         await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
         await load();
