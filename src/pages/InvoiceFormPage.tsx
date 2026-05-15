@@ -499,7 +499,32 @@ export default function InvoiceFormPage() {
         </div>
       )}
 
-      {/* Line Items */}
+      {/* Import accepted VOs / Deductions */}
+      {!isEdit && availableVos.filter(v => !importedVoIds.includes(v.id)).length > 0 && (
+        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-[#B45309]" />
+            <p className="text-sm font-medium text-[#B45309]">
+              Variation Order / Potongan diterima sedia untuk diimport.
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            {availableVos.filter(v => !importedVoIds.includes(v.id)).map(v => (
+              <div key={v.id} className="flex items-center justify-between gap-2 bg-card rounded-lg p-2 border border-[#FDE68A]">
+                <div className="text-sm">
+                  <span className="font-bold text-primary">{v.vo_number}</span>
+                  <span className={`ml-2 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${v.type === 'deduction' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                    {v.type === 'deduction' ? 'Potongan' : 'Variasi'}
+                  </span>
+                </div>
+                <Button size="sm" onClick={() => handleImportVo(v)} className="rounded-lg text-xs h-7">Import</Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
       <div className="space-y-3">
         <Label>{t('workOrderForm.items')} *</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
