@@ -545,6 +545,20 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  // Auto-trigger WhatsApp share when arriving with ?share=1 (e.g. from Sent action in form)
+  useEffect(() => {
+    if (autoShareDone) return;
+    if (searchParams.get('share') !== '1') return;
+    if (!invoice || !pdfData || !user || !hasPhone) return;
+    setAutoShareDone(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('share');
+    setSearchParams(next, { replace: true });
+    shareViaWhatsApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invoice, pdfData, user, hasPhone, searchParams, autoShareDone]);
+
+
   const sendPaymentReminder = async () => {
     if (!checkWhatsAppShare()) return;
     if (!invoice || !hasPhone || !pdfData || !user) return;
