@@ -310,7 +310,7 @@ export default function InvoiceFormPage() {
         const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
         if (error) throw error;
         toast.success(status === 'Draft' ? t('invoiceForm.savedDraft') : t('invoiceForm.savedSent'));
-        navigate(`/invoices/${data.id}`);
+        navigate(`/invoices/${data.id}${status === 'Sent' ? '?share=1' : ''}`);
       }
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
