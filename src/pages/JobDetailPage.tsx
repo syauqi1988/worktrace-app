@@ -12,9 +12,9 @@ import { toast } from '@/hooks/use-toast';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import { pdf } from '@react-pdf/renderer';
-import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
-import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
+import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 import {
@@ -238,26 +238,28 @@ export default function JobDetailPage() {
       for (const url of photos) {
         try { const b64 = await imageUrlToBase64(url as string); photoBase64s.push(b64); } catch { photoBase64s.push(''); }
       }
-      const blob = await pdf(
-        <CompletionReportPDF
-          report={{ ...report, completion_date: report.completion_date || '', photos: photoBase64s.filter(Boolean), materials_used: report.materials_used || '', customer_signature: report.customer_signature || '', notes: report.notes || '' }}
-          job={{ job_number: job.job_number, title: job.title, category: job.category }}
-          customer={job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
-          company={{
-            company_name: profile?.company_name || null,
-            phone: profile?.phone || null,
-            address: profile?.address || null,
-            logo_url: profile?.logo_url || null,
-            logo_base64: logoBase64,
-            ssm_number_new: profile?.ssm_number_new || null,
-            ssm_number_old: profile?.ssm_number_old || null,
-          }}
-        />
-      ).toBlob();
-      const fileName = `${user.id}/${report.report_number}.pdf`;
-      await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
-      const { data: signed } = await supabase.storage.from('completion-report-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      const pdfUrl = signed?.signedUrl ?? '';
+      const pdfData = await embedPdfCompanyLogo({
+        report: { ...report, completion_date: report.completion_date || '', photos: photoBase64s.filter(Boolean), materials_used: report.materials_used || '', customer_signature: report.customer_signature || '', notes: report.notes || '' },
+        job: { job_number: job.job_number, title: job.title, category: job.category },
+        customer: job.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null,
+        company: {
+          company_name: profile?.company_name || null,
+          phone: profile?.phone || null,
+          address: profile?.address || null,
+          logo_url: profile?.logo_url || null,
+          logo_base64: logoBase64,
+          ssm_number_new: profile?.ssm_number_new || null,
+          ssm_number_old: profile?.ssm_number_old || null,
+        },
+      });
+      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
+      const pdfUrl = await uploadApprovalPdf({
+        bucket: 'completion-report-pdfs',
+        userId: user.id,
+        documentId: report.id,
+        documentNumber: report.report_number,
+        blob,
+      });
       const token = await getOrCreateApprovalToken({
         userId: user.id,
         documentId: report.id,
