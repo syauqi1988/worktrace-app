@@ -14,10 +14,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, CalendarDays, Search, Plus } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Search, Plus, Package, Bookmark } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { JobPresetPicker } from '@/components/JobPresetPicker';
+import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
 
 const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 const STATUSES = ['Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
@@ -52,6 +53,8 @@ export default function JobFormPage() {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>();
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
+  const [products, setProducts] = useState<JobProductItem[]>([]);
+  const [savingPreset, setSavingPreset] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
