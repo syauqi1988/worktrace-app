@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2, FileText } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
@@ -595,9 +595,14 @@ export default function CompletionReportPage() {
           {acceptedAt && (
             <p className="text-xs text-[#15803D]/80">Disahkan pada {formatDateTimeMs(acceptedAt)}</p>
           )}
-          <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
-            <Receipt className="h-4 w-4" /> Buat Invois
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => navigate(`/invoices/new?job_id=${jobId}`)} size="sm" className="rounded-lg gap-2">
+              <Receipt className="h-4 w-4" /> Buat Invois
+            </Button>
+            <Button onClick={() => navigate(`/jobs/${jobId}/vo/new`)} size="sm" variant="outline" className="rounded-lg gap-2">
+              <FileText className="h-4 w-4" /> VO / Potongan
+            </Button>
+          </div>
         </div>
       )}
 
