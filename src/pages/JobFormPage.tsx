@@ -357,35 +357,8 @@ export default function JobFormPage() {
         <Button onClick={handleSubmit} disabled={submitting} className="flex-1 rounded-lg h-11">
           {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={savingPreset || !title.trim()}
-          onClick={async () => {
-            if (!user) return;
-            const presetName = window.prompt('Nama preset:', title.trim());
-            if (!presetName?.trim()) return;
-            setSavingPreset(true);
-            const { error } = await supabase.from('job_presets' as any).insert({
-              user_id: user.id,
-              name: presetName.trim(),
-              title: title.trim(),
-              category,
-              description: description.trim() || null,
-              notes: notes.trim() || null,
-              products: products.filter((p) => p.description.trim()) as any,
-              is_active: true,
-            });
-            setSavingPreset(false);
-            if (error) toast({ title: 'Ralat simpan preset', description: error.message, variant: 'destructive' });
-            else toast({ title: `Preset "${presetName}" disimpan` });
-          }}
-          className="rounded-lg h-11"
-          title="Simpan butiran kerja ini sebagai preset"
-        >
-          <Bookmark className="h-4 w-4 mr-1" /> Simpan Preset
-        </Button>
       </div>
+      <p className="text-[11px] text-muted-foreground -mt-2">Kerja ini akan disimpan automatik sebagai preset untuk guna semula.</p>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
