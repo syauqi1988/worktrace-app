@@ -31,6 +31,7 @@ import WorkOrderFormPage from "@/pages/WorkOrderFormPage";
 import WorkOrderDetailPage from "@/pages/WorkOrderDetailPage";
 import WorkOrdersListPage from "@/pages/WorkOrdersListPage";
 import CompletionReportsListPage from "@/pages/CompletionReportsListPage";
+import VoFormPage from "@/pages/VoFormPage";
 import TeamOnlyRoute from "@/components/TeamOnlyRoute";
 import GoodbyePage from "@/pages/GoodbyePage";
 import AccountDeletedPage from "@/pages/AccountDeletedPage";
@@ -83,6 +84,8 @@ const App = () => (
               <Route path="jobs/:id" element={<JobDetailPage />} />
               <Route path="jobs/:id/edit" element={<JobFormPage />} />
               <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />
+              <Route path="jobs/:jobId/vo/new" element={<VoFormPage />} />
+              <Route path="jobs/:jobId/vo/:voId/edit" element={<VoFormPage />} />
               <Route path="jobs/:id/work-order" element={<TeamOnlyRoute><WorkOrderDetailPage /></TeamOnlyRoute>} />
               <Route path="jobs/:id/work-order/new" element={<TeamOnlyRoute><WorkOrderFormPage /></TeamOnlyRoute>} />
               <Route path="work-orders" element={<TeamOnlyRoute><WorkOrdersListPage /></TeamOnlyRoute>} />

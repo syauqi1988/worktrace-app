@@ -14,7 +14,7 @@ import {
   type DocNumberSettings,
 } from '@/utils/generateDocNumber';
 
-const TABS: DocType[] = ['quotation', 'work_order', 'invoice', 'completion_report', 'receipt'];
+const TABS: DocType[] = ['quotation', 'work_order', 'invoice', 'completion_report', 'receipt', 'vo'];
 const PADDINGS = [3, 4, 5, 6];
 
 export default function DocNumberSettings() {
@@ -44,16 +44,18 @@ export default function DocNumberSettings() {
         invoice: { ...DEFAULT_DOC_SETTINGS.invoice, ...(loaded.invoice || {}) },
         completion_report: { ...DEFAULT_DOC_SETTINGS.completion_report, ...(loaded.completion_report || {}) },
         receipt: { ...DEFAULT_DOC_SETTINGS.receipt, ...(loaded.receipt || {}) },
+        vo: { ...DEFAULT_DOC_SETTINGS.vo, ...(loaded.vo || {}) },
       });
       return;
     }
     (async () => {
-      const [qc, wc, ic, rc, recc] = await Promise.all([
+      const [qc, wc, ic, rc, recc, voc] = await Promise.all([
         supabase.from('quotations').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('work_orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('completion_reports').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user.id).not('receipt_number', 'is', null),
+        (supabase as any).from('variation_orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]);
       setSettings({
         quotation:         { ...DEFAULT_DOC_SETTINGS.quotation,         next_number: (qc.count ?? 0) + 1 },
@@ -61,6 +63,7 @@ export default function DocNumberSettings() {
         invoice:           { ...DEFAULT_DOC_SETTINGS.invoice,           next_number: (ic.count ?? 0) + 1 },
         completion_report: { ...DEFAULT_DOC_SETTINGS.completion_report, next_number: (rc.count ?? 0) + 1 },
         receipt:           { ...DEFAULT_DOC_SETTINGS.receipt,           next_number: (recc.count ?? 0) + 1 },
+        vo:                { ...DEFAULT_DOC_SETTINGS.vo,                next_number: (voc.count ?? 0) + 1 },
       });
     })();
   }, [profile, user]);

@@ -13,7 +13,8 @@ export type DocType =
   | 'work_order'
   | 'invoice'
   | 'completion_report'
-  | 'receipt';
+  | 'receipt'
+  | 'vo';
 
 export const DEFAULT_DOC_SETTINGS: Record<DocType, DocNumberSettings> = {
   quotation:         { prefix: 'QUO', padding: 4, next_number: 1, separator: '-', suffix: '' },
@@ -21,6 +22,7 @@ export const DEFAULT_DOC_SETTINGS: Record<DocType, DocNumberSettings> = {
   invoice:           { prefix: 'INV', padding: 4, next_number: 1, separator: '-', suffix: '' },
   completion_report: { prefix: 'RPT', padding: 4, next_number: 1, separator: '-', suffix: '' },
   receipt:           { prefix: 'RCP', padding: 4, next_number: 1, separator: '-', suffix: '' },
+  vo:                { prefix: 'VO',  padding: 4, next_number: 1, separator: '-', suffix: '' },
 };
 
 export const DOC_TYPE_LABELS: Record<DocType, string> = {
@@ -29,6 +31,7 @@ export const DOC_TYPE_LABELS: Record<DocType, string> = {
   invoice: 'Invois',
   completion_report: 'Laporan Siap Kerja',
   receipt: 'Resit Bayaran',
+  vo: 'VO / Potongan',
 };
 
 export const generateDocNumber = (settings: DocNumberSettings): string => {
