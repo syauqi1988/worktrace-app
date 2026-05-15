@@ -147,6 +147,18 @@ export default function InvoiceDetailPage() {
     }
   }, [profile?.logo_url]);
 
+  function getPaymentReceiptPath(receiptUrl: string) {
+    if (!/^https?:\/\//i.test(receiptUrl)) return receiptUrl;
+    try {
+      const url = new URL(receiptUrl);
+      const marker = '/payment-receipts/';
+      const markerIndex = url.pathname.indexOf(marker);
+      return markerIndex >= 0 ? decodeURIComponent(url.pathname.slice(markerIndex + marker.length)) : null;
+    } catch {
+      return null;
+    }
+  }
+
   useEffect(() => {
     if (!user || !id) return;
     (async () => {
@@ -169,7 +181,8 @@ export default function InvoiceDetailPage() {
       return;
     }
 
-    if (/^https?:\/\//i.test(receiptPath)) {
+    const storagePath = getPaymentReceiptPath(receiptPath);
+    if (!storagePath) {
       setProofReceiptViewUrl(receiptPath);
       return;
     }
@@ -178,7 +191,7 @@ export default function InvoiceDetailPage() {
     (async () => {
       const { data, error } = await supabase.storage
         .from('payment-receipts')
-        .createSignedUrl(receiptPath, 60 * 30);
+        .createSignedUrl(storagePath, 60 * 30);
       if (!active) return;
       if (error) {
         setProofReceiptViewUrl(null);
