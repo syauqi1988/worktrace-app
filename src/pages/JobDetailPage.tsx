@@ -615,10 +615,26 @@ export default function JobDetailPage() {
                       </p>
                       {v.reason && <p className="text-xs text-muted-foreground truncate">{v.reason}</p>}
                     </div>
-                    <Button variant="ghost" size="sm" className="text-xs"
-                      onClick={() => navigate(`/jobs/${job.id}/vo/${v.id}/edit`)}>
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" className="text-xs"
+                        onClick={() => navigate(`/jobs/${job.id}/vo/${v.id}/edit`)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-xs text-red-600 hover:text-red-700"
+                        onClick={async () => {
+                          if (!confirm(`Padam ${v.vo_number}?`)) return;
+                          const { error } = await (supabase as any).from('variation_orders').delete().eq('id', v.id);
+                          if (error) {
+                            toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
+                          } else {
+                            await (supabase as any).from('customer_approvals').delete().eq('document_id', v.id).eq('document_type', 'variation_order');
+                            setVos(prev => prev.filter(x => x.id !== v.id));
+                            toast({ title: 'VO dipadam' });
+                          }
+                        }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
