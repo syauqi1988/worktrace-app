@@ -834,7 +834,7 @@ export default function InvoiceDetailPage() {
             <User className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">{customer.name}</span>
             {hasPhone && (
-              <a href={`https://wa.me/${formatPhone(customerPhone)}`} target="_blank" rel="noopener noreferrer"
+              <a href={buildWhatsAppUrl(formatPhone(customerPhone))} target="_blank" rel="noopener noreferrer"
                 className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full hover:bg-green-100">
                 <MessageCircle className="h-3 w-3" /> WhatsApp
               </a>
