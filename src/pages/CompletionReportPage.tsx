@@ -62,11 +62,6 @@ function openPendingWhatsAppWindow(): Window | null {
   }
 }
 
-import { openWhatsApp as openWa } from '@/lib/whatsapp';
-function openWhatsAppUrl(_url: string, _pendingWindow?: Window | null) {
-  // Deprecated: use openWa(phone, text, pendingWindow). Kept for compatibility.
-}
-
 function parseChecklist(raw: string): ChecklistItem[] {
   return raw
     .split('\n')
