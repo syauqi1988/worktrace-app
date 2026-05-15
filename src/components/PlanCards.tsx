@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useBillPlz } from '@/hooks/useBillPlz';
 import { usePricingPlans, PricingPlan } from '@/hooks/usePricingPlans';
 import { Skeleton } from '@/components/ui/skeleton';
+import { openWhatsApp } from '@/lib/whatsapp';
 
 interface PlanCardsProps {
   currentPlan?: string;
