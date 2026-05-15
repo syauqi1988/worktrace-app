@@ -61,12 +61,9 @@ function openPendingWhatsAppWindow(): Window | null {
   }
 }
 
-function openWhatsAppUrl(url: string, pendingWindow?: Window | null) {
-  if (pendingWindow && !pendingWindow.closed) {
-    pendingWindow.location.href = url;
-    return;
-  }
-  window.open(url, '_blank');
+import { openWhatsApp as openWa } from '@/lib/whatsapp';
+function openWhatsAppUrl(_url: string, _pendingWindow?: Window | null) {
+  // Deprecated: use openWa(phone, text, pendingWindow). Kept for compatibility.
 }
 
 function parseChecklist(raw: string): ChecklistItem[] {
