@@ -111,6 +111,7 @@ const App = () => (
               <Route path="support" element={<SupportPage />} />
               <Route path="support/new" element={<SupportNewPage />} />
               <Route path="support/:id" element={<SupportDetailPage />} />
+              <Route path="faq" element={<FaqPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="settings/team" element={<TeamPlaceholderPage />} />
               <Route path="profile" element={<SettingsPage />} />
