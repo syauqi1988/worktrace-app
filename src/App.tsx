@@ -46,6 +46,7 @@ import ShortLinkRedirectPage from "@/pages/public/ShortLinkRedirectPage";
 import NotFound from "@/pages/NotFound";
 import RefundPolicyPage from "@/pages/RefundPolicyPage";
 import ProductsPage from "@/pages/ProductsPage";
+import JobPresetsPage from "@/pages/JobPresetsPage";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="jobs" element={<JobsListPage />} />
               <Route path="jobs/new" element={<JobFormPage />} />
+              <Route path="job-presets" element={<JobPresetsPage />} />
               <Route path="jobs/:id" element={<JobDetailPage />} />
               <Route path="jobs/:id/edit" element={<JobFormPage />} />
               <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />
