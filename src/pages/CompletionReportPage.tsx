@@ -405,7 +405,8 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    await shareReportViaWhatsApp(reportId);
+    const prewin = window.open('about:blank', '_blank');
+    await shareReportViaWhatsApp(reportId, prewin);
   };
 
   const shareReportViaWhatsApp = async (rid: string) => {
