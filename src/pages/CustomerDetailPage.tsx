@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import TagInput from '@/components/customers/TagInput';
 import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
+import { buildWhatsAppUrl } from '@/lib/whatsapp';
 
 const STATUS_COLORS: Record<string, string> = {
   Lead: 'bg-gray-100 text-gray-600',
