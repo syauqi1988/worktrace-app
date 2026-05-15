@@ -134,7 +134,7 @@ export default function CustomerDetailPage() {
   };
 
   const whatsappUrl = customer?.phone
-    ? `https://wa.me/${formatPhone(customer.phone)}`
+    ? buildWhatsAppUrl(formatPhone(customer.phone))
     : null;
 
   if (loading) {
