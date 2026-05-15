@@ -264,8 +264,8 @@ export default function WorkOrderDetailPage() {
         <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium text-[#B91C1C]">{t('workOrderDetail.rejected')}</p>
           {wo.rejection_reason && <p className="text-sm text-[#B91C1C]">{t('workOrderDetail.reason', { reason: wo.rejection_reason })}</p>}
-          <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new`)} size="sm" className="rounded-lg">
-            {t('workOrderDetail.newWo')}
+          <Button onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} size="sm" className="rounded-lg">
+            {t('common.edit')}
           </Button>
         </div>
       )}

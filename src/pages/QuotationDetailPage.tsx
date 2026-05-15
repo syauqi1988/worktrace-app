@@ -374,7 +374,7 @@ export default function QuotationDetailPage() {
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
   const whatsappUrl = hasPhone ? `https://wa.me/${formatPhone(customerPhone)}` : null;
-  const canEdit = quotation && quotation.status !== 'Rejected';
+  const canEdit = !!quotation;
 
   if (loading) {
     return (
@@ -554,7 +554,7 @@ export default function QuotationDetailPage() {
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
               <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
             </div>
-            <Button onClick={() => navigate(`/quotations/new?job_id=${quotation.job_id}`)} variant="outline" className="w-full rounded-lg">{t('quotationDetail.newQuote')}</Button>
+            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="w-full rounded-lg gap-2"><Edit className="h-4 w-4" /> {t('common.edit')}</Button>
           </div>
         )}
       </div>
