@@ -252,6 +252,7 @@ export default function JobFormPage() {
               setCategory(CATEGORIES.includes(p.category) ? p.category : 'Other');
               if (p.description) setDescription(p.description);
               if (p.notes) setNotes(p.notes);
+              if (p.products && p.products.length) setProducts(p.products);
               setErrors((prev) => ({ ...prev, title: '' }));
               toast({ title: `Preset "${p.name}" digunakan` });
             }}
@@ -315,13 +316,49 @@ export default function JobFormPage() {
       </div>
 
       <div className="space-y-1.5">
+        <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item Kerja</Label>
+        <p className="text-[11px] text-muted-foreground -mt-0.5">Produk yang ditambah akan auto-isi ke Sebut Harga & Invois.</p>
+        <JobProductsEditor items={products} onChange={setProducts} />
+      </div>
+
+      <div className="space-y-1.5">
         <Label>{t('jobForm.internalNotes')}</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder={t('jobForm.internalNotesPlaceholder')} />
       </div>
 
-      <Button onClick={handleSubmit} disabled={submitting} className="w-full rounded-lg h-11">
-        {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={handleSubmit} disabled={submitting} className="flex-1 rounded-lg h-11">
+          {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={savingPreset || !title.trim()}
+          onClick={async () => {
+            if (!user) return;
+            const presetName = window.prompt('Nama preset:', title.trim());
+            if (!presetName?.trim()) return;
+            setSavingPreset(true);
+            const { error } = await supabase.from('job_presets' as any).insert({
+              user_id: user.id,
+              name: presetName.trim(),
+              title: title.trim(),
+              category,
+              description: description.trim() || null,
+              notes: notes.trim() || null,
+              products: products.filter((p) => p.description.trim()) as any,
+              is_active: true,
+            });
+            setSavingPreset(false);
+            if (error) toast({ title: 'Ralat simpan preset', description: error.message, variant: 'destructive' });
+            else toast({ title: `Preset "${presetName}" disimpan` });
+          }}
+          className="rounded-lg h-11"
+          title="Simpan butiran kerja ini sebagai preset"
+        >
+          <Bookmark className="h-4 w-4 mr-1" /> Simpan Preset
+        </Button>
+      </div>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
