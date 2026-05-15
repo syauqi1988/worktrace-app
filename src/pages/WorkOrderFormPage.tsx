@@ -15,7 +15,7 @@ import { generateAndIncrement } from '@/utils/generateDocNumber';
 import { pdf } from '@react-pdf/renderer';
 import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
-import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
@@ -89,7 +89,7 @@ export default function WorkOrderFormPage() {
   const [logoBase64, setLogoBase64] = useState('');
   const [sharing, setSharing] = useState(false);
   const [existingWo, setExistingWo] = useState<{ id: string; status: string } | null>(null);
-  const { canShowLogo, checkWhatsAppShare } = usePlanGate();
+  const { checkWhatsAppShare } = usePlanGate();
 
   const total = useMemo(
     () => items.reduce((sum, i) => sum + (i.qty || 0) * (i.unit_price || 0), 0),
@@ -98,6 +98,7 @@ export default function WorkOrderFormPage() {
 
   useEffect(() => {
     if (profile?.logo_url) imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    else setLogoBase64('');
   }, [profile?.logo_url]);
 
   useEffect(() => {
@@ -210,8 +211,8 @@ export default function WorkOrderFormPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_url: canShowLogo ? (profile?.logo_url || null) : null,
-      logo_base64: canShowLogo ? logoBase64 : '',
+      logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
       ssm_number_new: profile?.ssm_number_new || null,
       ssm_number_old: profile?.ssm_number_old || null,
     },
@@ -279,7 +280,8 @@ export default function WorkOrderFormPage() {
     if (!job?.customers?.phone) return;
     setSharing(true);
     try {
-      const blob = await pdf(<WorkOrderPDF {...buildPdfData()} />).toBlob();
+      const pdfData = await embedPdfCompanyLogo(buildPdfData());
+      const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
       const fileName = `${user!.id}/${woNumber}.pdf`;
       await supabase.storage.from('work-order-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('work-order-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
@@ -324,7 +326,8 @@ export default function WorkOrderFormPage() {
     setPreviewOpen(true);
     setPreviewLoading(true);
     try {
-      const blob = await pdf(<WorkOrderPDF {...buildPdfData()} />).toBlob();
+      const pdfData = await embedPdfCompanyLogo(buildPdfData());
+      const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error(t('workOrderForm.previewFailed'));
