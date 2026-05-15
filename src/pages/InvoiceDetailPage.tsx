@@ -103,6 +103,7 @@ export default function InvoiceDetailPage() {
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [proof, setProof] = useState<any>(null);
+  const [proofReceiptViewUrl, setProofReceiptViewUrl] = useState<string | null>(null);
   const [requestingProof, setRequestingProof] = useState(false);
   const [verifyingProof, setVerifyingProof] = useState(false);
   const [rejectProofOpen, setRejectProofOpen] = useState(false);
@@ -160,6 +161,34 @@ export default function InvoiceDetailPage() {
       if (data) setProof(data);
     })();
   }, [user, id, invoice?.status]);
+
+  useEffect(() => {
+    const receiptPath = proof?.receipt_url;
+    if (!receiptPath) {
+      setProofReceiptViewUrl(null);
+      return;
+    }
+
+    if (/^https?:\/\//i.test(receiptPath)) {
+      setProofReceiptViewUrl(receiptPath);
+      return;
+    }
+
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase.storage
+        .from('payment-receipts')
+        .createSignedUrl(receiptPath, 60 * 30);
+      if (!active) return;
+      if (error) {
+        setProofReceiptViewUrl(null);
+        return;
+      }
+      setProofReceiptViewUrl(data.signedUrl);
+    })();
+
+    return () => { active = false; };
+  }, [proof?.receipt_url]);
 
   useEffect(() => {
     return () => {
@@ -873,24 +902,30 @@ export default function InvoiceDetailPage() {
           {proof.receipt_url && (
             <div className="space-y-2">
               <p className="text-xs font-medium text-blue-700">{t('invoiceDetail.proofUploaded')}</p>
-              {/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(proof.receipt_url) ? (
-                <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="block">
+              {!proofReceiptViewUrl ? (
+                <div className="h-24 rounded-lg border border-blue-200 bg-white flex items-center justify-center text-sm text-blue-700">
+                  {t('invoiceDetail.receiptPreviewFailed')}
+                </div>
+              ) : /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(proof.receipt_url) ? (
+                <a href={proofReceiptViewUrl} target="_blank" rel="noopener noreferrer" className="block">
                   <img
-                    src={proof.receipt_url}
+                    src={proofReceiptViewUrl}
                     alt="Bukti pembayaran"
                     className="max-h-64 w-auto rounded-lg border border-blue-200 bg-white object-contain"
                   />
                 </a>
               ) : (
                 <iframe
-                  src={proof.receipt_url}
+                  src={proofReceiptViewUrl}
                   title="Bukti pembayaran"
                   className="w-full h-64 rounded-lg border border-blue-200 bg-white"
                 />
               )}
-              <a href={proof.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline">
-                <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.openInNewTab')}
-              </a>
+              {proofReceiptViewUrl && (
+                <a href={proofReceiptViewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-700 underline">
+                  <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.openInNewTab')}
+                </a>
+              )}
             </div>
           )}
           <div className="flex gap-2">
