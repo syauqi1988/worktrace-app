@@ -288,9 +288,14 @@ export default function JobPresetsPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Keterangan (opsional)</Label>
-              <Textarea rows={4} value={form.description}
+              <Textarea rows={3} value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Skop kerja yang biasa dilakukan..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item</Label>
+              <p className="text-[11px] text-muted-foreground -mt-1">Produk yang dipilih akan auto-isi ke sebut harga apabila kerja dicipta.</p>
+              <JobProductsEditor items={form.products} onChange={(p) => setForm({ ...form, products: p })} />
             </div>
             <div className="space-y-1.5">
               <Label>Nota Dalaman (opsional)</Label>
