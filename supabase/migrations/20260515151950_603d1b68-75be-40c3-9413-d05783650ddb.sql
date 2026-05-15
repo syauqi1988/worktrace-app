@@ -1,0 +1,2 @@
+ALTER TABLE public.customer_approvals DROP CONSTRAINT customer_approvals_document_type_check;
+ALTER TABLE public.customer_approvals ADD CONSTRAINT customer_approvals_document_type_check CHECK (document_type = ANY (ARRAY['quotation'::text, 'work_order'::text, 'completion_report'::text, 'variation_order'::text]));
