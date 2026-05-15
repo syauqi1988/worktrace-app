@@ -14,7 +14,7 @@ import {
   type DocNumberSettings,
 } from '@/utils/generateDocNumber';
 
-const TABS: DocType[] = ['quotation', 'work_order', 'invoice', 'completion_report', 'receipt'];
+const TABS: DocType[] = ['quotation', 'work_order', 'invoice', 'completion_report', 'receipt', 'vo'];
 const PADDINGS = [3, 4, 5, 6];
 
 export default function DocNumberSettings() {

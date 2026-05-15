@@ -10,9 +10,9 @@ function generateToken(): string {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export type ApprovalDocType = 'quotation' | 'work_order' | 'completion_report';
+export type ApprovalDocType = 'quotation' | 'work_order' | 'completion_report' | 'variation_order';
 
-export type ApprovalPdfBucket = 'quotation-pdfs' | 'work-order-pdfs' | 'completion-report-pdfs';
+export type ApprovalPdfBucket = 'quotation-pdfs' | 'work-order-pdfs' | 'completion-report-pdfs' | 'vo-pdfs';
 
 const safePdfName = (name: string) => name.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'document';
 
