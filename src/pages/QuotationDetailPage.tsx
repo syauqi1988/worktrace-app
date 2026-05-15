@@ -93,12 +93,13 @@ export default function QuotationDetailPage() {
 
   useEffect(() => {
     if (!user || !id) return;
+    let active = true;
     async function fetch() {
       const { data } = await supabase.from('quotations')
         .select('*, jobs(id, job_number, title, customer_id, customers(name, phone, email, address, tin_number))')
         .eq('id', id)
         .single();
-      if (data) {
+      if (active && data) {
         const q = data as any;
         setQuotation({
           ...q,
@@ -109,9 +110,14 @@ export default function QuotationDetailPage() {
           total: Number(q.total) || 0,
         });
       }
-      setLoading(false);
+      if (active) setLoading(false);
     }
     fetch();
+    const ch = supabase
+      .channel(`quotation-detail-${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quotations', filter: `id=eq.${id}` }, () => fetch())
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(ch); };
   }, [user, id]);
 
   useEffect(() => {
