@@ -51,6 +51,24 @@ function formatDateTimeMs(d: string | null) {
   return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
+function openPendingWhatsAppWindow(): Window | null {
+  try {
+    const win = window.open('', '_blank');
+    win?.document.write('<!doctype html><title>WhatsApp</title><body style="font-family:sans-serif;padding:24px">Opening WhatsApp...</body>');
+    return win;
+  } catch {
+    return null;
+  }
+}
+
+function openWhatsAppUrl(url: string, pendingWindow?: Window | null) {
+  if (pendingWindow && !pendingWindow.closed) {
+    pendingWindow.location.href = url;
+    return;
+  }
+  window.open(url, '_blank');
+}
+
 function parseChecklist(raw: string): ChecklistItem[] {
   return raw
     .split('\n')
