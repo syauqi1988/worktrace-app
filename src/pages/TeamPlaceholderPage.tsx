@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { openWhatsApp } from "@/lib/whatsapp";
 
 export default function TeamPlaceholderPage() {
   const { t } = useTranslation();
@@ -20,9 +21,9 @@ export default function TeamPlaceholderPage() {
             variant="outline"
             className="rounded-lg"
             onClick={() =>
-              window.open(
-                "https://wa.me/60129600016?text=Saya+berminat+dengan+ciri+multi-pengguna+WorkTrace+Agency",
-                "_blank",
+              openWhatsApp(
+                "60129600016",
+                "Saya berminat dengan ciri multi-pengguna WorkTrace Agency",
               )
             }
           >

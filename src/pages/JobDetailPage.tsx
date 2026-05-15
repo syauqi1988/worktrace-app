@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
@@ -291,7 +292,7 @@ export default function JobDetailPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      openWhatsApp(phone, message);
     } catch {
       toast({ title: t('jobDetail.reportShareFail'), variant: 'destructive' });
     } finally {
@@ -300,7 +301,7 @@ export default function JobDetailPage() {
   };
 
   const whatsappUrl = job?.customers?.phone
-    ? `https://wa.me/${formatPhone(job.customers.phone)}?text=${encodeURIComponent(renderTemplate((profile as any)?.whatsapp_templates, 'job_followup', { customer_name: job.customers.name, company_name: profile?.company_name || '', job_number: job.job_number }, ''))}`
+    ? buildWhatsAppUrl(formatPhone(job.customers.phone), renderTemplate((profile as any)?.whatsapp_templates, 'job_followup', { customer_name: job.customers.name, company_name: profile?.company_name || '', job_number: job.job_number }, ''))
     : null;
 
   if (loading) {

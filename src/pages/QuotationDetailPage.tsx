@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
 import { usePlanGate } from '@/hooks/usePlanGate';
@@ -315,7 +316,7 @@ export default function QuotationDetailPage() {
       const phone = customerPhone.replace(/\D/g, '').replace(/^0/, '60');
       const companyName = profile?.company_name || '';
       const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, approvalUrl);
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+      openWhatsApp(phone, message);
       // Auto-mark as Sent if currently Draft
       if (quotation.status === 'Draft') {
         await supabase.from('quotations').update({ status: 'Sent' }).eq('id', quotation.id);
@@ -379,7 +380,7 @@ export default function QuotationDetailPage() {
   };
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
-  const whatsappUrl = hasPhone ? `https://wa.me/${formatPhone(customerPhone)}` : null;
+  const whatsappUrl = hasPhone ? buildWhatsAppUrl(formatPhone(customerPhone)) : null;
   const canEdit = !!quotation;
 
   if (loading) {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
@@ -317,7 +318,7 @@ export default function WorkOrderFormPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      openWhatsApp(phone, msg);
     } catch {
       toast.error(t('workOrderForm.shareFailed'));
     } finally {

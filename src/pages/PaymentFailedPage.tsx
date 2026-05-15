@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useTranslation } from 'react-i18next';
 import { XCircle, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ export default function PaymentFailedPage() {
           <Button
             variant="outline"
             className="w-full rounded-lg gap-2"
-            onClick={() => window.open('https://wa.me/60123456789?text=Saya+perlu+bantuan+pembayaran+WorkTrace', '_blank')}
+            onClick={() => openWhatsApp('60123456789', 'Saya perlu bantuan pembayaran WorkTrace')}
           >
             <MessageCircle className="h-4 w-4" /> {t('paymentFailed.contactSupport')}
           </Button>

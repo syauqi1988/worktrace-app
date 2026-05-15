@@ -21,6 +21,7 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
+import { openWhatsApp } from '@/lib/whatsapp';
 
 interface Job {
   id: string;
@@ -59,14 +60,6 @@ function openPendingWhatsAppWindow(): Window | null {
   } catch {
     return null;
   }
-}
-
-function openWhatsAppUrl(url: string, pendingWindow?: Window | null) {
-  if (pendingWindow && !pendingWindow.closed) {
-    pendingWindow.location.href = url;
-    return;
-  }
-  window.open(url, '_blank');
 }
 
 function parseChecklist(raw: string): ChecklistItem[] {
@@ -527,7 +520,7 @@ export default function CompletionReportPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      openWhatsAppUrl(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, pendingWindow);
+      openWhatsApp(phone, msg, pendingWindow);
     } catch (e: any) {
       if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error(e?.message || 'Gagal kongsi laporan');

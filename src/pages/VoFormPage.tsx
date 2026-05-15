@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, Trash2, Loader2, MessageCircle, Eye } from 'lucide-react';
 import { ProductPicker } from '@/components/ProductPicker';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { pdf } from '@react-pdf/renderer';
 import VariationOrderPDF from '@/components/pdf/VariationOrderPDF';
@@ -269,11 +270,7 @@ Pautan sah selama 30 hari.
 *${profile?.company_name || ''}*`;
 
       const phone = job.customers?.phone ? formatPhone(job.customers.phone) : '';
-      const waUrl = phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-        : `https://wa.me/?text=${encodeURIComponent(message)}`;
-      if (popup) popup.location.href = waUrl;
-      else window.open(waUrl, '_blank');
+      openWhatsApp(phone || undefined, message, popup);
 
       toast.success('VO dihantar');
       navigate(`/jobs/${jobId}`);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useTranslation, Trans } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -353,7 +354,7 @@ export default function SettingsPage() {
 
   const shareWhatsApp = () => {
     const msg = `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! 🔧\n\n✅ Jejak kerja & pelanggan\n✅ Sebut harga & invois profesional\n✅ WhatsApp follow-up automatik\n✅ LHDN e-Invois ready\n\nDaftar guna link saya:\n👉 ${referralUrl}\n\n*WorkTrace — Jejak Kerja. Senang Collect.*`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+    openWhatsApp(undefined, msg);
   };
 
   const shareTelegram = () => {
