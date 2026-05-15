@@ -13,7 +13,7 @@ import CompletionReportView from '@/components/reports/CompletionReportView';
 interface ApprovalRow {
   id: string;
   document_id: string;
-  document_type: 'quotation' | 'work_order' | 'completion_report';
+  document_type: 'quotation' | 'work_order' | 'completion_report' | 'variation_order';
   token: string;
   pdf_url: string | null;
   customer_name: string | null;
@@ -114,10 +114,12 @@ export default function PublicApprovalPage() {
   const docLabel =
     row.document_type === 'quotation' ? t('publicApproval.docQuotation')
     : row.document_type === 'work_order' ? t('publicApproval.docWorkOrder')
+    : row.document_type === 'variation_order' ? 'Variation Order / Potongan'
     : t('publicApproval.docCompletion');
   const numberCol =
     row.document_type === 'quotation' ? 'quote_number'
     : row.document_type === 'work_order' ? 'wo_number'
+    : row.document_type === 'variation_order' ? 'vo_number'
     : 'report_number';
 
   return (
