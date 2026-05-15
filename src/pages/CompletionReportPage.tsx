@@ -411,13 +411,16 @@ export default function CompletionReportPage() {
 
   const shareReportViaWhatsApp = async (rid: string, prewin?: Window | null) => {
     if (!job || !user) {
+      try { prewin?.close(); } catch {}
       return;
     }
     if (!job.customers?.phone) {
+      try { prewin?.close(); } catch {}
       toast.error('Pelanggan tiada nombor telefon');
       return;
     }
     if (!checkWhatsAppShare()) {
+      try { prewin?.close(); } catch {}
       return;
     }
     setSharing(true);
