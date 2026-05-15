@@ -439,16 +439,24 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    await shareReportViaWhatsApp(reportId);
+    const pendingWhatsAppWindow = job?.customers?.phone ? openPendingWhatsAppWindow() : null;
+    await shareReportViaWhatsApp(reportId, pendingWhatsAppWindow);
   };
 
   const shareReportViaWhatsApp = async (rid: string, pendingWindow?: Window | null) => {
-    if (!job || !user) return;
+    if (!job || !user) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
+      return;
+    }
     if (!job.customers?.phone) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error('Pelanggan tiada nombor telefon');
       return;
     }
-    if (!checkWhatsAppShare()) return;
+    if (!checkWhatsAppShare()) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
+      return;
+    }
     setSharing(true);
     try {
       let pdfUrl: string | null = null;
