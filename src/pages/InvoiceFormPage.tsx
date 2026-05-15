@@ -156,6 +156,7 @@ export default function InvoiceFormPage() {
           });
         // Check completion report
         checkCompletionReport(jobId);
+        fetchAvailableVos(jobId);
       }
     }
   }, [searchParams, jobs, selectedJob, user, isEdit]);
