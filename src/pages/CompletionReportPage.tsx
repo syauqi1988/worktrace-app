@@ -40,10 +40,7 @@ function formatPhoneIntl(phone: string): string {
   return cleaned;
 }
 
-function openWhatsAppUrl(waUrl: string, prewin?: Window | null) {
-  if (prewin && !prewin.closed) {
-    try { prewin.location.href = waUrl; return; } catch {}
-  }
+function openWhatsAppUrl(waUrl: string) {
   const opened = window.open(waUrl, '_blank');
   if (!opened) window.location.href = waUrl;
 }
@@ -423,24 +420,16 @@ export default function CompletionReportPage() {
 
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
-    const prewin = window.open('about:blank', '_blank');
-    await shareReportViaWhatsApp(reportId, prewin);
+    await shareReportViaWhatsApp(reportId);
   };
 
-  const shareReportViaWhatsApp = async (rid: string, prewin?: Window | null) => {
-    if (!job || !user) {
-      try { prewin?.close(); } catch {}
-      return;
-    }
+  const shareReportViaWhatsApp = async (rid: string) => {
+    if (!job || !user) return;
     if (!job.customers?.phone) {
-      try { prewin?.close(); } catch {}
       toast.error('Pelanggan tiada nombor telefon');
       return;
     }
-    if (!checkWhatsAppShare()) {
-      try { prewin?.close(); } catch {}
-      return;
-    }
+    if (!checkWhatsAppShare()) return;
     setSharing(true);
     try {
       const [beforeBase64, afterBase64] = await Promise.all([
@@ -507,9 +496,8 @@ export default function CompletionReportPage() {
         details,
       );
       const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-      openWhatsAppUrl(waUrl, prewin);
+      openWhatsAppUrl(waUrl);
     } catch (e: any) {
-      try { prewin?.close(); } catch {}
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
