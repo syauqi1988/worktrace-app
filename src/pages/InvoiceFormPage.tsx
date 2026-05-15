@@ -254,7 +254,23 @@ export default function InvoiceFormPage() {
     setImportDismissed(true);
   };
 
-  const handleSelectJob = async (j: Job) => {
+  const handleImportVo = (vo: { id: string; vo_number: string; type: string; items: LineItem[] }) => {
+    const isDed = vo.type === 'deduction';
+    const prefix = isDed ? `[POTONGAN ${vo.vo_number}]` : `[VARIASI ${vo.vo_number}]`;
+    const voItems: LineItem[] = (Array.isArray(vo.items) ? vo.items : []).map((it: any) => ({
+      description: `${prefix} ${it.description || ''}`.trim(),
+      description_detail: it.description_detail || '',
+      qty: Number(it.qty) || 0,
+      uom: it.uom || '',
+      unit_price: isDed ? -Math.abs(Number(it.unit_price) || 0) : (Number(it.unit_price) || 0),
+    }));
+    setItems(prev => {
+      const cleaned = prev.filter(p => p.description.trim() || p.qty || p.unit_price);
+      return [...cleaned, ...voItems];
+    });
+    setImportedVoIds(prev => [...prev, vo.id]);
+  };
+
     setSelectedJob(j);
     setJobDropdownOpen(false);
     setJobSearch('');
