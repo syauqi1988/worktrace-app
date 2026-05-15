@@ -451,48 +451,53 @@ export default function CompletionReportPage() {
     if (!checkWhatsAppShare()) return;
     setSharing(true);
     try {
-      const [beforeBase64, afterBase64] = await Promise.all([
-        Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
-        Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
-      ]);
-      const pdfData = await embedPdfCompanyLogo({
-        report: {
-            report_number: reportNumber,
-            completion_date: completionDate,
-            technician_name: technicianName,
-            work_description: workDescription,
-            materials_used: materialsUsed,
-            customer_signature: customerSignature,
-            notes,
-            status: reportStatus,
-            accepted_at: acceptedAt,
-            before_photos: beforeBase64.filter(Boolean),
-            after_photos: afterBase64.filter(Boolean),
-            location_label: locationLabel || null,
-            project_ref: projectRef || null,
-            checklist: parseChecklist(checklistText),
-            photo_captions: { before: beforeCaptions, after: afterCaptions },
-          },
-          job: { job_number: job.job_number, title: job.title, category: job.category },
-          customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
-          company: {
-            company_name: profile?.company_name || null,
-            phone: profile?.phone || null,
-            address: profile?.address || null,
-            logo_url: profile?.logo_url || null,
-            logo_base64: logoBase64,
-            ssm_number_new: profile?.ssm_number_new || null,
-            ssm_number_old: profile?.ssm_number_old || null,
-          },
-      });
-      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
-      const pdfUrl = await uploadApprovalPdf({
-        bucket: 'completion-report-pdfs',
-        userId: user.id,
-        documentId: rid,
-        documentNumber: reportNumber,
-        blob,
-      });
+      let pdfUrl: string | null = null;
+      try {
+        const [beforeBase64, afterBase64] = await Promise.all([
+          Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+          Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+        ]);
+        const pdfData = await embedPdfCompanyLogo({
+          report: {
+              report_number: reportNumber,
+              completion_date: completionDate,
+              technician_name: technicianName,
+              work_description: workDescription,
+              materials_used: materialsUsed,
+              customer_signature: customerSignature,
+              notes,
+              status: reportStatus,
+              accepted_at: acceptedAt,
+              before_photos: beforeBase64.filter(Boolean),
+              after_photos: afterBase64.filter(Boolean),
+              location_label: locationLabel || null,
+              project_ref: projectRef || null,
+              checklist: parseChecklist(checklistText),
+              photo_captions: { before: beforeCaptions, after: afterCaptions },
+            },
+            job: { job_number: job.job_number, title: job.title, category: job.category },
+            customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
+            company: {
+              company_name: profile?.company_name || null,
+              phone: profile?.phone || null,
+              address: profile?.address || null,
+              logo_url: profile?.logo_url || null,
+              logo_base64: logoBase64,
+              ssm_number_new: profile?.ssm_number_new || null,
+              ssm_number_old: profile?.ssm_number_old || null,
+            },
+        });
+        const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
+        pdfUrl = await uploadApprovalPdf({
+          bucket: 'completion-report-pdfs',
+          userId: user.id,
+          documentId: rid,
+          documentNumber: reportNumber,
+          blob,
+        });
+      } catch (pdfError) {
+        console.warn('Completion report PDF generation skipped; sharing approval link only:', pdfError);
+      }
 
       const token = await getOrCreateApprovalToken({
         userId: user.id,
@@ -516,6 +521,7 @@ export default function CompletionReportPage() {
       );
       openWhatsAppUrl(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, pendingWindow);
     } catch (e: any) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error(e?.message || 'Gagal kongsi laporan');
     } finally {
       setSharing(false);
