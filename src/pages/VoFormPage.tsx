@@ -270,11 +270,7 @@ Pautan sah selama 30 hari.
 *${profile?.company_name || ''}*`;
 
       const phone = job.customers?.phone ? formatPhone(job.customers.phone) : '';
-      const waUrl = phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-        : `https://wa.me/?text=${encodeURIComponent(message)}`;
-      if (popup) popup.location.href = waUrl;
-      else window.open(waUrl, '_blank');
+      openWhatsApp(phone || undefined, message, popup);
 
       toast.success('VO dihantar');
       navigate(`/jobs/${jobId}`);
