@@ -309,6 +309,7 @@ export default function QuotationFormPage() {
                   {filteredJobs.map(j => (
                     <button key={j.id} onClick={async () => {
                       setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' }));
+                      if (!isEdit) tryAutoFillFromJob(j);
                       if (!isEdit && user) {
                         const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
                         if (existing) {
