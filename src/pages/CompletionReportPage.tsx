@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2, FileText } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
