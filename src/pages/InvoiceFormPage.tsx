@@ -271,6 +271,27 @@ export default function InvoiceFormPage() {
     setImportedVoIds(prev => [...prev, vo.id]);
   };
 
+  // Auto-import quotation when found, then auto-append any accepted VOs.
+  useEffect(() => {
+    if (isEdit) return;
+    const isDefaultEmpty = items.length === 1 && !items[0].description.trim() && !items[0].unit_price;
+    if (availableQuote && !linkedQuoteId && isDefaultEmpty) {
+      handleImportQuote();
+      toast.success(`Diisi automatik dari Sebut Harga ${availableQuote.quote_number}`);
+    }
+    // eslint-disable-next-line
+  }, [availableQuote, isEdit]);
+
+  useEffect(() => {
+    if (isEdit) return;
+    if (!availableVos.length) return;
+    const pending = availableVos.filter(v => !importedVoIds.includes(v.id));
+    if (!pending.length) return;
+    pending.forEach(handleImportVo);
+    toast.success(`${pending.length} VO/Potongan diisi automatik`);
+    // eslint-disable-next-line
+  }, [availableVos, isEdit]);
+
   const handleSelectJob = async (j: Job) => {
     setSelectedJob(j);
     setJobDropdownOpen(false);
