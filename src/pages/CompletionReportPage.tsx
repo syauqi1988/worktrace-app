@@ -14,7 +14,7 @@ import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import CompletionReportView, { ChecklistItem } from '@/components/reports/CompletionReportView';
-import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { usePlanGate } from '@/hooks/usePlanGate';
@@ -360,9 +360,8 @@ export default function CompletionReportPage() {
         Promise.all(afterPhotos.map(url => imageUrlToBase64(url))),
       ]);
 
-      const blob = await pdf(
-        <CompletionReportPDF
-          report={{
+      const pdfData = await embedPdfCompanyLogo({
+        report: {
             report_number: reportNumber,
             completion_date: completionDate,
             technician_name: technicianName,
@@ -378,19 +377,20 @@ export default function CompletionReportPage() {
             project_ref: projectRef || null,
             checklist: parseChecklist(checklistText),
             photo_captions: { before: beforeCaptions, after: afterCaptions },
-          }}
-          job={job ? { job_number: job.job_number, title: job.title, category: job.category } : null}
-          customer={job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null}
-          company={{
+          },
+          job: job ? { job_number: job.job_number, title: job.title, category: job.category } : null,
+          customer: job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null,
+          company: {
             company_name: profile?.company_name || null,
             phone: profile?.phone || null,
             address: profile?.address || null,
+            logo_url: profile?.logo_url || null,
             logo_base64: logoBase64,
             ssm_number_new: profile?.ssm_number_new || null,
             ssm_number_old: profile?.ssm_number_old || null,
-          }}
-        />
-      ).toBlob();
+          },
+      });
+      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error('Gagal menjana pratonton');
@@ -422,9 +422,8 @@ export default function CompletionReportPage() {
         Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
         Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
       ]);
-      const blob = await pdf(
-        <CompletionReportPDF
-          report={{
+      const pdfData = await embedPdfCompanyLogo({
+        report: {
             report_number: reportNumber,
             completion_date: completionDate,
             technician_name: technicianName,
@@ -440,19 +439,20 @@ export default function CompletionReportPage() {
             project_ref: projectRef || null,
             checklist: parseChecklist(checklistText),
             photo_captions: { before: beforeCaptions, after: afterCaptions },
-          }}
-          job={{ job_number: job.job_number, title: job.title, category: job.category }}
-          customer={{ name: job.customers.name, phone: job.customers.phone, address: job.customers.address }}
-          company={{
+          },
+          job: { job_number: job.job_number, title: job.title, category: job.category },
+          customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
+          company: {
             company_name: profile?.company_name || null,
             phone: profile?.phone || null,
             address: profile?.address || null,
+            logo_url: profile?.logo_url || null,
             logo_base64: logoBase64,
             ssm_number_new: profile?.ssm_number_new || null,
             ssm_number_old: profile?.ssm_number_old || null,
-          }}
-        />
-      ).toBlob();
+          },
+      });
+      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
       const fileName = `${user.id}/${reportNumber}.pdf`;
       await supabase.storage.from('completion-report-pdfs').upload(fileName, blob, {
         contentType: 'application/pdf',

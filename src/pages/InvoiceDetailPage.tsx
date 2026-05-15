@@ -17,11 +17,11 @@ import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
   MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown, Receipt as ReceiptIcon
 } from 'lucide-react';
-import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
 import ReceiptPDF from '@/components/pdf/ReceiptPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
-import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreatePaymentProofToken, buildPublicPaymentProofUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
@@ -108,7 +108,7 @@ export default function InvoiceDetailPage() {
   const [verifyingProof, setVerifyingProof] = useState(false);
   const [rejectProofOpen, setRejectProofOpen] = useState(false);
   const [proofRejectReason, setProofRejectReason] = useState('');
-  const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+  const { checkWhatsAppShare, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -144,6 +144,8 @@ export default function InvoiceDetailPage() {
   useEffect(() => {
     if (profile?.logo_url) {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    } else {
+      setLogoBase64('');
     }
   }, [profile?.logo_url]);
 
@@ -319,8 +321,8 @@ export default function InvoiceDetailPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_url: canShowLogo ? (profile?.logo_url || null) : null,
-      logo_base64: canShowLogo ? logoBase64 : '',
+      logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
       lhdn_enabled: profile?.lhdn_enabled,
       tin_number: profile?.tin_number,
       msic_code: profile?.msic_code,
@@ -352,7 +354,8 @@ export default function InvoiceDetailPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_base64: canShowLogo ? logoBase64 : '',
+      logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
       ssm_number_new: profile?.ssm_number_new || null,
       ssm_number_old: profile?.ssm_number_old || null,
     },
@@ -365,7 +368,8 @@ export default function InvoiceDetailPage() {
     setPreviewLoading(true);
     setPreviewUrl(null);
     try {
-      const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+      const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+      const blob = await pdf(<InvoicePDF {...pdfWithLogo} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error(t('invoiceDetail.previewFailed'));
@@ -383,7 +387,8 @@ export default function InvoiceDetailPage() {
 
   const handlePreviewDownload = async () => {
     if (!pdfData || !invoice) return;
-    const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+    const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+    const blob = await pdf(<InvoicePDF {...pdfWithLogo} />).toBlob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -399,7 +404,8 @@ export default function InvoiceDetailPage() {
     setReceiptPreviewLoading(true);
     setReceiptPreviewUrl(null);
     try {
-      const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
+      const receiptWithLogo = await embedPdfCompanyLogo(receiptPdfData);
+      const blob = await pdf(<ReceiptPDF {...receiptWithLogo} />).toBlob();
       setReceiptPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error(t('invoiceDetail.receiptPreviewFailed'));
@@ -417,7 +423,8 @@ export default function InvoiceDetailPage() {
 
   const handleReceiptDownload = async () => {
     if (!receiptPdfData || !invoice) return;
-    const blob = await pdf(<ReceiptPDF {...receiptPdfData} />).toBlob();
+    const receiptWithLogo = await embedPdfCompanyLogo(receiptPdfData);
+    const blob = await pdf(<ReceiptPDF {...receiptWithLogo} />).toBlob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -428,7 +435,8 @@ export default function InvoiceDetailPage() {
 
   const shareReceiptWhatsAppCore = async (inv: Invoice, receiptData: any) => {
     if (!user || !customerPhone) return;
-    const blob = await pdf(<ReceiptPDF {...receiptData} />).toBlob();
+    const receiptWithLogo = await embedPdfCompanyLogo(receiptData);
+    const blob = await pdf(<ReceiptPDF {...receiptWithLogo} />).toBlob();
     const fileName = `${user.id}/${inv.receipt_number}.pdf`;
     await supabase.storage.from('receipts').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
     const { data: signed } = await supabase.storage.from('receipts').createSignedUrl(fileName, 60 * 60 * 24 * 365);
@@ -490,7 +498,8 @@ export default function InvoiceDetailPage() {
   // Returns both URLs so any WhatsApp action can include them.
   const prepareInvoiceLinks = async (): Promise<{ pdfUrl: string; proofUrl: string }> => {
     if (!invoice || !user || !pdfData) return { pdfUrl: '', proofUrl: '' };
-    const blob = await pdf(<InvoicePDF {...pdfData} />).toBlob();
+    const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+    const blob = await pdf(<InvoicePDF {...pdfWithLogo} />).toBlob();
     const fileName = `${user.id}/${invoice.invoice_number}.pdf`;
     await supabase.storage.from('invoice-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
     const { data: signed } = await supabase.storage.from('invoice-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
@@ -606,7 +615,8 @@ export default function InvoiceDetailPage() {
             company_name: profile?.company_name || null,
             phone: profile?.phone || null,
             address: profile?.address || null,
-            logo_base64: canShowLogo ? logoBase64 : '',
+            logo_url: profile?.logo_url || null,
+            logo_base64: logoBase64,
             ssm_number_new: profile?.ssm_number_new || null,
             ssm_number_old: profile?.ssm_number_old || null,
           },
@@ -1071,13 +1081,9 @@ export default function InvoiceDetailPage() {
             <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
               <Eye className="h-4 w-4" /> {t('invoiceDetail.previewPdf')}
             </Button>
-            <PDFDownloadLink document={<InvoicePDF {...pdfData} />} fileName={`Invois-${invoice.invoice_number}.pdf`}>
-              {({ loading: pdfLoading }) => (
-                <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                  <Download className="h-4 w-4" /> {pdfLoading ? t('invoiceDetail.generating') : t('invoiceDetail.downloadPdf')}
-                </Button>
-              )}
-            </PDFDownloadLink>
+            <Button variant="outline" onClick={handlePreviewDownload} className="w-full rounded-lg gap-2 text-primary border-primary/30">
+              <Download className="h-4 w-4" /> {t('invoiceDetail.downloadPdf')}
+            </Button>
           </>
         )}
       </div>

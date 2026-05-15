@@ -5,6 +5,7 @@ export interface MonthlySummaryData {
   company: {
     name: string;
     logo_url?: string | null;
+    logo_base64?: string | null;
     address?: string | null;
     phone?: string | null;
     email?: string | null;
@@ -20,14 +21,16 @@ export interface MonthlySummaryData {
 }
 
 export default function CompletionSummaryReportPDF({ data }: { data: MonthlySummaryData }) {
+  const logo = data.company.logo_base64 || data.company.logo_url;
+
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
         {/* Header */}
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeftRow}>
-            {data.company.logo_url && (
-              <Image src={data.company.logo_url} style={pdfStyles.logo} />
+            {logo && (
+              <Image src={logo} style={pdfStyles.logo} />
             )}
             <View style={pdfStyles.companyBlock}>
               <Text style={pdfStyles.companyName}>{data.company.name}</Text>

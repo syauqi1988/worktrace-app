@@ -117,7 +117,7 @@ export default function JobDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [logoBase64, setLogoBase64] = useState('');
-  const { checkWhatsAppShare, canShowLogo } = usePlanGate();
+  const { checkWhatsAppShare } = usePlanGate();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -163,6 +163,8 @@ export default function JobDetailPage() {
   useEffect(() => {
     if (profile?.logo_url) {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    } else {
+      setLogoBase64('');
     }
   }, [profile?.logo_url]);
 
@@ -211,7 +213,8 @@ export default function JobDetailPage() {
             company_name: profile?.company_name || null,
             phone: profile?.phone || null,
             address: profile?.address || null,
-            logo_base64: canShowLogo ? logoBase64 : '',
+            logo_url: profile?.logo_url || null,
+            logo_base64: logoBase64,
             ssm_number_new: profile?.ssm_number_new || null,
             ssm_number_old: profile?.ssm_number_old || null,
           }}
@@ -244,7 +247,8 @@ export default function JobDetailPage() {
             company_name: profile?.company_name || null,
             phone: profile?.phone || null,
             address: profile?.address || null,
-            logo_base64: canShowLogo ? logoBase64 : '',
+            logo_url: profile?.logo_url || null,
+            logo_base64: logoBase64,
             ssm_number_new: profile?.ssm_number_new || null,
             ssm_number_old: profile?.ssm_number_old || null,
           }}

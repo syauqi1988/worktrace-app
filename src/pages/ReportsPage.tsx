@@ -9,6 +9,7 @@ import { pdf } from '@react-pdf/renderer';
 import MonthlySummaryReportPDF, { MonthlySummaryData } from '@/components/pdf/MonthlySummaryReportPDF';
 import { toast } from 'sonner';
 import { getDateLocale } from '@/i18n';
+import { embedPdfCompanyLogo } from '@/utils/imageToBase64';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, Legend,
@@ -299,7 +300,8 @@ export default function ReportsPage() {
         topCustomers: data.topCustomers.map(c => ({ name: c.name, amount: c.revenue, count: c.jobs })),
         byCategory: data.jobsByCategory,
       };
-      const blob = await pdf(<MonthlySummaryReportPDF data={pdfData} />).toBlob();
+      const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+      const blob = await pdf(<MonthlySummaryReportPDF data={pdfWithLogo} />).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

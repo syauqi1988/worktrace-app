@@ -12,11 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2, Eye, AlertTriangle, X, ChevronDown } from 'lucide-react';
-import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import QuotationPDF from '@/components/pdf/QuotationPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { imageUrlToBase64 } from '@/utils/imageToBase64';
+import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement } from '@/utils/generateDocNumber';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl } from '@/lib/approvals';
@@ -88,7 +88,7 @@ export default function QuotationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
-  const { checkWhatsAppShare, canShowLogo, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
+  const { checkWhatsAppShare, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -117,6 +117,8 @@ export default function QuotationDetailPage() {
   useEffect(() => {
     if (profile?.logo_url) {
       imageUrlToBase64(profile.logo_url).then(setLogoBase64);
+    } else {
+      setLogoBase64('');
     }
   }, [profile?.logo_url]);
 
@@ -257,8 +259,8 @@ export default function QuotationDetailPage() {
       company_name: profile?.company_name || null,
       phone: profile?.phone || null,
       address: profile?.address || null,
-      logo_url: canShowLogo ? (profile?.logo_url || null) : null,
-      logo_base64: canShowLogo ? logoBase64 : '',
+      logo_url: profile?.logo_url || null,
+      logo_base64: logoBase64,
       ssm_number_new: profile?.ssm_number_new || null,
       ssm_number_old: profile?.ssm_number_old || null,
     },
@@ -282,7 +284,8 @@ export default function QuotationDetailPage() {
     if (!quotation || !pdfData || !user || !hasPhone) return;
     setIsSharing(true);
     try {
-      const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+      const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+      const blob = await pdf(<QuotationPDF {...pdfWithLogo} />).toBlob();
       const fileName = `${user.id}/${quotation.quote_number}.pdf`;
       await supabase.storage.from('quotation-pdfs').upload(fileName, blob, { contentType: 'application/pdf', upsert: true });
       const { data: signed } = await supabase.storage.from('quotation-pdfs').createSignedUrl(fileName, 60 * 60 * 24 * 365);
@@ -337,7 +340,8 @@ export default function QuotationDetailPage() {
     setPreviewLoading(true);
     setPreviewUrl(null);
     try {
-      const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+      const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+      const blob = await pdf(<QuotationPDF {...pdfWithLogo} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       toast.error(t('quotationDetail.previewFailed'));
@@ -355,7 +359,8 @@ export default function QuotationDetailPage() {
 
   const handlePreviewDownload = async () => {
     if (!pdfData || !quotation) return;
-    const blob = await pdf(<QuotationPDF {...pdfData} />).toBlob();
+    const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+    const blob = await pdf(<QuotationPDF {...pdfWithLogo} />).toBlob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -571,13 +576,9 @@ export default function QuotationDetailPage() {
             <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
               <Eye className="h-4 w-4" /> {t('quotationDetail.previewPdf')}
             </Button>
-            <PDFDownloadLink document={<QuotationPDF {...pdfData} />} fileName={`SebuthHarga-${quotation.quote_number}.pdf`}>
-              {({ loading: pdfLoading }) => (
-                <Button variant="outline" className="w-full rounded-lg gap-2 text-primary border-primary/30" disabled={pdfLoading}>
-                  <Download className="h-4 w-4" /> {pdfLoading ? t('quotationDetail.generating') : t('quotationDetail.downloadPdf')}
-                </Button>
-              )}
-            </PDFDownloadLink>
+            <Button variant="outline" onClick={handlePreviewDownload} className="w-full rounded-lg gap-2 text-primary border-primary/30">
+              <Download className="h-4 w-4" /> {t('quotationDetail.downloadPdf')}
+            </Button>
           </>
         )}
       </div>

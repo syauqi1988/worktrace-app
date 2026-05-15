@@ -6,6 +6,7 @@
  */
 export const imageUrlToBase64 = async (url: string): Promise<string> => {
   if (!url) return '';
+  if (url.startsWith('data:')) return url;
   // Cache-bust via query param instead of Cache-Control header (no preflight).
   const busted = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
 
@@ -58,4 +59,22 @@ export const imageUrlToBase64 = async (url: string): Promise<string> => {
     console.error('imageUrlToBase64 failed completely:', err);
     return '';
   }
+};
+
+type PdfCompanyLogo = {
+  logo_url?: string | null;
+  logo_base64?: string | null;
+};
+
+export const embedPdfCompanyLogo = async <T extends { company: PdfCompanyLogo }>(data: T): Promise<T> => {
+  if (data.company.logo_base64 || !data.company.logo_url) return data;
+  const logoBase64 = await imageUrlToBase64(data.company.logo_url);
+  if (!logoBase64) return data;
+  return {
+    ...data,
+    company: {
+      ...data.company,
+      logo_base64: logoBase64,
+    },
+  };
 };
