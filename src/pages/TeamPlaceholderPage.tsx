@@ -21,9 +21,9 @@ export default function TeamPlaceholderPage() {
             variant="outline"
             className="rounded-lg"
             onClick={() =>
-              window.open(
-                "https://wa.me/60129600016?text=Saya+berminat+dengan+ciri+multi-pengguna+WorkTrace+Agency",
-                "_blank",
+              openWhatsApp(
+                "60129600016",
+                "Saya berminat dengan ciri multi-pengguna WorkTrace Agency",
               )
             }
           >
