@@ -627,7 +627,25 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      {/* Related Invoice */}
+      {/* Financial Summary */}
+      {report?.status === 'accepted' && quotation && (() => {
+        const quoteTotal = Number(quotation.total) || 0;
+        const additions = vos.filter(v => v.type === 'addition' && v.status === 'Accepted').reduce((s, v) => s + (Number(v.total) || 0), 0);
+        const deductions = vos.filter(v => v.type === 'deduction' && v.status === 'Accepted').reduce((s, v) => s + (Number(v.total) || 0), 0);
+        const finalTotal = quoteTotal + additions - deductions;
+        return (
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ringkasan Kewangan</p>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Sebut Harga Asal</span><span>RM {quoteTotal.toFixed(2)}</span></div>
+              {additions > 0 && <div className="flex justify-between"><span className="text-blue-700">+ Variasi</span><span className="text-blue-700">+RM {additions.toFixed(2)}</span></div>}
+              {deductions > 0 && <div className="flex justify-between"><span className="text-red-700">− Potongan</span><span className="text-red-700">−RM {deductions.toFixed(2)}</span></div>}
+              <div className="flex justify-between border-t border-border pt-2 mt-2 font-bold"><span>Jumlah Akhir</span><span className="text-primary">RM {finalTotal.toFixed(2)}</span></div>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
           <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.invoice')}

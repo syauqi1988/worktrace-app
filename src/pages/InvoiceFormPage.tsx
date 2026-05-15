@@ -85,6 +85,10 @@ export default function InvoiceFormPage() {
   const [availableQuote, setAvailableQuote] = useState<{ id: string; quote_number: string; items: LineItem[]; subtotal: number; discount: number; tax_rate: number; total: number } | null>(null);
   const [importDismissed, setImportDismissed] = useState(false);
 
+  // VO import
+  const [availableVos, setAvailableVos] = useState<Array<{ id: string; vo_number: string; type: string; items: LineItem[] }>>([]);
+  const [importedVoIds, setImportedVoIds] = useState<string[]>([]);
+
   // Check completion report for job
   const checkCompletionReport = async (jobId: string) => {
     if (!user) return;
@@ -105,7 +109,14 @@ export default function InvoiceFormPage() {
     }
   };
 
-  // Fetch jobs
+  const fetchAvailableVos = async (jobId: string) => {
+    if (!user) return;
+    const { data } = await (supabase as any).from('variation_orders')
+      .select('id, vo_number, type, items')
+      .eq('job_id', jobId).eq('user_id', user.id).eq('status', 'Accepted');
+    setAvailableVos((data as any) || []);
+  };
+
   useEffect(() => {
     if (!user) return;
     supabase.from('jobs').select('id, job_number, title, customer_id, customers(name, phone, tin_number)').order('created_at', { ascending: false })
@@ -145,6 +156,7 @@ export default function InvoiceFormPage() {
           });
         // Check completion report
         checkCompletionReport(jobId);
+        fetchAvailableVos(jobId);
       }
     }
   }, [searchParams, jobs, selectedJob, user, isEdit]);
@@ -242,6 +254,23 @@ export default function InvoiceFormPage() {
     setImportDismissed(true);
   };
 
+  const handleImportVo = (vo: { id: string; vo_number: string; type: string; items: LineItem[] }) => {
+    const isDed = vo.type === 'deduction';
+    const prefix = isDed ? `[POTONGAN ${vo.vo_number}]` : `[VARIASI ${vo.vo_number}]`;
+    const voItems: LineItem[] = (Array.isArray(vo.items) ? vo.items : []).map((it: any) => ({
+      description: `${prefix} ${it.description || ''}`.trim(),
+      description_detail: it.description_detail || '',
+      qty: Number(it.qty) || 0,
+      uom: it.uom || '',
+      unit_price: isDed ? -Math.abs(Number(it.unit_price) || 0) : (Number(it.unit_price) || 0),
+    }));
+    setItems(prev => {
+      const cleaned = prev.filter(p => p.description.trim() || p.qty || p.unit_price);
+      return [...cleaned, ...voItems];
+    });
+    setImportedVoIds(prev => [...prev, vo.id]);
+  };
+
   const handleSelectJob = async (j: Job) => {
     setSelectedJob(j);
     setJobDropdownOpen(false);
@@ -265,6 +294,7 @@ export default function InvoiceFormPage() {
       else { setAvailableQuote(null); }
       // Check completion report
       await checkCompletionReport(j.id);
+      await fetchAvailableVos(j.id);
     }
   };
 
@@ -469,7 +499,32 @@ export default function InvoiceFormPage() {
         </div>
       )}
 
-      {/* Line Items */}
+      {/* Import accepted VOs / Deductions */}
+      {!isEdit && availableVos.filter(v => !importedVoIds.includes(v.id)).length > 0 && (
+        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-[#B45309]" />
+            <p className="text-sm font-medium text-[#B45309]">
+              Variation Order / Potongan diterima sedia untuk diimport.
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            {availableVos.filter(v => !importedVoIds.includes(v.id)).map(v => (
+              <div key={v.id} className="flex items-center justify-between gap-2 bg-card rounded-lg p-2 border border-[#FDE68A]">
+                <div className="text-sm">
+                  <span className="font-bold text-primary">{v.vo_number}</span>
+                  <span className={`ml-2 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${v.type === 'deduction' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                    {v.type === 'deduction' ? 'Potongan' : 'Variasi'}
+                  </span>
+                </div>
+                <Button size="sm" onClick={() => handleImportVo(v)} className="rounded-lg text-xs h-7">Import</Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
       <div className="space-y-3">
         <Label>{t('workOrderForm.items')} *</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
