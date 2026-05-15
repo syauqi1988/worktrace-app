@@ -520,7 +520,7 @@ export default function CompletionReportPage() {
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      openWhatsAppUrl(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, pendingWindow);
+      openWhatsApp(phone, msg, pendingWindow);
     } catch (e: any) {
       if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error(e?.message || 'Gagal kongsi laporan');
