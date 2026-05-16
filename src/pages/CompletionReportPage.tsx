@@ -445,7 +445,7 @@ export default function CompletionReportPage() {
     }
     if (!job.customers?.phone) {
       if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
-      toast.error('Pelanggan tiada nombor telefon');
+      toast.error(t('completionReport.noPhone'));
       return;
     }
     if (!checkWhatsAppShare()) {
