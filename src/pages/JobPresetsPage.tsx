@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Briefcase, Plus, Search, Edit2, Trash2, Tag, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
+import { getDateLocale } from '@/i18n';
 
 const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 
@@ -65,6 +67,7 @@ const emptyForm: FormState = {
 };
 
 export default function JobPresetsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [items, setItems] = useState<Preset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,8 +130,8 @@ export default function JobPresetsPage() {
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = 'Nama preset diperlukan';
-    if (!form.title.trim()) e.title = 'Tajuk kerja diperlukan';
+    if (!form.name.trim()) e.name = t('jobPresets.errNameRequired');
+    if (!form.title.trim()) e.title = t('jobPresets.errTitleRequired');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -152,7 +155,7 @@ export default function JobPresetsPage() {
     const { error } = await q;
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('✓ Preset berjaya disimpan');
+    toast.success(t('jobPresets.savedToast'));
     setOpen(false);
     load();
   };
@@ -161,7 +164,7 @@ export default function JobPresetsPage() {
     if (!confirmDelete) return;
     const { error } = await supabase.from('job_presets' as any).delete().eq('id', confirmDelete.id);
     if (error) { toast.error(error.message); return; }
-    toast.success('Preset telah dipadam');
+    toast.success(t('jobPresets.deletedToast'));
     setConfirmDelete(null);
     load();
   };
@@ -172,33 +175,31 @@ export default function JobPresetsPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
             <Briefcase className="h-6 w-6 text-primary" />
-            Preset Kerja
+            {t('jobPresets.title')}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Senarai template kerja yang biasa dilakukan — pilih semasa cipta job baharu untuk auto-isi
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t('jobPresets.subtitle')}</p>
         </div>
         <Button onClick={openCreate} className="rounded-lg">
-          <Plus className="h-4 w-4 mr-1" /> Tambah Preset
+          <Plus className="h-4 w-4 mr-1" /> {t('jobPresets.addPreset')}
         </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Jumlah Preset" value={stats.total} />
-        <StatCard label="Aktif" value={stats.active} />
-        <StatCard label="Kategori" value={stats.cats} />
-        <StatCard label="Terbaru" value={stats.latest ? new Date(stats.latest).toLocaleDateString('ms-MY') : '—'} />
+        <StatCard label={t('jobPresets.totalPresets')} value={stats.total} />
+        <StatCard label={t('jobPresets.active')} value={stats.active} />
+        <StatCard label={t('jobPresets.categories')} value={stats.cats} />
+        <StatCard label={t('jobPresets.latest')} value={stats.latest ? new Date(stats.latest).toLocaleDateString(getDateLocale()) : '—'} />
       </div>
 
       <div className="bg-card border border-border rounded-xl p-3 flex flex-wrap gap-2 items-center">
         <div className="relative flex-1 min-w-[220px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama preset, tajuk..." className="pl-9" />
+            placeholder={t('jobPresets.searchPlaceholder')} className="pl-9" />
         </div>
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
           className="h-10 px-3 rounded-md border border-input bg-background text-sm">
-          <option value="">Semua Kategori</option>
+          <option value="">{t('jobPresets.allCategories')}</option>
           {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <div className="flex rounded-lg border border-border overflow-hidden">
@@ -207,19 +208,19 @@ export default function JobPresetsPage() {
               className={`px-3 py-2 text-xs font-medium ${
                 statusFilter === s ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground hover:bg-accent'
               }`}>
-              {s === 'all' ? 'Semua' : s === 'active' ? 'Aktif' : 'Tidak Aktif'}
+              {s === 'all' ? t('jobPresets.all') : s === 'active' ? t('jobPresets.active') : t('jobPresets.inactive')}
             </button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Memuatkan...</p>
+        <p className="text-sm text-muted-foreground">{t('jobPresets.loading')}</p>
       ) : filtered.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-10 text-center">
           <Briefcase className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm text-muted-foreground">
-            {items.length === 0 ? 'Belum ada preset. Klik "Tambah Preset" untuk mula.' : 'Tiada preset yang sepadan.'}
+            {items.length === 0 ? t('jobPresets.emptyFirst') : t('jobPresets.emptyFiltered')}
           </p>
         </div>
       ) : (
@@ -232,23 +233,23 @@ export default function JobPresetsPage() {
                   <Tag className="inline h-2.5 w-2.5 mr-1" />{p.category}
                 </span>
                 {!p.is_active && (
-                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">tidak aktif</span>
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('jobPresets.inactiveTag')}</span>
                 )}
               </div>
               <h3 className="text-base font-semibold text-foreground leading-tight">{p.name}</h3>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-1">Tajuk: {p.title}</p>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{t('jobPresets.titleLabel')} {p.title}</p>
               {p.description && (
                 <p className="text-xs text-muted-foreground mt-2 line-clamp-2 whitespace-pre-line">{p.description}</p>
               )}
               <div className="border-t border-border my-3" />
               <div className="flex gap-2 mt-auto">
                 <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(p)}>
-                  <Edit2 className="h-3.5 w-3.5 mr-1" /> Edit
+                  <Edit2 className="h-3.5 w-3.5 mr-1" /> {t('jobPresets.edit')}
                 </Button>
                 <Button size="sm" variant="outline"
                   className="flex-1 text-destructive hover:text-destructive"
                   onClick={() => setConfirmDelete(p)}>
-                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Padam
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> {t('jobPresets.delete')}
                 </Button>
               </div>
             </div>
@@ -259,25 +260,25 @@ export default function JobPresetsPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{form.id ? 'Edit Preset Kerja' : 'Tambah Preset Kerja'}</DialogTitle>
+            <DialogTitle>{form.id ? t('jobPresets.editTitle') : t('jobPresets.addTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Nama Preset *</Label>
+              <Label>{t('jobPresets.presetNameLabel')}</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="cth: Servis Aircond Rumah" aria-invalid={!!errors.name} />
-              <p className="text-[11px] text-muted-foreground">Label untuk pilih dalam dropdown</p>
+                placeholder={t('jobPresets.presetNamePlaceholder')} aria-invalid={!!errors.name} />
+              <p className="text-[11px] text-muted-foreground">{t('jobPresets.presetNameHint')}</p>
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Tajuk Kerja *</Label>
+                <Label>{t('jobPresets.jobTitleLabel')}</Label>
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="cth: Servis & Cuci Aircond" aria-invalid={!!errors.title} />
+                  placeholder={t('jobPresets.jobTitlePlaceholder')} aria-invalid={!!errors.title} />
                 {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label>Kategori</Label>
+                <Label>{t('jobPresets.categoryLabel')}</Label>
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -287,33 +288,33 @@ export default function JobPresetsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Keterangan (opsional)</Label>
+              <Label>{t('jobPresets.descriptionLabel')}</Label>
               <Textarea rows={3} value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Skop kerja yang biasa dilakukan..." />
+                placeholder={t('jobPresets.descriptionPlaceholder')} />
             </div>
             <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item</Label>
-              <p className="text-[11px] text-muted-foreground -mt-1">Produk yang dipilih akan auto-isi ke sebut harga apabila kerja dicipta.</p>
+              <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> {t('jobPresets.productsLabel')}</Label>
+              <p className="text-[11px] text-muted-foreground -mt-1">{t('jobPresets.productsHint')}</p>
               <JobProductsEditor items={form.products} onChange={(p) => setForm({ ...form, products: p })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Nota Dalaman (opsional)</Label>
+              <Label>{t('jobPresets.notesLabel')}</Label>
               <Textarea rows={2} value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder="Nota untuk rujukan dalaman..." />
+                placeholder={t('jobPresets.notesPlaceholder')} />
             </div>
             <div className="flex items-center justify-between bg-muted/40 border border-border rounded-lg p-3">
               <div>
-                <p className="text-sm font-medium">Preset Aktif</p>
-                <p className="text-xs text-muted-foreground">Preset tidak aktif tidak akan muncul dalam dropdown</p>
+                <p className="text-sm font-medium">{t('jobPresets.activeToggle')}</p>
+                <p className="text-xs text-muted-foreground">{t('jobPresets.activeToggleHint')}</p>
               </div>
               <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>Batal</Button>
-            <Button onClick={save} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Preset'}</Button>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>{t('jobPresets.cancel')}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? t('jobPresets.saving') : t('jobPresets.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -321,14 +322,14 @@ export default function JobPresetsPage() {
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Padam preset?</AlertDialogTitle>
+            <AlertDialogTitle>{t('jobPresets.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Preset "{confirmDelete?.name}" akan dipadam. Tindakan ini tidak boleh dibuat asal.
+              {t('jobPresets.deleteDesc', { name: confirmDelete?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={doDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Padam</AlertDialogAction>
+            <AlertDialogCancel>{t('jobPresets.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={doDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t('jobPresets.deleteConfirm')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

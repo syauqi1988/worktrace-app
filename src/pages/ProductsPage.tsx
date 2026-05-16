@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/popover';
 import { Package, Plus, Search, Edit2, Trash2, Tag, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { getDateLocale } from '@/i18n';
 
 type Product = {
   id: string;
@@ -33,41 +35,10 @@ type Product = {
   updated_at: string;
 };
 
-const UOM_GROUPS: { label: string; items: { value: string; hint: string }[] }[] = [
-  {
-    label: 'Perkhidmatan & Masa',
-    items: [
-      { value: 'unit', hint: 'unit tunggal' },
-      { value: 'jam', hint: 'per jam' },
-      { value: 'hari', hint: 'per hari' },
-      { value: 'trip', hint: 'per kunjungan' },
-      { value: 'kontrak', hint: 'pakej kontrak' },
-    ],
-  },
-  {
-    label: 'Ukuran Fizikal',
-    items: [
-      { value: 'meter', hint: 'meter linear' },
-      { value: 'kaki', hint: 'kaki linear' },
-      { value: 'm²', hint: 'meter persegi' },
-      { value: 'kaki²', hint: 'kaki persegi' },
-      { value: 'kg', hint: 'kilogram' },
-      { value: 'tan', hint: 'tan metrik' },
-    ],
-  },
-  {
-    label: 'Pembungkusan',
-    items: [
-      { value: 'set', hint: 'satu set' },
-      { value: 'lot', hint: 'satu lot' },
-      { value: 'pasang', hint: 'per pasang' },
-      { value: 'kotak', hint: 'per kotak' },
-      { value: 'beg', hint: 'per beg' },
-      { value: 'tin', hint: 'per tin' },
-      { value: 'roll', hint: 'per roll' },
-      { value: 'helai', hint: 'per helai' },
-    ],
-  },
+const UOM_GROUP_DEFS: { key: 'service' | 'physical' | 'packaging'; items: string[] }[] = [
+  { key: 'service', items: ['unit', 'jam', 'hari', 'trip', 'kontrak'] },
+  { key: 'physical', items: ['meter', 'kaki', 'm²', 'kaki²', 'kg', 'tan'] },
+  { key: 'packaging', items: ['set', 'lot', 'pasang', 'kotak', 'beg', 'tin', 'roll', 'helai'] },
 ];
 
 const CATEGORY_PALETTE = [
@@ -108,6 +79,7 @@ const emptyForm: FormState = {
 };
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,10 +156,10 @@ export default function ProductsPage() {
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = 'Nama produk diperlukan';
+    if (!form.name.trim()) e.name = t('products.errName');
     if (form.unit_price === '' || isNaN(Number(form.unit_price)) || Number(form.unit_price) < 0)
-      e.unit_price = 'Harga diperlukan';
-    if (!form.uom.trim()) e.uom = 'UOM diperlukan';
+      e.unit_price = t('products.errPrice');
+    if (!form.uom.trim()) e.uom = t('products.errUom');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -212,7 +184,7 @@ export default function ProductsPage() {
     const { error } = await q;
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success('✓ Produk berjaya disimpan');
+    toast.success(t('products.savedToast'));
     setOpen(false);
     load();
   };
@@ -224,7 +196,7 @@ export default function ProductsPage() {
       .update({ is_active: false })
       .eq('id', confirmDelete.id);
     if (error) { toast.error(error.message); return; }
-    toast.success('Produk telah dipadam');
+    toast.success(t('products.deletedToast'));
     setConfirmDelete(null);
     load();
   };
@@ -235,36 +207,32 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
             <Package className="h-6 w-6 text-primary" />
-            Katalog Produk &amp; Perkhidmatan
+            {t('products.title')}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Senarai item dan perkhidmatan yang boleh dipilih dalam Sebut Harga dan Invois
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t('products.subtitle')}</p>
         </div>
         <Button onClick={openCreate} className="rounded-lg">
-          <Plus className="h-4 w-4 mr-1" /> Tambah Produk
+          <Plus className="h-4 w-4 mr-1" /> {t('products.add')}
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Jumlah Produk" value={stats.total} />
-        <StatCard label="Aktif" value={stats.active} />
-        <StatCard label="Kategori" value={stats.cats} />
+        <StatCard label={t('products.total')} value={stats.total} />
+        <StatCard label={t('products.active')} value={stats.active} />
+        <StatCard label={t('products.categories')} value={stats.cats} />
         <StatCard
-          label="Terbaru"
-          value={stats.latest ? new Date(stats.latest).toLocaleDateString('ms-MY') : '—'}
+          label={t('products.latest')}
+          value={stats.latest ? new Date(stats.latest).toLocaleDateString(getDateLocale()) : '—'}
         />
       </div>
 
-      {/* Filters */}
       <div className="bg-card border border-border rounded-xl p-3 flex flex-wrap gap-2 items-center">
         <div className="relative flex-1 min-w-[220px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama, kod, atau kategori..."
+            placeholder={t('products.searchPlaceholder')}
             className="pl-9"
           />
         </div>
@@ -273,9 +241,9 @@ export default function ProductsPage() {
           onChange={(e) => setCategoryFilter(e.target.value)}
           className="h-10 px-3 rounded-md border border-input bg-background text-sm"
         >
-          <option value="">Semua Kategori</option>
+          <option value="">{t('products.allCategories')}</option>
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          <option value="__none__">Tidak Berkategori</option>
+          <option value="__none__">{t('products.uncategorized')}</option>
         </select>
         <div className="flex rounded-lg border border-border overflow-hidden">
           {(['all', 'active', 'inactive'] as const).map((s) => (
@@ -286,22 +254,19 @@ export default function ProductsPage() {
                 statusFilter === s ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground hover:bg-accent'
               }`}
             >
-              {s === 'all' ? 'Semua' : s === 'active' ? 'Aktif' : 'Tidak Aktif'}
+              {s === 'all' ? t('products.all') : s === 'active' ? t('products.active') : t('products.inactive')}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Grid */}
       {loading ? (
-        <p className="text-sm text-muted-foreground">Memuatkan...</p>
+        <p className="text-sm text-muted-foreground">{t('products.loading')}</p>
       ) : filtered.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-10 text-center">
           <Package className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm text-muted-foreground">
-            {items.length === 0
-              ? 'Belum ada produk. Klik "Tambah Produk" untuk mula.'
-              : 'Tiada produk yang sepadan dengan tapisan.'}
+            {items.length === 0 ? t('products.emptyFirst') : t('products.emptyFiltered')}
           </p>
         </div>
       ) : (
@@ -314,7 +279,7 @@ export default function ProductsPage() {
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${categoryClasses(p.category)}`}>
                   <Tag className="inline h-2.5 w-2.5 mr-1" />
-                  {p.category || 'Umum'}
+                  {p.category || t('products.general')}
                 </span>
                 {p.code && (
                   <span className="text-[10px] font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded">
@@ -326,7 +291,7 @@ export default function ProductsPage() {
               <h3 className="text-base font-semibold text-foreground leading-tight">
                 {p.name}
                 {!p.is_active && (
-                  <span className="ml-2 text-[10px] uppercase tracking-wide text-muted-foreground">(tidak aktif)</span>
+                  <span className="ml-2 text-[10px] uppercase tracking-wide text-muted-foreground">{t('products.inactiveTag')}</span>
                 )}
               </h3>
               {p.description && (
@@ -344,7 +309,7 @@ export default function ProductsPage() {
 
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(p)}>
-                  <Edit2 className="h-3.5 w-3.5 mr-1" /> Edit
+                  <Edit2 className="h-3.5 w-3.5 mr-1" /> {t('products.edit')}
                 </Button>
                 <Button
                   size="sm"
@@ -352,7 +317,7 @@ export default function ProductsPage() {
                   className="flex-1 text-destructive hover:text-destructive"
                   onClick={() => setConfirmDelete(p)}
                 >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Padam
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> {t('products.delete')}
                 </Button>
               </div>
             </div>
@@ -360,31 +325,30 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Form modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{form.id ? 'Edit Produk' : 'Tambah Produk'}</DialogTitle>
+            <DialogTitle>{form.id ? t('products.editTitle') : t('products.addTitle')}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Kod Produk (opsional)</Label>
+                <Label>{t('products.codeLabel')}</Label>
                 <Input
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
-                  placeholder="cth: SVC-001, PKG-AC"
+                  placeholder={t('products.codePlaceholder')}
                 />
-                <p className="text-[11px] text-muted-foreground">Rujukan dalaman — tidak wajib</p>
+                <p className="text-[11px] text-muted-foreground">{t('products.codeHint')}</p>
               </div>
               <div className="space-y-1.5">
-                <Label>Kategori</Label>
+                <Label>{t('products.categoryLabel')}</Label>
                 <Input
                   list="prod-categories"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  placeholder="cth: Aircond, Elektrik, Paip"
+                  placeholder={t('products.categoryPlaceholder')}
                 />
                 <datalist id="prod-categories">
                   {categories.map((c) => <option key={c} value={c} />)}
@@ -393,38 +357,30 @@ export default function ProductsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Nama Produk / Perkhidmatan *</Label>
+              <Label>{t('products.nameLabel')}</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="cth: Servis Aircond 1.5HP"
+                placeholder={t('products.namePlaceholder')}
                 aria-invalid={!!errors.name}
               />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <Label>Keterangan Lengkap (opsional)</Label>
+              <Label>{t('products.descLabel')}</Label>
               <Textarea
                 rows={6}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder={`Tulis keterangan lengkap perkhidmatan ini...
-
-cth:
-- Pembersihan coil evaporator
-- Cuci drain pan dan tray
-- Semak dan tambah gas R32/R22
-- Test run semua mod`}
+                placeholder={t('products.descPlaceholder')}
               />
-              <p className="text-[11px] text-muted-foreground">
-                Keterangan ini akan dipaparkan dalam PDF Sebut Harga dan Invois di bawah nama item
-              </p>
+              <p className="text-[11px] text-muted-foreground">{t('products.descHint')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Harga Seunit (RM) *</Label>
+                <Label>{t('products.priceLabel')}</Label>
                 <Input
                   type="number" min={0} step="0.01"
                   value={form.unit_price}
@@ -435,7 +391,7 @@ cth:
                 {errors.unit_price && <p className="text-xs text-destructive">{errors.unit_price}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label>UOM (Unit Ukuran) *</Label>
+                <Label>{t('products.uomLabel')}</Label>
                 <UomCombo
                   value={form.uom}
                   onChange={(v) => setForm({ ...form, uom: v })}
@@ -447,10 +403,8 @@ cth:
 
             <div className="flex items-center justify-between bg-muted/40 border border-border rounded-lg p-3">
               <div>
-                <p className="text-sm font-medium">Produk Aktif</p>
-                <p className="text-xs text-muted-foreground">
-                  Produk tidak aktif tidak akan muncul dalam senarai pilihan
-                </p>
+                <p className="text-sm font-medium">{t('products.activeToggle')}</p>
+                <p className="text-xs text-muted-foreground">{t('products.activeToggleHint')}</p>
               </div>
               <Switch
                 checked={form.is_active}
@@ -460,31 +414,29 @@ cth:
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>Batal</Button>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>{t('products.cancel')}</Button>
             <Button onClick={save} disabled={saving}>
-              {saving ? 'Menyimpan...' : 'Simpan Produk'}
+              {saving ? t('products.saving') : t('products.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm */}
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Padam Produk?</AlertDialogTitle>
+            <AlertDialogTitle>{t('products.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Produk &lsquo;{confirmDelete?.name}&rsquo; akan dipadam. Ini tidak akan mempengaruhi item yang
-              telah dimasukkan dalam sebut harga atau invois sedia ada.
+              {t('products.deleteDesc', { name: confirmDelete?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>{t('products.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={doDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Padam
+              {t('products.deleteConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -505,6 +457,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 function UomCombo({
   value, onChange, invalid,
 }: { value: string; onChange: (v: string) => void; invalid?: boolean }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -512,31 +465,31 @@ function UomCombo({
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="cth: unit, jam, meter, m²"
+          placeholder={t('products.uomPlaceholder')}
           aria-invalid={invalid}
           className="flex-1"
         />
         <PopoverTrigger asChild>
-          <Button type="button" variant="outline" size="icon" aria-label="Pilih UOM">
+          <Button type="button" variant="outline" size="icon" aria-label={t('products.selectUom')}>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
       </div>
       <PopoverContent className="w-72 p-0 max-h-80 overflow-y-auto" align="end">
-        {UOM_GROUPS.map((g) => (
-          <div key={g.label} className="py-1">
+        {UOM_GROUP_DEFS.map((g) => (
+          <div key={g.key} className="py-1">
             <div className="px-3 py-1 text-[10px] uppercase tracking-wide text-muted-foreground bg-muted/50">
-              {g.label}
+              {t(`products.uomGroup.${g.key}`)}
             </div>
-            {g.items.map((it) => (
+            {g.items.map((v) => (
               <button
-                key={it.value}
+                key={v}
                 type="button"
-                onClick={() => { onChange(it.value); setOpen(false); }}
+                onClick={() => { onChange(v); setOpen(false); }}
                 className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent flex items-center justify-between"
               >
-                <span className="font-medium">{it.value}</span>
-                <span className="text-xs text-muted-foreground">{it.hint}</span>
+                <span className="font-medium">{v}</span>
+                <span className="text-xs text-muted-foreground">{t(`products.uomHint.${v}`)}</span>
               </button>
             ))}
           </div>
