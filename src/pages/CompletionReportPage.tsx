@@ -543,8 +543,8 @@ export default function CompletionReportPage() {
   if (!job) {
     return (
       <div className="p-4 md:p-6 text-center">
-        <p className="text-muted-foreground">Kerja tidak dijumpai.</p>
-        <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">Kembali</Button>
+        <p className="text-muted-foreground">{t('completionReport.jobNotFound')}</p>
+        <Button variant="outline" onClick={() => navigate('/jobs')} className="mt-4">{t('completionReport.back')}</Button>
       </div>
     );
   }
