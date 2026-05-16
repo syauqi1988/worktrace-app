@@ -305,19 +305,19 @@ export default function VoFormPage() {
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label>No. VO</Label>
+            <Label>{t('vo.voNumber')}</Label>
             <Input value={voNumber} onChange={e => setVoNumber(e.target.value)} className="bg-muted" />
           </div>
           <div className="space-y-1.5">
-            <Label>Jenis</Label>
+            <Label>{t('vo.type')}</Label>
             <div className="flex gap-2">
               <button type="button" onClick={() => setType('addition')}
                 className={`flex-1 h-10 rounded-md border text-sm font-medium ${type === 'addition' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-input bg-background'}`}>
-                ➕ Tambahan
+                {t('vo.typeAddition')}
               </button>
               <button type="button" onClick={() => setType('deduction')}
                 className={`flex-1 h-10 rounded-md border text-sm font-medium ${type === 'deduction' ? 'bg-red-50 border-red-500 text-red-700' : 'border-input bg-background'}`}>
-                ➖ Potongan
+                {t('vo.typeDeduction')}
               </button>
             </div>
           </div>
@@ -325,18 +325,16 @@ export default function VoFormPage() {
 
         {job?.customers && (
           <div className="text-sm">
-            <p className="text-xs text-muted-foreground">Pelanggan</p>
+            <p className="text-xs text-muted-foreground">{t('vo.customer')}</p>
             <p className="font-medium">{job.customers.name}</p>
             {job && <p className="text-xs text-muted-foreground">{job.job_number} — {job.title}</p>}
           </div>
         )}
 
         <div className="space-y-1.5">
-          <Label>Sebab / Alasan *</Label>
+          <Label>{t('vo.reasonLabel')}</Label>
           <Textarea value={reason} onChange={e => setReason(e.target.value)} rows={3}
-            placeholder={isDed
-              ? 'cth: Potongan kerana cat di ruang tamu tidak siap mengikut spesifikasi'
-              : 'cth: Kerja tambahan ditemui semasa kerja asal — pendawaian tambahan diperlukan di bilik stor'} />
+            placeholder={isDed ? t('vo.reasonPlaceholderDed') : t('vo.reasonPlaceholderAdd')} />
         </div>
       </div>
 
