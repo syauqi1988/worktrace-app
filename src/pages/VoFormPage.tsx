@@ -168,8 +168,8 @@ export default function VoFormPage() {
   };
 
   const validate = () => {
-    if (!reason.trim()) { toast.error('Sila isi sebab / alasan'); return false; }
-    if (!items.some(i => i.description.trim())) { toast.error('Sila tambah sekurang-kurangnya satu item'); return false; }
+    if (!reason.trim()) { toast.error(t('vo.errReason')); return false; }
+    if (!items.some(i => i.description.trim())) { toast.error(t('vo.errItems')); return false; }
     return true;
   };
 
