@@ -224,7 +224,7 @@ export default function CompletionReportPage() {
       if (current.length + i >= 10) break;
       const file = files[i];
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} melebihi 5MB`);
+        toast.error(t('completionReport.fileTooLarge', { name: file.name }));
         continue;
       }
 
@@ -237,7 +237,7 @@ export default function CompletionReportPage() {
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        toast.error(`Gagal muat naik: ${uploadError.message}`);
+        toast.error(t('completionReport.uploadFailed', { msg: uploadError.message }));
         continue;
       }
 
@@ -247,7 +247,7 @@ export default function CompletionReportPage() {
 
       if (signedError || !signed?.signedUrl) {
         console.error('Signed URL error:', signedError);
-        toast.error('Gagal mendapatkan URL gambar');
+        toast.error(t('completionReport.imageUrlFailed'));
         continue;
       }
 
