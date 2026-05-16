@@ -515,7 +515,7 @@ export default function CompletionReportPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhoneIntl(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const details = `📋 *No. Laporan:* ${reportNumber}\n🔨 *Kerja:* ${job.title}\n📅 *Tarikh Siap:* ${formatDateMs(completionDate)}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n${shortUrl}`;
+      const details = t('completionReport.waDetails', { number: reportNumber, job: job.title, date: formatDateMs(completionDate), link: shortUrl });
       const msg = renderTemplate(
         (profile as any)?.whatsapp_templates,
         'completion_report',
