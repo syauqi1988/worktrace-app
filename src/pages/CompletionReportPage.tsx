@@ -850,9 +850,13 @@ interface PhotoSectionProps {
   onRemove: (index: number) => void;
   onCaption?: (index: number, value: string) => void;
   error?: string;
+  captionPlaceholder?: string;
+  uploadingLabel?: string;
+  cameraLabel?: string;
+  galleryLabel?: string;
 }
 
-function PhotoSection({ label, badge, helper, photos, captions = [], uploading, disabled, onUpload, onRemove, onCaption, error }: PhotoSectionProps) {
+function PhotoSection({ label, badge, helper, photos, captions = [], uploading, disabled, onUpload, onRemove, onCaption, error, captionPlaceholder, uploadingLabel, cameraLabel, galleryLabel }: PhotoSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
@@ -878,7 +882,7 @@ function PhotoSection({ label, badge, helper, photos, captions = [], uploading, 
               <Input
                 value={captions[i] || ''}
                 onChange={e => onCaption(i, e.target.value)}
-                placeholder="Caption (opsional)"
+                placeholder={captionPlaceholder || 'Caption'}
                 className="h-7 text-[11px] px-2"
               />
             )}
@@ -888,18 +892,18 @@ function PhotoSection({ label, badge, helper, photos, captions = [], uploading, 
           uploading ? (
             <div className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground mt-1">Memuat naik...</span>
+              <span className="text-[11px] text-muted-foreground mt-1">{uploadingLabel || 'Uploading...'}</span>
             </div>
           ) : (
             <>
               <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
                 <Camera className="h-5 w-5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground mt-1">Kamera</span>
+                <span className="text-[11px] text-muted-foreground mt-1">{cameraLabel || 'Camera'}</span>
                 <input type="file" accept="image/*" capture="environment" onChange={onUpload} className="hidden" disabled={disabled} />
               </label>
               <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
                 <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground mt-1">Galeri</span>
+                <span className="text-[11px] text-muted-foreground mt-1">{galleryLabel || 'Gallery'}</span>
                 <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" disabled={disabled} />
               </label>
             </>
