@@ -340,17 +340,17 @@ export default function VoFormPage() {
 
       {/* Items */}
       <div className="space-y-2">
-        <Label>Item</Label>
+        <Label>{t('vo.items')}</Label>
         <div className="hidden md:block">
           <div className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
-            <span></span><span>Keterangan</span><span>Qty</span><span>UOM</span><span>Harga</span><span>Jumlah</span><span></span>
+            <span></span><span>{t('vo.description')}</span><span>{t('vo.qty')}</span><span>{t('vo.uom')}</span><span>{t('vo.price')}</span><span>{t('vo.amount')}</span><span></span>
           </div>
           {items.map((item, i) => (
             <div key={i} className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
-                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Nama item" className="text-sm" />
-                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran (pilihan)" rows={2} className="text-xs" />
+                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.itemDetail')} rows={2} className="text-xs" />
               </div>
               <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} className="text-sm" />
               <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" />
@@ -377,13 +377,13 @@ export default function VoFormPage() {
               )}
               <div className="flex gap-2">
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
-                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Nama item" className="text-sm flex-1" />
+                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm flex-1" />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran" rows={2} className="text-xs" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.detailShort')} rows={2} className="text-xs" />
               <div className="grid grid-cols-3 gap-2">
-                <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="Qty" className="text-sm" />
-                <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="UOM" className="text-sm" />
-                <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="Harga" className="text-sm" />
+                <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder={t('vo.qty')} className="text-sm" />
+                <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder={t('vo.uom')} className="text-sm" />
+                <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder={t('vo.price')} className="text-sm" />
               </div>
               <div className={`text-sm font-semibold ${isDed ? 'text-red-700' : 'text-foreground'}`}>
                 {isDed ? '-' : ''}RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}
@@ -393,7 +393,7 @@ export default function VoFormPage() {
         </div>
 
         <Button variant="outline" size="sm" onClick={addItem} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Tambah Item
+          <Plus className="h-4 w-4" /> {t('vo.addItem')}
         </Button>
       </div>
 
