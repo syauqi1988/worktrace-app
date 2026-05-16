@@ -400,11 +400,11 @@ export default function VoFormPage() {
       {/* Totals */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm">
-          <span>Subtotal</span>
+          <span>{t('vo.subtotal')}</span>
           <span className="font-medium">RM {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between items-center text-sm">
-          <span>Diskaun (RM)</span>
+          <span>{t('vo.discount')}</span>
           <Input type="number" min={0} step="0.01" value={discountValue || ''} onChange={e => setDiscountValue(Number(e.target.value) || 0)} className="w-32 h-8 text-sm text-right" />
         </div>
         <div className="flex justify-between items-center text-sm">
@@ -417,28 +417,28 @@ export default function VoFormPage() {
           )}
         </div>
         <div className={`flex justify-between text-base font-bold pt-3 border-t border-border ${isDed ? 'text-red-700' : 'text-foreground'}`}>
-          <span>{isDed ? 'Potongan' : 'Jumlah'}</span>
+          <span>{isDed ? t('vo.deductionAmount') : t('vo.totalAmount')}</span>
           <span>{isDed ? '-' : ''}RM {total.toFixed(2)}</span>
         </div>
       </div>
 
       {/* Notes */}
       <div className="space-y-1.5">
-        <Label>Nota Tambahan (pilihan)</Label>
+        <Label>{t('vo.notes')}</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
       </div>
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={handlePreview} className="gap-2">
-          <Eye className="h-4 w-4" /> Pratonton PDF
+          <Eye className="h-4 w-4" /> {t('vo.previewPdf')}
         </Button>
         <Button variant="outline" onClick={handleSaveDraft} disabled={submitting} className="gap-2">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan Draf
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t('vo.saveDraft')}
         </Button>
         <Button onClick={handleGenerateAndSend} disabled={submitting} className="gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-          Jana PDF & Hantar WhatsApp
+          {t('vo.sendWhatsApp')}
         </Button>
       </div>
 
@@ -455,7 +455,7 @@ export default function VoFormPage() {
           }
         }}
         open={previewOpen}
-        title={`Pratonton ${voNumber}`}
+        title={t('vo.previewTitle', { number: voNumber })}
       />
     </div>
   );
