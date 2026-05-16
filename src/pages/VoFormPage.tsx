@@ -251,32 +251,29 @@ export default function VoFormPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
 
       const isDed = type === 'deduction';
-      const docLabel = isDed ? 'Borang Potongan' : 'Variation Order';
+      const docLabel = isDed ? t('vo.waDocLabelDed') : t('vo.waDocLabelAdd');
+      const amountLabel = isDed ? t('vo.waAmountDed') : t('vo.waAmountAdd');
       const amount = `${isDed ? '-' : '+'}RM ${total.toFixed(2)}`;
-      const message = `Assalamualaikum ${job.customers?.name || 'Pelanggan'},
-
-Sila semak ${docLabel} berkaitan kerja anda:
-
-📋 *No.:* ${voNumber}
-🔧 *Kerja:* ${job.title}
-📝 *Sebab:* ${reason}
-💰 *${isDed ? 'Potongan' : 'Tambahan Kos'}:* ${amount}
-
-✅ Untuk Lihat PDF dan TERIMA atau TOLAK, klik:
-🔗 ${shortUrl}
-
-Pautan sah selama 30 hari.
-
-*${profile?.company_name || ''}*`;
+      const message = t('vo.waMsg', {
+        customer: job.customers?.name || t('vo.waCustomerFallback'),
+        docLabel,
+        number: voNumber,
+        job: job.title,
+        reason,
+        amountLabel,
+        amount,
+        link: shortUrl,
+        company: profile?.company_name || '',
+      });
 
       const phone = job.customers?.phone ? formatPhone(job.customers.phone) : '';
       openWhatsApp(phone || undefined, message, popup);
 
-      toast.success('VO dihantar');
+      toast.success(t('vo.sent'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
       if (popup) popup.close();
-      toast.error(e.message || 'Gagal hantar');
+      toast.error(e.message || t('vo.sendFailed'));
     } finally {
       setSubmitting(false);
     }
