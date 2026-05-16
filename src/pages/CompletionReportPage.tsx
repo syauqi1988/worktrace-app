@@ -346,7 +346,7 @@ export default function CompletionReportPage() {
         setRejectionReason(null);
         setIsSubmitted(true);
         if (savedId) setReportId(savedId);
-        toast.success('Laporan dihantar! Membuka WhatsApp...');
+        toast.success(t('completionReport.submittedToast'));
         // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
         if (job?.customers?.phone && savedId) {
           await shareReportViaWhatsApp(savedId, pendingWhatsAppWindow);
@@ -354,11 +354,11 @@ export default function CompletionReportPage() {
           pendingWhatsAppWindow.close();
         }
       } else {
-        toast.success('Draf laporan disimpan!');
+        toast.success(t('completionReport.draftToast'));
       }
     } catch (err: any) {
       if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) pendingWhatsAppWindow.close();
-      toast.error(err.message || 'Ralat menyimpan');
+      toast.error(err.message || t('completionReport.saveError'));
     } finally {
       setSaving(false);
       setSubmitting(false);
