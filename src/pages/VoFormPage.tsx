@@ -37,6 +37,7 @@ function formatPhone(phone: string): string {
 }
 
 export default function VoFormPage() {
+  const { t } = useTranslation();
   const { jobId, voId } = useParams<{ jobId: string; voId?: string }>();
   const isEdit = !!voId;
   const { user, profile } = useAuth();
