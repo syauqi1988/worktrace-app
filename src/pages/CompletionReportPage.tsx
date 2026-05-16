@@ -525,7 +525,7 @@ export default function CompletionReportPage() {
       openWhatsApp(phone, msg, pendingWindow);
     } catch (e: any) {
       if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
-      toast.error(e?.message || 'Gagal kongsi laporan');
+      toast.error(e?.message || t('completionReport.shareError'));
     } finally {
       setSharing(false);
     }
