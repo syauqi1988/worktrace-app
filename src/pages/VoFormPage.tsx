@@ -210,10 +210,10 @@ export default function VoFormPage() {
     setSubmitting(true);
     try {
       await saveVo('Draft');
-      toast.success('Draf disimpan');
+      toast.success(t('vo.draftSaved'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
-      toast.error(e.message || 'Gagal simpan');
+      toast.error(e.message || t('vo.saveFailed'));
     } finally {
       setSubmitting(false);
     }
