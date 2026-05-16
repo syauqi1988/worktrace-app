@@ -764,14 +764,14 @@ export default function CompletionReportPage() {
       {!isSubmitted && (
         <div className="flex flex-col gap-2">
           <Button onClick={() => handleSave('submitted')} disabled={submitting} className="rounded-lg">
-            {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Menghantar...</> : 'Hantar Laporan'}
+            {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {t('completionReport.submitting')}</> : t('completionReport.submit')}
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => handleSave('draft')} disabled={saving} className="flex-1 rounded-lg">
-              {saving ? 'Menyimpan...' : 'Simpan Draf'}
+              {saving ? t('completionReport.savingDraft') : t('completionReport.saveDraft')}
             </Button>
             <Button variant="outline" onClick={handlePreview} className="flex-1 rounded-lg gap-2">
-              <Eye className="h-4 w-4" /> Pratonton PDF
+              <Eye className="h-4 w-4" /> {t('completionReport.previewPdf')}
             </Button>
           </div>
           {reportId && (
@@ -780,7 +780,7 @@ export default function CompletionReportPage() {
               onClick={() => setDeleteOpen(true)}
               className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
             >
-              <Trash2 className="h-4 w-4" /> Padam Laporan
+              <Trash2 className="h-4 w-4" /> {t('completionReport.deleteReport')}
             </Button>
           )}
         </div>
@@ -789,21 +789,21 @@ export default function CompletionReportPage() {
       {isSubmitted && (
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
-            <Eye className="h-4 w-4" /> Pratonton PDF
+            <Eye className="h-4 w-4" /> {t('completionReport.previewPdf')}
           </Button>
           <Button
             variant="outline"
-            onClick={() => { setIsSubmitted(false); toast.info('Mod edit dibuka. Hantar semula selepas perubahan.'); }}
+            onClick={() => { setIsSubmitted(false); toast.info(t('completionReport.editModeOpened')); }}
             className="rounded-lg gap-2"
           >
-            <Edit className="h-4 w-4" /> Edit Laporan
+            <Edit className="h-4 w-4" /> {t('completionReport.editReport')}
           </Button>
           <Button
             variant="outline"
             onClick={() => setDeleteOpen(true)}
             className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2"
           >
-            <Trash2 className="h-4 w-4" /> Padam
+            <Trash2 className="h-4 w-4" /> {t('completionReport.delete')}
           </Button>
         </div>
       )}
@@ -812,16 +812,16 @@ export default function CompletionReportPage() {
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
-        title="Padam Laporan Siap Kerja?"
-        body="Tindakan ini tidak boleh dibatalkan. Laporan dan semua maklumatnya akan dipadam."
-        confirmLabel={deleting ? 'Memadam...' : 'Padam'}
+        title={t('completionReport.deleteTitle')}
+        body={t('completionReport.deleteBody')}
+        confirmLabel={deleting ? t('completionReport.deleting') : t('completionReport.delete')}
         confirmVariant="danger"
         isLoading={deleting}
       />
 
       <PDFPreviewModal
         open={previewOpen}
-        title={`Pratonton — ${reportNumber}`}
+        title={t('completionReport.previewTitle', { number: reportNumber })}
         loading={previewLoading}
         fileUrl={previewUrl}
         onClose={() => { setPreviewOpen(false); if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }}
@@ -829,7 +829,7 @@ export default function CompletionReportPage() {
           if (!previewUrl) return;
           const a = document.createElement('a');
           a.href = previewUrl;
-          a.download = `Laporan-${reportNumber}.pdf`;
+          a.download = t('completionReport.fileName', { number: reportNumber });
           a.click();
         }}
       />
