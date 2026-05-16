@@ -292,12 +292,12 @@ export default function VoFormPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold text-foreground">
-          {isEdit ? 'Edit ' : ''}{isDed ? 'Borang Potongan' : 'Variation Order'}
+          {isDed ? (isEdit ? t('vo.deductionTitleEdit') : t('vo.deductionTitle')) : (isEdit ? t('vo.titleEdit') : t('vo.title'))}
         </h1>
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
           isDed ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
         }`}>
-          {isDed ? '➖ Potongan' : '➕ Tambahan Kerja'}
+          {isDed ? t('vo.deductBadge') : t('vo.addBadge')}
         </span>
       </div>
 
