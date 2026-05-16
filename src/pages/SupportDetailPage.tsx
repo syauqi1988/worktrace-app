@@ -32,11 +32,11 @@ export default function SupportDetailPage() {
 
   const fetchData = async () => {
     if (!id || !user) return;
-    const [{ data: t }, { data: r }] = await Promise.all([
+    const [{ data: tk }, { data: r }] = await Promise.all([
       supabase.from('support_tickets').select('*').eq('id', id).single(),
       supabase.from('ticket_replies').select('*').eq('ticket_id', id).order('created_at', { ascending: true }),
     ]);
-    setTicket(t);
+    setTicket(tk);
     setReplies(r || []);
     setLoading(false);
   };
