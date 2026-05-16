@@ -80,6 +80,7 @@ function checklistToText(items: ChecklistItem[]): string {
 }
 
 export default function CompletionReportPage() {
+  const { t } = useTranslation();
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
