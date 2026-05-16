@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +37,7 @@ function formatPhone(phone: string): string {
 }
 
 export default function VoFormPage() {
+  const { t } = useTranslation();
   const { jobId, voId } = useParams<{ jobId: string; voId?: string }>();
   const isEdit = !!voId;
   const { user, profile } = useAuth();
@@ -166,8 +168,8 @@ export default function VoFormPage() {
   };
 
   const validate = () => {
-    if (!reason.trim()) { toast.error('Sila isi sebab / alasan'); return false; }
-    if (!items.some(i => i.description.trim())) { toast.error('Sila tambah sekurang-kurangnya satu item'); return false; }
+    if (!reason.trim()) { toast.error(t('vo.errReason')); return false; }
+    if (!items.some(i => i.description.trim())) { toast.error(t('vo.errItems')); return false; }
     return true;
   };
 
@@ -208,10 +210,10 @@ export default function VoFormPage() {
     setSubmitting(true);
     try {
       await saveVo('Draft');
-      toast.success('Draf disimpan');
+      toast.success(t('vo.draftSaved'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
-      toast.error(e.message || 'Gagal simpan');
+      toast.error(e.message || t('vo.saveFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -249,32 +251,29 @@ export default function VoFormPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
 
       const isDed = type === 'deduction';
-      const docLabel = isDed ? 'Borang Potongan' : 'Variation Order';
+      const docLabel = isDed ? t('vo.waDocLabelDed') : t('vo.waDocLabelAdd');
+      const amountLabel = isDed ? t('vo.waAmountDed') : t('vo.waAmountAdd');
       const amount = `${isDed ? '-' : '+'}RM ${total.toFixed(2)}`;
-      const message = `Assalamualaikum ${job.customers?.name || 'Pelanggan'},
-
-Sila semak ${docLabel} berkaitan kerja anda:
-
-📋 *No.:* ${voNumber}
-🔧 *Kerja:* ${job.title}
-📝 *Sebab:* ${reason}
-💰 *${isDed ? 'Potongan' : 'Tambahan Kos'}:* ${amount}
-
-✅ Untuk Lihat PDF dan TERIMA atau TOLAK, klik:
-🔗 ${shortUrl}
-
-Pautan sah selama 30 hari.
-
-*${profile?.company_name || ''}*`;
+      const message = t('vo.waMsg', {
+        customer: job.customers?.name || t('vo.waCustomerFallback'),
+        docLabel,
+        number: voNumber,
+        job: job.title,
+        reason,
+        amountLabel,
+        amount,
+        link: shortUrl,
+        company: profile?.company_name || '',
+      });
 
       const phone = job.customers?.phone ? formatPhone(job.customers.phone) : '';
       openWhatsApp(phone || undefined, message, popup);
 
-      toast.success('VO dihantar');
+      toast.success(t('vo.sent'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
       if (popup) popup.close();
-      toast.error(e.message || 'Gagal hantar');
+      toast.error(e.message || t('vo.sendFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -293,12 +292,12 @@ Pautan sah selama 30 hari.
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold text-foreground">
-          {isEdit ? 'Edit ' : ''}{isDed ? 'Borang Potongan' : 'Variation Order'}
+          {isDed ? (isEdit ? t('vo.deductionTitleEdit') : t('vo.deductionTitle')) : (isEdit ? t('vo.titleEdit') : t('vo.title'))}
         </h1>
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
           isDed ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
         }`}>
-          {isDed ? '➖ Potongan' : '➕ Tambahan Kerja'}
+          {isDed ? t('vo.deductBadge') : t('vo.addBadge')}
         </span>
       </div>
 
@@ -306,19 +305,19 @@ Pautan sah selama 30 hari.
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label>No. VO</Label>
+            <Label>{t('vo.voNumber')}</Label>
             <Input value={voNumber} onChange={e => setVoNumber(e.target.value)} className="bg-muted" />
           </div>
           <div className="space-y-1.5">
-            <Label>Jenis</Label>
+            <Label>{t('vo.type')}</Label>
             <div className="flex gap-2">
               <button type="button" onClick={() => setType('addition')}
                 className={`flex-1 h-10 rounded-md border text-sm font-medium ${type === 'addition' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-input bg-background'}`}>
-                ➕ Tambahan
+                {t('vo.typeAddition')}
               </button>
               <button type="button" onClick={() => setType('deduction')}
                 className={`flex-1 h-10 rounded-md border text-sm font-medium ${type === 'deduction' ? 'bg-red-50 border-red-500 text-red-700' : 'border-input bg-background'}`}>
-                ➖ Potongan
+                {t('vo.typeDeduction')}
               </button>
             </div>
           </div>
@@ -326,34 +325,32 @@ Pautan sah selama 30 hari.
 
         {job?.customers && (
           <div className="text-sm">
-            <p className="text-xs text-muted-foreground">Pelanggan</p>
+            <p className="text-xs text-muted-foreground">{t('vo.customer')}</p>
             <p className="font-medium">{job.customers.name}</p>
             {job && <p className="text-xs text-muted-foreground">{job.job_number} — {job.title}</p>}
           </div>
         )}
 
         <div className="space-y-1.5">
-          <Label>Sebab / Alasan *</Label>
+          <Label>{t('vo.reasonLabel')}</Label>
           <Textarea value={reason} onChange={e => setReason(e.target.value)} rows={3}
-            placeholder={isDed
-              ? 'cth: Potongan kerana cat di ruang tamu tidak siap mengikut spesifikasi'
-              : 'cth: Kerja tambahan ditemui semasa kerja asal — pendawaian tambahan diperlukan di bilik stor'} />
+            placeholder={isDed ? t('vo.reasonPlaceholderDed') : t('vo.reasonPlaceholderAdd')} />
         </div>
       </div>
 
       {/* Items */}
       <div className="space-y-2">
-        <Label>Item</Label>
+        <Label>{t('vo.items')}</Label>
         <div className="hidden md:block">
           <div className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
-            <span></span><span>Keterangan</span><span>Qty</span><span>UOM</span><span>Harga</span><span>Jumlah</span><span></span>
+            <span></span><span>{t('vo.description')}</span><span>{t('vo.qty')}</span><span>{t('vo.uom')}</span><span>{t('vo.price')}</span><span>{t('vo.amount')}</span><span></span>
           </div>
           {items.map((item, i) => (
             <div key={i} className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
-                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Nama item" className="text-sm" />
-                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran (pilihan)" rows={2} className="text-xs" />
+                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.itemDetail')} rows={2} className="text-xs" />
               </div>
               <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} className="text-sm" />
               <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" />
@@ -380,13 +377,13 @@ Pautan sah selama 30 hari.
               )}
               <div className="flex gap-2">
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
-                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Nama item" className="text-sm flex-1" />
+                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm flex-1" />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran" rows={2} className="text-xs" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.detailShort')} rows={2} className="text-xs" />
               <div className="grid grid-cols-3 gap-2">
-                <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="Qty" className="text-sm" />
-                <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="UOM" className="text-sm" />
-                <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="Harga" className="text-sm" />
+                <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder={t('vo.qty')} className="text-sm" />
+                <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder={t('vo.uom')} className="text-sm" />
+                <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder={t('vo.price')} className="text-sm" />
               </div>
               <div className={`text-sm font-semibold ${isDed ? 'text-red-700' : 'text-foreground'}`}>
                 {isDed ? '-' : ''}RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}
@@ -396,18 +393,18 @@ Pautan sah selama 30 hari.
         </div>
 
         <Button variant="outline" size="sm" onClick={addItem} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Tambah Item
+          <Plus className="h-4 w-4" /> {t('vo.addItem')}
         </Button>
       </div>
 
       {/* Totals */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm">
-          <span>Subtotal</span>
+          <span>{t('vo.subtotal')}</span>
           <span className="font-medium">RM {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between items-center text-sm">
-          <span>Diskaun (RM)</span>
+          <span>{t('vo.discount')}</span>
           <Input type="number" min={0} step="0.01" value={discountValue || ''} onChange={e => setDiscountValue(Number(e.target.value) || 0)} className="w-32 h-8 text-sm text-right" />
         </div>
         <div className="flex justify-between items-center text-sm">
@@ -420,28 +417,28 @@ Pautan sah selama 30 hari.
           )}
         </div>
         <div className={`flex justify-between text-base font-bold pt-3 border-t border-border ${isDed ? 'text-red-700' : 'text-foreground'}`}>
-          <span>{isDed ? 'Potongan' : 'Jumlah'}</span>
+          <span>{isDed ? t('vo.deductionAmount') : t('vo.totalAmount')}</span>
           <span>{isDed ? '-' : ''}RM {total.toFixed(2)}</span>
         </div>
       </div>
 
       {/* Notes */}
       <div className="space-y-1.5">
-        <Label>Nota Tambahan (pilihan)</Label>
+        <Label>{t('vo.notes')}</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
       </div>
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={handlePreview} className="gap-2">
-          <Eye className="h-4 w-4" /> Pratonton PDF
+          <Eye className="h-4 w-4" /> {t('vo.previewPdf')}
         </Button>
         <Button variant="outline" onClick={handleSaveDraft} disabled={submitting} className="gap-2">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Simpan Draf
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t('vo.saveDraft')}
         </Button>
         <Button onClick={handleGenerateAndSend} disabled={submitting} className="gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-          Jana PDF & Hantar WhatsApp
+          {t('vo.sendWhatsApp')}
         </Button>
       </div>
 
@@ -458,7 +455,7 @@ Pautan sah selama 30 hari.
           }
         }}
         open={previewOpen}
-        title={`Pratonton ${voNumber}`}
+        title={t('vo.previewTitle', { number: voNumber })}
       />
     </div>
   );
