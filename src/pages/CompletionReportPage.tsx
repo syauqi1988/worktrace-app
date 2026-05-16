@@ -645,60 +645,60 @@ export default function CompletionReportPage() {
         <>
           {/* Job Info (read-only) */}
           <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maklumat Kerja</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('completionReport.jobInfo')}</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div><p className="text-xs text-muted-foreground">Nombor Kerja</p><p className="font-medium text-foreground">{job.job_number}</p></div>
-              <div><p className="text-xs text-muted-foreground">Tajuk</p><p className="text-foreground">{job.title}</p></div>
-              <div><p className="text-xs text-muted-foreground">Pelanggan</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
-              <div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-foreground">{job.category}</p></div>
+              <div><p className="text-xs text-muted-foreground">{t('completionReport.jobNumber')}</p><p className="font-medium text-foreground">{job.job_number}</p></div>
+              <div><p className="text-xs text-muted-foreground">{t('completionReport.jobTitle')}</p><p className="text-foreground">{job.title}</p></div>
+              <div><p className="text-xs text-muted-foreground">{t('completionReport.customer')}</p><p className="text-foreground">{job.customers?.name || '-'}</p></div>
+              <div><p className="text-xs text-muted-foreground">{t('completionReport.category')}</p><p className="text-foreground">{job.category}</p></div>
             </div>
           </div>
 
           {/* Completion Date */}
           <div className="space-y-1.5">
-            <Label>Tarikh Siap Kerja *</Label>
+            <Label>{t('completionReport.completionDate')}</Label>
             <Input type="date" value={completionDate} onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }} />
             {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
           </div>
 
           {/* Technician Name */}
           <div className="space-y-1.5">
-            <Label>Nama Juruteknik *</Label>
-            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder="Nama pekerja/juruteknik" />
+            <Label>{t('completionReport.technicianName')}</Label>
+            <Input value={technicianName} onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }} placeholder={t('completionReport.technicianPlaceholder')} />
             {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
           </div>
 
           {/* Location & Project Ref (optional) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Lokasi / Kawasan <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
-              <Input value={locationLabel} onChange={e => setLocationLabel(e.target.value)} placeholder="cth: Tingkat 3, Bilik MEP" />
+              <Label>{t('completionReport.location')} <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span></Label>
+              <Input value={locationLabel} onChange={e => setLocationLabel(e.target.value)} placeholder={t('completionReport.locationPlaceholder')} />
             </div>
             <div className="space-y-1.5">
-              <Label>Rujukan Projek <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
-              <Input value={projectRef} onChange={e => setProjectRef(e.target.value)} placeholder="cth: PRJ-2026-001" />
+              <Label>{t('completionReport.projectRef')} <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span></Label>
+              <Input value={projectRef} onChange={e => setProjectRef(e.target.value)} placeholder={t('completionReport.projectRefPlaceholder')} />
             </div>
           </div>
 
           {/* Work Description */}
           <div className="space-y-1.5">
-            <Label>Penerangan Kerja yang Dilaksanakan *</Label>
-            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder="Huraikan kerja yang telah dilaksanakan secara terperinci..." />
+            <Label>{t('completionReport.workDesc')}</Label>
+            <Textarea value={workDescription} onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }} rows={5} placeholder={t('completionReport.workDescPlaceholder')} />
             {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
           </div>
 
           {/* Materials */}
           <div className="space-y-1.5">
-            <Label>Bahan/Alatan Digunakan</Label>
-            <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder="Senaraikan bahan atau alatan yang digunakan..." />
+            <Label>{t('completionReport.materials')}</Label>
+            <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder={t('completionReport.materialsPlaceholder')} />
           </div>
 
           {/* Before Photos */}
           <PhotoSection
             kind="before"
-            label="📷 Gambar Sebelum Kerja"
-            badge={{ text: 'Opsional', className: 'bg-amber-100 text-amber-700' }}
-            helper="Gambar keadaan sebelum kerja bermula untuk perbandingan"
+            label={t('completionReport.beforePhotos')}
+            badge={{ text: t('completionReport.optBadge'), className: 'bg-amber-100 text-amber-700' }}
+            helper={t('completionReport.beforeHelper')}
             photos={beforePhotos}
             captions={beforeCaptions}
             uploading={uploadingPhoto}
@@ -706,14 +706,18 @@ export default function CompletionReportPage() {
             onUpload={(e) => handlePhotoUpload(e, 'before')}
             onRemove={(i) => removePhoto('before', i)}
             onCaption={(i, v) => setCaption('before', i, v)}
+            captionPlaceholder={t('completionReport.captionPlaceholder')}
+            uploadingLabel={t('completionReport.uploading')}
+            cameraLabel={t('completionReport.camera')}
+            galleryLabel={t('completionReport.gallery')}
           />
 
           {/* After Photos */}
           <PhotoSection
             kind="after"
-            label="📷 Gambar Selepas Kerja"
-            badge={{ text: 'Wajib — min 1 gambar', className: 'bg-red-100 text-red-700' }}
-            helper="Gambar hasil akhir kerja yang telah disiapkan"
+            label={t('completionReport.afterPhotos')}
+            badge={{ text: t('completionReport.requiredBadge'), className: 'bg-red-100 text-red-700' }}
+            helper={t('completionReport.afterHelper')}
             photos={afterPhotos}
             captions={afterCaptions}
             uploading={uploadingPhoto}
@@ -722,34 +726,36 @@ export default function CompletionReportPage() {
             onRemove={(i) => removePhoto('after', i)}
             onCaption={(i, v) => setCaption('after', i, v)}
             error={errors.photos}
+            captionPlaceholder={t('completionReport.captionPlaceholder')}
+            uploadingLabel={t('completionReport.uploading')}
+            cameraLabel={t('completionReport.camera')}
+            galleryLabel={t('completionReport.gallery')}
           />
 
           {/* Checklist (optional) */}
           <div className="space-y-1.5">
-            <Label>Senarai Semak Siap Kerja <span className="text-xs text-muted-foreground font-normal">(opsional)</span></Label>
+            <Label>{t('completionReport.checklist')} <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span></Label>
             <Textarea
               value={checklistText}
               onChange={e => setChecklistText(e.target.value)}
               rows={4}
-              placeholder={`Satu item setiap baris. Contoh:\n[x] Pemasangan disiapkan\n[x] Ujian tekanan lulus\n[ ] Lukisan as-built (pending)`}
+              placeholder={t('completionReport.checklistPlaceholder')}
               className="font-mono text-sm"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Gunakan <code className="bg-muted px-1 rounded">[x]</code> untuk siap, <code className="bg-muted px-1 rounded">[ ]</code> untuk pending. Teks biasa dikira siap.
-            </p>
+            <p className="text-[11px] text-muted-foreground">{t('completionReport.checklistHelper')}</p>
           </div>
 
           {/* Customer Signature */}
           <div className="space-y-1.5">
-            <Label>Pengesahan Pelanggan (opsional)</Label>
-            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder="Nama pelanggan sebagai pengesahan" />
-            <p className="text-[11px] text-muted-foreground">Minta pelanggan taip nama sebagai tanda pengesahan kerja siap</p>
+            <Label>{t('completionReport.customerSignature')}</Label>
+            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder={t('completionReport.customerSignaturePlaceholder')} />
+            <p className="text-[11px] text-muted-foreground">{t('completionReport.signatureHelper')}</p>
           </div>
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <Label>Nota Tambahan / Catatan Tapak</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Sebarang catatan atau nota juruteknik..." />
+            <Label>{t('completionReport.additionalNotes')}</Label>
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('completionReport.notesPlaceholder')} />
           </div>
         </>
       )}
