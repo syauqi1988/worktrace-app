@@ -371,10 +371,10 @@ export default function CompletionReportPage() {
     try {
       const { error } = await supabase.from('completion_reports').delete().eq('id', reportId);
       if (error) throw error;
-      toast.success('Laporan dipadam');
+      toast.success(t('completionReport.deletedToast'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
-      toast.error(e.message || 'Gagal memadam laporan');
+      toast.error(e.message || t('completionReport.deleteError'));
     } finally {
       setDeleting(false);
       setDeleteOpen(false);
