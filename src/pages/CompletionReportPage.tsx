@@ -425,7 +425,7 @@ export default function CompletionReportPage() {
       const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
-      toast.error('Gagal menjana pratonton');
+      toast.error(t('completionReport.previewError'));
       setPreviewOpen(false);
     } finally {
       setPreviewLoading(false);
