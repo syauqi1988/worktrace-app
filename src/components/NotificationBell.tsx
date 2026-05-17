@@ -29,7 +29,7 @@ function timeAgo(iso: string, justNow: string) {
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const { items, unreadCount, markRead, markAllRead } = useNotifications();
+  const { items, unreadCount, markRead, markAllRead, clearAll } = useNotifications();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const justNow = i18n.language === 'en' ? 'just now' : 'baru sahaja';
