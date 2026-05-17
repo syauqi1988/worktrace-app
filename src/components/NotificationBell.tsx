@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check, Megaphone } from 'lucide-react';
+import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check, Megaphone, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNotifications, type AppNotification } from '@/hooks/useNotifications';
 
