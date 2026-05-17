@@ -71,5 +71,11 @@ export function useNotifications() {
     await supabase.from('notifications').update({ read_at: now }).eq('user_id', user.id).is('read_at', null);
   };
 
-  return { items, loading, unreadCount, markRead, markAllRead, reload: load };
+  const clearAll = async () => {
+    if (!user) return;
+    setItems([]);
+    await supabase.from('notifications').delete().eq('user_id', user.id);
+  };
+
+  return { items, loading, unreadCount, markRead, markAllRead, clearAll, reload: load };
 }

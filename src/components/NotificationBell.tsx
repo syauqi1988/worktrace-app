@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check, Megaphone } from 'lucide-react';
+import { Bell, CheckCircle2, XCircle, MessageSquare, Wallet, Check, Megaphone, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNotifications, type AppNotification } from '@/hooks/useNotifications';
 
@@ -29,7 +29,7 @@ function timeAgo(iso: string, justNow: string) {
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const { items, unreadCount, markRead, markAllRead } = useNotifications();
+  const { items, unreadCount, markRead, markAllRead, clearAll } = useNotifications();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const justNow = i18n.language === 'en' ? 'just now' : 'baru sahaja';
@@ -78,11 +78,23 @@ export default function NotificationBell() {
           >
             <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-foreground">{t('notifications.title')}</p>
-              {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0">
-                  <Check className="h-3 w-3" /> {t('notifications.markAllRead')}
-                </button>
-              )}
+              <div className="flex items-center gap-3 shrink-0">
+                {unreadCount > 0 && (
+                  <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1">
+                    <Check className="h-3 w-3" /> {t('notifications.markAllRead')}
+                  </button>
+                )}
+                {items.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm(t('notifications.clearConfirm'))) clearAll();
+                    }}
+                    className="text-xs text-destructive hover:underline flex items-center gap-1"
+                  >
+                    <Trash2 className="h-3 w-3" /> {t('notifications.clearAll')}
+                  </button>
+                )}
+              </div>
             </div>
             <div className="max-h-[70vh] md:max-h-[420px] overflow-y-auto">
               {items.length === 0 ? (

@@ -659,6 +659,8 @@
   "notifications": {
     "title": "Notifications",
     "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "clearConfirm": "Clear all notifications?",
     "empty": "No notifications",
     "viewAll": "View all"
   },
