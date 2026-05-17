@@ -93,6 +93,12 @@ export default function CustomerDetailPage() {
       setLoading(false);
     }
     fetch();
+    if (!id || !user) return;
+    const ch = supabase.channel(`customer-detail-${id}`)
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'customers', filter: `id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'jobs', filter: `customer_id=eq.${id}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [user, id]);
 
   const handleDelete = async () => {

@@ -116,7 +116,7 @@ export default function QuotationDetailPage() {
     fetch();
     const ch = supabase
       .channel(`quotation-detail-${id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quotations', filter: `id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'quotations', filter: `id=eq.${id}` }, () => fetch())
       .subscribe();
     return () => { active = false; supabase.removeChannel(ch); };
   }, [user, id]);

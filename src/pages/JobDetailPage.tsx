@@ -165,6 +165,16 @@ export default function JobDetailPage() {
       setLoading(false);
     }
     fetch();
+    if (!id || !user) return;
+    const ch = supabase.channel(`job-detail-${id}`)
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'quotations', filter: `job_id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'invoices', filter: `job_id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'completion_reports', filter: `job_id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'work_orders', filter: `job_id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'variation_orders', filter: `job_id=eq.${id}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [user, id]);
 
   useEffect(() => {
