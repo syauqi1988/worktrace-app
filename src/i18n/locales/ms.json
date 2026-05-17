@@ -659,6 +659,8 @@
   "notifications": {
     "title": "Notifikasi",
     "markAllRead": "Tanda semua dibaca",
+    "clearAll": "Padam semua",
+    "clearConfirm": "Padam semua notifikasi?",
     "empty": "Tiada notifikasi",
     "viewAll": "Lihat semua"
   },
