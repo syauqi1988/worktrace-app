@@ -130,6 +130,7 @@ export type Database = {
           body_ms: string | null
           created_at: string
           created_by: string | null
+          display_type: string | null
           expires_at: string | null
           id: string
           is_active: boolean
@@ -137,6 +138,7 @@ export type Database = {
           published_at: string
           severity: string
           show_popup: boolean
+          target_plan: string | null
           title_en: string
           title_ms: string
           updated_at: string
@@ -146,6 +148,7 @@ export type Database = {
           body_ms?: string | null
           created_at?: string
           created_by?: string | null
+          display_type?: string | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
@@ -153,6 +156,7 @@ export type Database = {
           published_at?: string
           severity?: string
           show_popup?: boolean
+          target_plan?: string | null
           title_en: string
           title_ms: string
           updated_at?: string
@@ -162,6 +166,7 @@ export type Database = {
           body_ms?: string | null
           created_at?: string
           created_by?: string | null
+          display_type?: string | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
@@ -169,6 +174,7 @@ export type Database = {
           published_at?: string
           severity?: string
           show_popup?: boolean
+          target_plan?: string | null
           title_en?: string
           title_ms?: string
           updated_at?: string
