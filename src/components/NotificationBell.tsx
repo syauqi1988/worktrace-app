@@ -78,11 +78,23 @@ export default function NotificationBell() {
           >
             <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-foreground">{t('notifications.title')}</p>
-              {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0">
-                  <Check className="h-3 w-3" /> {t('notifications.markAllRead')}
-                </button>
-              )}
+              <div className="flex items-center gap-3 shrink-0">
+                {unreadCount > 0 && (
+                  <button onClick={markAllRead} className="text-xs text-primary hover:underline flex items-center gap-1">
+                    <Check className="h-3 w-3" /> {t('notifications.markAllRead')}
+                  </button>
+                )}
+                {items.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm(t('notifications.clearConfirm'))) clearAll();
+                    }}
+                    className="text-xs text-destructive hover:underline flex items-center gap-1"
+                  >
+                    <Trash2 className="h-3 w-3" /> {t('notifications.clearAll')}
+                  </button>
+                )}
+              </div>
             </div>
             <div className="max-h-[70vh] md:max-h-[420px] overflow-y-auto">
               {items.length === 0 ? (
