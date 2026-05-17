@@ -145,7 +145,8 @@ export default function InvoiceDetailPage() {
     fetch();
     const ch = supabase
       .channel(`invoice-detail-${id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'invoices', filter: `id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'invoices', filter: `id=eq.${id}` }, () => fetch())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'payment_proofs', filter: `invoice_id=eq.${id}` }, () => fetch())
       .subscribe();
     return () => { active = false; supabase.removeChannel(ch); };
   }, [user, id]);
