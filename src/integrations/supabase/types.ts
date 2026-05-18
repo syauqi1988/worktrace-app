@@ -401,11 +401,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          image_url: string | null
           is_published: boolean
           question_en: string
           question_ms: string
           sort_order: number
           updated_at: string
+          video_type: string | null
+          video_url: string | null
         }
         Insert: {
           answer_en: string
@@ -414,11 +417,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          image_url?: string | null
           is_published?: boolean
           question_en: string
           question_ms: string
           sort_order?: number
           updated_at?: string
+          video_type?: string | null
+          video_url?: string | null
         }
         Update: {
           answer_en?: string
@@ -427,11 +433,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          image_url?: string | null
           is_published?: boolean
           question_en?: string
           question_ms?: string
           sort_order?: number
           updated_at?: string
+          video_type?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
