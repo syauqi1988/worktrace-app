@@ -70,8 +70,13 @@ function FaqMedia({ faq }: { faq: Faq }) {
         if (type === 'youtube') {
           const ytId = getYoutubeId(faq.video_url!);
           if (!ytId) return null;
+          const isShort = /\/shorts\//.test(faq.video_url!);
           return (
-            <div className="aspect-video w-full rounded-lg overflow-hidden border border-border">
+            <div
+              className={`w-full rounded-lg overflow-hidden border border-border bg-black mx-auto ${
+                isShort ? 'aspect-[9/16] max-w-xs' : 'aspect-video'
+              }`}
+            >
               <iframe
                 src={`https://www.youtube.com/embed/${ytId}`}
                 title="YouTube video"
