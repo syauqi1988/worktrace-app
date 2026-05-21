@@ -119,6 +119,12 @@ export default function PaymentSuccessPage() {
         </div>
 
         {isPlanSynced && (
+          <p className="text-xs text-muted-foreground border-t border-border pt-3">
+            An official HS Partnership PLT receipt has been emailed to you and is also available in Settings → Subscription.
+          </p>
+        )}
+
+        {isPlanSynced && (
           <p className="text-xs text-muted-foreground">
             {t('paymentSuccess.redirectingIn', { count: countdown })}
           </p>
