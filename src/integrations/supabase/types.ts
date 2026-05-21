@@ -211,6 +211,51 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          date: string
+          description: string
+          id: string
+          published: boolean
+          read_time: string
+          slug: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          description: string
+          id?: string
+          published?: boolean
+          read_time?: string
+          slug: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          description?: string
+          id?: string
+          published?: boolean
+          read_time?: string
+          slug?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       completion_reports: {
         Row: {
           accepted_at: string | null
