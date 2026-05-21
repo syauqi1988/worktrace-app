@@ -20,6 +20,7 @@ import AiHelpButton from "@/components/settings/AiHelpButton";
 import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
 import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
 import SecuritySection from "@/components/settings/SecuritySection";
+import SubscriptionReceiptsSection from "@/components/settings/SubscriptionReceiptsSection";
 import { getDateLocale } from "@/i18n";
 import {
   Building2,
