@@ -944,6 +944,14 @@ export default function SettingsPage() {
         ) : null}
 
         {isFree && <PlanCards currentPlan={profile?.plan || "free"} onSelect={() => {}} compact />}
+
+        <div className="mt-6 pt-4 border-t border-border space-y-3">
+          <div>
+            <h4 className="text-sm font-semibold text-foreground">Official Receipts</h4>
+            <p className="text-xs text-muted-foreground">Issued by HS Partnership PLT for each successful payment. Auto-emailed to you.</p>
+          </div>
+          <SubscriptionReceiptsSection />
+        </div>
       </SettingsAccordion>
 
       {/* 7 — Integrasi & Pautan */}
