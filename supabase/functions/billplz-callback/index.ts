@@ -193,6 +193,28 @@ Deno.serve(async (req) => {
       billplz_bill_id: billId,
     })
 
+    // Fire-and-forget: generate official HS Partnership PLT receipt + email
+    try {
+      const amountMyr = Number(bill?.amount || 0) / 100
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-subscription-receipt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''}`,
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          billplz_bill_id: billId,
+          plan,
+          billing_period,
+          amount: amountMyr,
+          payment_date: startDate.toISOString(),
+        }),
+      })
+    } catch (e) {
+      console.error('Receipt generation invoke failed:', e)
+    }
+
     return new Response('ok', { status: 200 })
   } catch (error) {
     console.error('Callback error:', error)

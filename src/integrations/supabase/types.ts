@@ -1400,6 +1400,72 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_receipts: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          billing_period: string
+          billplz_bill_id: string | null
+          company_snapshot: Json
+          created_at: string
+          currency: string
+          emailed_at: string | null
+          id: string
+          payment_date: string
+          pdf_path: string | null
+          pdf_url: string | null
+          plan: string
+          receipt_number: string
+          status: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount?: number
+          billing_period: string
+          billplz_bill_id?: string | null
+          company_snapshot?: Json
+          created_at?: string
+          currency?: string
+          emailed_at?: string | null
+          id?: string
+          payment_date?: string
+          pdf_path?: string | null
+          pdf_url?: string | null
+          plan: string
+          receipt_number: string
+          status?: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          billing_period?: string
+          billplz_bill_id?: string | null
+          company_snapshot?: Json
+          created_at?: string
+          currency?: string
+          emailed_at?: string | null
+          id?: string
+          payment_date?: string
+          pdf_path?: string | null
+          pdf_url?: string | null
+          plan?: string
+          receipt_number?: string
+          status?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       support_tickets: {
         Row: {
           admin_notes: string | null
@@ -1890,6 +1956,7 @@ export type Database = {
       is_app_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       mark_approval_viewed: { Args: { p_token: string }; Returns: undefined }
+      next_subscription_receipt_number: { Args: never; Returns: string }
       payment_proof_token_is_uploadable: {
         Args: { p_token: string }
         Returns: boolean
