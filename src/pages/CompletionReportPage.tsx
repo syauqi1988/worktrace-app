@@ -721,7 +721,7 @@ export default function CompletionReportPage() {
             helper={t('completionReport.afterHelper')}
             photos={afterPhotos}
             captions={afterCaptions}
-            uploading={uploadingPhoto}
+            uploading={uploadingKind === 'after'}
             disabled={false}
             onUpload={(e) => handlePhotoUpload(e, 'after')}
             onRemove={(i) => removePhoto('after', i)}
