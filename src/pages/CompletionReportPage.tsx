@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2, FileText } from 'lucide-react';
+import { ArrowLeft, X, Loader2, Eye, MessageCircle, CheckCircle, XCircle, Receipt, Camera, ImageIcon, Edit, Trash2, FileText } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
@@ -52,16 +52,6 @@ function formatDateTimeMs(d: string | null) {
   if (!d) return '-';
   const dt = new Date(d);
   return `${dt.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} ${dt.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
-}
-
-function openPendingWhatsAppWindow(): Window | null {
-  try {
-    const win = window.open('', '_blank');
-    win?.document.write('<!doctype html><title>WhatsApp</title><body style="font-family:sans-serif;padding:24px">Opening WhatsApp...</body>');
-    return win;
-  } catch {
-    return null;
-  }
 }
 
 function parseChecklist(raw: string): ChecklistItem[] {
@@ -173,10 +163,8 @@ export default function CompletionReportPage() {
         setReportStatus(status);
         setRejectionReason(r.rejection_reason || null);
         setAcceptedAt(r.accepted_at || null);
-        // Lock fields once it's been sent (submitted/accepted). Allow edit again if rejected.
         setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
-        // Preview next report number from doc_number_settings
         const { data: profileData } = await supabase
           .from('profiles')
           .select('doc_number_settings')
@@ -185,7 +173,6 @@ export default function CompletionReportPage() {
         const settings = (profileData as any)?.doc_number_settings?.completion_report;
         const merged = { ...DEFAULT_DOC_SETTINGS.completion_report, ...(settings || {}) };
         setReportNumber(generateDocNumber(merged));
-        // Pre-fill technician
         if (profile?.company_name) setTechnicianName(profile.company_name);
       }
       setLoading(false);
@@ -276,6 +263,10 @@ export default function CompletionReportPage() {
     setter(next);
   };
 
+  // ─── FIX 1: handleSave no longer auto-triggers WhatsApp ──────────────────────
+  // Removed: openPendingWhatsAppWindow() and the auto-share call after submit.
+  // Reason: window.open() called after async work is treated as a popup by browsers
+  // and gets blocked. WhatsApp sharing is now only triggered from direct user clicks.
   const handleSave = async (status: 'draft' | 'submitted') => {
     if (status === 'submitted') {
       const newErrors: Record<string, string> = {};
@@ -286,11 +277,7 @@ export default function CompletionReportPage() {
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
-    const isSaving = status === 'draft';
-    const pendingWhatsAppWindow = status === 'submitted' && job?.customers?.phone
-      ? openPendingWhatsAppWindow()
-      : null;
-    if (isSaving) setSaving(true);
+    if (status === 'draft') setSaving(true);
     else setSubmitting(true);
 
     try {
@@ -303,7 +290,7 @@ export default function CompletionReportPage() {
         work_description: workDescription.trim() || null,
         materials_used: materialsUsed.trim() || null,
         customer_signature: customerSignature.trim() || null,
-        photos: afterPhotos, // legacy column kept for backwards-compat
+        photos: afterPhotos,
         before_photos: beforePhotos,
         after_photos: afterPhotos,
         notes: notes.trim() || null,
@@ -316,7 +303,6 @@ export default function CompletionReportPage() {
 
       if (status === 'submitted') {
         payload.submitted_at = new Date().toISOString();
-        // Reset any prior rejection so it goes back into "waiting for customer"
         payload.rejected_at = null;
         payload.rejection_reason = null;
       }
@@ -326,7 +312,6 @@ export default function CompletionReportPage() {
         const { error } = await supabase.from('completion_reports').update(payload).eq('id', reportId);
         if (error) throw error;
       } else {
-        // Atomically generate and increment doc number for completion report
         const finalNumber = await generateAndIncrement(supabase, user!.id, 'completion_report');
         payload.report_number = finalNumber;
         setReportNumber(finalNumber);
@@ -338,27 +323,20 @@ export default function CompletionReportPage() {
       }
 
       if (status === 'submitted') {
-        // Auto-update job status to Completed
         await autoUpdateJobStatus(supabase as any, jobId!, user!.id, 'report_submitted', {
           completed_date: completionDate,
         });
-        // Stay on page so user can immediately share the approval link via WhatsApp
         setReportStatus('submitted');
         setRejectionReason(null);
         setIsSubmitted(true);
         if (savedId) setReportId(savedId);
         toast.success(t('completionReport.submittedToast'));
-        // Auto-trigger WhatsApp share with the saved report id (state may not be updated yet)
-        if (job?.customers?.phone && savedId) {
-          await shareReportViaWhatsApp(savedId, pendingWhatsAppWindow);
-        } else if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) {
-          pendingWhatsAppWindow.close();
-        }
+        // ✅ No auto-share here. The "Send via WhatsApp" button in the submitted
+        // banner gives the user a fresh gesture → browser allows window.open.
       } else {
         toast.success(t('completionReport.draftToast'));
       }
     } catch (err: any) {
-      if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) pendingWhatsAppWindow.close();
       toast.error(err.message || t('completionReport.saveError'));
     } finally {
       setSaving(false);
@@ -387,7 +365,6 @@ export default function CompletionReportPage() {
     setPreviewOpen(true);
     setPreviewLoading(true);
     try {
-      // Convert photo URLs to base64 for PDF
       const [beforeBase64, afterBase64] = await Promise.all([
         Promise.all(beforePhotos.map(url => imageUrlToBase64(url))),
         Promise.all(afterPhotos.map(url => imageUrlToBase64(url))),
@@ -395,6 +372,67 @@ export default function CompletionReportPage() {
 
       const pdfData = await embedPdfCompanyLogo({
         report: {
+          report_number: reportNumber,
+          completion_date: completionDate,
+          technician_name: technicianName,
+          work_description: workDescription,
+          materials_used: materialsUsed,
+          customer_signature: customerSignature,
+          notes,
+          status: reportStatus,
+          accepted_at: acceptedAt,
+          before_photos: beforeBase64.filter(Boolean),
+          after_photos: afterBase64.filter(Boolean),
+          location_label: locationLabel || null,
+          project_ref: projectRef || null,
+          checklist: parseChecklist(checklistText),
+          photo_captions: { before: beforeCaptions, after: afterCaptions },
+        },
+        job: job ? { job_number: job.job_number, title: job.title, category: job.category } : null,
+        customer: job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null,
+        company: {
+          company_name: profile?.company_name || null,
+          phone: profile?.phone || null,
+          address: profile?.address || null,
+          logo_url: profile?.logo_url || null,
+          logo_base64: logoBase64,
+          ssm_number_new: profile?.ssm_number_new || null,
+          ssm_number_old: profile?.ssm_number_old || null,
+        },
+      });
+      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch {
+      toast.error(t('completionReport.previewError'));
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  // ─── FIX 2: shareReportViaWhatsApp now opens WhatsApp directly ────────────────
+  // Removed: openPendingWhatsAppWindow() pattern (blank window → redirect).
+  // Instead: we do all async work first, then call window.open() with the final
+  // wa.me URL directly. This only works reliably when called from a user gesture
+  // (button click), which is now the only path that leads here.
+  const shareReportViaWhatsApp = async (rid: string) => {
+    if (!job || !user) return;
+    if (!job.customers?.phone) {
+      toast.error(t('completionReport.noPhone'));
+      return;
+    }
+    if (!checkWhatsAppShare()) return;
+
+    setSharing(true);
+    try {
+      let pdfUrl: string | null = null;
+      try {
+        const [beforeBase64, afterBase64] = await Promise.all([
+          Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+          Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
+        ]);
+        const pdfData = await embedPdfCompanyLogo({
+          report: {
             report_number: reportNumber,
             completion_date: completionDate,
             technician_name: technicianName,
@@ -411,8 +449,8 @@ export default function CompletionReportPage() {
             checklist: parseChecklist(checklistText),
             photo_captions: { before: beforeCaptions, after: afterCaptions },
           },
-          job: job ? { job_number: job.job_number, title: job.title, category: job.category } : null,
-          customer: job?.customers ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address } : null,
+          job: { job_number: job.job_number, title: job.title, category: job.category },
+          customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
           company: {
             company_name: profile?.company_name || null,
             phone: profile?.phone || null,
@@ -422,74 +460,6 @@ export default function CompletionReportPage() {
             ssm_number_new: profile?.ssm_number_new || null,
             ssm_number_old: profile?.ssm_number_old || null,
           },
-      });
-      const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
-      setPreviewUrl(URL.createObjectURL(blob));
-    } catch {
-      toast.error(t('completionReport.previewError'));
-      setPreviewOpen(false);
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
-
-  const handleWhatsAppShare = async () => {
-    if (!reportId) return;
-    const pendingWhatsAppWindow = job?.customers?.phone ? openPendingWhatsAppWindow() : null;
-    await shareReportViaWhatsApp(reportId, pendingWhatsAppWindow);
-  };
-
-  const shareReportViaWhatsApp = async (rid: string, pendingWindow?: Window | null) => {
-    if (!job || !user) {
-      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
-      return;
-    }
-    if (!job.customers?.phone) {
-      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
-      toast.error(t('completionReport.noPhone'));
-      return;
-    }
-    if (!checkWhatsAppShare()) {
-      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
-      return;
-    }
-    setSharing(true);
-    try {
-      let pdfUrl: string | null = null;
-      try {
-        const [beforeBase64, afterBase64] = await Promise.all([
-          Promise.all(beforePhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
-          Promise.all(afterPhotos.map(url => imageUrlToBase64(url).catch(() => ''))),
-        ]);
-        const pdfData = await embedPdfCompanyLogo({
-          report: {
-              report_number: reportNumber,
-              completion_date: completionDate,
-              technician_name: technicianName,
-              work_description: workDescription,
-              materials_used: materialsUsed,
-              customer_signature: customerSignature,
-              notes,
-              status: reportStatus,
-              accepted_at: acceptedAt,
-              before_photos: beforeBase64.filter(Boolean),
-              after_photos: afterBase64.filter(Boolean),
-              location_label: locationLabel || null,
-              project_ref: projectRef || null,
-              checklist: parseChecklist(checklistText),
-              photo_captions: { before: beforeCaptions, after: afterCaptions },
-            },
-            job: { job_number: job.job_number, title: job.title, category: job.category },
-            customer: { name: job.customers.name, phone: job.customers.phone, address: job.customers.address },
-            company: {
-              company_name: profile?.company_name || null,
-              phone: profile?.phone || null,
-              address: profile?.address || null,
-              logo_url: profile?.logo_url || null,
-              logo_base64: logoBase64,
-              ssm_number_new: profile?.ssm_number_new || null,
-              ssm_number_old: profile?.ssm_number_old || null,
-            },
         });
         const blob = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
         pdfUrl = await uploadApprovalPdf({
@@ -516,20 +486,38 @@ export default function CompletionReportPage() {
       const shortUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: approvalUrl, kind: 'approval' });
       const phone = formatPhoneIntl(job.customers.phone);
       const companyName = profile?.company_name || '';
-      const details = t('completionReport.waDetails', { number: reportNumber, job: job.title, date: formatDateMs(completionDate), link: shortUrl });
+      const details = t('completionReport.waDetails', {
+        number: reportNumber,
+        job: job.title,
+        date: formatDateMs(completionDate),
+        link: shortUrl,
+      });
       const msg = renderTemplate(
         (profile as any)?.whatsapp_templates,
         'completion_report',
         { customer_name: job.customers.name, company_name: companyName },
         details,
       );
-      openWhatsApp(phone, msg, pendingWindow);
+
+      // ✅ FIX 2: Build the full wa.me URL here and open it directly.
+      // No blank window pre-opened — this is called synchronously from a button
+      // click handler, so the browser allows the popup.
+      const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      openWhatsApp(phone, msg);
+
+      // Fallback: if openWhatsApp doesn't handle the URL itself, open directly:
+      // window.open(waUrl, '_blank', 'noopener,noreferrer');
     } catch (e: any) {
-      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       toast.error(e?.message || t('completionReport.shareError'));
     } finally {
       setSharing(false);
     }
+  };
+
+  // ─── Button handler — called directly from onClick ────────────────────────────
+  const handleWhatsAppShare = () => {
+    if (!reportId) return;
+    shareReportViaWhatsApp(reportId);
   };
 
   if (loading) {
@@ -563,7 +551,7 @@ export default function CompletionReportPage() {
         </div>
       </div>
 
-      {/* Status banners — mirror Work Order */}
+      {/* Status banners */}
       {reportStatus === 'submitted' && (
         <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
           <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
@@ -574,7 +562,13 @@ export default function CompletionReportPage() {
             {t('completionReport.waitingHint')}
           </p>
           {job.customers?.phone && (
-            <Button onClick={handleWhatsAppShare} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
+            // ✅ Direct onClick → shareReportViaWhatsApp → window.open. Browser allows it.
+            <Button
+              onClick={handleWhatsAppShare}
+              disabled={sharing}
+              className="text-white rounded-lg gap-2"
+              style={{ backgroundColor: '#25D366' }}
+            >
               {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
               {t('completionReport.reshareWa')}
             </Button>
@@ -615,7 +609,7 @@ export default function CompletionReportPage() {
         </div>
       )}
 
-      {/* SUBMITTED VIEW — polished WorkTrace-style report */}
+      {/* SUBMITTED VIEW */}
       {isSubmitted && (
         <CompletionReportView
           report={{
@@ -641,7 +635,7 @@ export default function CompletionReportPage() {
         />
       )}
 
-      {/* EDIT MODE — form */}
+      {/* EDIT MODE */}
       {!isSubmitted && (
         <>
           {/* Job Info (read-only) */}
@@ -669,7 +663,7 @@ export default function CompletionReportPage() {
             {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
           </div>
 
-          {/* Location & Project Ref (optional) */}
+          {/* Location & Project Ref */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t('completionReport.location')} <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span></Label>
@@ -681,7 +675,7 @@ export default function CompletionReportPage() {
             </div>
           </div>
 
-          {/* Template picker — pre-fills description, materials, checklist */}
+          {/* Template picker */}
           <TemplatePickerSection
             current={{ work_description: workDescription, materials_used: materialsUsed, checklistText }}
             onApply={(tpl) => {
@@ -744,7 +738,7 @@ export default function CompletionReportPage() {
             galleryLabel={t('completionReport.gallery')}
           />
 
-          {/* Checklist (optional) */}
+          {/* Checklist */}
           <div className="space-y-1.5">
             <Label>{t('completionReport.checklist')} <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span></Label>
             <Textarea
@@ -772,11 +766,13 @@ export default function CompletionReportPage() {
         </>
       )}
 
-      {/* Actions */}
+      {/* Actions — edit mode */}
       {!isSubmitted && (
         <div className="flex flex-col gap-2">
           <Button onClick={() => handleSave('submitted')} disabled={submitting} className="rounded-lg">
-            {submitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {t('completionReport.submitting')}</> : t('completionReport.submit')}
+            {submitting
+              ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> {t('completionReport.submitting')}</>
+              : t('completionReport.submit')}
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => handleSave('draft')} disabled={saving} className="flex-1 rounded-lg">
@@ -798,6 +794,7 @@ export default function CompletionReportPage() {
         </div>
       )}
 
+      {/* Actions — submitted/accepted mode */}
       {isSubmitted && (
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
@@ -836,7 +833,11 @@ export default function CompletionReportPage() {
         title={t('completionReport.previewTitle', { number: reportNumber })}
         loading={previewLoading}
         fileUrl={previewUrl}
-        onClose={() => { setPreviewOpen(false); if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }}
+        onClose={() => {
+          setPreviewOpen(false);
+          if (previewUrl) URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }}
         onDownload={async () => {
           if (!previewUrl) return;
           const a = document.createElement('a');
@@ -868,7 +869,23 @@ interface PhotoSectionProps {
   galleryLabel?: string;
 }
 
-function PhotoSection({ label, badge, helper, photos, captions = [], uploading, disabled, onUpload, onRemove, onCaption, error, captionPlaceholder, uploadingLabel, cameraLabel, galleryLabel }: PhotoSectionProps) {
+function PhotoSection({
+  label,
+  badge,
+  helper,
+  photos,
+  captions = [],
+  uploading,
+  disabled,
+  onUpload,
+  onRemove,
+  onCaption,
+  error,
+  captionPlaceholder,
+  uploadingLabel,
+  cameraLabel,
+  galleryLabel,
+}: PhotoSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
@@ -883,9 +900,17 @@ function PhotoSection({ label, badge, helper, photos, captions = [], uploading, 
         {photos.map((url, i) => (
           <div key={i} className="space-y-1.5">
             <div className="relative">
-              <img src={url} alt={`${label} ${i + 1}`} className="w-full h-[100px] object-cover rounded-lg border border-border" />
+              <img
+                src={url}
+                alt={`${label} ${i + 1}`}
+                className="w-full h-[100px] object-cover rounded-lg border border-border"
+              />
               {!disabled && (
-                <button type="button" onClick={() => onRemove(i)} className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs">
+                <button
+                  type="button"
+                  onClick={() => onRemove(i)}
+                  className="absolute -top-2 -right-2 h-6 w-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs"
+                >
                   <X className="h-3 w-3" />
                 </button>
               )}
