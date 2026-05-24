@@ -254,7 +254,7 @@ export default function CompletionReportPage() {
 
       setter(prev => [...prev, signed.signedUrl]);
     }
-    setUploadingPhoto(false);
+    setUploadingKind(null);
     e.target.value = '';
   };
 
