@@ -15,6 +15,7 @@ import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import CompletionReportView, { ChecklistItem } from '@/components/reports/CompletionReportView';
+import TemplatePickerSection from '@/components/reports/TemplatePickerSection';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
