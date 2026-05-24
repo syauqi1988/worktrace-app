@@ -256,6 +256,48 @@ export type Database = {
         }
         Relationships: []
       }
+      completion_report_templates: {
+        Row: {
+          category: string | null
+          checklist: Json
+          created_at: string
+          id: string
+          is_default: boolean
+          materials_used: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string | null
+          work_description: string | null
+        }
+        Insert: {
+          category?: string | null
+          checklist?: Json
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          materials_used?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string | null
+          work_description?: string | null
+        }
+        Update: {
+          category?: string | null
+          checklist?: Json
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          materials_used?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string | null
+          work_description?: string | null
+        }
+        Relationships: []
+      }
       completion_reports: {
         Row: {
           accepted_at: string | null

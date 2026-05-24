@@ -15,6 +15,7 @@ import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import CompletionReportView, { ChecklistItem } from '@/components/reports/CompletionReportView';
+import TemplatePickerSection from '@/components/reports/TemplatePickerSection';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
@@ -106,7 +107,7 @@ export default function CompletionReportPage() {
   const [checklistText, setChecklistText] = useState('');
   const [beforeCaptions, setBeforeCaptions] = useState<string[]>([]);
   const [afterCaptions, setAfterCaptions] = useState<string[]>([]);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingKind, setUploadingKind] = useState<'before' | 'after' | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [reportStatus, setReportStatus] = useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
@@ -228,7 +229,7 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      setUploadingPhoto(true);
+      setUploadingKind(kind);
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${user.id}/${jobId}/${kind}/${Date.now()}_${i}.${ext}`;
       const { error: uploadError } = await supabase.storage
@@ -253,7 +254,7 @@ export default function CompletionReportPage() {
 
       setter(prev => [...prev, signed.signedUrl]);
     }
-    setUploadingPhoto(false);
+    setUploadingKind(null);
     e.target.value = '';
   };
 
@@ -680,6 +681,17 @@ export default function CompletionReportPage() {
             </div>
           </div>
 
+          {/* Template picker — pre-fills description, materials, checklist */}
+          <TemplatePickerSection
+            current={{ work_description: workDescription, materials_used: materialsUsed, checklistText }}
+            onApply={(tpl) => {
+              setWorkDescription(tpl.work_description);
+              setMaterialsUsed(tpl.materials_used);
+              setChecklistText(tpl.checklistText);
+              setErrors(p => ({ ...p, workDescription: '' }));
+            }}
+          />
+
           {/* Work Description */}
           <div className="space-y-1.5">
             <Label>{t('completionReport.workDesc')}</Label>
@@ -701,7 +713,7 @@ export default function CompletionReportPage() {
             helper={t('completionReport.beforeHelper')}
             photos={beforePhotos}
             captions={beforeCaptions}
-            uploading={uploadingPhoto}
+            uploading={uploadingKind === 'before'}
             disabled={false}
             onUpload={(e) => handlePhotoUpload(e, 'before')}
             onRemove={(i) => removePhoto('before', i)}
@@ -720,7 +732,7 @@ export default function CompletionReportPage() {
             helper={t('completionReport.afterHelper')}
             photos={afterPhotos}
             captions={afterCaptions}
-            uploading={uploadingPhoto}
+            uploading={uploadingKind === 'after'}
             disabled={false}
             onUpload={(e) => handlePhotoUpload(e, 'after')}
             onRemove={(i) => removePhoto('after', i)}
