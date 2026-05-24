@@ -702,7 +702,7 @@ export default function CompletionReportPage() {
             helper={t('completionReport.beforeHelper')}
             photos={beforePhotos}
             captions={beforeCaptions}
-            uploading={uploadingPhoto}
+            uploading={uploadingKind === 'before'}
             disabled={false}
             onUpload={(e) => handlePhotoUpload(e, 'before')}
             onRemove={(i) => removePhoto('before', i)}
