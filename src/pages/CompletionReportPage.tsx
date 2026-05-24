@@ -681,6 +681,17 @@ export default function CompletionReportPage() {
             </div>
           </div>
 
+          {/* Template picker — pre-fills description, materials, checklist */}
+          <TemplatePickerSection
+            current={{ work_description: workDescription, materials_used: materialsUsed, checklistText }}
+            onApply={(tpl) => {
+              setWorkDescription(tpl.work_description);
+              setMaterialsUsed(tpl.materials_used);
+              setChecklistText(tpl.checklistText);
+              setErrors(p => ({ ...p, workDescription: '' }));
+            }}
+          />
+
           {/* Work Description */}
           <div className="space-y-1.5">
             <Label>{t('completionReport.workDesc')}</Label>
