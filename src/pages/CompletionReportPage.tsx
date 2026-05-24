@@ -229,7 +229,7 @@ export default function CompletionReportPage() {
         continue;
       }
 
-      setUploadingPhoto(true);
+      setUploadingKind(kind);
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${user.id}/${jobId}/${kind}/${Date.now()}_${i}.${ext}`;
       const { error: uploadError } = await supabase.storage
