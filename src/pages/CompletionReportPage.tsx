@@ -27,7 +27,7 @@ import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
-import { openWhatsApp } from '@/lib/whatsapp';
+import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -48,7 +48,7 @@ interface Job {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pure helpers (no hooks, no side-effects)
+// Pure helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 function formatPhoneIntl(phone: string): string {
@@ -114,39 +114,38 @@ export default function CompletionReportPage() {
   const [deleting, setDeleting]     = useState(false);
 
   // ── Report metadata ──────────────────────────────────────────────────────
-  const [reportId, setReportId]       = useState<string | null>(null);
+  const [reportId, setReportId]         = useState<string | null>(null);
   const [reportNumber, setReportNumber] = useState('');
   const [reportStatus, setReportStatus] =
     useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
-  const [acceptedAt, setAcceptedAt]   = useState<string | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [acceptedAt, setAcceptedAt]     = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted]   = useState(false);
 
   // ── Form fields ──────────────────────────────────────────────────────────
   const [completionDate, setCompletionDate] =
     useState(() => new Date().toISOString().slice(0, 10));
-  const [technicianName, setTechnicianName]   = useState('');
-  const [workDescription, setWorkDescription] = useState('');
-  const [materialsUsed, setMaterialsUsed]     = useState('');
+  const [technicianName, setTechnicianName]     = useState('');
+  const [workDescription, setWorkDescription]   = useState('');
+  const [materialsUsed, setMaterialsUsed]       = useState('');
   const [customerSignature, setCustomerSignature] = useState('');
-  const [notes, setNotes]               = useState('');
-  const [locationLabel, setLocationLabel] = useState('');
-  const [projectRef, setProjectRef]     = useState('');
-  const [checklistText, setChecklistText] = useState('');
-  const [errors, setErrors]             = useState<Record<string, string>>({});
+  const [notes, setNotes]                       = useState('');
+  const [locationLabel, setLocationLabel]       = useState('');
+  const [projectRef, setProjectRef]             = useState('');
+  const [checklistText, setChecklistText]       = useState('');
+  const [errors, setErrors]                     = useState<Record<string, string>>({});
 
   // ── Photos ───────────────────────────────────────────────────────────────
-  const [beforePhotos, setBeforePhotos]   = useState<string[]>([]);
-  const [afterPhotos, setAfterPhotos]     = useState<string[]>([]);
+  const [beforePhotos, setBeforePhotos]     = useState<string[]>([]);
+  const [afterPhotos, setAfterPhotos]       = useState<string[]>([]);
   const [beforeCaptions, setBeforeCaptions] = useState<string[]>([]);
   const [afterCaptions, setAfterCaptions]   = useState<string[]>([]);
-  const [uploadingKind, setUploadingKind] =
-    useState<'before' | 'after' | null>(null);
+  const [uploadingKind, setUploadingKind]   = useState<'before' | 'after' | null>(null);
 
   // ── PDF / preview ────────────────────────────────────────────────────────
-  const [logoBase64, setLogoBase64]   = useState('');
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewUrl, setPreviewUrl]   = useState<string | null>(null);
+  const [logoBase64, setLogoBase64]         = useState('');
+  const [previewOpen, setPreviewOpen]       = useState(false);
+  const [previewUrl, setPreviewUrl]         = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // ── Dialogs ──────────────────────────────────────────────────────────────
@@ -159,15 +158,12 @@ export default function CompletionReportPage() {
   // Effects
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Pre-convert company logo once
   useEffect(() => {
     if (profile?.logo_url) imageUrlToBase64(profile.logo_url).then(setLogoBase64);
   }, [profile?.logo_url]);
 
-  // Load job + existing report
   useEffect(() => {
     if (!user || !jobId) return;
-
     async function load() {
       const [jobRes, reportRes] = await Promise.all([
         supabase
@@ -214,7 +210,6 @@ export default function CompletionReportPage() {
         setAcceptedAt(r.accepted_at || null);
         setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
-        // Preview next doc number without consuming it yet
         const { data: profileData } = await supabase
           .from('profiles')
           .select('doc_number_settings')
@@ -225,10 +220,8 @@ export default function CompletionReportPage() {
         setReportNumber(generateDocNumber(merged));
         if (profile?.company_name) setTechnicianName(profile.company_name);
       }
-
       setLoading(false);
     }
-
     load();
   }, [user, jobId, profile]);
 
@@ -260,73 +253,60 @@ export default function CompletionReportPage() {
     return () => { supabase.removeChannel(ch); };
   }, [user, jobId]);
 
-  // Cleanup blob URLs on unmount
   useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
   }, [previewUrl]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Helpers — build the PDF data object (used in preview + share)
+  // PDF data builder — shared between preview and share
   // ─────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Converts all photo URLs to base64, builds the full PDF data object,
-   * and embeds the company logo. Returns a ready-to-render PDF props object.
-   */
   const buildPdfData = async (photosBefore: string[], photosAfter: string[]) => {
     if (!job) throw new Error('Job not loaded');
-
     const [beforeBase64, afterBase64] = await Promise.all([
       Promise.all(photosBefore.map(url => imageUrlToBase64(url).catch(() => ''))),
       Promise.all(photosAfter.map(url => imageUrlToBase64(url).catch(() => ''))),
     ]);
-
     return embedPdfCompanyLogo({
       report: {
-        report_number: reportNumber,
-        completion_date: completionDate,
-        technician_name: technicianName,
-        work_description: workDescription,
-        materials_used: materialsUsed,
+        report_number:      reportNumber,
+        completion_date:    completionDate,
+        technician_name:    technicianName,
+        work_description:   workDescription,
+        materials_used:     materialsUsed,
         customer_signature: customerSignature,
         notes,
-        status: reportStatus,
-        accepted_at: acceptedAt,
-        before_photos: beforeBase64.filter(Boolean),
-        after_photos: afterBase64.filter(Boolean),
-        location_label: locationLabel || null,
-        project_ref: projectRef || null,
-        checklist: parseChecklist(checklistText),
-        photo_captions: { before: beforeCaptions, after: afterCaptions },
+        status:             reportStatus,
+        accepted_at:        acceptedAt,
+        before_photos:      beforeBase64.filter(Boolean),
+        after_photos:       afterBase64.filter(Boolean),
+        location_label:     locationLabel || null,
+        project_ref:        projectRef    || null,
+        checklist:          parseChecklist(checklistText),
+        photo_captions:     { before: beforeCaptions, after: afterCaptions },
       },
       job: {
         job_number: job.job_number,
-        title: job.title,
-        category: job.category,
+        title:      job.title,
+        category:   job.category,
       },
       customer: job.customers
-        ? {
-            name: job.customers.name,
-            phone: job.customers.phone,
-            address: job.customers.address,
-          }
+        ? { name: job.customers.name, phone: job.customers.phone, address: job.customers.address }
         : null,
       company: {
-        company_name: profile?.company_name || null,
-        phone: profile?.phone || null,
-        address: profile?.address || null,
-        logo_url: profile?.logo_url || null,
-        logo_base64: logoBase64,
-        ssm_number_new: profile?.ssm_number_new || null,
-        ssm_number_old: profile?.ssm_number_old || null,
+        company_name:    profile?.company_name    || null,
+        phone:           profile?.phone           || null,
+        address:         profile?.address         || null,
+        logo_url:        profile?.logo_url        || null,
+        logo_base64:     logoBase64,
+        ssm_number_new:  profile?.ssm_number_new  || null,
+        ssm_number_old:  profile?.ssm_number_old  || null,
       },
     });
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Photo upload / remove / caption
+  // Photo handlers
   // ─────────────────────────────────────────────────────────────────────────
 
   const handlePhotoUpload = async (
@@ -335,46 +315,35 @@ export default function CompletionReportPage() {
   ) => {
     const files = e.target.files;
     if (!files || !user || !jobId) return;
-
     const current = kind === 'before' ? beforePhotos : afterPhotos;
     const setter  = kind === 'before' ? setBeforePhotos : setAfterPhotos;
 
     for (let i = 0; i < files.length; i++) {
       if (current.length + i >= 10) break;
       const file = files[i];
-
       if (file.size > 5 * 1024 * 1024) {
         toast.error(t('completionReport.fileTooLarge', { name: file.name }));
         continue;
       }
-
       setUploadingKind(kind);
       const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${user.id}/${jobId}/${kind}/${Date.now()}_${i}.${ext}`;
-
       const { error: uploadError } = await supabase.storage
         .from('completion-photos')
         .upload(path, file, { upsert: true, contentType: file.type || `image/${ext}` });
-
       if (uploadError) {
-        console.error('Upload error:', uploadError);
         toast.error(t('completionReport.uploadFailed', { msg: uploadError.message }));
         continue;
       }
-
       const { data: signed, error: signedError } = await supabase.storage
         .from('completion-photos')
         .createSignedUrl(path, 60 * 60 * 24 * 365);
-
       if (signedError || !signed?.signedUrl) {
-        console.error('Signed URL error:', signedError);
         toast.error(t('completionReport.imageUrlFailed'));
         continue;
       }
-
       setter(prev => [...prev, signed.signedUrl]);
     }
-
     setUploadingKind(null);
     e.target.value = '';
   };
@@ -402,13 +371,12 @@ export default function CompletionReportPage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleSave = async (status: 'draft' | 'submitted') => {
-    // Validate on submit
     if (status === 'submitted') {
       const newErrors: Record<string, string> = {};
-      if (!completionDate)         newErrors.completionDate  = t('completionReport.errDate');
-      if (!technicianName.trim())  newErrors.technicianName  = t('completionReport.errTechnician');
-      if (!workDescription.trim()) newErrors.workDescription = t('completionReport.errWorkDesc');
-      if (afterPhotos.length === 0) newErrors.photos         = t('completionReport.errPhotos');
+      if (!completionDate)          newErrors.completionDate  = t('completionReport.errDate');
+      if (!technicianName.trim())   newErrors.technicianName  = t('completionReport.errTechnician');
+      if (!workDescription.trim())  newErrors.workDescription = t('completionReport.errWorkDesc');
+      if (afterPhotos.length === 0) newErrors.photos          = t('completionReport.errPhotos');
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
@@ -425,7 +393,7 @@ export default function CompletionReportPage() {
         work_description:   workDescription.trim()   || null,
         materials_used:     materialsUsed.trim()     || null,
         customer_signature: customerSignature.trim() || null,
-        photos:             afterPhotos,   // legacy column kept for backwards-compat
+        photos:             afterPhotos,
         before_photos:      beforePhotos,
         after_photos:       afterPhotos,
         notes:              notes.trim()         || null,
@@ -437,13 +405,12 @@ export default function CompletionReportPage() {
       };
 
       if (status === 'submitted') {
-        payload.submitted_at      = new Date().toISOString();
-        payload.rejected_at       = null;
-        payload.rejection_reason  = null;
+        payload.submitted_at     = new Date().toISOString();
+        payload.rejected_at      = null;
+        payload.rejection_reason = null;
       }
 
       let savedId = reportId;
-
       if (reportId) {
         const { error } = await supabase
           .from('completion_reports')
@@ -451,11 +418,9 @@ export default function CompletionReportPage() {
           .eq('id', reportId);
         if (error) throw error;
       } else {
-        // Atomically generate + increment doc number
         const finalNumber = await generateAndIncrement(supabase, user!.id, 'completion_report');
         payload.report_number = finalNumber;
         setReportNumber(finalNumber);
-
         const { data: inserted, error } = await supabase
           .from('completion_reports')
           .insert(payload)
@@ -475,9 +440,6 @@ export default function CompletionReportPage() {
         setIsSubmitted(true);
         if (savedId) setReportId(savedId);
         toast.success(t('completionReport.submittedToast'));
-        // ✅ No auto-share here.
-        // The "Hantar via WhatsApp" button in the submitted banner gives the user
-        // a fresh gesture → browser allows window.open reliably on all platforms.
       } else {
         toast.success(t('completionReport.draftToast'));
       }
@@ -538,104 +500,37 @@ export default function CompletionReportPage() {
     setPreviewUrl(null);
   };
 
-  const handlePreviewDownload = async () => {
-    if (!previewUrl) return;
-    const a      = document.createElement('a');
-    a.href       = previewUrl;
-    a.download   = t('completionReport.fileName', { number: reportNumber });
-    a.click();
-  };
-
   // ─────────────────────────────────────────────────────────────────────────
   // WhatsApp sharing
   //
-  // Pattern mirrors InvoiceDetailPage:
-  //   shareReportWhatsAppCore  — pure async logic, no plan gate, no loading state.
-  //                              Can be called from any async chain that started
-  //                              with a direct user gesture.
-  //   handleWhatsAppShare      — button onClick wrapper: plan gate + phone guard
-  //                              + loading state + error toast.
+  // THE PROBLEM this solves:
+  // ─────────────────────────────────────────────────────────────────────────
+  // Browsers (Safari, mobile Chrome, WebView) only allow window.open() from
+  // a synchronous user gesture. An async function breaks that trust chain the
+  // moment it hits the first `await`. By the time PDF gen + upload + token +
+  // short link all finish (~3–10 s), the gesture is long gone → popup blocked.
   //
-  // Why no pre-opened blank window:
-  //   openPendingWhatsAppWindow() opens a blank tab then tries to redirect it
-  //   after several seconds of async work. Browsers (especially Safari / mobile
-  //   Chrome) treat that redirect as a popup and block it. The fix is to call
-  //   window.open() (via openWhatsApp) only AFTER all async work is done, from
-  //   a call-stack that traces back to a direct user click. That is guaranteed
-  //   here because handleWhatsAppShare is the only entry point.
+  // THE FIX:
+  // ─────────────────────────────────────────────────────────────────────────
+  // 1. On button click (synchronous), open the WhatsApp window immediately
+  //    with a plain wa.me link (no message yet). This uses the gesture trust.
+  // 2. Do all async work (PDF, upload, token, short link).
+  // 3. Redirect the already-open window to the final wa.me URL with the message.
+  //
+  // The window is opened with noopener=false (default) so we keep a reference
+  // to it and can set window.location.href on it after async work completes.
+  // This is the same pattern used by services like Calendly and Notion for
+  // deferred deep links.
+  //
+  // Why not window.location.href directly?
+  //   Because on desktop we want a new tab. On mobile, wa.me is a deep link
+  //   to the WhatsApp app, so a new window is required either way.
   // ─────────────────────────────────────────────────────────────────────────
 
-  /**
-   * Core share logic — no plan gate, no setSharing.
-   * Generates PDF → uploads → gets approval token → short link → opens WhatsApp.
-   * Must only be called from a call-stack rooted in a direct user gesture.
-   */
-  const shareReportWhatsAppCore = async (rid: string) => {
-    if (!job || !user || !job.customers?.phone) return;
-
-    let pdfUrl: string | null = null;
-
-    // PDF generation is best-effort — if it fails we still send the approval link
-    try {
-      const pdfData = await buildPdfData(beforePhotos, afterPhotos);
-      const blob    = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
-      pdfUrl        = await uploadApprovalPdf({
-        bucket:         'completion-report-pdfs',
-        userId:         user.id,
-        documentId:     rid,
-        documentNumber: reportNumber,
-        blob,
-      });
-    } catch (pdfError) {
-      console.warn('Completion report PDF skipped; sharing approval link only:', pdfError);
-    }
-
-    const token       = await getOrCreateApprovalToken({
-      userId:        user.id,
-      documentId:    rid,
-      documentType:  'completion_report',
-      customerName:  job.customers.name,
-      customerEmail: job.customers.email || null,
-      pdfUrl,
-      expiresInDays: 30,
-    });
-    const approvalUrl = buildPublicApprovalUrl(token);
-    const shortUrl    = await getOrCreateShortLink({
-      userId:    user.id,
-      targetUrl: approvalUrl,
-      kind:      'approval',
-    });
-
-    const phone   = formatPhoneIntl(job.customers.phone);
-    const details = t('completionReport.waDetails', {
-      number: reportNumber,
-      job:    job.title,
-      date:   formatDateMs(completionDate),
-      link:   shortUrl,
-    });
-    const msg = renderTemplate(
-      (profile as any)?.whatsapp_templates,
-      'completion_report',
-      {
-        customer_name: job.customers.name,
-        company_name:  profile?.company_name || '',
-      },
-      details,
-    );
-
-    // ✅ Single, direct window.open — called only after all async work is done.
-    // No blank window pre-opened. Works on mobile Safari, Chrome, WebView.
-    openWhatsApp(phone, msg);
-  };
-
-  /**
-   * Button-level wrapper — always called from a direct onClick.
-   * Handles: plan gate check, phone guard, loading state, error boundary.
-   */
   const handleWhatsAppShare = async () => {
     if (!reportId) return;
 
-    // ① Plan gate — early exit before any async work
+    // ① Plan gate — synchronous check before opening any window
     if (!checkWhatsAppShare()) return;
 
     // ② Phone guard
@@ -644,10 +539,77 @@ export default function CompletionReportPage() {
       return;
     }
 
+    // ③ Open the WhatsApp window NOW — synchronously, inside the click handler,
+    //    before any await. Browsers trust this because we're still in the gesture.
+    //    We send to the phone with no message yet; we'll redirect with the full
+    //    URL once async work is done.
+    const phone    = formatPhoneIntl(job.customers.phone);
+    const waWindow = window.open(`https://wa.me/${phone}`, '_blank');
+
     setSharing(true);
     try {
-      await shareReportWhatsAppCore(reportId);
+      // ④ Do all the heavy async work
+      let pdfUrl: string | null = null;
+      try {
+        const pdfData = await buildPdfData(beforePhotos, afterPhotos);
+        const blob    = await pdf(<CompletionReportPDF {...pdfData} />).toBlob();
+        pdfUrl = await uploadApprovalPdf({
+          bucket:         'completion-report-pdfs',
+          userId:         user!.id,
+          documentId:     reportId,
+          documentNumber: reportNumber,
+          blob,
+        });
+      } catch (pdfErr) {
+        // PDF is best-effort — still send approval link if it fails
+        console.warn('Completion report PDF skipped; sharing approval link only:', pdfErr);
+      }
+
+      const token = await getOrCreateApprovalToken({
+        userId:        user!.id,
+        documentId:    reportId,
+        documentType:  'completion_report',
+        customerName:  job.customers.name,
+        customerEmail: job.customers.email || null,
+        pdfUrl,
+        expiresInDays: 30,
+      });
+      const approvalUrl = buildPublicApprovalUrl(token);
+      const shortUrl    = await getOrCreateShortLink({
+        userId:    user!.id,
+        targetUrl: approvalUrl,
+        kind:      'approval',
+      });
+
+      const details = t('completionReport.waDetails', {
+        number: reportNumber,
+        job:    job.title,
+        date:   formatDateMs(completionDate),
+        link:   shortUrl,
+      });
+      const msg = renderTemplate(
+        (profile as any)?.whatsapp_templates,
+        'completion_report',
+        {
+          customer_name: job.customers.name,
+          company_name:  profile?.company_name || '',
+        },
+        details,
+      );
+
+      // ⑤ Redirect the already-open window to the final WhatsApp URL.
+      //    The window is already trusted (opened synchronously above), so this
+      //    redirect works on all browsers including Safari and mobile WebView.
+      const finalUrl = buildWhatsAppUrl(phone, msg);
+      if (waWindow && !waWindow.closed) {
+        waWindow.location.href = finalUrl;
+      } else {
+        // Fallback: window was blocked or closed by user — try direct navigation
+        openWhatsApp(phone, msg);
+      }
     } catch (e: any) {
+      // Close the blank window if something went wrong before we could redirect it
+      if (waWindow && !waWindow.closed) waWindow.close();
       toast.error(e?.message || t('completionReport.shareError'));
     } finally {
       setSharing(false);
@@ -655,26 +617,26 @@ export default function CompletionReportPage() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Render helpers
+  // Render
   // ─────────────────────────────────────────────────────────────────────────
 
   const reportViewProps = {
     report: {
-      report_number:       reportNumber,
-      completion_date:     completionDate,
-      technician_name:     technicianName,
-      work_description:    workDescription,
-      materials_used:      materialsUsed,
-      customer_signature:  customerSignature,
+      report_number:      reportNumber,
+      completion_date:    completionDate,
+      technician_name:    technicianName,
+      work_description:   workDescription,
+      materials_used:     materialsUsed,
+      customer_signature: customerSignature,
       notes,
-      status:              reportStatus,
-      accepted_at:         acceptedAt,
-      before_photos:       beforePhotos,
-      after_photos:        afterPhotos,
-      location_label:      locationLabel,
-      project_ref:         projectRef,
-      checklist:           parseChecklist(checklistText),
-      photo_captions:      { before: beforeCaptions, after: afterCaptions },
+      status:             reportStatus,
+      accepted_at:        acceptedAt,
+      before_photos:      beforePhotos,
+      after_photos:       afterPhotos,
+      location_label:     locationLabel,
+      project_ref:        projectRef,
+      checklist:          parseChecklist(checklistText),
+      photo_captions:     { before: beforeCaptions, after: afterCaptions },
     },
     job:      job ? { job_number: job.job_number, title: job.title, category: job.category } : null,
     customer: job?.customers
@@ -682,10 +644,6 @@ export default function CompletionReportPage() {
       : null,
     company:  { company_name: profile?.company_name || null, logo_url: profile?.logo_url || null },
   };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Loading / not-found states
-  // ─────────────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -708,43 +666,28 @@ export default function CompletionReportPage() {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Main render
-  // ─────────────────────────────────────────────────────────────────────────
-
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-muted-foreground hover:text-foreground"
-        >
+        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-foreground">
-            {t('completionReport.title')}
-          </h1>
+          <h1 className="text-xl font-bold text-foreground">{t('completionReport.title')}</h1>
           <p className="text-sm text-muted-foreground">{reportNumber}</p>
         </div>
       </div>
 
-      {/* ── Status banners ─────────────────────────────────────────────────── */}
-
-      {/* Waiting for approval */}
+      {/* Status: waiting for approval */}
       {reportStatus === 'submitted' && (
         <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4 space-y-2">
           <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
             <Loader2 className="h-4 w-4 animate-spin" />
             {t('completionReport.waitingApproval')}
           </div>
-          <p className="text-xs text-[#1D4ED8]/80">
-            {t('completionReport.waitingHint')}
-          </p>
-          {/* ✅ Direct onClick → handleWhatsAppShare → shareReportWhatsAppCore
-              → openWhatsApp. No pre-opened blank window. Works on mobile. */}
+          <p className="text-xs text-[#1D4ED8]/80">{t('completionReport.waitingHint')}</p>
           {job.customers?.phone && (
             <Button
               onClick={handleWhatsAppShare}
@@ -761,7 +704,7 @@ export default function CompletionReportPage() {
         </div>
       )}
 
-      {/* Accepted */}
+      {/* Status: accepted */}
       {reportStatus === 'accepted' && (
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
           <div className="flex items-center gap-2 text-[#15803D] text-sm font-semibold">
@@ -793,7 +736,7 @@ export default function CompletionReportPage() {
         </div>
       )}
 
-      {/* Rejected */}
+      {/* Status: rejected */}
       {reportStatus === 'rejected' && (
         <div className="bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl p-4 space-y-2">
           <div className="flex items-center gap-2 text-[#B91C1C] text-sm font-semibold">
@@ -805,18 +748,14 @@ export default function CompletionReportPage() {
               {t('completionReport.rejectedReason', { reason: rejectionReason })}
             </p>
           )}
-          <p className="text-xs text-[#B91C1C]/80">
-            {t('completionReport.rejectedHint')}
-          </p>
+          <p className="text-xs text-[#B91C1C]/80">{t('completionReport.rejectedHint')}</p>
         </div>
       )}
 
-      {/* ── Submitted / accepted — read-only view ──────────────────────────── */}
-      {isSubmitted && (
-        <CompletionReportView {...reportViewProps} />
-      )}
+      {/* Submitted / accepted — read-only view */}
+      {isSubmitted && <CompletionReportView {...reportViewProps} />}
 
-      {/* ── Draft / edit — form ────────────────────────────────────────────── */}
+      {/* Edit / draft — form */}
       {!isSubmitted && (
         <>
           {/* Job info (read-only) */}
@@ -850,14 +789,9 @@ export default function CompletionReportPage() {
             <Input
               type="date"
               value={completionDate}
-              onChange={e => {
-                setCompletionDate(e.target.value);
-                setErrors(p => ({ ...p, completionDate: '' }));
-              }}
+              onChange={e => { setCompletionDate(e.target.value); setErrors(p => ({ ...p, completionDate: '' })); }}
             />
-            {errors.completionDate && (
-              <p className="text-xs text-destructive">{errors.completionDate}</p>
-            )}
+            {errors.completionDate && <p className="text-xs text-destructive">{errors.completionDate}</p>}
           </div>
 
           {/* Technician name */}
@@ -865,15 +799,10 @@ export default function CompletionReportPage() {
             <Label>{t('completionReport.technicianName')}</Label>
             <Input
               value={technicianName}
-              onChange={e => {
-                setTechnicianName(e.target.value);
-                setErrors(p => ({ ...p, technicianName: '' }));
-              }}
+              onChange={e => { setTechnicianName(e.target.value); setErrors(p => ({ ...p, technicianName: '' })); }}
               placeholder={t('completionReport.technicianPlaceholder')}
             />
-            {errors.technicianName && (
-              <p className="text-xs text-destructive">{errors.technicianName}</p>
-            )}
+            {errors.technicianName && <p className="text-xs text-destructive">{errors.technicianName}</p>}
           </div>
 
           {/* Location + project ref */}
@@ -881,28 +810,16 @@ export default function CompletionReportPage() {
             <div className="space-y-1.5">
               <Label>
                 {t('completionReport.location')}{' '}
-                <span className="text-xs text-muted-foreground font-normal">
-                  {t('completionReport.optional')}
-                </span>
+                <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span>
               </Label>
-              <Input
-                value={locationLabel}
-                onChange={e => setLocationLabel(e.target.value)}
-                placeholder={t('completionReport.locationPlaceholder')}
-              />
+              <Input value={locationLabel} onChange={e => setLocationLabel(e.target.value)} placeholder={t('completionReport.locationPlaceholder')} />
             </div>
             <div className="space-y-1.5">
               <Label>
                 {t('completionReport.projectRef')}{' '}
-                <span className="text-xs text-muted-foreground font-normal">
-                  {t('completionReport.optional')}
-                </span>
+                <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span>
               </Label>
-              <Input
-                value={projectRef}
-                onChange={e => setProjectRef(e.target.value)}
-                placeholder={t('completionReport.projectRefPlaceholder')}
-              />
+              <Input value={projectRef} onChange={e => setProjectRef(e.target.value)} placeholder={t('completionReport.projectRefPlaceholder')} />
             </div>
           </div>
 
@@ -922,27 +839,17 @@ export default function CompletionReportPage() {
             <Label>{t('completionReport.workDesc')}</Label>
             <Textarea
               value={workDescription}
-              onChange={e => {
-                setWorkDescription(e.target.value);
-                setErrors(p => ({ ...p, workDescription: '' }));
-              }}
+              onChange={e => { setWorkDescription(e.target.value); setErrors(p => ({ ...p, workDescription: '' })); }}
               rows={5}
               placeholder={t('completionReport.workDescPlaceholder')}
             />
-            {errors.workDescription && (
-              <p className="text-xs text-destructive">{errors.workDescription}</p>
-            )}
+            {errors.workDescription && <p className="text-xs text-destructive">{errors.workDescription}</p>}
           </div>
 
-          {/* Materials used */}
+          {/* Materials */}
           <div className="space-y-1.5">
             <Label>{t('completionReport.materials')}</Label>
-            <Textarea
-              value={materialsUsed}
-              onChange={e => setMaterialsUsed(e.target.value)}
-              rows={3}
-              placeholder={t('completionReport.materialsPlaceholder')}
-            />
+            <Textarea value={materialsUsed} onChange={e => setMaterialsUsed(e.target.value)} rows={3} placeholder={t('completionReport.materialsPlaceholder')} />
           </div>
 
           {/* Before photos */}
@@ -988,9 +895,7 @@ export default function CompletionReportPage() {
           <div className="space-y-1.5">
             <Label>
               {t('completionReport.checklist')}{' '}
-              <span className="text-xs text-muted-foreground font-normal">
-                {t('completionReport.optional')}
-              </span>
+              <span className="text-xs text-muted-foreground font-normal">{t('completionReport.optional')}</span>
             </Label>
             <Textarea
               value={checklistText}
@@ -999,68 +904,40 @@ export default function CompletionReportPage() {
               placeholder={t('completionReport.checklistPlaceholder')}
               className="font-mono text-sm"
             />
-            <p className="text-[11px] text-muted-foreground">
-              {t('completionReport.checklistHelper')}
-            </p>
+            <p className="text-[11px] text-muted-foreground">{t('completionReport.checklistHelper')}</p>
           </div>
 
           {/* Customer signature */}
           <div className="space-y-1.5">
             <Label>{t('completionReport.customerSignature')}</Label>
-            <Input
-              value={customerSignature}
-              onChange={e => setCustomerSignature(e.target.value)}
-              placeholder={t('completionReport.customerSignaturePlaceholder')}
-            />
-            <p className="text-[11px] text-muted-foreground">
-              {t('completionReport.signatureHelper')}
-            </p>
+            <Input value={customerSignature} onChange={e => setCustomerSignature(e.target.value)} placeholder={t('completionReport.customerSignaturePlaceholder')} />
+            <p className="text-[11px] text-muted-foreground">{t('completionReport.signatureHelper')}</p>
           </div>
 
-          {/* Additional notes */}
+          {/* Notes */}
           <div className="space-y-1.5">
             <Label>{t('completionReport.additionalNotes')}</Label>
-            <Textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={3}
-              placeholder={t('completionReport.notesPlaceholder')}
-            />
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('completionReport.notesPlaceholder')} />
           </div>
         </>
       )}
 
-      {/* ── Actions — edit / draft mode ────────────────────────────────────── */}
+      {/* Actions — edit / draft mode */}
       {!isSubmitted && (
         <div className="flex flex-col gap-2">
-          <Button
-            onClick={() => handleSave('submitted')}
-            disabled={submitting}
-            className="rounded-lg"
-          >
+          <Button onClick={() => handleSave('submitted')} disabled={submitting} className="rounded-lg">
             {submitting
               ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />{t('completionReport.submitting')}</>
               : t('completionReport.submit')}
           </Button>
-
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleSave('draft')}
-              disabled={saving}
-              className="flex-1 rounded-lg"
-            >
+            <Button variant="outline" onClick={() => handleSave('draft')} disabled={saving} className="flex-1 rounded-lg">
               {saving ? t('completionReport.savingDraft') : t('completionReport.saveDraft')}
             </Button>
-            <Button
-              variant="outline"
-              onClick={handlePreview}
-              className="flex-1 rounded-lg gap-2"
-            >
+            <Button variant="outline" onClick={handlePreview} className="flex-1 rounded-lg gap-2">
               <Eye className="h-4 w-4" /> {t('completionReport.previewPdf')}
             </Button>
           </div>
-
           {reportId && (
             <Button
               variant="outline"
@@ -1073,7 +950,7 @@ export default function CompletionReportPage() {
         </div>
       )}
 
-      {/* ── Actions — submitted / accepted mode ───────────────────────────── */}
+      {/* Actions — submitted / accepted mode */}
       {isSubmitted && (
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
@@ -1081,10 +958,7 @@ export default function CompletionReportPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => {
-              setIsSubmitted(false);
-              toast.info(t('completionReport.editModeOpened'));
-            }}
+            onClick={() => { setIsSubmitted(false); toast.info(t('completionReport.editModeOpened')); }}
             className="rounded-lg gap-2"
           >
             <Edit className="h-4 w-4" /> {t('completionReport.editReport')}
@@ -1099,7 +973,6 @@ export default function CompletionReportPage() {
         </div>
       )}
 
-      {/* ── Dialogs ────────────────────────────────────────────────────────── */}
       <ConfirmDialog
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -1117,7 +990,13 @@ export default function CompletionReportPage() {
         loading={previewLoading}
         fileUrl={previewUrl}
         onClose={closePreview}
-        onDownload={handlePreviewDownload}
+        onDownload={async () => {
+          if (!previewUrl) return;
+          const a = document.createElement('a');
+          a.href = previewUrl;
+          a.download = t('completionReport.fileName', { number: reportNumber });
+          a.click();
+        }}
       />
     </div>
   );
@@ -1147,21 +1026,9 @@ interface PhotoSectionProps {
 }
 
 function PhotoSection({
-  label,
-  badge,
-  helper,
-  photos,
-  captions = [],
-  uploading,
-  disabled,
-  onUpload,
-  onRemove,
-  onCaption,
-  error,
-  captionPlaceholder,
-  uploadingLabel,
-  cameraLabel,
-  galleryLabel,
+  label, badge, helper, photos, captions = [], uploading, disabled,
+  onUpload, onRemove, onCaption, error, captionPlaceholder,
+  uploadingLabel, cameraLabel, galleryLabel,
 }: PhotoSectionProps) {
   return (
     <div className="space-y-2">
@@ -1173,7 +1040,6 @@ function PhotoSection({
       </div>
       <p className="text-xs text-muted-foreground">{helper}</p>
       {error && <p className="text-xs text-destructive">{error}</p>}
-
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {photos.map((url, i) => (
           <div key={i} className="space-y-1.5">
@@ -1203,46 +1069,23 @@ function PhotoSection({
             )}
           </div>
         ))}
-
         {photos.length < 10 && !disabled && (
           uploading ? (
             <div className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground mt-1">
-                {uploadingLabel || 'Uploading...'}
-              </span>
+              <span className="text-[11px] text-muted-foreground mt-1">{uploadingLabel || 'Uploading...'}</span>
             </div>
           ) : (
             <>
-              {/* Camera (capture) */}
               <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
                 <Camera className="h-5 w-5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground mt-1">
-                  {cameraLabel || 'Camera'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={onUpload}
-                  className="hidden"
-                  disabled={disabled}
-                />
+                <span className="text-[11px] text-muted-foreground mt-1">{cameraLabel || 'Camera'}</span>
+                <input type="file" accept="image/*" capture="environment" onChange={onUpload} className="hidden" disabled={disabled} />
               </label>
-              {/* Gallery (multi-select) */}
               <label className="h-[100px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
                 <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground mt-1">
-                  {galleryLabel || 'Gallery'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={onUpload}
-                  className="hidden"
-                  disabled={disabled}
-                />
+                <span className="text-[11px] text-muted-foreground mt-1">{galleryLabel || 'Gallery'}</span>
+                <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" disabled={disabled} />
               </label>
             </>
           )
