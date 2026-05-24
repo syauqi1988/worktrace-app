@@ -107,7 +107,7 @@ export default function CompletionReportPage() {
   const [checklistText, setChecklistText] = useState('');
   const [beforeCaptions, setBeforeCaptions] = useState<string[]>([]);
   const [afterCaptions, setAfterCaptions] = useState<string[]>([]);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingKind, setUploadingKind] = useState<'before' | 'after' | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [reportStatus, setReportStatus] = useState<'draft' | 'submitted' | 'accepted' | 'rejected'>('draft');
