@@ -169,7 +169,7 @@ export default function CompletionReportPage() {
     if (!user || !jobId) return;
 
     async function load() {
-      const [jobRes, reportRes] = await Promise.all([
+      const [jobRes, reportRes, profileRes] = await Promise.all([
         supabase
           .from('jobs')
           .select('id, job_number, title, category, customer_id, customers(name, phone, email, address)')
@@ -181,6 +181,11 @@ export default function CompletionReportPage() {
           .eq('job_id', jobId)
           .eq('user_id', user!.id)
           .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('doc_number_settings')
+          .eq('id', user!.id)
+          .single(),
       ]);
 
       setJob(jobRes.data as unknown as Job);
@@ -215,16 +220,12 @@ export default function CompletionReportPage() {
         setIsSubmitted(status === 'submitted' || status === 'accepted');
       } else {
         // Preview next doc number without consuming it yet
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('doc_number_settings')
-          .eq('id', user!.id)
-          .single();
-        const settings = (profileData as any)?.doc_number_settings?.completion_report;
+        const settings = (profileRes.data as any)?.doc_number_settings?.completion_report;
         const merged = { ...DEFAULT_DOC_SETTINGS.completion_report, ...(settings || {}) };
         setReportNumber(generateDocNumber(merged));
         if (profile?.company_name) setTechnicianName(profile.company_name);
       }
+
 
       setLoading(false);
     }
