@@ -300,7 +300,15 @@ export default function InvoiceFormPage() {
     if (j.customers?.tin_number) setCustomerTin(j.customers.tin_number);
 
     if (!isEdit && user) {
-      const { data: existing } = await supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
+      // Fire all 4 independent reads in parallel
+      const [existingRes, quoteRes] = await Promise.all([
+        supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle(),
+        supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
+          .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle(),
+        checkCompletionReport(j.id),
+        fetchAvailableVos(j.id),
+      ]);
+      const existing = existingRes.data;
       if (existing) {
         setJobWarning({ message: t('invoiceForm.jobHasInvoice'), link: `/invoices/${existing.id}` });
         setSaveDisabled(true);
@@ -308,15 +316,11 @@ export default function InvoiceFormPage() {
         setJobWarning(null);
         setSaveDisabled(false);
       }
-      // Check for accepted quotation
-      const { data: quote } = await supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
-        .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle();
+      const quote = quoteRes.data;
       if (quote) { setAvailableQuote(quote as any); setImportDismissed(false); }
       else { setAvailableQuote(null); }
-      // Check completion report
-      await checkCompletionReport(j.id);
-      await fetchAvailableVos(j.id);
     }
+
   };
 
   const handleSave = async (status: 'Draft' | 'Sent') => {
