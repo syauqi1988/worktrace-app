@@ -193,7 +193,7 @@ export default function ProductsPage() {
     if (!confirmDelete) return;
     const { error } = await supabase
       .from('products')
-      .update({ is_active: false })
+      .delete()
       .eq('id', confirmDelete.id);
     if (error) { toast.error(error.message); return; }
     toast.success(t('products.deletedToast'));

@@ -20,7 +20,11 @@ import { cn } from '@/lib/utils';
 import { JobPresetPicker } from '@/components/JobPresetPicker';
 import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
 
-const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
+const DEFAULT_CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
+const CUSTOM_CATS_KEY = 'wt:jobCustomCategories';
+const loadCustomCats = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_CATS_KEY) || '[]'); } catch { return []; }
+};
 const STATUSES = ['Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
 
 interface Customer {
@@ -56,6 +60,56 @@ export default function JobFormPage() {
   const [products, setProducts] = useState<JobProductItem[]>([]);
   const [savingPreset, setSavingPreset] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [customCategories, setCustomCategories] = useState<string[]>(() => loadCustomCats());
+  const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...customCategories]));
+
+  const addCustomCategory = () => {
+    const name = window.prompt(t('jobForm.addCategoryPrompt', 'Nama kategori baru:'))?.trim();
+    if (!name) return;
+    if (allCategories.includes(name)) { setCategory(name); return; }
+    const next = [...customCategories, name];
+    setCustomCategories(next);
+    try { localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(next)); } catch {}
+    setCategory(name);
+  };
+
+  // Persist unsaved draft so mobile app-switch / tab discard doesn't lose input.
+  const draftKey = `wt:jobDraft:${user?.id || 'anon'}:${id || 'new'}`;
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  useEffect(() => {
+    if (loading) return; // wait for edit fetch to finish first
+    if (draftRestored) return;
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d.customerId !== undefined) setCustomerId(d.customerId);
+        if (d.customerName !== undefined) setCustomerName(d.customerName);
+        if (d.title !== undefined) setTitle(d.title);
+        if (d.category !== undefined) setCategory(d.category);
+        if (d.status !== undefined) setStatus(d.status);
+        if (d.scheduledDate) setScheduledDate(new Date(d.scheduledDate));
+        if (d.description !== undefined) setDescription(d.description);
+        if (d.notes !== undefined) setNotes(d.notes);
+        if (Array.isArray(d.products)) setProducts(d.products);
+      }
+    } catch {}
+    setDraftRestored(true);
+  }, [loading, draftKey, draftRestored]);
+
+  useEffect(() => {
+    if (!draftRestored) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        customerId, customerName, title, category, status,
+        scheduledDate: scheduledDate ? scheduledDate.toISOString() : null,
+        description, notes, products,
+      }));
+    } catch {}
+  }, [draftRestored, draftKey, customerId, customerName, title, category, status, scheduledDate, description, notes, products]);
+
+  const clearDraft = () => { try { sessionStorage.removeItem(draftKey); } catch {} };
 
   useEffect(() => {
     if (!user) return;
@@ -140,6 +194,7 @@ export default function JobFormPage() {
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
         }).eq('id', id);
         if (error) throw error;
+        clearDraft();
         toast({ title: t('jobForm.savedEdit') });
         navigate(`/jobs/${id}`);
       } else {
@@ -186,6 +241,7 @@ export default function JobFormPage() {
         } catch (e) {
           console.warn('Auto-save preset failed', e);
         }
+        clearDraft();
         toast({ title: t('jobForm.savedNew') });
         navigate(`/jobs/${data.id}`);
       }
@@ -276,7 +332,12 @@ export default function JobFormPage() {
           <JobPresetPicker
             onPick={(p) => {
               setTitle(p.title);
-              setCategory(CATEGORIES.includes(p.category) ? p.category : 'Other');
+              setCategory(p.category || 'Other');
+              if (p.category && !allCategories.includes(p.category)) {
+                const next = [...customCategories, p.category];
+                setCustomCategories(next);
+                try { localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(next)); } catch {}
+              }
               if (p.description) setDescription(p.description);
               if (p.notes) setNotes(p.notes);
               if (p.products && p.products.length) setProducts(p.products);
@@ -304,10 +365,17 @@ export default function JobFormPage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>{t('jobForm.category')}</Label>
-          <Select value={category} onValueChange={setCategory}>
+          <Select
+            value={category}
+            onValueChange={(v) => { if (v === '__add__') addCustomCategory(); else setCategory(v); }}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {allCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {category && !allCategories.includes(category) && (
+                <SelectItem key={category} value={category}>{category}</SelectItem>
+              )}
+              <SelectItem value="__add__" className="text-primary">+ Tambah kategori baru…</SelectItem>
             </SelectContent>
           </Select>
         </div>
