@@ -194,6 +194,7 @@ export default function JobFormPage() {
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
         }).eq('id', id);
         if (error) throw error;
+        clearDraft();
         toast({ title: t('jobForm.savedEdit') });
         navigate(`/jobs/${id}`);
       } else {
