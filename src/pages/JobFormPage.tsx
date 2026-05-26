@@ -363,10 +363,17 @@ export default function JobFormPage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>{t('jobForm.category')}</Label>
-          <Select value={category} onValueChange={setCategory}>
+          <Select
+            value={category}
+            onValueChange={(v) => { if (v === '__add__') addCustomCategory(); else setCategory(v); }}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {allCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {category && !allCategories.includes(category) && (
+                <SelectItem key={category} value={category}>{category}</SelectItem>
+              )}
+              <SelectItem value="__add__" className="text-primary">+ Tambah kategori baru…</SelectItem>
             </SelectContent>
           </Select>
         </div>
