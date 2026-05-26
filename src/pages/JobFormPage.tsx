@@ -241,6 +241,7 @@ export default function JobFormPage() {
         } catch (e) {
           console.warn('Auto-save preset failed', e);
         }
+        clearDraft();
         toast({ title: t('jobForm.savedNew') });
         navigate(`/jobs/${data.id}`);
       }
