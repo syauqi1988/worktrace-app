@@ -86,9 +86,22 @@ export default function PublicApprovalPage() {
       return;
     }
 
-    setRow({ ...row, action, responded_at: new Date().toISOString(), reason });
+    const respondedAt = new Date().toISOString();
+    setRow({ ...row, action, responded_at: respondedAt, reason });
     setSubmitting(false);
     toast.success(action === 'accepted' ? t('publicApproval.thanksAccepted') : t('publicApproval.responseSent'));
+
+    // Stamp the shared PDF with action + timestamp so the same link shows it.
+    try {
+      const { data: stamped } = await supabase.functions.invoke('stamp-approval-pdf', {
+        body: { token: row.token },
+      });
+      if (stamped?.pdf_url) {
+        setRow((prev) => (prev ? { ...prev, pdf_url: stamped.pdf_url } : prev));
+      }
+    } catch (e) {
+      console.warn('stamp-approval-pdf failed', e);
+    }
   };
 
   if (loading) {
