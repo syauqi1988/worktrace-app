@@ -330,7 +330,12 @@ export default function JobFormPage() {
           <JobPresetPicker
             onPick={(p) => {
               setTitle(p.title);
-              setCategory(CATEGORIES.includes(p.category) ? p.category : 'Other');
+              setCategory(p.category || 'Other');
+              if (p.category && !allCategories.includes(p.category)) {
+                const next = [...customCategories, p.category];
+                setCustomCategories(next);
+                try { localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(next)); } catch {}
+              }
               if (p.description) setDescription(p.description);
               if (p.notes) setNotes(p.notes);
               if (p.products && p.products.length) setProducts(p.products);
