@@ -60,6 +60,56 @@ export default function JobFormPage() {
   const [products, setProducts] = useState<JobProductItem[]>([]);
   const [savingPreset, setSavingPreset] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [customCategories, setCustomCategories] = useState<string[]>(() => loadCustomCats());
+  const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...customCategories]));
+
+  const addCustomCategory = () => {
+    const name = window.prompt(t('jobForm.addCategoryPrompt', 'Nama kategori baru:'))?.trim();
+    if (!name) return;
+    if (allCategories.includes(name)) { setCategory(name); return; }
+    const next = [...customCategories, name];
+    setCustomCategories(next);
+    try { localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(next)); } catch {}
+    setCategory(name);
+  };
+
+  // Persist unsaved draft so mobile app-switch / tab discard doesn't lose input.
+  const draftKey = `wt:jobDraft:${user?.id || 'anon'}:${id || 'new'}`;
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  useEffect(() => {
+    if (loading) return; // wait for edit fetch to finish first
+    if (draftRestored) return;
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d.customerId !== undefined) setCustomerId(d.customerId);
+        if (d.customerName !== undefined) setCustomerName(d.customerName);
+        if (d.title !== undefined) setTitle(d.title);
+        if (d.category !== undefined) setCategory(d.category);
+        if (d.status !== undefined) setStatus(d.status);
+        if (d.scheduledDate) setScheduledDate(new Date(d.scheduledDate));
+        if (d.description !== undefined) setDescription(d.description);
+        if (d.notes !== undefined) setNotes(d.notes);
+        if (Array.isArray(d.products)) setProducts(d.products);
+      }
+    } catch {}
+    setDraftRestored(true);
+  }, [loading, draftKey, draftRestored]);
+
+  useEffect(() => {
+    if (!draftRestored) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        customerId, customerName, title, category, status,
+        scheduledDate: scheduledDate ? scheduledDate.toISOString() : null,
+        description, notes, products,
+      }));
+    } catch {}
+  }, [draftRestored, draftKey, customerId, customerName, title, category, status, scheduledDate, description, notes, products]);
+
+  const clearDraft = () => { try { sessionStorage.removeItem(draftKey); } catch {} };
 
   useEffect(() => {
     if (!user) return;
