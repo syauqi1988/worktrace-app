@@ -20,7 +20,11 @@ import { cn } from '@/lib/utils';
 import { JobPresetPicker } from '@/components/JobPresetPicker';
 import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
 
-const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
+const DEFAULT_CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
+const CUSTOM_CATS_KEY = 'wt:jobCustomCategories';
+const loadCustomCats = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_CATS_KEY) || '[]'); } catch { return []; }
+};
 const STATUSES = ['Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
 
 interface Customer {
