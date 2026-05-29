@@ -479,18 +479,13 @@ export default function WorkOrderFormPage() {
 
       {/* Actions */}
       <div className="flex flex-col gap-2">
-        <Button onClick={() => handleSave('Sent', true)} disabled={saving || sharing} className="rounded-lg gap-2">
-          {saving || sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-          {t('workOrderForm.sendCustomer')}
+        <Button onClick={() => handleSave('Draft')} disabled={saving} className="rounded-lg">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : null}
+          {t('workOrderForm.saveDraft')}
         </Button>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={saving} className="flex-1 rounded-lg">
-            {t('workOrderForm.saveDraft')}
-          </Button>
-          <Button variant="outline" onClick={handlePreview} className="flex-1 rounded-lg gap-2">
-            <Eye className="h-4 w-4" /> {t('workOrderForm.previewPdf')}
-          </Button>
-        </div>
+        <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
+          <Eye className="h-4 w-4" /> {t('workOrderForm.previewPdf')}
+        </Button>
       </div>
 
       <PDFPreviewModal
