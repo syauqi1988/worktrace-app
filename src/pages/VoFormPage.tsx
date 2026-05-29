@@ -433,12 +433,8 @@ export default function VoFormPage() {
         <Button variant="outline" onClick={handlePreview} className="gap-2">
           <Eye className="h-4 w-4" /> {t('vo.previewPdf')}
         </Button>
-        <Button variant="outline" onClick={handleSaveDraft} disabled={submitting} className="gap-2">
+        <Button onClick={handleSaveDraft} disabled={submitting} className="gap-2">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t('vo.saveDraft')}
-        </Button>
-        <Button onClick={handleGenerateAndSend} disabled={submitting} className="gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-          {t('vo.sendWhatsApp')}
         </Button>
       </div>
 
