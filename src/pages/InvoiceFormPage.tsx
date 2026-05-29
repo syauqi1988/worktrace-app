@@ -739,21 +739,10 @@ export default function InvoiceFormPage() {
         </Collapsible>
       )}
 
-      {/* Save Buttons */}
-      {isEdit ? (
-        <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-          {submitting ? t('forms.saving') : t('invoiceForm.saveEdit')}
-        </Button>
-      ) : (
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? t('forms.saving') : t('invoiceForm.saveDraft')}
-          </Button>
-          <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? t('forms.sending') : t('invoiceForm.send')}
-          </Button>
-        </div>
-      )}
+      {/* Save Button */}
+      <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
+        {submitting ? t('forms.saving') : (isEdit ? t('invoiceForm.saveEdit') : t('invoiceForm.saveDraft'))}
+      </Button>
     </div>
   );
 }
