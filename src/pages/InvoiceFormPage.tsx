@@ -347,7 +347,7 @@ export default function InvoiceFormPage() {
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
         total: grandTotal,
-        status,
+        status: isEdit ? status : (status === 'Draft' ? 'Created' : status),
         issued_date: issuedDate || null,
         due_date: dueDate || null,
         notes: notes.trim() || null,
