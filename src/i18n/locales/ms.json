@@ -420,10 +420,11 @@
     "lhdnSstNo": "No. Pendaftaran SST",
     "lhdnSubmitted": "Tandakan jika invois ini telah dihantar ke portal MyInvois LHDN",
     "lhdnInfo": "Integrasi automatik dengan MyInvois akan datang. Buat masa ini, sila hantar invois secara manual di myinvois.hasil.gov.my dan tandakan checkbox di atas setelah selesai.",
-    "saveDraft": "Simpan Draft",
+    "saveDraft": "Cipta",
     "send": "Hantar Invois",
     "saveEdit": "Kemaskini Invois",
-    "savedDraft": "Draf invois disimpan!",
+    "savedDraft": "Invois dicipta!",
+    "statusCreated": "Dicipta",
     "savedSent": "Invois dihantar!",
     "savedEdit": "Invois berjaya dikemaskini!"
   },
