@@ -230,8 +230,8 @@ export default function QuotationFormPage() {
           toast.info(t('quotationForm.autoStatus', { status: newJobStatus }));
         }
 
-        toast.success(status === 'Draft' ? t('quotationForm.savedDraft') : t('quotationForm.savedSent'));
-        navigate(`/quotations/${data.id}${status === 'Sent' ? '?share=1' : ''}`);
+        toast.success(t('quotationForm.savedDraft'));
+        navigate(`/quotations/${data.id}`);
       }
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
