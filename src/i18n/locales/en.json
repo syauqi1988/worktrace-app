@@ -420,10 +420,11 @@
     "lhdnSstNo": "SST Registration No.",
     "lhdnSubmitted": "Mark this invoice as already submitted to the LHDN MyInvois portal",
     "lhdnInfo": "Automatic MyInvois integration is coming soon. For now, please submit invoices manually at myinvois.hasil.gov.my and tick the checkbox above once done.",
-    "saveDraft": "Save Draft",
+    "saveDraft": "Create",
     "send": "Send Invoice",
     "saveEdit": "Update Invoice",
-    "savedDraft": "Invoice draft saved!",
+    "savedDraft": "Invoice created!",
+    "statusCreated": "Created",
     "savedSent": "Invoice sent!",
     "savedEdit": "Invoice updated successfully!"
   },
