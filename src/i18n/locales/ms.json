@@ -2109,7 +2109,7 @@
     "fileTooLarge": "{{name}} melebihi 5MB",
     "uploadFailed": "Gagal muat naik: {{msg}}",
     "imageUrlFailed": "Gagal mendapatkan URL gambar",
-    "submittedToast": "Laporan dihantar! Membuka WhatsApp...",
+    "submittedToast": "Laporan dicipta! Anda boleh kongsi via WhatsApp.",
     "draftToast": "Draf laporan disimpan!",
     "saveError": "Ralat menyimpan",
     "deletedToast": "Laporan dipadam",
