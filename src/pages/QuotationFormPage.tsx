@@ -450,20 +450,9 @@ export default function QuotationFormPage() {
         <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
       </div>
 
-      {isEdit ? (
-        <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-          {submitting ? t('forms.saving') : t('quotationForm.saveEdit')}
-        </Button>
-      ) : (
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? t('forms.saving') : t('quotationForm.saveDraft')}
-          </Button>
-          <Button onClick={() => handleSave('Sent')} disabled={submitting || saveDisabled} className="flex-1 rounded-lg h-11">
-            {submitting ? t('forms.sending') : t('quotationForm.send')}
-          </Button>
-        </div>
-      )}
+      <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
+        {submitting ? t('forms.saving') : (isEdit ? t('quotationForm.saveEdit') : t('quotationForm.saveDraft'))}
+      </Button>
     </div>
   );
 }
