@@ -268,8 +268,8 @@ export default function WorkOrderFormPage() {
         await shareViaWhatsApp(savedId);
       }
 
-      toast.success(status === 'Draft' ? t('workOrderForm.savedDraft') : t('workOrderForm.savedSent'));
-      navigate(`/jobs/${jobId}`);
+      toast.success(t('workOrderForm.savedDraft'));
+      navigate(`/jobs/${jobId}/work-order`);
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
     } finally {
