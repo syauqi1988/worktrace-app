@@ -2109,7 +2109,7 @@
     "fileTooLarge": "{{name}} exceeds 5MB",
     "uploadFailed": "Upload failed: {{msg}}",
     "imageUrlFailed": "Failed to obtain image URL",
-    "submittedToast": "Report submitted! Opening WhatsApp...",
+    "submittedToast": "Report created! You can now share via WhatsApp.",
     "draftToast": "Draft report saved!",
     "saveError": "Save error",
     "deletedToast": "Report deleted",
