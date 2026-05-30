@@ -436,6 +436,9 @@ export default function VoFormPage() {
         <Button onClick={handleSaveDraft} disabled={submitting} className="gap-2">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t('vo.saveDraft')}
         </Button>
+        <Button onClick={handleGenerateAndSend} disabled={submitting} variant="secondary" className="gap-2">
+          <MessageCircle className="h-4 w-4" /> {t('vo.sendWhatsApp')}
+        </Button>
       </div>
 
       <PDFPreviewModal
