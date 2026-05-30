@@ -15,12 +15,13 @@ import { getDateLocale } from '@/i18n';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
+  Created: 'bg-[#E0E7FF] text-[#4338CA]',
   Sent: 'bg-[#DBEAFE] text-[#1D4ED8]',
   Paid: 'bg-[#DCFCE7] text-[#15803D]',
   Overdue: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-const STATUS_KEYS = ['all', 'Draft', 'Sent', 'Paid', 'Overdue'] as const;
+const STATUS_KEYS = ['all', 'Created', 'Draft', 'Sent', 'Paid', 'Overdue'] as const;
 
 interface InvoiceRow {
   id: string;

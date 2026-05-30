@@ -26,6 +26,7 @@ import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
+  Created: 'bg-[#E0E7FF] text-[#4338CA]',
   Sent: 'bg-[#DBEAFE] text-[#1D4ED8]',
   Accepted: 'bg-[#DCFCE7] text-[#15803D]',
   Rejected: 'bg-[#FEE2E2] text-[#B91C1C]',
@@ -220,7 +221,7 @@ export default function QuotationDetailPage() {
         discount: quotation.discount,
         tax_rate: quotation.tax_rate,
         total: quotation.total,
-        status: 'Draft',
+        status: 'Created',
         due_date: dueDate.toISOString().slice(0, 10),
         notes: quotation.notes,
       }).select('id').single();
@@ -318,7 +319,7 @@ export default function QuotationDetailPage() {
       const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, approvalUrl);
       openWhatsApp(phone, message);
       // Auto-mark as Sent if currently Draft
-      if (quotation.status === 'Draft') {
+      if (quotation.status === 'Draft' || quotation.status === 'Created') {
         await supabase.from('quotations').update({ status: 'Sent' }).eq('id', quotation.id);
         setQuotation({ ...quotation, status: 'Sent' });
       }
@@ -422,6 +423,7 @@ export default function QuotationDetailPage() {
                 className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[quotation.status]}`}
                 style={{ WebkitAppearance: 'none' }}
               >
+                <option value="Created">Created</option>
                 <option value="Draft">Draft</option>
                 <option value="Sent">Sent</option>
                 <option value="Accepted">Accepted</option>
@@ -526,7 +528,7 @@ export default function QuotationDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {quotation.status === 'Draft' && (
+        {(quotation.status === 'Draft' || quotation.status === 'Created') && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}

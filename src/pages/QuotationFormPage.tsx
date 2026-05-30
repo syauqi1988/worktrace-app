@@ -193,7 +193,7 @@ export default function QuotationFormPage() {
 
     setSubmitting(true);
     try {
-      const saveStatus = isEdit && editStatus && editStatus !== 'Draft' ? editStatus : status;
+      const saveStatus = isEdit && editStatus && editStatus !== 'Draft' && editStatus !== 'Created' ? editStatus : (status === 'Draft' ? 'Created' : status);
       // For new quotations, atomically generate-and-increment to avoid duplicates
       let finalNumber = quoteNumber;
       if (!isEdit) {

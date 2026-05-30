@@ -173,7 +173,7 @@ export default function VoFormPage() {
     return true;
   };
 
-  const saveVo = async (newStatus: 'Draft' | 'Sent') => {
+  const saveVo = async (newStatus: 'Draft' | 'Created' | 'Sent') => {
     if (!validate() || !user || !jobId) return null;
     let finalNumber = voNumber;
     if (!isEdit) finalNumber = await generateAndIncrement(supabase, user.id, 'vo');
@@ -209,7 +209,7 @@ export default function VoFormPage() {
   const handleSaveDraft = async () => {
     setSubmitting(true);
     try {
-      await saveVo('Draft');
+      await saveVo(isEdit ? 'Draft' : 'Created');
       toast.success(t('vo.draftSaved'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
@@ -435,6 +435,9 @@ export default function VoFormPage() {
         </Button>
         <Button onClick={handleSaveDraft} disabled={submitting} className="gap-2">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t('vo.saveDraft')}
+        </Button>
+        <Button onClick={handleGenerateAndSend} disabled={submitting} variant="secondary" className="gap-2">
+          <MessageCircle className="h-4 w-4" /> {t('vo.sendWhatsApp')}
         </Button>
       </div>
 

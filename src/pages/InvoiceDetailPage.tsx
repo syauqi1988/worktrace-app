@@ -29,6 +29,7 @@ import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
+  Created: 'bg-[#E0E7FF] text-[#4338CA]',
   Sent: 'bg-[#DBEAFE] text-[#1D4ED8]',
   Paid: 'bg-[#DCFCE7] text-[#15803D]',
   Overdue: 'bg-[#FEE2E2] text-[#B91C1C]',
@@ -276,7 +277,7 @@ export default function InvoiceDetailPage() {
 
   const handleDelete = async () => {
     if (!invoice) return;
-    if (invoice.status !== 'Draft') {
+    if (invoice.status !== 'Draft' && invoice.status !== 'Created') {
       toast.error(t('invoiceDetail.deleteOnlyDraft'));
       setDeleteOpen(false);
       return;
@@ -781,6 +782,7 @@ export default function InvoiceDetailPage() {
                 className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[displayStatus]}`}
                 style={{ WebkitAppearance: 'none' }}
               >
+                <option value="Created">Created</option>
                 <option value="Draft">Draft</option>
                 <option value="Sent">Sent</option>
                 <option value="Paid">Paid</option>
@@ -820,7 +822,7 @@ export default function InvoiceDetailPage() {
             <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {invoice.status === 'Draft' && (
+            {(invoice.status === 'Draft' || invoice.status === 'Created') && (
               <DropdownMenuItem onClick={() => navigate(`/invoices/${invoice.id}/edit`)}><Edit className="h-4 w-4 mr-2" /> {t('invoiceDetail.edit')}</DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> {t('invoiceDetail.delete')}</DropdownMenuItem>
@@ -1000,7 +1002,7 @@ export default function InvoiceDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {invoice.status === 'Draft' && (
+        {(invoice.status === 'Draft' || invoice.status === 'Created') && (
           <>
             <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> {t('invoiceDetail.edit')}</Button>
             <Button

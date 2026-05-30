@@ -180,7 +180,7 @@ export default function InvoiceFormPage() {
         .eq('id', id).single();
       if (data) {
         const inv = data as any;
-        if (inv.status !== 'Draft') { navigate(`/invoices/${id}`, { replace: true }); return; }
+        if (inv.status !== 'Draft' && inv.status !== 'Created') { navigate(`/invoices/${id}`, { replace: true }); return; }
         setSelectedJob(inv.jobs);
         setInvoiceNumber(inv.invoice_number);
         setItems(Array.isArray(inv.items) ? inv.items : [{ description: '', qty: 1, unit_price: 0 }]);
@@ -347,7 +347,7 @@ export default function InvoiceFormPage() {
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
         total: grandTotal,
-        status,
+        status: isEdit ? status : (status === 'Draft' ? 'Created' : status),
         issued_date: issuedDate || null,
         due_date: dueDate || null,
         notes: notes.trim() || null,
