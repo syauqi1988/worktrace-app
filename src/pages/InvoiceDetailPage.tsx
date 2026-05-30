@@ -277,7 +277,7 @@ export default function InvoiceDetailPage() {
 
   const handleDelete = async () => {
     if (!invoice) return;
-    if (invoice.status !== 'Draft') {
+    if (invoice.status !== 'Draft' && invoice.status !== 'Created') {
       toast.error(t('invoiceDetail.deleteOnlyDraft'));
       setDeleteOpen(false);
       return;
