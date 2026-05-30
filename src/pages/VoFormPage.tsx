@@ -209,7 +209,7 @@ export default function VoFormPage() {
   const handleSaveDraft = async () => {
     setSubmitting(true);
     try {
-      await saveVo('Draft');
+      await saveVo(isEdit ? 'Draft' : 'Created');
       toast.success(t('vo.draftSaved'));
       navigate(`/jobs/${jobId}`);
     } catch (e: any) {
