@@ -29,6 +29,7 @@ import { renderTemplate } from '@/lib/whatsappTemplates';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
+  Created: 'bg-[#E0E7FF] text-[#4338CA]',
   Sent: 'bg-[#DBEAFE] text-[#1D4ED8]',
   Paid: 'bg-[#DCFCE7] text-[#15803D]',
   Overdue: 'bg-[#FEE2E2] text-[#B91C1C]',
