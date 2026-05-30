@@ -173,7 +173,7 @@ export default function VoFormPage() {
     return true;
   };
 
-  const saveVo = async (newStatus: 'Draft' | 'Sent') => {
+  const saveVo = async (newStatus: 'Draft' | 'Created' | 'Sent') => {
     if (!validate() || !user || !jobId) return null;
     let finalNumber = voNumber;
     if (!isEdit) finalNumber = await generateAndIncrement(supabase, user.id, 'vo');
