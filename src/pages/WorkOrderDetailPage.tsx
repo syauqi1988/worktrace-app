@@ -206,7 +206,7 @@ export default function WorkOrderDetailPage() {
         details,
       );
       openWhatsApp(phone, msg);
-      if (wo.status === 'Draft') {
+      if (wo.status === 'Draft' || wo.status === 'Created') {
         await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
         await load();
       }
