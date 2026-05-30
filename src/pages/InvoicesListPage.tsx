@@ -21,7 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
   Overdue: 'bg-[#FEE2E2] text-[#B91C1C]',
 };
 
-const STATUS_KEYS = ['all', 'Draft', 'Sent', 'Paid', 'Overdue'] as const;
+const STATUS_KEYS = ['all', 'Created', 'Draft', 'Sent', 'Paid', 'Overdue'] as const;
 
 interface InvoiceRow {
   id: string;
