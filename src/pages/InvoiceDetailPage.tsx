@@ -822,7 +822,7 @@ export default function InvoiceDetailPage() {
             <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {invoice.status === 'Draft' && (
+            {(invoice.status === 'Draft' || invoice.status === 'Created') && (
               <DropdownMenuItem onClick={() => navigate(`/invoices/${invoice.id}/edit`)}><Edit className="h-4 w-4 mr-2" /> {t('invoiceDetail.edit')}</DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> {t('invoiceDetail.delete')}</DropdownMenuItem>
