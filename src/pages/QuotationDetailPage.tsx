@@ -528,7 +528,7 @@ export default function QuotationDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {quotation.status === 'Draft' && (
+        {(quotation.status === 'Draft' || quotation.status === 'Created') && (
           <>
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
