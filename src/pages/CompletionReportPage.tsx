@@ -1044,23 +1044,13 @@ export default function CompletionReportPage() {
               : t('completionReport.submit')}
           </Button>
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleSave('draft')}
-              disabled={saving}
-              className="flex-1 rounded-lg"
-            >
-              {saving ? t('completionReport.savingDraft') : t('completionReport.saveDraft')}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handlePreview}
-              className="flex-1 rounded-lg gap-2"
-            >
-              <Eye className="h-4 w-4" /> {t('completionReport.previewPdf')}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handlePreview}
+            className="rounded-lg gap-2"
+          >
+            <Eye className="h-4 w-4" /> {t('completionReport.previewPdf')}
+          </Button>
 
           {reportId && (
             <Button
