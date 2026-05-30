@@ -221,7 +221,7 @@ export default function QuotationDetailPage() {
         discount: quotation.discount,
         tax_rate: quotation.tax_rate,
         total: quotation.total,
-        status: 'Draft',
+        status: 'Created',
         due_date: dueDate.toISOString().slice(0, 10),
         notes: quotation.notes,
       }).select('id').single();
