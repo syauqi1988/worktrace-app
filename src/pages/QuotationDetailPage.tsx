@@ -319,7 +319,7 @@ export default function QuotationDetailPage() {
       const message = buildWhatsAppMessage(customerName, quotation.quote_number, quotation.total, companyName, approvalUrl);
       openWhatsApp(phone, message);
       // Auto-mark as Sent if currently Draft
-      if (quotation.status === 'Draft') {
+      if (quotation.status === 'Draft' || quotation.status === 'Created') {
         await supabase.from('quotations').update({ status: 'Sent' }).eq('id', quotation.id);
         setQuotation({ ...quotation, status: 'Sent' });
       }
