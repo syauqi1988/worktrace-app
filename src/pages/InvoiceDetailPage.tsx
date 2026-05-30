@@ -1002,7 +1002,7 @@ export default function InvoiceDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {invoice.status === 'Draft' && (
+        {(invoice.status === 'Draft' || invoice.status === 'Created') && (
           <>
             <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2"><Edit className="h-4 w-4" /> {t('invoiceDetail.edit')}</Button>
             <Button
