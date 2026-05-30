@@ -116,7 +116,7 @@ export default function WorkOrderFormPage() {
         supabase.from('work_orders')
           .select('id, status')
           .eq('job_id', jobId).eq('user_id', user!.id)
-          .in('status', ['Draft', 'Sent', 'Accepted'])
+          .in('status', ['Draft', 'Created', 'Sent', 'Accepted'])
           .order('created_at', { ascending: false })
           .limit(1).maybeSingle(),
       ]);
