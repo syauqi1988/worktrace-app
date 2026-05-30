@@ -423,6 +423,7 @@ export default function QuotationDetailPage() {
                 className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[quotation.status]}`}
                 style={{ WebkitAppearance: 'none' }}
               >
+                <option value="Created">Created</option>
                 <option value="Draft">Draft</option>
                 <option value="Sent">Sent</option>
                 <option value="Accepted">Accepted</option>
