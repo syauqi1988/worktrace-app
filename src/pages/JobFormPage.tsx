@@ -65,6 +65,10 @@ export default function JobFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customCategories, setCustomCategories] = useState<string[]>(() => loadCustomCats());
   const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...customCategories]));
+  const [jobType, setJobType] = useState<JobType>('standard');
+  const [depositPct, setDepositPct] = useState<number>(30);
+  const [setAsDefault, setSetAsDefault] = useState(false);
+  const [profileDefaults, setProfileDefaults] = useState<{ default_job_type?: string; default_deposit_percentage?: number }>({});
 
   const addCustomCategory = () => {
     const name = window.prompt(t('jobForm.addCategoryPrompt', 'Nama kategori baru:'))?.trim();
