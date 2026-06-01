@@ -1,75 +1,54 @@
-# Product Library + VO / Deduction Workflow
+# WorkTrace — Job Type + Milestone Payments + Workflow Locks
 
-This is a large two-feature build. I'll split it into 4 phases so you can review/test as we go. Each phase is independently shippable.
+This is a large, multi-system change. I'll split it into 4 phases so it can be reviewed/tested incrementally rather than as one massive untestable drop. **Recommend approving phase-by-phase**; if you'd rather I ship the whole thing in one go, say so.
 
-## Phase 1 — Product Library (foundation)
+## Phase 1 — Schema + foundations (no UI change yet)
 
-**Database**
-- New `products` table: `code`, `name`, `description`, `category`, `unit_price`, `uom`, `is_active`, RLS (own rows only), updated_at trigger.
+**Migration** (single `supabase--migration` call):
+- `jobs`: add `job_type text NOT NULL DEFAULT 'standard'`, `skip_log jsonb DEFAULT '[]'`, `milestone_config jsonb`
+- `profiles`: add `default_job_type`, `default_milestone_template` (default `'30/40/30'`), `default_deposit_percentage` (default 30)
+- `invoices`: add `milestone_stages jsonb`, `milestone_stage_number int`, `milestone_total_stages int`
+- `payment_proofs`: add `milestone_stage int`, `milestone_label text`
 
-**UI**
-- New route `/products` + sidebar entry "Produk" (Package icon, between Pelanggan and Sebut Harga).
-- Products page: 4 stat cards (total / active / categories / latest), search + category filter + status pills, responsive card grid (3/2/1 cols).
-- Create/Edit modal: code, category combo, name, long description, price, UOM combo (predefined groups + custom typing), active toggle.
-- Soft delete (sets `is_active=false`) with confirm dialog.
+**New code files:**
+- `src/lib/jobTypes.ts` — `JOB_TYPES` constant (id, icon, color, name MS/EN, description, workflow steps)
+- `src/lib/milestoneTemplates.ts` — the 6 templates (`30/40/30`, `50/50`, `20/30/30/20`, `25/25/25/25`, `30/70`, custom) with labels + triggers
+- `src/lib/workflowRules.ts` — `WORKFLOW_MATRIX` + `checkWorkflowGate()` exactly as specified in Part C
+- i18n keys added to `en.json` / `ms.json` under `jobType.*`, `milestone.*`, `workflow.*`
 
-## Phase 2 — Product Picker + line item enhancements
+## Phase 2 — Job Type selector + dynamic workflow
 
-**Quotation & Invoice line items (additive, non-breaking)**
-- Extend item JSON shape with `description_detail` and `uom` (existing rows without keys still render as before).
-- Add "🔍 Cari dari Katalog Produk..." trigger above each line's description input → popover with grouped-by-category, searchable list (name/code/description, max 20).
-- Selecting a product pre-fills description, description_detail, unit_price, uom (qty=1). All fields stay editable. Small "Dari katalog: X" badge below description.
-- Add UOM input next to Qty in line item rows.
+- `src/pages/JobFormPage.tsx`: add 5-card job type selector below title, "set as default" toggle that updates profile, persist `job_type` on save. Deposit type also captures deposit % at creation.
+- `src/pages/JobDetailPage.tsx`: replace static workflow bar with type-aware steps from `jobTypes.ts`, render completed/active/future states.
+- `src/components/workflow/SkipStepModal.tsx`: warn-modal with 5 preset reasons + free-text "Other"; appends entry to `jobs.skip_log` and shows audit note on detail page.
+- Wire `checkWorkflowGate()` into the "Create Quotation / WO / Invoice / Report" buttons on JobDetailPage. `hard` → toast error + blocked. `warn` → SkipStepModal. `open` → proceed.
 
-**PDF updates** (`InvoicePDF.tsx`, `QuotationPDF.tsx`)
-- Render `description_detail` in italic 9px gray under item name, line-by-line with `•` bullets.
-- Quantity column shows `"{qty} {uom}"` when uom present.
-- No layout change when fields empty.
+## Phase 3 — Milestone Payment Builder
 
-## Phase 3 — VO / Deduction database + form
+- `src/components/invoice/MilestoneBuilder.tsx` — full builder per spec: template pills, editable rows (label / % / amount / due date / trigger), auto-balance last row, amount↔% toggle, validation bar, add/remove rows.
+- `src/pages/InvoiceFormPage.tsx`: add "Mod Pembayaran" toggle above line items. Pre-select Berperingkat for Deposit/Milestone job types (locked for Milestone). On save with milestones, create one invoice per stage (suffix in DB: `milestone_stage_number` / `milestone_total_stages`, shared `milestone_stages` plan), each with its own `payment_proofs` token + `milestone_stage` / `milestone_label`.
+- Per-stage lock: stage 1 of Deposit requires Quote+WO accepted; final stage of Deposit/Milestone requires submitted completion report. Implemented in invoice generation handler.
 
-**Database**
-- New `variation_orders` table: `job_id`, `vo_number`, `type` (addition/deduction), `items` jsonb, `subtotal`, `discount`, `discount_type`, `sst`, `sst_rate`, `total`, `reason`, `status`, `customer_approval_token`, `pdf_url`, `notes`. RLS own rows.
-- Storage bucket `vo-pdfs` (private) with owner-folder policy.
-- Add `vo` doc type to `DEFAULT_DOC_SETTINGS` (prefix VO, padding 4) and to the doc-number Settings tabs.
+## Phase 4 — PDF, payment page, tracker, WhatsApp, settings
 
-**UI**
-- Job Detail page: new "Variasi & Potongan" section, visible only after Completion Report submitted. Shows `[+ Tambah VO]` and `[+ Tambah Potongan]` buttons + compact list of existing VOs with status pill and edit/send actions.
-- New route `/jobs/:jobId/vo/new` and `/jobs/:jobId/vo/:voId/edit`: type badge, header (auto VO number, reason textarea), line item builder reusing the catalogue picker from Phase 2, totals (negative red for deductions), notes, Save Draft / Generate PDF & Send.
+- `src/components/pdf/InvoicePDF.tsx`: add stage banner at top + payment schedule summary table at bottom when `milestone_stages` present (other styles untouched).
+- `src/pages/public/PublicPaymentProofPage.tsx`: when `milestone_stage` set, show stage context block + prefill amount.
+- `src/pages/InvoiceDetailPage.tsx`: add MilestoneTracker card listing all sibling stages with status icons, paid/overdue/locked state, reminder + verify buttons, progress bar.
+- `src/pages/JobDetailPage.tsx`: add Financial Summary card (quote value, VO, deductions, paid, balance, status).
+- `src/lib/whatsappTemplates.ts`: add `milestonePaymentMessage()` producing the per-stage WA text.
+- `src/pages/SettingsPage.tsx` (or accordion): new "Keutamaan Kerja" section with default job type, default template, default deposit %.
 
-## Phase 4 — VO PDF, approval flow, invoice integration
+## Things explicitly NOT touched
 
-**VO PDF** (mirrors Work Order PDF style)
-- Header (logo, "VARIASI ORDER" / "BORANG POTONGAN", VO number, date).
-- Job ref box (customer, job number, original quotation number).
-- Reason box, line items table, totals.
-- Impact summary: Original / VO+ / Deduction- / Final.
-- Two signature boxes.
-- Upload to `vo-pdfs` bucket.
+Auth, BillPlz, referrals, announcements, support, tutorial, PDF base styles, routing structure, admin panel, customer approval flow, existing /bayar/:token logic (only additive).
 
-**Approval flow**
-- Reuse existing `customer_approvals` system with `document_type='variation_order'`.
-- WhatsApp templates for VO addition + deduction with PDF + approval link.
-- On accept/reject, `variation_orders.status` updates via existing `respond_to_approval` flow (extend the SQL function to handle `variation_order`).
+## Technical notes
 
-**Invoice integration**
-- Invoice form detects accepted VOs/deductions for the job → shows "⚡ Variasi & Potongan Diterima" box with `[Import ke Invois]`.
-- Import inserts grouped line items with section header rows: `--- Kerja Asal ---`, `--- Variasi Order (VO-XXXX) ---`, `--- Potongan (DED-XXXX) ---`.
-- Job Detail financial summary shows Original + VO + Deduction = Final.
+- One invoice row per milestone stage (simpler than a sub-table; matches the schema you specified).
+- Skip-step reasons are stored as `{ step, reason, skipped_at }` entries, appended (never mutated).
+- `checkWorkflowGate` is the single source of truth for lock decisions — used by both buttons and badges.
+- Auto-balance: edits to non-last rows recompute last row's %; if sum of others > 100, last goes negative and validation bar turns red.
 
-## Notes / decisions I'll apply
+## Open question
 
-- Soft delete for products (per the brief — safer for historical docs).
-- Description detail rendered in PDF prefixing `•` only when the line doesn't already start with `-` or `•`.
-- Single VO number sequence; deductions can use a different prefix later if you want — for v1 both use the `vo` doc-number setting.
-- All theming uses existing semantic tokens; no new colors added to `index.css`.
-- No changes to auth, BillPlz, referrals, tutorial, admin app, or existing PDF styles beyond additive changes listed above.
-
-## Recommended order to ship
-
-1. **Phase 1** — migration + Products page (you can start cataloguing immediately).
-2. **Phase 2** — picker + PDF additive changes.
-3. **Phase 3** — VO migration + form (drafts work end-to-end).
-4. **Phase 4** — VO PDF, approval, invoice import.
-
-**Approve this plan and I'll start with Phase 1 (DB migration + Products page).** If you'd rather I bundle phases differently or skip something (e.g. you don't need the catalogue picker badge), tell me before I start.
+Should I proceed phase-by-phase (recommended — I'll start with Phase 1 migration after you approve) or ship all 4 phases in one batch? Phase-by-phase keeps each step reviewable and reduces the chance of regressions in the existing invoice/PDF flow.
