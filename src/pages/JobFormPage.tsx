@@ -131,6 +131,19 @@ export default function JobFormPage() {
         }
       }
     });
+    // Load profile defaults for job type / deposit %
+    supabase.from('profiles')
+      .select('default_job_type, default_deposit_percentage')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const d = (data as any) || {};
+        setProfileDefaults(d);
+        if (!isEdit) {
+          if (d.default_job_type) setJobType(d.default_job_type as JobType);
+          if (d.default_deposit_percentage != null) setDepositPct(Number(d.default_deposit_percentage));
+        }
+      });
   }, [user, isEdit, preselectedCustomerId]);
 
   useEffect(() => {
