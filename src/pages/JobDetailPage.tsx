@@ -60,6 +60,8 @@ interface Job {
   created_at: string;
   customer_id: string | null;
   customers: { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
+  job_type?: string | null;
+  skip_log?: Array<{ step: string; reason: string; skipped_at: string }> | null;
 }
 
 interface Quotation {
