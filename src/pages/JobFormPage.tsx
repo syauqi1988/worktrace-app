@@ -402,6 +402,33 @@ export default function JobFormPage() {
         {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
       </div>
 
+      <div className="space-y-2">
+        <Label>Jenis Kerja</Label>
+        <JobTypeSelector value={jobType} onChange={setJobType} />
+        {jobType === 'deposit' && (
+          <div className="flex items-center gap-2 pt-1">
+            <Label className="text-xs text-muted-foreground">Peratusan Deposit</Label>
+            <Input
+              type="number"
+              min={10}
+              max={90}
+              step={1}
+              value={depositPct}
+              onChange={(e) => setDepositPct(Math.max(10, Math.min(90, Number(e.target.value) || 30)))}
+              className="h-8 w-20 text-sm"
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
+        )}
+        {!isEdit && (
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-muted-foreground">Tetapkan sebagai lalai untuk kerja baru</span>
+            <Switch checked={setAsDefault} onCheckedChange={setSetAsDefault} />
+          </div>
+        )}
+      </div>
+
+
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>{t('jobForm.category')}</Label>
