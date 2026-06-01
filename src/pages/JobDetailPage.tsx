@@ -357,6 +357,32 @@ export default function JobDetailPage() {
         </Button>
       </div>
 
+      {/* Workflow bar — driven by job_type */}
+      <div className="bg-card rounded-xl border border-border p-3">
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {getJobType(job.job_type as JobType).icon} {getJobType(job.job_type as JobType).nameMs}
+        </p>
+        <WorkflowBar
+          jobType={(job.job_type as JobType) || 'standard'}
+          completed={new Set<WorkflowStepKey>([
+            ...(quotation ? ['quotation' as WorkflowStepKey] : []),
+            ...(report ? ['completion_report' as WorkflowStepKey] : []),
+            ...(invoice ? ['invoice' as WorkflowStepKey, 'invoice_deposit' as WorkflowStepKey, 'invoice_final' as WorkflowStepKey] : []),
+          ])}
+        />
+        {Array.isArray(job.skip_log) && job.skip_log.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border space-y-1">
+            {job.skip_log.map((e, i) => (
+              <p key={i} className="text-[11px] text-amber-700 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                {e.step} dilangkau — {e.reason} ({fmtDate(new Date(e.skipped_at), 'dd MMM yyyy, HH:mm')})
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+
+
       {/* Customer Card */}
       {job.customers && (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
