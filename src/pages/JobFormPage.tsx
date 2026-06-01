@@ -164,6 +164,10 @@ export default function JobFormPage() {
         setDescription(job.description || '');
         setNotes(job.notes || '');
         setProducts(Array.isArray(job.products) ? job.products : []);
+        if (job.job_type) setJobType(job.job_type as JobType);
+        if (job.milestone_config?.deposit_percentage != null) {
+          setDepositPct(Number(job.milestone_config.deposit_percentage));
+        }
       }
       setLoading(false);
     }
