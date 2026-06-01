@@ -19,6 +19,9 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { JobPresetPicker } from '@/components/JobPresetPicker';
 import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
+import { JobTypeSelector } from '@/components/workflow/JobTypeSelector';
+import { Switch } from '@/components/ui/switch';
+import type { JobType } from '@/lib/jobTypes';
 
 const DEFAULT_CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 const CUSTOM_CATS_KEY = 'wt:jobCustomCategories';
@@ -62,6 +65,10 @@ export default function JobFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customCategories, setCustomCategories] = useState<string[]>(() => loadCustomCats());
   const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...customCategories]));
+  const [jobType, setJobType] = useState<JobType>('standard');
+  const [depositPct, setDepositPct] = useState<number>(30);
+  const [setAsDefault, setSetAsDefault] = useState(false);
+  const [profileDefaults, setProfileDefaults] = useState<{ default_job_type?: string; default_deposit_percentage?: number }>({});
 
   const addCustomCategory = () => {
     const name = window.prompt(t('jobForm.addCategoryPrompt', 'Nama kategori baru:'))?.trim();
@@ -124,6 +131,19 @@ export default function JobFormPage() {
         }
       }
     });
+    // Load profile defaults for job type / deposit %
+    supabase.from('profiles')
+      .select('default_job_type, default_deposit_percentage')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const d = (data as any) || {};
+        setProfileDefaults(d);
+        if (!isEdit) {
+          if (d.default_job_type) setJobType(d.default_job_type as JobType);
+          if (d.default_deposit_percentage != null) setDepositPct(Number(d.default_deposit_percentage));
+        }
+      });
   }, [user, isEdit, preselectedCustomerId]);
 
   useEffect(() => {
@@ -144,6 +164,10 @@ export default function JobFormPage() {
         setDescription(job.description || '');
         setNotes(job.notes || '');
         setProducts(Array.isArray(job.products) ? job.products : []);
+        if (job.job_type) setJobType(job.job_type as JobType);
+        if (job.milestone_config?.deposit_percentage != null) {
+          setDepositPct(Number(job.milestone_config.deposit_percentage));
+        }
       }
       setLoading(false);
     }
@@ -181,6 +205,9 @@ export default function JobFormPage() {
     setSubmitting(true);
     try {
       const cleanedProducts = products.filter((p) => p.description.trim());
+      const milestoneConfig = jobType === 'deposit'
+        ? { deposit_percentage: depositPct }
+        : null;
       if (isEdit) {
         const { error } = await supabase.from('jobs').update({
           customer_id: customerId,
@@ -192,7 +219,9 @@ export default function JobFormPage() {
           notes: notes.trim() || null,
           products: cleanedProducts as any,
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
-        }).eq('id', id);
+          job_type: jobType,
+          milestone_config: milestoneConfig as any,
+        } as any).eq('id', id);
         if (error) throw error;
         clearDraft();
         toast({ title: t('jobForm.savedEdit') });
@@ -212,8 +241,19 @@ export default function JobFormPage() {
           description: description.trim() || null,
           notes: notes.trim() || null,
           products: cleanedProducts as any,
-        }).select('id').single();
+          job_type: jobType,
+          milestone_config: milestoneConfig as any,
+        } as any).select('id').single();
         if (error) throw error;
+        // Persist "set as default" preference
+        if (setAsDefault && user) {
+          try {
+            await supabase.from('profiles').update({
+              default_job_type: jobType,
+              ...(jobType === 'deposit' ? { default_deposit_percentage: depositPct } : {}),
+            } as any).eq('id', user.id);
+          } catch (e) { console.warn('Save default job type failed', e); }
+        }
         // Auto-save as preset (idempotent on name per user)
         try {
           const presetName = title.trim();
@@ -361,6 +401,33 @@ export default function JobFormPage() {
         />
         {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
       </div>
+
+      <div className="space-y-2">
+        <Label>Jenis Kerja</Label>
+        <JobTypeSelector value={jobType} onChange={setJobType} />
+        {jobType === 'deposit' && (
+          <div className="flex items-center gap-2 pt-1">
+            <Label className="text-xs text-muted-foreground">Peratusan Deposit</Label>
+            <Input
+              type="number"
+              min={10}
+              max={90}
+              step={1}
+              value={depositPct}
+              onChange={(e) => setDepositPct(Math.max(10, Math.min(90, Number(e.target.value) || 30)))}
+              className="h-8 w-20 text-sm"
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
+        )}
+        {!isEdit && (
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-muted-foreground">Tetapkan sebagai lalai untuk kerja baru</span>
+            <Switch checked={setAsDefault} onCheckedChange={setSetAsDefault} />
+          </div>
+        )}
+      </div>
+
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">

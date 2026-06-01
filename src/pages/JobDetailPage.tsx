@@ -20,8 +20,11 @@ import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
-  CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
+  CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2, AlertTriangle
 } from 'lucide-react';
+import { WorkflowBar } from '@/components/workflow/WorkflowBar';
+import { getJobType, type JobType, type WorkflowStepKey } from '@/lib/jobTypes';
+import { format as fmtDate } from 'date-fns';
 
 const STATUS_COLORS: Record<string, string> = {
   Lead: 'bg-gray-100 text-gray-600',
@@ -57,6 +60,8 @@ interface Job {
   created_at: string;
   customer_id: string | null;
   customers: { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
+  job_type?: string | null;
+  skip_log?: Array<{ step: string; reason: string; skipped_at: string }> | null;
 }
 
 interface Quotation {
@@ -351,6 +356,32 @@ export default function JobDetailPage() {
           <Edit className="h-3.5 w-3.5" /> {t('jobDetail.edit')}
         </Button>
       </div>
+
+      {/* Workflow bar — driven by job_type */}
+      <div className="bg-card rounded-xl border border-border p-3">
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {getJobType(job.job_type as JobType).icon} {getJobType(job.job_type as JobType).nameMs}
+        </p>
+        <WorkflowBar
+          jobType={(job.job_type as JobType) || 'standard'}
+          completed={new Set<WorkflowStepKey>([
+            ...(quotation ? ['quotation' as WorkflowStepKey] : []),
+            ...(report ? ['completion_report' as WorkflowStepKey] : []),
+            ...(invoice ? ['invoice' as WorkflowStepKey, 'invoice_deposit' as WorkflowStepKey, 'invoice_final' as WorkflowStepKey] : []),
+          ])}
+        />
+        {Array.isArray(job.skip_log) && job.skip_log.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border space-y-1">
+            {job.skip_log.map((e, i) => (
+              <p key={i} className="text-[11px] text-amber-700 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                {e.step} dilangkau — {e.reason} ({fmtDate(new Date(e.skipped_at), 'dd MMM yyyy, HH:mm')})
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+
 
       {/* Customer Card */}
       {job.customers && (

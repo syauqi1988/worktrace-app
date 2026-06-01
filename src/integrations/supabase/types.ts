@@ -567,6 +567,9 @@ export type Database = {
           items: Json
           job_id: string | null
           lhdn_submitted: boolean
+          milestone_stage_number: number | null
+          milestone_stages: Json | null
+          milestone_total_stages: number | null
           notes: string | null
           paid_date: string | null
           payment_proof_token: string | null
@@ -592,6 +595,9 @@ export type Database = {
           items?: Json
           job_id?: string | null
           lhdn_submitted?: boolean
+          milestone_stage_number?: number | null
+          milestone_stages?: Json | null
+          milestone_total_stages?: number | null
           notes?: string | null
           paid_date?: string | null
           payment_proof_token?: string | null
@@ -617,6 +623,9 @@ export type Database = {
           items?: Json
           job_id?: string | null
           lhdn_submitted?: boolean
+          milestone_stage_number?: number | null
+          milestone_stages?: Json | null
+          milestone_total_stages?: number | null
           notes?: string | null
           paid_date?: string | null
           payment_proof_token?: string | null
@@ -707,9 +716,12 @@ export type Database = {
           description: string | null
           id: string
           job_number: string
+          job_type: string
+          milestone_config: Json | null
           notes: string | null
           products: Json
           scheduled_date: string | null
+          skip_log: Json
           status: string
           title: string
           updated_at: string
@@ -724,9 +736,12 @@ export type Database = {
           description?: string | null
           id?: string
           job_number: string
+          job_type?: string
+          milestone_config?: Json | null
           notes?: string | null
           products?: Json
           scheduled_date?: string | null
+          skip_log?: Json
           status?: string
           title: string
           updated_at?: string
@@ -741,9 +756,12 @@ export type Database = {
           description?: string | null
           id?: string
           job_number?: string
+          job_type?: string
+          milestone_config?: Json | null
           notes?: string | null
           products?: Json
           scheduled_date?: string | null
+          skip_log?: Json
           status?: string
           title?: string
           updated_at?: string
@@ -806,6 +824,8 @@ export type Database = {
           id: string
           invoice_id: string
           invoice_pdf_url: string | null
+          milestone_label: string | null
+          milestone_stage: number | null
           notes: string | null
           payer_name: string | null
           payment_date: string | null
@@ -827,6 +847,8 @@ export type Database = {
           id?: string
           invoice_id: string
           invoice_pdf_url?: string | null
+          milestone_label?: string | null
+          milestone_stage?: number | null
           notes?: string | null
           payer_name?: string | null
           payment_date?: string | null
@@ -848,6 +870,8 @@ export type Database = {
           id?: string
           invoice_id?: string
           invoice_pdf_url?: string | null
+          milestone_label?: string | null
+          milestone_stage?: number | null
           notes?: string | null
           payer_name?: string | null
           payment_date?: string | null
@@ -1042,6 +1066,9 @@ export type Database = {
           cancel_requested_at: string | null
           company_name: string | null
           created_at: string
+          default_deposit_percentage: number | null
+          default_job_type: string | null
+          default_milestone_template: string | null
           deletion_cancelled_at: string | null
           deletion_reason: string | null
           deletion_requested_at: string | null
@@ -1092,6 +1119,9 @@ export type Database = {
           cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
+          default_deposit_percentage?: number | null
+          default_job_type?: string | null
+          default_milestone_template?: string | null
           deletion_cancelled_at?: string | null
           deletion_reason?: string | null
           deletion_requested_at?: string | null
@@ -1142,6 +1172,9 @@ export type Database = {
           cancel_requested_at?: string | null
           company_name?: string | null
           created_at?: string
+          default_deposit_percentage?: number | null
+          default_job_type?: string | null
+          default_milestone_template?: string | null
           deletion_cancelled_at?: string | null
           deletion_reason?: string | null
           deletion_requested_at?: string | null
