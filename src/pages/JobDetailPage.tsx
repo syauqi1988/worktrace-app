@@ -20,8 +20,11 @@ import { getOrCreateShortLink } from '@/lib/shortLinks';
 import { renderTemplate } from '@/lib/whatsappTemplates';
 import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
-  CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2
+  CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2, AlertTriangle
 } from 'lucide-react';
+import { WorkflowBar } from '@/components/workflow/WorkflowBar';
+import { getJobType, type JobType, type WorkflowStepKey } from '@/lib/jobTypes';
+import { format as fmtDate } from 'date-fns';
 
 const STATUS_COLORS: Record<string, string> = {
   Lead: 'bg-gray-100 text-gray-600',
