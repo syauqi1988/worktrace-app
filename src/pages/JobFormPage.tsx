@@ -19,6 +19,9 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { JobPresetPicker } from '@/components/JobPresetPicker';
 import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
+import { JobTypeSelector } from '@/components/workflow/JobTypeSelector';
+import { Switch } from '@/components/ui/switch';
+import type { JobType } from '@/lib/jobTypes';
 
 const DEFAULT_CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
 const CUSTOM_CATS_KEY = 'wt:jobCustomCategories';
