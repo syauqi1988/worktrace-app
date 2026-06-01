@@ -205,6 +205,9 @@ export default function JobFormPage() {
     setSubmitting(true);
     try {
       const cleanedProducts = products.filter((p) => p.description.trim());
+      const milestoneConfig = jobType === 'deposit'
+        ? { deposit_percentage: depositPct }
+        : null;
       if (isEdit) {
         const { error } = await supabase.from('jobs').update({
           customer_id: customerId,
@@ -216,7 +219,9 @@ export default function JobFormPage() {
           notes: notes.trim() || null,
           products: cleanedProducts as any,
           completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
-        }).eq('id', id);
+          job_type: jobType,
+          milestone_config: milestoneConfig as any,
+        } as any).eq('id', id);
         if (error) throw error;
         clearDraft();
         toast({ title: t('jobForm.savedEdit') });
@@ -236,8 +241,19 @@ export default function JobFormPage() {
           description: description.trim() || null,
           notes: notes.trim() || null,
           products: cleanedProducts as any,
-        }).select('id').single();
+          job_type: jobType,
+          milestone_config: milestoneConfig as any,
+        } as any).select('id').single();
         if (error) throw error;
+        // Persist "set as default" preference
+        if (setAsDefault && user) {
+          try {
+            await supabase.from('profiles').update({
+              default_job_type: jobType,
+              ...(jobType === 'deposit' ? { default_deposit_percentage: depositPct } : {}),
+            } as any).eq('id', user.id);
+          } catch (e) { console.warn('Save default job type failed', e); }
+        }
         // Auto-save as preset (idempotent on name per user)
         try {
           const presetName = title.trim();
