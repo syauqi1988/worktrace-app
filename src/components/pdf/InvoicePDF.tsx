@@ -28,6 +28,9 @@ export interface InvoicePDFProps {
     total: number;
     notes: string | null;
     terms?: string | null;
+    milestone_stages?: any[] | null;
+    milestone_stage_number?: number | null;
+    milestone_total_stages?: number | null;
   };
   job: { job_number: string; title: string } | null;
   customer: { name: string; phone: string | null; email: string | null; address: string | null; tin_number?: string | null } | null;
