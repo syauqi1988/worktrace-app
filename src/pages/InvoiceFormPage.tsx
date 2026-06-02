@@ -700,6 +700,36 @@ export default function InvoiceFormPage() {
         </div>
       </div>
 
+      {/* Payment Mode toggle + Milestone Builder */}
+      {!isEdit && (
+        <div className="space-y-2">
+          <Label>Mod Pembayaran</Label>
+          <div className="flex bg-muted rounded-md overflow-hidden text-sm w-fit">
+            <button type="button" onClick={() => setPaymentMode('lump')} disabled={jobType === 'milestone'}
+              className={cn('px-3 py-1.5 font-medium', paymentMode === 'lump' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground', jobType === 'milestone' && 'opacity-40 cursor-not-allowed')}>
+              Sekali Bayar
+            </button>
+            <button type="button" onClick={() => setPaymentMode('milestone')}
+              className={cn('px-3 py-1.5 font-medium', paymentMode === 'milestone' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>
+              Berperingkat
+            </button>
+          </div>
+          {jobType === 'milestone' && <p className="text-[11px] text-muted-foreground">Kerja jenis Milestone wajib guna pembayaran berperingkat.</p>}
+          {paymentMode === 'milestone' && (
+            <>
+              <MilestoneBuilder
+                total={grandTotal}
+                value={milestoneStages}
+                onChange={setMilestoneStages}
+                defaultTemplate={(profile as any)?.default_milestone_template || '30/40/30'}
+              />
+              {errors.milestone && <p className="text-xs text-destructive">{errors.milestone}</p>}
+            </>
+          )}
+        </div>
+      )}
+
+
       {/* Dates */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
