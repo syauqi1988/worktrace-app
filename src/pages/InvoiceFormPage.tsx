@@ -90,6 +90,11 @@ export default function InvoiceFormPage() {
   const [availableVos, setAvailableVos] = useState<Array<{ id: string; vo_number: string; type: string; items: LineItem[] }>>([]);
   const [importedVoIds, setImportedVoIds] = useState<string[]>([]);
 
+  // Milestone payment mode
+  const [paymentMode, setPaymentMode] = useState<'lump' | 'milestone'>('lump');
+  const [milestoneStages, setMilestoneStages] = useState<MilestoneStage[]>([]);
+  const [jobType, setJobType] = useState<string>('standard');
+
   // Check completion report for job
   const checkCompletionReport = async (jobId: string) => {
     if (!user) return;
