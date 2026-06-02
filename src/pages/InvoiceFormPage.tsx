@@ -305,6 +305,9 @@ export default function InvoiceFormPage() {
     setJobSearch('');
     setErrors(p => ({ ...p, job: '' }));
     if (j.customers?.tin_number) setCustomerTin(j.customers.tin_number);
+    const jt = (j.job_type as string) || 'standard';
+    setJobType(jt);
+    if (jt === 'deposit' || jt === 'milestone') setPaymentMode('milestone');
 
     if (!isEdit && user) {
       // Fire all 4 independent reads in parallel
