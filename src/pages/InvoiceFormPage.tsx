@@ -146,11 +146,15 @@ export default function InvoiceFormPage() {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
+      const jt = (found?.job_type as string) || 'standard';
+      const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
       if (found) {
         setSelectedJob(found);
+        setJobType(jt);
+        if (isMilestoneJob) setPaymentMode('milestone');
         if (found.customers?.tin_number) setCustomerTin(found.customers.tin_number);
       }
-      if (user && !isEdit) {
+      if (user && !isEdit && !isMilestoneJob) {
         supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
           .then(({ data }) => {
             if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
