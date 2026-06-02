@@ -28,6 +28,9 @@ export interface InvoicePDFProps {
     total: number;
     notes: string | null;
     terms?: string | null;
+    milestone_stages?: any[] | null;
+    milestone_stage_number?: number | null;
+    milestone_total_stages?: number | null;
   };
   job: { job_number: string; title: string } | null;
   customer: { name: string; phone: string | null; email: string | null; address: string | null; tin_number?: string | null } | null;
@@ -101,6 +104,22 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         </View>
 
         <View style={s.divider} />
+
+        {/* Milestone stage banner */}
+        {invoice.milestone_stage_number && invoice.milestone_total_stages ? (
+          <View style={{ backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE', borderRadius: 6, padding: 8, marginBottom: 10 }}>
+            <Text style={{ fontSize: 10, fontWeight: 700, color: '#1D4ED8' }}>
+              Pembayaran Berperingkat — Peringkat {invoice.milestone_stage_number} dari {invoice.milestone_total_stages}
+            </Text>
+            {Array.isArray(invoice.milestone_stages) && invoice.milestone_stages[invoice.milestone_stage_number - 1]?.label && (
+              <Text style={{ fontSize: 9, color: '#1E3A8A', marginTop: 2 }}>
+                {invoice.milestone_stages[invoice.milestone_stage_number - 1].label} ({invoice.milestone_stages[invoice.milestone_stage_number - 1].percentage}%)
+              </Text>
+            )}
+          </View>
+        ) : null}
+
+
 
         {/* Bill To / Job */}
         <View style={s.twoCol}>

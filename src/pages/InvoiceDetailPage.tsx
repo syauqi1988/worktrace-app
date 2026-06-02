@@ -319,6 +319,9 @@ export default function InvoiceDetailPage() {
       total: invoice.total,
       notes: invoice.notes,
       terms: invoice.terms || profile?.invoice_terms || null,
+      milestone_stages: (invoice as any).milestone_stages || null,
+      milestone_stage_number: (invoice as any).milestone_stage_number || null,
+      milestone_total_stages: (invoice as any).milestone_total_stages || null,
     },
     job: invoice.jobs ? { job_number: invoice.jobs.job_number, title: invoice.jobs.title } : null,
     customer: customer ? {

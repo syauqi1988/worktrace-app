@@ -16,12 +16,14 @@ import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Lan
 import { cn } from '@/lib/utils';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
+import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
 
 interface Job {
   id: string;
   job_number: string;
   title: string;
   customer_id: string | null;
+  job_type?: string | null;
   customers: { name: string; phone: string | null; tin_number: string | null } | null;
 }
 
@@ -89,6 +91,11 @@ export default function InvoiceFormPage() {
   const [availableVos, setAvailableVos] = useState<Array<{ id: string; vo_number: string; type: string; items: LineItem[] }>>([]);
   const [importedVoIds, setImportedVoIds] = useState<string[]>([]);
 
+  // Milestone payment mode
+  const [paymentMode, setPaymentMode] = useState<'lump' | 'milestone'>('lump');
+  const [milestoneStages, setMilestoneStages] = useState<MilestoneStage[]>([]);
+  const [jobType, setJobType] = useState<string>('standard');
+
   // Check completion report for job
   const checkCompletionReport = async (jobId: string) => {
     if (!user) return;
@@ -119,7 +126,7 @@ export default function InvoiceFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, customers(name, phone, tin_number)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, customer_id, job_type, customers(name, phone, tin_number)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
@@ -139,15 +146,21 @@ export default function InvoiceFormPage() {
     const jobId = searchParams.get('job_id');
     if (jobId && jobs.length > 0 && !selectedJob) {
       const found = jobs.find(j => j.id === jobId);
+      const jt = (found?.job_type as string) || 'standard';
+      const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
       if (found) {
         setSelectedJob(found);
+        setJobType(jt);
+        if (isMilestoneJob) setPaymentMode('milestone');
         if (found.customers?.tin_number) setCustomerTin(found.customers.tin_number);
       }
       if (user && !isEdit) {
-        supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
-          .then(({ data }) => {
-            if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
-          });
+        if (!isMilestoneJob) {
+          supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+            .then(({ data }) => {
+              if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
+            });
+        }
         // Check for accepted quotation
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
           .eq('job_id', jobId).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle()
@@ -298,8 +311,12 @@ export default function InvoiceFormPage() {
     setJobSearch('');
     setErrors(p => ({ ...p, job: '' }));
     if (j.customers?.tin_number) setCustomerTin(j.customers.tin_number);
+    const jt = (j.job_type as string) || 'standard';
+    setJobType(jt);
+    if (jt === 'deposit' || jt === 'milestone') setPaymentMode('milestone');
 
     if (!isEdit && user) {
+      const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
       // Fire all 4 independent reads in parallel
       const [existingRes, quoteRes] = await Promise.all([
         supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle(),
@@ -309,7 +326,7 @@ export default function InvoiceFormPage() {
         fetchAvailableVos(j.id),
       ]);
       const existing = existingRes.data;
-      if (existing) {
+      if (existing && !isMilestoneJob) {
         setJobWarning({ message: t('invoiceForm.jobHasInvoice'), link: `/invoices/${existing.id}` });
         setSaveDisabled(true);
       } else {
@@ -328,45 +345,89 @@ export default function InvoiceFormPage() {
     if (!selectedJob) newErrors.job = t('invoiceForm.errJob');
     if (!items.some(i => i.description.trim())) newErrors.items = t('invoiceForm.errItems');
     if (items.some(i => i.unit_price < 0)) newErrors.items = t('invoiceForm.errPriceNeg');
+    if (paymentMode === 'milestone') {
+      const sumPct = milestoneStages.reduce((a, s) => a + (Number(s.percentage) || 0), 0);
+      if (milestoneStages.length === 0) newErrors.milestone = 'Tambah sekurang-kurangnya satu peringkat';
+      else if (Math.abs(sumPct - 100) > 0.01) newErrors.milestone = `Jumlah peratus mesti 100%. Sekarang: ${sumPct.toFixed(2)}%`;
+    }
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
     try {
-      let finalNumber = invoiceNumber;
-      if (!isEdit) {
-        finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
-      }
-      const payload: any = {
+      const filteredItems = items.filter(i => i.description.trim());
+      const sharedBase: any = {
         user_id: user!.id,
         job_id: selectedJob!.id,
         customer_id: selectedJob!.customer_id || null,
         quote_id: linkedQuoteId,
-        invoice_number: finalNumber,
-        items: items.filter(i => i.description.trim()),
+        items: filteredItems,
         subtotal,
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
-        total: grandTotal,
-        status: isEdit ? status : (status === 'Draft' ? 'Created' : status),
-        issued_date: issuedDate || null,
-        due_date: dueDate || null,
         notes: notes.trim() || null,
         terms: terms.trim() || null,
         selected_payment_methods: selectedPaymentMethods as any,
         lhdn_submitted: lhdnSubmitted,
+        issued_date: issuedDate || null,
       };
 
       if (isEdit) {
+        const payload = {
+          ...sharedBase,
+          invoice_number: invoiceNumber,
+          total: grandTotal,
+          status,
+          due_date: dueDate || null,
+        };
         const { error } = await supabase.from('invoices').update(payload).eq('id', id);
         if (error) throw error;
         toast.success(t('invoiceForm.savedEdit'));
         navigate(`/invoices/${id}`);
-      } else {
-        const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
-        if (error) throw error;
-        toast.success(t('invoiceForm.savedDraft'));
-        navigate(`/invoices/${data.id}`);
+        return;
       }
+
+      if (paymentMode === 'milestone') {
+        const planSnapshot = milestoneStages.map((s, i) => ({
+          stage_number: i + 1, label: s.label, percentage: s.percentage,
+          amount: s.amount, trigger: s.trigger, due_date: s.due_date || null,
+        }));
+        const totalStages = milestoneStages.length;
+        const createdIds: string[] = [];
+        for (let i = 0; i < milestoneStages.length; i++) {
+          const s = milestoneStages[i];
+          const finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+          const payload = {
+            ...sharedBase,
+            invoice_number: finalNumber,
+            total: s.amount,
+            status: 'Created',
+            due_date: s.due_date || dueDate || null,
+            milestone_stages: planSnapshot as any,
+            milestone_stage_number: i + 1,
+            milestone_total_stages: totalStages,
+            notes: `[${s.label}] ${notes.trim()}`.trim(),
+          };
+          const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
+          if (error) throw error;
+          createdIds.push((data as any).id);
+        }
+        toast.success(`${totalStages} invois berperingkat dijana`);
+        navigate(`/invoices/${createdIds[0]}`);
+        return;
+      }
+
+      const finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+      const payload = {
+        ...sharedBase,
+        invoice_number: finalNumber,
+        total: grandTotal,
+        status: status === 'Draft' ? 'Created' : status,
+        due_date: dueDate || null,
+      };
+      const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
+      if (error) throw error;
+      toast.success(t('invoiceForm.savedDraft'));
+      navigate(`/invoices/${data.id}`);
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
     } finally {
@@ -638,6 +699,36 @@ export default function InvoiceFormPage() {
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
+
+      {/* Payment Mode toggle + Milestone Builder */}
+      {!isEdit && (
+        <div className="space-y-2">
+          <Label>Mod Pembayaran</Label>
+          <div className="flex bg-muted rounded-md overflow-hidden text-sm w-fit">
+            <button type="button" onClick={() => setPaymentMode('lump')} disabled={jobType === 'milestone'}
+              className={cn('px-3 py-1.5 font-medium', paymentMode === 'lump' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground', jobType === 'milestone' && 'opacity-40 cursor-not-allowed')}>
+              Sekali Bayar
+            </button>
+            <button type="button" onClick={() => setPaymentMode('milestone')}
+              className={cn('px-3 py-1.5 font-medium', paymentMode === 'milestone' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>
+              Berperingkat
+            </button>
+          </div>
+          {jobType === 'milestone' && <p className="text-[11px] text-muted-foreground">Kerja jenis Milestone wajib guna pembayaran berperingkat.</p>}
+          {paymentMode === 'milestone' && (
+            <>
+              <MilestoneBuilder
+                total={grandTotal}
+                value={milestoneStages}
+                onChange={setMilestoneStages}
+                defaultTemplate={(profile as any)?.default_milestone_template || '30/40/30'}
+              />
+              {errors.milestone && <p className="text-xs text-destructive">{errors.milestone}</p>}
+            </>
+          )}
+        </div>
+      )}
+
 
       {/* Dates */}
       <div className="grid grid-cols-2 gap-3">
