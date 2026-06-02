@@ -316,6 +316,7 @@ export default function InvoiceFormPage() {
     if (jt === 'deposit' || jt === 'milestone') setPaymentMode('milestone');
 
     if (!isEdit && user) {
+      const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
       // Fire all 4 independent reads in parallel
       const [existingRes, quoteRes] = await Promise.all([
         supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle(),
@@ -325,7 +326,7 @@ export default function InvoiceFormPage() {
         fetchAvailableVos(j.id),
       ]);
       const existing = existingRes.data;
-      if (existing) {
+      if (existing && !isMilestoneJob) {
         setJobWarning({ message: t('invoiceForm.jobHasInvoice'), link: `/invoices/${existing.id}` });
         setSaveDisabled(true);
       } else {
@@ -344,45 +345,89 @@ export default function InvoiceFormPage() {
     if (!selectedJob) newErrors.job = t('invoiceForm.errJob');
     if (!items.some(i => i.description.trim())) newErrors.items = t('invoiceForm.errItems');
     if (items.some(i => i.unit_price < 0)) newErrors.items = t('invoiceForm.errPriceNeg');
+    if (paymentMode === 'milestone') {
+      const sumPct = milestoneStages.reduce((a, s) => a + (Number(s.percentage) || 0), 0);
+      if (milestoneStages.length === 0) newErrors.milestone = 'Tambah sekurang-kurangnya satu peringkat';
+      else if (Math.abs(sumPct - 100) > 0.01) newErrors.milestone = `Jumlah peratus mesti 100%. Sekarang: ${sumPct.toFixed(2)}%`;
+    }
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
     setSubmitting(true);
     try {
-      let finalNumber = invoiceNumber;
-      if (!isEdit) {
-        finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
-      }
-      const payload: any = {
+      const filteredItems = items.filter(i => i.description.trim());
+      const sharedBase: any = {
         user_id: user!.id,
         job_id: selectedJob!.id,
         customer_id: selectedJob!.customer_id || null,
         quote_id: linkedQuoteId,
-        invoice_number: finalNumber,
-        items: items.filter(i => i.description.trim()),
+        items: filteredItems,
         subtotal,
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
-        total: grandTotal,
-        status: isEdit ? status : (status === 'Draft' ? 'Created' : status),
-        issued_date: issuedDate || null,
-        due_date: dueDate || null,
         notes: notes.trim() || null,
         terms: terms.trim() || null,
         selected_payment_methods: selectedPaymentMethods as any,
         lhdn_submitted: lhdnSubmitted,
+        issued_date: issuedDate || null,
       };
 
       if (isEdit) {
+        const payload = {
+          ...sharedBase,
+          invoice_number: invoiceNumber,
+          total: grandTotal,
+          status,
+          due_date: dueDate || null,
+        };
         const { error } = await supabase.from('invoices').update(payload).eq('id', id);
         if (error) throw error;
         toast.success(t('invoiceForm.savedEdit'));
         navigate(`/invoices/${id}`);
-      } else {
-        const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
-        if (error) throw error;
-        toast.success(t('invoiceForm.savedDraft'));
-        navigate(`/invoices/${data.id}`);
+        return;
       }
+
+      if (paymentMode === 'milestone') {
+        const planSnapshot = milestoneStages.map((s, i) => ({
+          stage_number: i + 1, label: s.label, percentage: s.percentage,
+          amount: s.amount, trigger: s.trigger, due_date: s.due_date || null,
+        }));
+        const totalStages = milestoneStages.length;
+        const createdIds: string[] = [];
+        for (let i = 0; i < milestoneStages.length; i++) {
+          const s = milestoneStages[i];
+          const finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+          const payload = {
+            ...sharedBase,
+            invoice_number: finalNumber,
+            total: s.amount,
+            status: 'Created',
+            due_date: s.due_date || dueDate || null,
+            milestone_stages: planSnapshot as any,
+            milestone_stage_number: i + 1,
+            milestone_total_stages: totalStages,
+            notes: `[${s.label}] ${notes.trim()}`.trim(),
+          };
+          const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
+          if (error) throw error;
+          createdIds.push((data as any).id);
+        }
+        toast.success(`${totalStages} invois berperingkat dijana`);
+        navigate(`/invoices/${createdIds[0]}`);
+        return;
+      }
+
+      const finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+      const payload = {
+        ...sharedBase,
+        invoice_number: finalNumber,
+        total: grandTotal,
+        status: status === 'Draft' ? 'Created' : status,
+        due_date: dueDate || null,
+      };
+      const { data, error } = await supabase.from('invoices').insert(payload).select('id').single();
+      if (error) throw error;
+      toast.success(t('invoiceForm.savedDraft'));
+      navigate(`/invoices/${data.id}`);
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
     } finally {
