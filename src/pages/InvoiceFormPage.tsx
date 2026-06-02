@@ -125,7 +125,7 @@ export default function InvoiceFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, customers(name, phone, tin_number)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, customer_id, job_type, customers(name, phone, tin_number)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
