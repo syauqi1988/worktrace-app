@@ -16,6 +16,7 @@ import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Lan
 import { cn } from '@/lib/utils';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
+import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
 
 interface Job {
   id: string;
