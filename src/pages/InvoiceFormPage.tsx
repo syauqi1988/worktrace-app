@@ -154,11 +154,13 @@ export default function InvoiceFormPage() {
         if (isMilestoneJob) setPaymentMode('milestone');
         if (found.customers?.tin_number) setCustomerTin(found.customers.tin_number);
       }
-      if (user && !isEdit && !isMilestoneJob) {
-        supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
-          .then(({ data }) => {
-            if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
-          });
+      if (user && !isEdit) {
+        if (!isMilestoneJob) {
+          supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+            .then(({ data }) => {
+              if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
+            });
+        }
         // Check for accepted quotation
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
           .eq('job_id', jobId).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle()
