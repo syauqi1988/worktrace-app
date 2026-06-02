@@ -23,6 +23,7 @@ interface Job {
   job_number: string;
   title: string;
   customer_id: string | null;
+  job_type?: string | null;
   customers: { name: string; phone: string | null; tin_number: string | null } | null;
 }
 
