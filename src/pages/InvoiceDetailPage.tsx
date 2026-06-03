@@ -939,7 +939,12 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      {/* Payment Proof Section */}
+      {/* Milestone Tracker — only shown when this invoice is part of a milestone series */}
+      {invoice.jobs && (invoice as any).milestone_stage_number && user && (
+        <MilestoneTracker invoiceId={invoice.id} jobId={invoice.jobs.id} userId={user.id} />
+      )}
+
+
       {invoice.status !== 'Paid' && proof && proof.submitted_at && proof.status === 'pending' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
           <p className="text-sm font-bold text-blue-900">{t('invoiceDetail.proofReceivedTitle')}</p>
