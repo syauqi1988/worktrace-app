@@ -25,7 +25,8 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreatePaymentProofToken, buildPublicPaymentProofUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
-import { renderTemplate } from '@/lib/whatsappTemplates';
+import { renderTemplate, milestonePaymentMessage } from '@/lib/whatsappTemplates';
+import { MilestoneTracker } from '@/components/invoice/MilestoneTracker';
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-[#F1F5F9] text-[#64748B]',
@@ -492,19 +493,39 @@ export default function InvoiceDetailPage() {
   const buildWhatsAppInvoiceMessage = (_pdfUrl?: string, proofUrl?: string, isReminder = false) => {
     const name = customer?.name || '';
     const companyName = profile?.company_name || '';
-    const detailLines = [
-      t('invoiceDetail.waInvoiceNo', { number: invoice!.invoice_number }),
-      t('invoiceDetail.waAmount', { amount: invoice!.total.toFixed(2) }),
-      t('invoiceDetail.waPayBefore', { date: invoice!.due_date ? formatDate(invoice!.due_date) : '-' }),
-    ];
-    if (proofUrl) {
-      detailLines.push('', t('invoiceDetail.waProofPrompt'), proofUrl);
+    const stageNumber = (invoice as any)?.milestone_stage_number as number | null;
+    const totalStages = (invoice as any)?.milestone_total_stages as number | null;
+    const stages = (invoice as any)?.milestone_stages as Array<{ label: string }> | null;
+    let detailsBlock: string;
+    if (stageNumber && totalStages && proofUrl) {
+      const label = stages?.[stageNumber - 1]?.label || `Peringkat ${stageNumber}`;
+      detailsBlock = milestonePaymentMessage({
+        invoiceNumber: invoice!.invoice_number,
+        stageNumber,
+        totalStages,
+        stageLabel: label,
+        stageAmount: invoice!.total,
+        invoiceTotal: invoice!.total,
+        paidSoFar: 0,
+        dueDate: invoice!.due_date ? formatDate(invoice!.due_date) : null,
+        payUrl: proofUrl,
+      });
+    } else {
+      const detailLines = [
+        t('invoiceDetail.waInvoiceNo', { number: invoice!.invoice_number }),
+        t('invoiceDetail.waAmount', { amount: invoice!.total.toFixed(2) }),
+        t('invoiceDetail.waPayBefore', { date: invoice!.due_date ? formatDate(invoice!.due_date) : '-' }),
+      ];
+      if (proofUrl) {
+        detailLines.push('', t('invoiceDetail.waProofPrompt'), proofUrl);
+      }
+      detailsBlock = detailLines.join('\n');
     }
     return renderTemplate(
       (profile as any)?.whatsapp_templates,
       isReminder ? 'invoice_reminder' : 'invoice',
       { customer_name: name, company_name: companyName },
-      detailLines.join('\n'),
+      detailsBlock,
     );
   };
 
@@ -938,7 +959,12 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      {/* Payment Proof Section */}
+      {/* Milestone Tracker — only shown when this invoice is part of a milestone series */}
+      {invoice.jobs && (invoice as any).milestone_stage_number && user && (
+        <MilestoneTracker invoiceId={invoice.id} jobId={invoice.jobs.id} userId={user.id} />
+      )}
+
+
       {invoice.status !== 'Paid' && proof && proof.submitted_at && proof.status === 'pending' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
           <p className="text-sm font-bold text-blue-900">{t('invoiceDetail.proofReceivedTitle')}</p>

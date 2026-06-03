@@ -193,3 +193,31 @@ export function renderTemplate(
   parts.push("", fill(t.closing, vars));
   return parts.join("\n");
 }
+
+/**
+ * Build the details block for a milestone-stage invoice WhatsApp message.
+ * Feed the result into renderTemplate(..., 'invoice', ...) so greeting/closing
+ * stay consistent with user-customised templates.
+ */
+export function milestonePaymentMessage(opts: {
+  invoiceNumber: string;
+  stageNumber: number;
+  totalStages: number;
+  stageLabel: string;
+  stageAmount: number;
+  invoiceTotal: number;
+  paidSoFar: number;
+  dueDate?: string | null;
+  payUrl: string;
+}): string {
+  const lines = [
+    `📋 *Peringkat ${opts.stageNumber} dari ${opts.totalStages}* — ${opts.stageLabel}`,
+    `🧾 *No. Invois:* ${opts.invoiceNumber}`,
+    `💰 *Bayaran peringkat ini:* RM ${opts.stageAmount.toFixed(2)}`,
+    `📊 *Total invois:* RM ${opts.invoiceTotal.toFixed(2)}`,
+    `✅ *Telah dibayar:* RM ${opts.paidSoFar.toFixed(2)}`,
+  ];
+  if (opts.dueDate) lines.push(`📅 *Bayar Sebelum:* ${opts.dueDate}`);
+  lines.push('', '👉 Tekan untuk bayar / hantar bukti bayaran:', opts.payUrl);
+  return lines.join('\n');
+}

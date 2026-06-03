@@ -27,6 +27,8 @@ interface ProofRow {
   submitted_at: string | null;
   rejection_reason: string | null;
   invoice_pdf_url: string | null;
+  milestone_stage: number | null;
+  milestone_label: string | null;
 }
 
 export default function PublicPaymentProofPage() {
@@ -179,6 +181,14 @@ export default function PublicPaymentProofPage() {
 
         {invoice && (
           <div className="bg-card border border-border rounded-xl p-4">
+            {row.milestone_stage && (
+              <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">Pembayaran Berperingkat</p>
+                <p className="text-sm font-bold text-blue-900 mt-0.5">
+                  Peringkat {row.milestone_stage}{row.milestone_label ? ` — ${row.milestone_label}` : ''}
+                </p>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('publicProof.invoice')}</p>
             <p className="text-lg font-bold">{invoice.invoice_number}</p>
             <p className="text-2xl font-bold text-primary mt-1">RM {Number(invoice.total || 0).toFixed(2)}</p>
