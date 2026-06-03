@@ -25,7 +25,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreatePaymentProofToken, buildPublicPaymentProofUrl } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
-import { renderTemplate } from '@/lib/whatsappTemplates';
+import { renderTemplate, milestonePaymentMessage } from '@/lib/whatsappTemplates';
 import { MilestoneTracker } from '@/components/invoice/MilestoneTracker';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -493,19 +493,39 @@ export default function InvoiceDetailPage() {
   const buildWhatsAppInvoiceMessage = (_pdfUrl?: string, proofUrl?: string, isReminder = false) => {
     const name = customer?.name || '';
     const companyName = profile?.company_name || '';
-    const detailLines = [
-      t('invoiceDetail.waInvoiceNo', { number: invoice!.invoice_number }),
-      t('invoiceDetail.waAmount', { amount: invoice!.total.toFixed(2) }),
-      t('invoiceDetail.waPayBefore', { date: invoice!.due_date ? formatDate(invoice!.due_date) : '-' }),
-    ];
-    if (proofUrl) {
-      detailLines.push('', t('invoiceDetail.waProofPrompt'), proofUrl);
+    const stageNumber = (invoice as any)?.milestone_stage_number as number | null;
+    const totalStages = (invoice as any)?.milestone_total_stages as number | null;
+    const stages = (invoice as any)?.milestone_stages as Array<{ label: string }> | null;
+    let detailsBlock: string;
+    if (stageNumber && totalStages && proofUrl) {
+      const label = stages?.[stageNumber - 1]?.label || `Peringkat ${stageNumber}`;
+      detailsBlock = milestonePaymentMessage({
+        invoiceNumber: invoice!.invoice_number,
+        stageNumber,
+        totalStages,
+        stageLabel: label,
+        stageAmount: invoice!.total,
+        invoiceTotal: invoice!.total,
+        paidSoFar: 0,
+        dueDate: invoice!.due_date ? formatDate(invoice!.due_date) : null,
+        payUrl: proofUrl,
+      });
+    } else {
+      const detailLines = [
+        t('invoiceDetail.waInvoiceNo', { number: invoice!.invoice_number }),
+        t('invoiceDetail.waAmount', { amount: invoice!.total.toFixed(2) }),
+        t('invoiceDetail.waPayBefore', { date: invoice!.due_date ? formatDate(invoice!.due_date) : '-' }),
+      ];
+      if (proofUrl) {
+        detailLines.push('', t('invoiceDetail.waProofPrompt'), proofUrl);
+      }
+      detailsBlock = detailLines.join('\n');
     }
     return renderTemplate(
       (profile as any)?.whatsapp_templates,
       isReminder ? 'invoice_reminder' : 'invoice',
       { customer_name: name, company_name: companyName },
-      detailLines.join('\n'),
+      detailsBlock,
     );
   };
 
