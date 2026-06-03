@@ -757,6 +757,77 @@ export default function SettingsPage() {
         {termsTab === "work_order" && <WorkOrderTermsSection />}
       </SettingsAccordion>
 
+      {/* 4.4 — Keutamaan Kerja */}
+      <SettingsAccordion
+        id="keutamaan-kerja"
+        icon={<Briefcase className="h-5 w-5" />}
+        title="Keutamaan Kerja"
+        description="Tetapan lalai untuk jenis kerja & pembayaran berperingkat"
+      >
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Jenis Kerja Lalai</label>
+          <p className="text-xs text-muted-foreground mb-2">Setiap kerja baru akan bermula dengan jenis ini.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {JOB_TYPES.map((jt) => (
+              <button
+                key={jt.id}
+                type="button"
+                onClick={() => setDefaultJobType(jt.id)}
+                className={`text-left rounded-lg border p-3 transition-colors ${
+                  defaultJobType === jt.id
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-border hover:bg-accent'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{jt.icon}</span>
+                  <span className="text-sm font-semibold text-foreground">{jt.nameMs}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{jt.taglineMs}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Templat Milestone Lalai</label>
+          <div className="flex flex-wrap gap-1.5">
+            {MILESTONE_TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.key}
+                type="button"
+                onClick={() => setDefaultMilestoneTemplate(tpl.key)}
+                className={`text-xs px-3 py-1.5 rounded-full border ${
+                  defaultMilestoneTemplate === tpl.key
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background border-border text-muted-foreground hover:bg-accent'
+                }`}
+              >
+                {tpl.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Peratus Deposit Lalai (%)</label>
+          <Input
+            type="number"
+            min={1}
+            max={100}
+            step="1"
+            value={defaultDepositPct}
+            onChange={(e) => setDefaultDepositPct(Math.max(1, Math.min(100, Number(e.target.value) || 0)))}
+            className="h-11 rounded-lg w-32"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Digunakan untuk Kerja Deposit.</p>
+        </div>
+
+        <Button onClick={handleSaveJobPrefs} disabled={savingJobPrefs} className="rounded-lg">
+          {savingJobPrefs ? t('settings.saving') : 'Simpan'}
+        </Button>
+      </SettingsAccordion>
+
       {/* 4.5 — Templet WhatsApp */}
       <SettingsAccordion
         id="whatsapp-templates"
