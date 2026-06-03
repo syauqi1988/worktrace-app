@@ -39,7 +39,10 @@ import {
   Play,
   Hash,
   Link2,
+  Briefcase,
 } from "lucide-react";
+import { JOB_TYPES, type JobType } from "@/lib/jobTypes";
+import { MILESTONE_TEMPLATES } from "@/lib/milestoneTemplates";
 import { useTutorial } from "@/hooks/useTutorial";
 import CancellationDialog from "@/components/CancellationDialog";
 import ReactivateDialog from "@/components/ReactivateDialog";
@@ -165,6 +168,32 @@ export default function SettingsPage() {
   }, [profile]);
 
   const [applyingFreeMonths, setApplyingFreeMonths] = useState(false);
+
+  // Job preferences
+  const [defaultJobType, setDefaultJobType] = useState<JobType>('standard');
+  const [defaultMilestoneTemplate, setDefaultMilestoneTemplate] = useState<string>('30/40/30');
+  const [defaultDepositPct, setDefaultDepositPct] = useState<number>(30);
+  const [savingJobPrefs, setSavingJobPrefs] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setDefaultJobType(((profile as any).default_job_type as JobType) || 'standard');
+      setDefaultMilestoneTemplate((profile as any).default_milestone_template || '30/40/30');
+      setDefaultDepositPct(Number((profile as any).default_deposit_percentage) || 30);
+    }
+  }, [profile]);
+
+  const handleSaveJobPrefs = async () => {
+    setSavingJobPrefs(true);
+    await updateProfile({
+      default_job_type: defaultJobType,
+      default_milestone_template: defaultMilestoneTemplate,
+      default_deposit_percentage: defaultDepositPct,
+    } as any);
+    setSavingJobPrefs(false);
+    toast.success(t('settings.saved') || 'Disimpan');
+  };
+
 
   // Fetch referrals
   useEffect(() => {
