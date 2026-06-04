@@ -113,9 +113,9 @@ const App = () => (
                 <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />
                 <Route path="jobs/:jobId/vo/new" element={<VoFormPage />} />
                 <Route path="jobs/:jobId/vo/:voId/edit" element={<VoFormPage />} />
-                <Route path="jobs/:id/work-order" element={<TeamOnlyRoute><WorkOrderDetailPage /></TeamOnlyRoute>} />
-                <Route path="jobs/:id/work-order/new" element={<TeamOnlyRoute><WorkOrderFormPage /></TeamOnlyRoute>} />
-                <Route path="work-orders" element={<TeamOnlyRoute><WorkOrdersListPage /></TeamOnlyRoute>} />
+                <Route path="jobs/:id/work-order" element={<WorkOrderDetailPage />} />
+                <Route path="jobs/:id/work-order/new" element={<WorkOrderFormPage />} />
+                <Route path="work-orders" element={<WorkOrdersListPage />} />
                 <Route path="completion-reports" element={<CompletionReportsListPage />} />
                 <Route path="customers" element={<CustomersListPage />} />
                 <Route path="customers/new" element={<CustomerFormPage />} />

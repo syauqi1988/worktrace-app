@@ -41,7 +41,7 @@ function buildNavItems(t: (k: string) => string): NavItem[] {
     { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
     { to: '/products', label: t('nav.products'), icon: Package },
     { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
-    { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList, teamOnly: true },
+    { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList },
     { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
     { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
     { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
