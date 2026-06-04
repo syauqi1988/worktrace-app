@@ -470,10 +470,73 @@ export default function QuotationFormPage() {
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
       </div>
 
+      {/* Payment structure (deposit / milestone) — auto-injects into T&C */}
+      {(selectedJob?.job_type === 'deposit' || selectedJob?.job_type === 'milestone') && (
+        <div className="space-y-2 bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Struktur Bayaran</p>
+              <p className="text-xs text-muted-foreground">
+                {selectedJob.job_type === 'deposit' ? 'Tetapkan peratus deposit. Tekan butang untuk masukkan ke dalam T&C.' : 'Tetapkan peringkat bayaran. Tekan butang untuk masukkan ke dalam T&C.'}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => {
+                const block = selectedJob.job_type === 'deposit'
+                  ? buildDepositTermsBlock(grandTotal, depositPct)
+                  : buildMilestoneTermsBlock(grandTotal, milestoneStages);
+                if (!block) { toast.error('Tetapkan peringkat dahulu'); return; }
+                setTerms(prev => upsertPaymentTermsBlock(prev, block));
+                toast.success('Syarat bayaran dikemaskini');
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Auto-isi ke T&C
+            </Button>
+          </div>
+
+          {selectedJob.job_type === 'deposit' && (
+            <div className="flex items-end gap-3 pt-1">
+              <div className="space-y-1">
+                <Label className="text-xs">Deposit (%)</Label>
+                <Input
+                  type="number" min={1} max={100} step="1"
+                  value={depositPct}
+                  onChange={(e) => setDepositPct(Math.max(1, Math.min(100, Number(e.target.value) || 0)))}
+                  className="w-28 h-10"
+                />
+              </div>
+              <div className="text-xs text-muted-foreground pb-2.5">
+                = RM {((grandTotal * depositPct) / 100).toFixed(2)} · Baki RM {(grandTotal - (grandTotal * depositPct) / 100).toFixed(2)}
+              </div>
+            </div>
+          )}
+
+          {selectedJob.job_type === 'milestone' && (
+            <MilestoneBuilder
+              total={grandTotal}
+              value={milestoneStages}
+              onChange={setMilestoneStages}
+              defaultTemplate={(profile as any)?.default_milestone_template || '30/40/30'}
+            />
+          )}
+        </div>
+      )}
+
       <div className="space-y-1.5">
         <Label>{t('forms.termsConditions')}</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={t('quotationForm.termsPlaceholder')} />
-        <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={6} placeholder={t('quotationForm.termsPlaceholder')} />
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
+          {terms.includes('SYARAT_BAYARAN_AUTO_START') && (
+            <button type="button" onClick={() => setTerms(prev => removePaymentTermsBlock(prev))} className="text-xs text-muted-foreground underline hover:text-destructive">
+              Buang blok bayaran
+            </button>
+          )}
+        </div>
       </div>
 
       <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
