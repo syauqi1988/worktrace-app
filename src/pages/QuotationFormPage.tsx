@@ -15,6 +15,9 @@ import { cn } from '@/lib/utils';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
+import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
+import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock } from '@/lib/paymentTerms';
+import { Sparkles } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -22,6 +25,8 @@ interface Job {
   title: string;
   customer_id: string | null;
   products?: any[] | null;
+  job_type?: string | null;
+  milestone_config?: any;
   customers: { name: string; phone: string | null } | null;
 }
 
@@ -32,6 +37,7 @@ interface LineItem {
   uom?: string;
   unit_price: number;
 }
+
 
 export default function QuotationFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -69,9 +75,29 @@ export default function QuotationFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, products, customers(name, phone)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, customer_id, products, job_type, milestone_config, customers(name, phone)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
+
+  // Payment structure (deposit / milestone) editable per quotation
+  const [depositPct, setDepositPct] = useState<number>(30);
+  const [milestoneStages, setMilestoneStages] = useState<MilestoneStage[]>([]);
+
+  // When job changes, hydrate payment structure from job.milestone_config or defaults
+  useEffect(() => {
+    if (!selectedJob) return;
+    const cfg = (selectedJob as any).milestone_config || {};
+    if (selectedJob.job_type === 'deposit') {
+      const pct = Number(cfg.deposit_percentage) || Number((profile as any)?.default_deposit_percentage) || 30;
+      setDepositPct(pct);
+    } else if (selectedJob.job_type === 'milestone') {
+      const planned = Array.isArray(cfg.stages) ? cfg.stages as MilestoneStage[] : [];
+      if (planned.length) setMilestoneStages(planned);
+      // else MilestoneBuilder will init from default template
+    }
+    // eslint-disable-next-line
+  }, [selectedJob?.id]);
+
 
   // Helper: auto-fill items from job.products if current items are empty/default
   const tryAutoFillFromJob = (j: any) => {
@@ -444,10 +470,73 @@ export default function QuotationFormPage() {
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
       </div>
 
+      {/* Payment structure (deposit / milestone) — auto-injects into T&C */}
+      {(selectedJob?.job_type === 'deposit' || selectedJob?.job_type === 'milestone') && (
+        <div className="space-y-2 bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Struktur Bayaran</p>
+              <p className="text-xs text-muted-foreground">
+                {selectedJob.job_type === 'deposit' ? 'Tetapkan peratus deposit. Tekan butang untuk masukkan ke dalam T&C.' : 'Tetapkan peringkat bayaran. Tekan butang untuk masukkan ke dalam T&C.'}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => {
+                const block = selectedJob.job_type === 'deposit'
+                  ? buildDepositTermsBlock(grandTotal, depositPct)
+                  : buildMilestoneTermsBlock(grandTotal, milestoneStages);
+                if (!block) { toast.error('Tetapkan peringkat dahulu'); return; }
+                setTerms(prev => upsertPaymentTermsBlock(prev, block));
+                toast.success('Syarat bayaran dikemaskini');
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Auto-isi ke T&C
+            </Button>
+          </div>
+
+          {selectedJob.job_type === 'deposit' && (
+            <div className="flex items-end gap-3 pt-1">
+              <div className="space-y-1">
+                <Label className="text-xs">Deposit (%)</Label>
+                <Input
+                  type="number" min={1} max={100} step="1"
+                  value={depositPct}
+                  onChange={(e) => setDepositPct(Math.max(1, Math.min(100, Number(e.target.value) || 0)))}
+                  className="w-28 h-10"
+                />
+              </div>
+              <div className="text-xs text-muted-foreground pb-2.5">
+                = RM {((grandTotal * depositPct) / 100).toFixed(2)} · Baki RM {(grandTotal - (grandTotal * depositPct) / 100).toFixed(2)}
+              </div>
+            </div>
+          )}
+
+          {selectedJob.job_type === 'milestone' && (
+            <MilestoneBuilder
+              total={grandTotal}
+              value={milestoneStages}
+              onChange={setMilestoneStages}
+              defaultTemplate={(profile as any)?.default_milestone_template || '30/40/30'}
+            />
+          )}
+        </div>
+      )}
+
       <div className="space-y-1.5">
         <Label>{t('forms.termsConditions')}</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={t('quotationForm.termsPlaceholder')} />
-        <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={6} placeholder={t('quotationForm.termsPlaceholder')} />
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
+          {terms.includes('SYARAT_BAYARAN_AUTO_START') && (
+            <button type="button" onClick={() => setTerms(prev => removePaymentTermsBlock(prev))} className="text-xs text-muted-foreground underline hover:text-destructive">
+              Buang blok bayaran
+            </button>
+          )}
+        </div>
       </div>
 
       <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
