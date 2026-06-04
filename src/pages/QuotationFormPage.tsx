@@ -75,9 +75,29 @@ export default function QuotationFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, products, customers(name, phone)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, customer_id, products, job_type, milestone_config, customers(name, phone)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
+
+  // Payment structure (deposit / milestone) editable per quotation
+  const [depositPct, setDepositPct] = useState<number>(30);
+  const [milestoneStages, setMilestoneStages] = useState<MilestoneStage[]>([]);
+
+  // When job changes, hydrate payment structure from job.milestone_config or defaults
+  useEffect(() => {
+    if (!selectedJob) return;
+    const cfg = (selectedJob as any).milestone_config || {};
+    if (selectedJob.job_type === 'deposit') {
+      const pct = Number(cfg.deposit_percentage) || Number((profile as any)?.default_deposit_percentage) || 30;
+      setDepositPct(pct);
+    } else if (selectedJob.job_type === 'milestone') {
+      const planned = Array.isArray(cfg.stages) ? cfg.stages as MilestoneStage[] : [];
+      if (planned.length) setMilestoneStages(planned);
+      // else MilestoneBuilder will init from default template
+    }
+    // eslint-disable-next-line
+  }, [selectedJob?.id]);
+
 
   // Helper: auto-fill items from job.products if current items are empty/default
   const tryAutoFillFromJob = (j: any) => {
