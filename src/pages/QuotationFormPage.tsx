@@ -15,6 +15,9 @@ import { cn } from '@/lib/utils';
 import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
+import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
+import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock } from '@/lib/paymentTerms';
+import { Sparkles } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -22,6 +25,8 @@ interface Job {
   title: string;
   customer_id: string | null;
   products?: any[] | null;
+  job_type?: string | null;
+  milestone_config?: any;
   customers: { name: string; phone: string | null } | null;
 }
 
@@ -32,6 +37,7 @@ interface LineItem {
   uom?: string;
   unit_price: number;
 }
+
 
 export default function QuotationFormPage() {
   const { id } = useParams<{ id: string }>();
