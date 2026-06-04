@@ -503,8 +503,9 @@ export default function JobDetailPage() {
         )}
       </div>
 
-      {/* Work Order Card — Team plan only */}
-      {profile?.plan === 'team' && (
+      {/* Work Order Card */}
+      {(
+
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.workOrder')}
