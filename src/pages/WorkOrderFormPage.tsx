@@ -160,7 +160,7 @@ export default function WorkOrderFormPage() {
       setTitle(j?.title || '');
       setLocation(j?.customers?.address || '');
       setTechnician(profile?.company_name || '');
-      setTerms(profile?.quotation_terms || DEFAULT_TERMS);
+      setTerms((profile as any)?.wo_terms || DEFAULT_TERMS);
 
       if (q && Array.isArray(q.items) && q.items.length) {
         setItems(q.items as LineItem[]);
