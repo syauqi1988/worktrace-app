@@ -828,6 +828,21 @@ export default function SettingsPage() {
         </Button>
       </SettingsAccordion>
 
+      {/* 4.4b — Preset Kerja */}
+      <SettingsAccordion
+        id="preset-kerja"
+        icon={<Briefcase className="h-5 w-5" />}
+        title="Preset Kerja"
+        description="Urus templet preset untuk cipta kerja dengan pantas."
+      >
+        <p className="text-sm text-muted-foreground">
+          Cipta dan urus preset kerja (item, harga, T&C) untuk digunakan semula bila buat kerja baru.
+        </p>
+        <Button onClick={() => navigate('/job-presets')} className="rounded-lg gap-2">
+          <Briefcase className="h-4 w-4" /> Buka Preset Kerja
+        </Button>
+      </SettingsAccordion>
+
       {/* 4.5 — Templet WhatsApp */}
       <SettingsAccordion
         id="whatsapp-templates"
