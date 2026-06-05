@@ -533,7 +533,9 @@ export default function QuotationDetailPage() {
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
-            <Button onClick={() => updateStatus('Sent')} className="flex-1 rounded-lg">{t('quotationDetail.send')}</Button>
+            <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="flex-1 rounded-lg gap-2">
+              {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('quotationDetail.send')}</>}
+            </Button>
           </>
         )}
         {quotation.status === 'Sent' && (
@@ -552,8 +554,8 @@ export default function QuotationDetailPage() {
             <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
               <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
-            <Button onClick={() => navigate(`/jobs/${quotation.job_id}/completion-report`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
-              <Briefcase className="h-4 w-4" /> {t('quotationDetail.fillReport')}
+            <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
+              <ClipboardList className="h-4 w-4" /> Buat Work Order
             </Button>
           </>
         )}
