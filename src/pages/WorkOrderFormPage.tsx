@@ -180,7 +180,7 @@ export default function WorkOrderFormPage() {
       setLoading(false);
     }
     load();
-  }, [user, jobId, editWoId, profile?.company_name, profile?.quotation_terms]);
+  }, [user, jobId, editWoId, profile?.company_name, (profile as any)?.wo_terms]);
 
   const updateItem = (i: number, field: keyof LineItem, val: string | number) => {
     setItems(prev => prev.map((it, idx) => idx === i ? { ...it, [field]: val } : it));
