@@ -10,11 +10,11 @@ interface SettingsAccordionProps {
   children: ReactNode;
   defaultOpen?: boolean;
   danger?: boolean;
-  rememberKey?: string; // localStorage key (defaults to id)
+  rememberKey?: string; // kept for API compatibility (unused)
   tutorialId?: string;
 }
 
-const STORAGE_PREFIX = "wt_settings_open_";
+const OPEN_EVENT = "wt:settings-accordion-open";
 
 export default function SettingsAccordion({
   id,
@@ -22,31 +22,33 @@ export default function SettingsAccordion({
   title,
   description,
   children,
-  defaultOpen = false,
   danger = false,
-  rememberKey,
   tutorialId,
 }: SettingsAccordionProps) {
-  const key = STORAGE_PREFIX + (rememberKey ?? id);
-  const [open, setOpen] = useState(() => {
-    try {
-      const v = localStorage.getItem(key);
-      if (v === "1") return true;
-      if (v === "0") return false;
-    } catch {
-      /* ignore */
-    }
-    return defaultOpen;
-  });
+  // Default: all closed.
+  const [open, setOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Listen for sibling accordions opening — auto-close this one.
   useEffect(() => {
-    try {
-      localStorage.setItem(key, open ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
-  }, [open, key]);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail !== id) setOpen(false);
+    };
+    window.addEventListener(OPEN_EVENT, handler as EventListener);
+    return () => window.removeEventListener(OPEN_EVENT, handler as EventListener);
+  }, [id]);
+
+  const toggle = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        // Broadcast so siblings close.
+        window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: id }));
+      }
+      return next;
+    });
+  };
 
   return (
     <section
@@ -59,7 +61,7 @@ export default function SettingsAccordion({
     >
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         aria-expanded={open}
         className={cn(
           "w-full flex items-center gap-3 p-5 text-left hover:bg-accent/40 transition-colors",
