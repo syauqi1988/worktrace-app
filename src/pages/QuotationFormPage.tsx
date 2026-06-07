@@ -147,7 +147,7 @@ export default function QuotationFormPage() {
     if (!isEdit || !user || !id) return;
     async function fetchQuotation() {
       const { data } = await supabase.from('quotations')
-        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone))')
+        .select('*, jobs(id, job_number, title, customer_id, job_type, milestone_config, customers(name, phone))')
         .eq('id', id).single();
       if (data) {
         const q = data as any;
