@@ -144,52 +144,7 @@ export default function QuotationDetailPage() {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [previewOpen]);
 
-  // Auto-refresh the public approval PDF whenever the quotation is edited,
-  // so the shared customer link always shows the latest version.
   const refreshedSigRef = useRef<string>('');
-  useEffect(() => {
-    if (!quotation || !pdfData || !user) return;
-    const sig = `${quotation.id}:${quotation.updated_at || quotation.created_at}`;
-    if (refreshedSigRef.current === sig) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        // Only refresh if there's an active (pending) approval link
-        const { data: pending } = await supabase
-          .from('customer_approvals')
-          .select('token, pdf_url')
-          .eq('document_id', quotation.id)
-          .eq('document_type', 'quotation')
-          .eq('user_id', user.id)
-          .is('action', null)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (cancelled || !pending?.token) {
-          refreshedSigRef.current = sig;
-          return;
-        }
-        const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
-        const blob = await pdf(<QuotationPDF {...pdfWithLogo} />).toBlob();
-        const newUrl = await uploadApprovalPdf({
-          bucket: 'quotation-pdfs',
-          userId: user.id,
-          documentId: quotation.id,
-          documentNumber: quotation.quote_number,
-          blob,
-        });
-        if (cancelled) return;
-        await supabase
-          .from('customer_approvals')
-          .update({ pdf_url: newUrl })
-          .eq('token', pending.token);
-        refreshedSigRef.current = sig;
-      } catch (e) {
-        console.warn('approval pdf refresh failed', e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [quotation, pdfData, user]);
 
   const updateStatus = async (newStatus: string) => {
     if (!quotation || !user) return;
