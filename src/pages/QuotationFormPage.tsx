@@ -16,7 +16,7 @@ import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
 import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
-import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock } from '@/lib/paymentTerms';
+import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock, hasPaymentTermsBlock } from '@/lib/paymentTerms';
 import { Sparkles } from 'lucide-react';
 
 interface Job {
