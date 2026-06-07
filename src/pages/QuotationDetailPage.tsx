@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
