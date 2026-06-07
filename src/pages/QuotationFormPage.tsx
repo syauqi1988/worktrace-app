@@ -530,7 +530,7 @@ export default function QuotationFormPage() {
         <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={6} placeholder={t('quotationForm.termsPlaceholder')} />
         <div className="flex items-center justify-between flex-wrap gap-2">
           <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
-          {terms.includes('SYARAT_BAYARAN_AUTO_START') && (
+          {hasPaymentTermsBlock(terms) && (
             <button type="button" onClick={() => setTerms(prev => removePaymentTermsBlock(prev))} className="text-xs text-muted-foreground underline hover:text-destructive">
               Buang blok bayaran
             </button>
