@@ -16,7 +16,7 @@ import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
 import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
-import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock } from '@/lib/paymentTerms';
+import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock, hasPaymentTermsBlock } from '@/lib/paymentTerms';
 import { Sparkles } from 'lucide-react';
 
 interface Job {
@@ -147,7 +147,7 @@ export default function QuotationFormPage() {
     if (!isEdit || !user || !id) return;
     async function fetchQuotation() {
       const { data } = await supabase.from('quotations')
-        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone))')
+        .select('*, jobs(id, job_number, title, customer_id, job_type, milestone_config, customers(name, phone))')
         .eq('id', id).single();
       if (data) {
         const q = data as any;
@@ -482,9 +482,8 @@ export default function QuotationFormPage() {
             </div>
             <Button
               type="button"
-              variant="outline"
               size="sm"
-              className="gap-1.5"
+              className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => {
                 const block = selectedJob.job_type === 'deposit'
                   ? buildDepositTermsBlock(grandTotal, depositPct)
@@ -531,7 +530,7 @@ export default function QuotationFormPage() {
         <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={6} placeholder={t('quotationForm.termsPlaceholder')} />
         <div className="flex items-center justify-between flex-wrap gap-2">
           <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
-          {terms.includes('SYARAT_BAYARAN_AUTO_START') && (
+          {hasPaymentTermsBlock(terms) && (
             <button type="button" onClick={() => setTerms(prev => removePaymentTermsBlock(prev))} className="text-xs text-muted-foreground underline hover:text-destructive">
               Buang blok bayaran
             </button>

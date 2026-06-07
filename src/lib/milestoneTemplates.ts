@@ -78,7 +78,27 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
       { labelMs: 'Bayaran Akhir', labelEn: 'Final Payment', percentage: 70, trigger: 'on_completion_report' },
     ],
   },
+  ...buildEvenSplitTemplates([6, 7, 8, 9, 10]),
 ];
+
+function buildEvenSplitTemplates(counts: number[]): MilestoneTemplate[] {
+  return counts.map((n) => {
+    const base = Math.floor((100 / n) * 100) / 100; // 2dp
+    const stages = Array.from({ length: n }, (_, i) => {
+      const isFirst = i === 0;
+      const isLast = i === n - 1;
+      const pct = isLast ? Math.round((100 - base * (n - 1)) * 100) / 100 : base;
+      const trigger: MilestoneTrigger = isFirst ? 'on_wo_accepted' : isLast ? 'on_completion_report' : 'mid_progress';
+      return {
+        labelMs: isFirst ? 'Deposit' : isLast ? 'Bayaran Akhir' : `Peringkat ${i}`,
+        labelEn: isFirst ? 'Deposit' : isLast ? 'Final Payment' : `Stage ${i}`,
+        percentage: pct,
+        trigger,
+      };
+    });
+    return { key: `${n}x`, label: `${n} Peringkat`, stages };
+  });
+}
 
 export const getTemplate = (key?: string | null) =>
   MILESTONE_TEMPLATES.find((t) => t.key === key) ?? MILESTONE_TEMPLATES[0];

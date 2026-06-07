@@ -3,8 +3,12 @@
 
 import type { MilestoneStage } from '@/components/invoice/MilestoneBuilder';
 
-export const PAY_TERMS_START = '<!-- SYARAT_BAYARAN_AUTO_START -->';
-export const PAY_TERMS_END = '<!-- SYARAT_BAYARAN_AUTO_END -->';
+// Invisible zero-width markers so the user never sees them in the textarea / PDF
+export const PAY_TERMS_START = '\u200B\u200C\u200D\u200B';
+export const PAY_TERMS_END = '\u200B\u200D\u200C\u200B';
+// Legacy markers (kept for back-compat removal of older saved blocks)
+const LEGACY_START = '<!-- SYARAT_BAYARAN_AUTO_START -->';
+const LEGACY_END = '<!-- SYARAT_BAYARAN_AUTO_END -->';
 
 const fmt = (n: number) =>
   n.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -44,10 +48,10 @@ function wrap(content: string): string {
 
 /**
  * Inserts or replaces the auto block inside `existing` terms.
- * If markers exist, replaces. Otherwise appends to the end.
+ * Also strips any legacy HTML-comment markers from older saves.
  */
 export function upsertPaymentTermsBlock(existing: string, block: string): string {
-  const base = existing || '';
+  const base = stripLegacyMarkers(existing || '');
   const startIdx = base.indexOf(PAY_TERMS_START);
   const endIdx = base.indexOf(PAY_TERMS_END);
   if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
@@ -59,11 +63,21 @@ export function upsertPaymentTermsBlock(existing: string, block: string): string
 }
 
 export function removePaymentTermsBlock(existing: string): string {
-  const base = existing || '';
+  let base = stripLegacyMarkers(existing || '');
   const startIdx = base.indexOf(PAY_TERMS_START);
   const endIdx = base.indexOf(PAY_TERMS_END);
   if (startIdx === -1 || endIdx === -1) return base;
   const before = base.slice(0, startIdx).replace(/\s+$/, '');
   const after = base.slice(endIdx + PAY_TERMS_END.length).replace(/^\s+/, '');
   return [before, after].filter(Boolean).join('\n\n');
+}
+
+export function hasPaymentTermsBlock(existing: string): boolean {
+  const s = existing || '';
+  return s.includes(PAY_TERMS_START) || s.includes(LEGACY_START);
+}
+
+function stripLegacyMarkers(s: string): string {
+  // Convert any old HTML-comment markers to the new invisible ones so logic still works
+  return s.split(LEGACY_START).join(PAY_TERMS_START).split(LEGACY_END).join(PAY_TERMS_END);
 }
