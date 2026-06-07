@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
@@ -53,6 +53,7 @@ interface Quotation {
   terms: string | null;
   valid_until: string | null;
   created_at: string;
+  updated_at?: string;
   job_id: string | null;
   jobs: {
     id: string;
@@ -142,6 +143,8 @@ export default function QuotationDetailPage() {
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [previewOpen]);
+
+  const refreshedSigRef = useRef<string>('');
 
   const updateStatus = async (newStatus: string) => {
     if (!quotation || !user) return;
@@ -273,6 +276,53 @@ export default function QuotationDetailPage() {
       ssm_number_old: profile?.ssm_number_old || null,
     },
   } : null;
+
+  // Auto-refresh the public approval PDF whenever the quotation is edited,
+  // so the shared customer link always shows the latest version.
+  useEffect(() => {
+    if (!quotation || !pdfData || !user) return;
+    const sig = `${quotation.id}:${quotation.updated_at || quotation.created_at}`;
+    if (refreshedSigRef.current === sig) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: pending } = await supabase
+          .from('customer_approvals')
+          .select('token')
+          .eq('document_id', quotation.id)
+          .eq('document_type', 'quotation')
+          .eq('user_id', user.id)
+          .is('action', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (cancelled || !pending?.token) {
+          refreshedSigRef.current = sig;
+          return;
+        }
+        const pdfWithLogo = await embedPdfCompanyLogo(pdfData);
+        const blob = await pdf(<QuotationPDF {...pdfWithLogo} />).toBlob();
+        const newUrl = await uploadApprovalPdf({
+          bucket: 'quotation-pdfs',
+          userId: user.id,
+          documentId: quotation.id,
+          documentNumber: quotation.quote_number,
+          blob,
+        });
+        if (cancelled) return;
+        await supabase
+          .from('customer_approvals')
+          .update({ pdf_url: newUrl })
+          .eq('token', pending.token);
+        refreshedSigRef.current = sig;
+      } catch (e) {
+        console.warn('approval pdf refresh failed', e);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotation?.id, quotation?.updated_at, !!pdfData, user?.id]);
+
 
   const customerPhone = (quotation?.jobs as any)?.customers?.phone || null;
   const hasPhone = !!customerPhone;
