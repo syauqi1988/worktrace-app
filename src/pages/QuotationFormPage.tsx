@@ -482,9 +482,8 @@ export default function QuotationFormPage() {
             </div>
             <Button
               type="button"
-              variant="outline"
               size="sm"
-              className="gap-1.5"
+              className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => {
                 const block = selectedJob.job_type === 'deposit'
                   ? buildDepositTermsBlock(grandTotal, depositPct)
