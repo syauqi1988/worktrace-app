@@ -3,8 +3,12 @@
 
 import type { MilestoneStage } from '@/components/invoice/MilestoneBuilder';
 
-export const PAY_TERMS_START = '<!-- SYARAT_BAYARAN_AUTO_START -->';
-export const PAY_TERMS_END = '<!-- SYARAT_BAYARAN_AUTO_END -->';
+// Invisible zero-width markers so the user never sees them in the textarea / PDF
+export const PAY_TERMS_START = '\u200B\u200C\u200D\u200B';
+export const PAY_TERMS_END = '\u200B\u200D\u200C\u200B';
+// Legacy markers (kept for back-compat removal of older saved blocks)
+const LEGACY_START = '<!-- SYARAT_BAYARAN_AUTO_START -->';
+const LEGACY_END = '<!-- SYARAT_BAYARAN_AUTO_END -->';
 
 const fmt = (n: number) =>
   n.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
