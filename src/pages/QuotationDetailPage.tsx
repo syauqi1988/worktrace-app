@@ -53,6 +53,7 @@ interface Quotation {
   terms: string | null;
   valid_until: string | null;
   created_at: string;
+  updated_at?: string;
   job_id: string | null;
   jobs: {
     id: string;
