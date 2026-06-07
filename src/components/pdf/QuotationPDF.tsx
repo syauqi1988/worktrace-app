@@ -25,8 +25,13 @@ export default function QuotationPDF({ quotation, job, customer, company }: Quot
   const t = (k: string, o?: any) => i18n.t(k, o) as string;
   const afterDiscount = quotation.subtotal - quotation.discount;
   const sstAmount = quotation.tax_rate > 0 ? afterDiscount * (quotation.tax_rate / 100) : 0;
-  const termsText = quotation.terms || t('pdf.quotation.defaultTerms');
-  const termsLines = termsText.split('\n').filter(l => l.trim());
+  // Strip both legacy HTML-comment markers and new invisible zero-width markers
+  // so the auto-injected payment terms block renders cleanly in the PDF.
+  const rawTerms = quotation.terms || t('pdf.quotation.defaultTerms');
+  const termsText = rawTerms
+    .replace(/<!--\s*SYARAT_BAYARAN_AUTO_(START|END)\s*-->/g, '')
+    .replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
+  const termsLines = termsText.split('\n').map(l => l.replace(/[\u200B\u200C\u200D\uFEFF]/g, '').trimEnd()).filter(l => l.trim());
   const logo = company.logo_base64 || company.logo_url;
   const ssm = [company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ');
 
