@@ -19,9 +19,32 @@ export default function ShortLinkRedirectPage() {
         setError('Pautan tidak dijumpai atau telah tamat tempoh');
         return;
       }
-      window.location.replace(data.target_url);
+      // Allowlist trusted domains to prevent open-redirect phishing.
+      const allowedHostSuffixes = [
+        'worktrace.my',
+        'worktrace.app',
+        'worktraceapp.lovable.app',
+        'lovable.app',
+        'supabase.co',
+        'supabase.in',
+      ];
+      try {
+        const u = new URL(data.target_url);
+        const sameOrigin = u.origin === window.location.origin;
+        const allowed = sameOrigin || allowedHostSuffixes.some(
+          (suffix) => u.hostname === suffix || u.hostname.endsWith('.' + suffix)
+        );
+        if (!allowed) {
+          setError('Pautan menuju ke domain yang tidak dipercayai');
+          return;
+        }
+        window.location.replace(u.toString());
+      } catch {
+        setError('Pautan tidak sah');
+      }
     })();
   }, [code]);
+
 
   if (error) {
     return (
