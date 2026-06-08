@@ -56,12 +56,13 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("user_id", userId)
       .eq("purpose", "register")
+      .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!chRow) {
-      return new Response(JSON.stringify({ error: "No challenge found" }), {
+      return new Response(JSON.stringify({ error: "Challenge expired or not found" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -72,8 +73,9 @@ Deno.serve(async (req) => {
       expectedChallenge: chRow.challenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
-      requireUserVerification: false,
+      requireUserVerification: true,
     });
+
 
     if (!verification.verified || !verification.registrationInfo) {
       return new Response(JSON.stringify({ error: "Verification failed" }), {

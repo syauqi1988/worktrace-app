@@ -37,16 +37,18 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("email", emailLc)
       .eq("purpose", "authenticate")
+      .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!chRow) {
-      return new Response(JSON.stringify({ error: "No challenge" }), {
+      return new Response(JSON.stringify({ error: "Challenge expired or not found" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     // Look up the credential
     const credentialID: string = response.id;
@@ -90,7 +92,7 @@ Deno.serve(async (req) => {
         counter: Number(keyRow.counter),
         transports: keyRow.transports ?? [],
       },
-      requireUserVerification: false,
+      requireUserVerification: true,
     });
 
     if (!verification.verified) {

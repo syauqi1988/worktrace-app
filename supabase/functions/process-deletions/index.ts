@@ -143,9 +143,19 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require service-role authorization (cron uses service role; admin tools also use it).
+    const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const authHeader = req.headers.get('Authorization') ?? ''
+    const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+    if (!SERVICE_ROLE_KEY || bearer !== SERVICE_ROLE_KEY) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      SERVICE_ROLE_KEY,
       { auth: { persistSession: false } },
     )
 
@@ -155,6 +165,7 @@ Deno.serve(async (req) => {
 
     const targetUserId: string | undefined = body?.user_id
     const targetEmail: string | undefined = body?.email
+
 
     let due: any[] = []
 
