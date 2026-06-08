@@ -160,6 +160,7 @@ export default function WorkOrderDetailPage() {
     if (!wo || !job?.customers?.phone || !user) return;
     if (!checkWhatsAppShare()) return;
     setSharing(true);
+    const pendingWindow = window.open('', '_blank');
     try {
       const pdfData = await embedPdfCompanyLogo(buildPdfData());
       const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
@@ -180,16 +181,22 @@ export default function WorkOrderDetailPage() {
         expiresInDays: 30,
       });
       const fullUrl = buildPublicApprovalUrl(token);
-      const approvalUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullUrl, kind: 'approval' });
+      let approvalUrl = fullUrl;
+      try {
+        approvalUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullUrl, kind: 'approval' });
+      } catch (shortLinkError) {
+        console.warn('short link generation failed, falling back to approval url', shortLinkError);
+      }
       const phone = formatPhone(job.customers.phone);
       const message = buildWhatsAppMessage(job.customers.name, approvalUrl);
-      openWhatsApp(phone, message);
+      openWhatsApp(phone, message, pendingWindow);
       if (wo.status === 'Draft' || wo.status === 'Created') {
         await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
         await load();
       }
       toast.success(t('workOrderDetail.linkGenerated'));
     } catch (e: any) {
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close();
       console.error('WorkOrder share error details:', {
         error: e,
         message: e?.message,
