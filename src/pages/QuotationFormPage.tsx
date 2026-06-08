@@ -241,7 +241,7 @@ export default function QuotationFormPage() {
       };
 
       if (isEdit) {
-        const { error } = await supabase.from('quotations').update(payload).eq('id', id);
+        const { error } = await supabase.from('quotations').update({ ...payload, updated_at: new Date().toISOString() } as any).eq('id', id);
         if (error) throw error;
         toast.success(t('quotationForm.savedEdit'));
         navigate(`/quotations/${id}`);
