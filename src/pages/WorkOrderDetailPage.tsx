@@ -44,8 +44,10 @@ function formatDateTime(d: string | null) {
 
 function formatPhone(phone: string): string {
   let cleaned = phone.replace(/\D/g, '');
-  if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
-  if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
+  if (cleaned.startsWith('0060')) cleaned = cleaned.slice(2);  // Handle 0060xxxxxxxxx
+  if (cleaned.startsWith('600'))  cleaned = '60' + cleaned.slice(3);  // Handle 600xxxxxxxxx
+  if (cleaned.startsWith('0'))    cleaned = '60' + cleaned.slice(1);  // Handle 0xxxxxxxxx
+  if (!cleaned.startsWith('60'))  cleaned = '60' + cleaned;  // Add prefix if missing
   return cleaned;
 }
 
@@ -210,8 +212,9 @@ export default function WorkOrderDetailPage() {
         await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
         await load();
       }
-    } catch {
-      toast.error(t('workOrderDetail.shareFailed'));
+    } catch (e: any) {
+      console.error('WorkOrder share error:', e);
+      toast.error(e?.message || t('workOrderDetail.shareFailed'));
     } finally {
       setSharing(false);
     }
