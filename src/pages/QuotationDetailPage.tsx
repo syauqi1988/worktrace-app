@@ -91,6 +91,7 @@ export default function QuotationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const { checkWhatsAppShare, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   const { t } = useTranslation();
 
@@ -112,6 +113,20 @@ export default function QuotationDetailPage() {
           tax_rate: Number(q.tax_rate) || 0,
           total: Number(q.total) || 0,
         });
+        if (q.status === 'Rejected') {
+          const { data: approval } = await supabase
+            .from('customer_approvals')
+            .select('reason')
+            .eq('document_id', id)
+            .eq('document_type', 'quotation')
+            .eq('action', 'rejected')
+            .order('responded_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (active) setRejectionReason(approval?.reason || null);
+        } else {
+          if (active) setRejectionReason(null);
+        }
       }
       if (active) setLoading(false);
     }
@@ -432,7 +447,7 @@ export default function QuotationDetailPage() {
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
   const whatsappUrl = hasPhone ? buildWhatsAppUrl(formatPhone(customerPhone)) : null;
-  const canEdit = !!quotation;
+  const canEdit = !!quotation && quotation.status !== 'Rejected';
 
   if (loading) {
     return (
@@ -613,7 +628,12 @@ export default function QuotationDetailPage() {
           <div className="w-full space-y-3">
             <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
+                {rejectionReason && (
+                  <p className="text-sm text-[#92400E] mt-1 whitespace-pre-wrap">{rejectionReason}</p>
+                )}
+              </div>
             </div>
           </div>
         )}
