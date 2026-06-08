@@ -214,7 +214,16 @@ export default function WorkOrderDetailPage() {
       }
     } catch (e: any) {
       console.error('WorkOrder share error:', e);
-      toast.error(e?.message || t('workOrderDetail.shareFailed'));
+      // Provide specific error messages for common issues
+      let errorMsg = t('workOrderDetail.shareFailed');
+      if (e?.message?.includes('not found')) {
+        errorMsg = 'Work order data not found. Please try saving the work order again.';
+      } else if (e?.message?.includes('ERR_')) {
+        errorMsg = `Share error: ${e.message}`;
+      } else if (e?.message) {
+        errorMsg = e.message;
+      }
+      toast.error(errorMsg);
     } finally {
       setSharing(false);
     }
