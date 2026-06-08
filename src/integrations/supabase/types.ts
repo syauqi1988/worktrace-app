@@ -397,6 +397,8 @@ export type Database = {
           pdf_url: string | null
           reason: string | null
           responded_at: string | null
+          stamped_at: string | null
+          stamped_pdf_url: string | null
           token: string
           user_id: string
           viewed_at: string | null
@@ -413,6 +415,8 @@ export type Database = {
           pdf_url?: string | null
           reason?: string | null
           responded_at?: string | null
+          stamped_at?: string | null
+          stamped_pdf_url?: string | null
           token: string
           user_id: string
           viewed_at?: string | null
@@ -429,6 +433,8 @@ export type Database = {
           pdf_url?: string | null
           reason?: string | null
           responded_at?: string | null
+          stamped_at?: string | null
+          stamped_pdf_url?: string | null
           token?: string
           user_id?: string
           viewed_at?: string | null
