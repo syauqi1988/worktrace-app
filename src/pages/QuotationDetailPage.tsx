@@ -447,7 +447,7 @@ export default function QuotationDetailPage() {
 
   const isExpired = quotation?.valid_until && new Date(quotation.valid_until) < new Date();
   const whatsappUrl = hasPhone ? buildWhatsAppUrl(formatPhone(customerPhone)) : null;
-  const canEdit = !!quotation;
+  const canEdit = !!quotation && quotation.status !== 'Rejected';
 
   if (loading) {
     return (
