@@ -268,7 +268,7 @@ export default function WorkOrderFormPage() {
         await shareViaWhatsApp(savedId);
       }
 
-      toast.success(t('workOrderForm.savedDraft'));
+      toast.success(t(share ? 'workOrderForm.savedSent' : 'workOrderForm.savedDraft'));
       navigate(`/jobs/${jobId}/work-order`);
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
@@ -479,7 +479,11 @@ export default function WorkOrderFormPage() {
 
       {/* Actions */}
       <div className="flex flex-col gap-2">
-        <Button onClick={() => handleSave('Draft')} disabled={saving} className="rounded-lg">
+        <Button onClick={() => handleSave('Sent', true)} disabled={saving || sharing || !job?.customers?.phone} className="rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
+          {saving || sharing ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : <MessageCircle className="h-4 w-4" />}
+          {t('workOrderForm.sendCustomer')}
+        </Button>
+        <Button onClick={() => handleSave('Draft')} disabled={saving || sharing} className="rounded-lg">
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : null}
           {t('workOrderForm.saveDraft')}
         </Button>
