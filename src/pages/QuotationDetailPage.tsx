@@ -113,6 +113,20 @@ export default function QuotationDetailPage() {
           tax_rate: Number(q.tax_rate) || 0,
           total: Number(q.total) || 0,
         });
+        if (q.status === 'Rejected') {
+          const { data: approval } = await supabase
+            .from('customer_approvals')
+            .select('reason')
+            .eq('document_id', id)
+            .eq('document_type', 'quotation')
+            .eq('action', 'rejected')
+            .order('responded_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (active) setRejectionReason(approval?.reason || null);
+        } else {
+          if (active) setRejectionReason(null);
+        }
       }
       if (active) setLoading(false);
     }
