@@ -91,6 +91,7 @@ export default function QuotationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState<{ id: string; invoice_number: string; status: string; total: number } | null>(null);
   const [logoBase64, setLogoBase64] = useState<string>('');
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const { checkWhatsAppShare, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   const { t } = useTranslation();
 
