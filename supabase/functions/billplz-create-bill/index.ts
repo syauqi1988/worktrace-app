@@ -11,9 +11,35 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { plan, billing_period, user_email, user_name, user_id, redirect_base_url } = await req.json()
+    // Require authenticated caller; derive identity from JWT (do not trust body)
+    const authHeader = req.headers.get('Authorization') ?? ''
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
-    if (!plan || !user_email || !user_id) {
+    const supabaseUser = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+    const token = authHeader.replace('Bearer ', '')
+    const { data: userData, error: userErr } = await supabaseUser.auth.getUser(token)
+    if (userErr || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const authedUserId = userData.user.id
+    const authedEmail = userData.user.email ?? ''
+
+    const { plan, billing_period, user_name, redirect_base_url } = await req.json()
+
+    if (!plan) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -99,14 +125,14 @@ Deno.serve(async (req) => {
 
     const formData = new URLSearchParams()
     formData.append('collection_id', BILLPLZ_COLLECTION_ID)
-    formData.append('email', user_email)
+    formData.append('email', authedEmail)
     formData.append('name', user_name || 'WorkTrace User')
     formData.append('amount', amount.toString())
     formData.append('description', description)
     formData.append('callback_url', callbackUrl)
     formData.append('redirect_url', redirectUrl.toString())
     formData.append('reference_1_label', 'User ID')
-    formData.append('reference_1', user_id)
+    formData.append('reference_1', authedUserId)
     formData.append('reference_2_label', 'Plan')
     formData.append('reference_2', `${plan}_${period}`)
 
@@ -131,7 +157,7 @@ Deno.serve(async (req) => {
     await supabaseAdmin
       .from('profiles')
       .update({ billplz_bill_id: bill.id })
-      .eq('id', user_id)
+      .eq('id', authedUserId)
 
     return new Response(
       JSON.stringify({ bill_id: bill.id, payment_url: bill.url, amount }),

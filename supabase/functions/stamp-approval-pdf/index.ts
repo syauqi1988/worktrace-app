@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
     const { data: approval, error: aErr } = await admin
       .from('customer_approvals')
-      .select('id, user_id, document_id, document_type, pdf_url, action, reason, responded_at, customer_name')
+      .select('id, user_id, document_id, document_type, pdf_url, action, reason, responded_at, customer_name, stamped_at, stamped_pdf_url')
       .eq('token', token)
       .maybeSingle();
 
@@ -62,6 +62,14 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Idempotency guard — return existing stamped PDF if already produced.
+    if (approval.stamped_at && approval.stamped_pdf_url) {
+      return new Response(JSON.stringify({ ok: true, pdf_url: approval.stamped_pdf_url, cached: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
 
     const bucket = BUCKET_BY_TYPE[approval.document_type];
     if (!bucket) {
@@ -153,10 +161,11 @@ Deno.serve(async (req) => {
 
     const stampedBytes = await pdf.save();
 
-    const filePath = `${approval.user_id}/approvals/${approval.document_id}-stamped-${Date.now()}-${safeName(approval.action)}.pdf`;
+    // Deterministic path + upsert prevents unbounded storage growth.
+    const filePath = `${approval.user_id}/approvals/${approval.document_id}-stamped-${safeName(approval.action)}.pdf`;
     const { error: upErr } = await admin.storage
       .from(bucket)
-      .upload(filePath, stampedBytes, { contentType: 'application/pdf', upsert: false });
+      .upload(filePath, stampedBytes, { contentType: 'application/pdf', upsert: true });
     if (upErr) throw upErr;
 
     const { data: signed, error: signErr } = await admin.storage
@@ -166,8 +175,10 @@ Deno.serve(async (req) => {
 
     await admin
       .from('customer_approvals')
-      .update({ pdf_url: signed.signedUrl })
+      .update({ pdf_url: signed.signedUrl, stamped_at: new Date().toISOString(), stamped_pdf_url: signed.signedUrl })
       .eq('id', approval.id);
+
+
 
     if (approval.document_type === 'variation_order') {
       await admin
