@@ -628,7 +628,12 @@ export default function QuotationDetailPage() {
           <div className="w-full space-y-3">
             <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
+                {rejectionReason && (
+                  <p className="text-sm text-[#92400E] mt-1 whitespace-pre-wrap">{rejectionReason}</p>
+                )}
+              </div>
             </div>
           </div>
         )}
