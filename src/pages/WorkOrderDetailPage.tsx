@@ -213,13 +213,20 @@ export default function WorkOrderDetailPage() {
         await load();
       }
     } catch (e: any) {
-      console.error('WorkOrder share error:', e);
-      // Provide specific error messages for common issues
+      console.error('WorkOrder share error details:', {
+        error: e,
+        message: e?.message,
+        code: e?.code,
+        status: e?.status,
+      });
+      // Provide specific error messages based on error type
       let errorMsg = t('workOrderDetail.shareFailed');
       if (e?.message?.includes('not found')) {
-        errorMsg = 'Work order data not found. Please try saving the work order again.';
-      } else if (e?.message?.includes('ERR_')) {
-        errorMsg = `Share error: ${e.message}`;
+        errorMsg = 'Work order or document not found. Try refreshing the page or creating a new work order.';
+      } else if (e?.code === 'PGRST116') {
+        errorMsg = 'Work order not found in database. Try refreshing or recreating it.';
+      } else if (e?.message?.includes('insert or update on table "customer_approvals" violates')) {
+        errorMsg = 'Could not create approval record. Try deleting and recreating the work order.';
       } else if (e?.message) {
         errorMsg = e.message;
       }

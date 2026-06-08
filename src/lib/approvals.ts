@@ -51,15 +51,8 @@ interface CreateApprovalArgs {
 /**
  * Returns the existing pending approval token for a document, or creates a new one.
  * Reuses the row if no action has been taken so the same link keeps working.
- * Validates that the document exists before creating token to prevent "object not found" errors.
  */
 export async function getOrCreateApprovalToken(args: CreateApprovalArgs): Promise<string> {
-  // Validate document exists first to prevent foreign key/RPC issues
-  const docExists = await validateDocumentExists(args.documentType, args.documentId, args.userId);
-  if (!docExists) {
-    throw new Error(`${args.documentType} not found (ID: ${args.documentId})`);
-  }
-
   const existing = await supabase
     .from('customer_approvals')
     .select('token, action, expires_at')
@@ -97,65 +90,11 @@ export async function getOrCreateApprovalToken(args: CreateApprovalArgs): Promis
     pdf_url: args.pdfUrl ?? null,
     expires_at: expiresAt,
   });
-  if (error) throw error;
-  return token;
-}
-
-/**
- * Validates that a document exists in the database.
- * Prevents creating approval tokens for non-existent documents.
- */
-async function validateDocumentExists(
-  docType: ApprovalDocType,
-  docId: string,
-  userId: string
-): Promise<boolean> {
-  try {
-    let result;
-    switch (docType) {
-      case 'work_order': {
-        result = await supabase
-          .from('work_orders')
-          .select('id', { count: 'exact', head: true })
-          .eq('id', docId)
-          .eq('user_id', userId)
-          .single();
-        break;
-      }
-      case 'quotation': {
-        result = await supabase
-          .from('quotations')
-          .select('id', { count: 'exact', head: true })
-          .eq('id', docId)
-          .eq('user_id', userId)
-          .single();
-        break;
-      }
-      case 'completion_report': {
-        result = await supabase
-          .from('completion_reports')
-          .select('id', { count: 'exact', head: true })
-          .eq('id', docId)
-          .eq('user_id', userId)
-          .single();
-        break;
-      }
-      case 'variation_order': {
-        result = await supabase
-          .from('variation_orders')
-          .select('id', { count: 'exact', head: true })
-          .eq('id', docId)
-          .eq('user_id', userId)
-          .single();
-        break;
-      }
-      default:
-        return false;
-    }
-    return !result.error && result.data !== null;
-  } catch {
-    return false;
+  if (error) {
+    console.error('[getOrCreateApprovalToken] Insert error:', error);
+    throw error;
   }
+  return token;
 }
 
 interface CreateProofTokenArgs {
