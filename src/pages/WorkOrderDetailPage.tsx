@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
@@ -8,15 +8,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, Edit, Trash2, Eye, MessageCircle, Loader2,
+  ArrowLeft, MoreVertical, ChevronDown, Edit, Trash2, Eye, MessageCircle, Loader2,
   CalendarDays, MapPin, User as UserIcon, FileText, ClipboardCheck
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
+import { autoUpdateJobStatus } from '@/utils/autoUpdateJobStatus';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
@@ -138,36 +140,23 @@ export default function WorkOrderDetailPage() {
     },
   });
 
-  const handleDelete = async () => {
-    if (!wo) return;
-    setActing(true);
-    try {
-      await supabase.from('work_orders').delete().eq('id', wo.id);
-      toast.success(t('workOrderDetail.deleted'));
-      navigate(`/jobs/${jobId}`);
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setActing(false);
-    }
+  const buildWhatsAppMessage = (customerName: string, approvalUrl: string) => {
+    const details = t('workOrderDetail.waDetails', {
+      number: wo.wo_number,
+      title: wo.title,
+      startDate: formatDate(wo.scheduled_start_date),
+      location: wo.location || '-',
+      url: approvalUrl,
+    });
+    return renderTemplate(
+      (profile as any)?.whatsapp_templates,
+      'work_order',
+      { customer_name: customerName, company_name: profile?.company_name || '' },
+      details,
+    );
   };
 
-  const handlePreview = async () => {
-    if (!wo) return;
-    setPreviewOpen(true);
-    setPreviewLoading(true);
-    try {
-      const pdfData = await embedPdfCompanyLogo(buildPdfData());
-      const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
-      setPreviewUrl(URL.createObjectURL(blob));
-    } catch {
-      setPreviewOpen(false);
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
-
-  const handleShare = async () => {
+  const shareViaWhatsApp = async () => {
     if (!wo || !job?.customers?.phone || !user) return;
     if (!checkWhatsAppShare()) return;
     setSharing(true);
@@ -193,25 +182,13 @@ export default function WorkOrderDetailPage() {
       const fullUrl = buildPublicApprovalUrl(token);
       const approvalUrl = await getOrCreateShortLink({ userId: user.id, targetUrl: fullUrl, kind: 'approval' });
       const phone = formatPhone(job.customers.phone);
-      const companyName = profile?.company_name || '';
-      const details = t('workOrderDetail.waDetails', {
-        number: wo.wo_number,
-        title: wo.title,
-        startDate: formatDate(wo.scheduled_start_date),
-        location: wo.location || '-',
-        url: approvalUrl,
-      });
-      const msg = renderTemplate(
-        (profile as any)?.whatsapp_templates,
-        'work_order',
-        { customer_name: job.customers.name, company_name: companyName },
-        details,
-      );
-      openWhatsApp(phone, msg);
+      const message = buildWhatsAppMessage(job.customers.name, approvalUrl);
+      openWhatsApp(phone, message);
       if (wo.status === 'Draft' || wo.status === 'Created') {
         await supabase.from('work_orders').update({ status: 'Sent' }).eq('id', wo.id);
         await load();
       }
+      toast.success(t('workOrderDetail.linkGenerated'));
     } catch (e: any) {
       console.error('WorkOrder share error details:', {
         error: e,
@@ -219,17 +196,94 @@ export default function WorkOrderDetailPage() {
         code: e?.code,
         status: e?.status,
       });
-      let errorMsg = t('workOrderDetail.shareFailed');
-      if (e?.code === 'PGRST116') {
-        errorMsg = 'Share failed due to a database issue. Please try again.';
-      } else if (e?.message) {
-        errorMsg = e.message;
-      }
-      toast.error(errorMsg);
+      toast.error(e?.message || t('workOrderDetail.linkFailed'));
     } finally {
       setSharing(false);
     }
   };
+
+  const updateStatus = async (newStatus: string) => {
+    if (!wo || newStatus === wo.status) return;
+    setActing(true);
+    try {
+      const { error } = await supabase.from('work_orders').update({ status: newStatus }).eq('id', wo.id);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      setWo({ ...wo, status: newStatus });
+      toast.success(t('workOrderDetail.statusUpdated'));
+      if (job?.id && user) {
+        let trigger: 'work_order_accepted' | 'work_order_rejected' | undefined;
+        if (newStatus === 'Accepted') trigger = 'work_order_accepted';
+        if (newStatus === 'Rejected') trigger = 'work_order_rejected';
+        if (trigger) {
+          const newJobStatus = await autoUpdateJobStatus(supabase, job.id, user.id, trigger);
+          if (newJobStatus) {
+            toast.info(t('workOrderDetail.jobAutoUpdated', { status: newJobStatus }));
+          }
+        }
+      }
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!wo) return;
+    setActing(true);
+    try {
+      await supabase.from('work_orders').delete().eq('id', wo.id);
+      toast.success(t('workOrderDetail.deleted'));
+      navigate(`/jobs/${jobId}`);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const handlePreview = async () => {
+    if (!wo) return;
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
+    try {
+      const pdfData = await embedPdfCompanyLogo(buildPdfData());
+      const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch {
+      setPreviewOpen(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewOpen(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  const handlePreviewDownload = async () => {
+    if (!wo) return;
+    const pdfData = await embedPdfCompanyLogo(buildPdfData());
+    const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `WorkOrder-${wo.wo_number}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   if (loading) {
     return <div className="p-4 md:p-6 space-y-4"><Skeleton className="h-8 w-40" /><Skeleton className="h-48 w-full rounded-xl" /></div>;
@@ -245,6 +299,7 @@ export default function WorkOrderDetailPage() {
   }
 
   const items = Array.isArray(wo.items) ? wo.items : [];
+  const hasPhone = !!job?.customers?.phone;
 
   return (
     <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6 max-w-2xl">
@@ -252,13 +307,46 @@ export default function WorkOrderDetailPage() {
         <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{wo.wo_number}</h1>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[wo.status]}`}>{wo.status}</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={wo.status}
+                onChange={(e) => updateStatus(e.target.value)}
+                className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[13px] font-medium border-0 outline-none ${STATUS_COLORS[wo.status]}`}
+                style={{ WebkitAppearance: 'none' }}
+              >
+                <option value="Draft">Draft</option>
+                <option value="Created">Created</option>
+                <option value="Sent">Sent</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
+            </div>
           </div>
           <p className="text-sm text-muted-foreground truncate">{wo.title}</p>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handlePreview}>
+              <Eye className="h-4 w-4 mr-2" /> {t('workOrderDetail.previewPdf')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={shareViaWhatsApp} className={hasPhone ? '' : 'opacity-50 pointer-events-none'}>
+              <MessageCircle className="h-4 w-4 mr-2" /> {t('workOrderDetail.shareWa')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)}>
+              <Edit className="h-4 w-4 mr-2" /> {t('workOrderDetail.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" /> {t('workOrderDetail.delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {wo.status === 'Sent' && (
@@ -360,7 +448,7 @@ export default function WorkOrderDetailPage() {
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2"><Eye className="h-4 w-4" /> {t('workOrderDetail.previewPdf')}</Button>
         {job?.customers?.phone && (
-          <Button onClick={handleShare} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
+          <Button onClick={shareViaWhatsApp} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
             {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
             {t('workOrderDetail.shareWa')}
           </Button>
