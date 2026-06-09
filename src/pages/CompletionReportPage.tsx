@@ -330,6 +330,33 @@ export default function CompletionReportPage() {
   // Photo upload / remove / caption
   // ─────────────────────────────────────────────────────────────────────────
 
+  /**
+   * Re-encodes an image so that any EXIF orientation flag is baked into the
+   * pixels. The PDF renderer ignores EXIF, so without this a portrait phone
+   * photo would appear sideways in the generated PDF.
+   */
+  const normalizeImageOrientation = async (file: File): Promise<File> => {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' } as any);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { bitmap.close?.(); return file; }
+      ctx.drawImage(bitmap, 0, 0);
+      bitmap.close?.();
+      const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const blob: Blob | null = await new Promise(res => canvas.toBlob(res, mime, 0.92));
+      if (!blob) return file;
+      const name = file.name.replace(/\.[^.]+$/, mime === 'image/png' ? '.png' : '.jpg');
+      return new File([blob], name, { type: mime });
+    } catch {
+      return file;
+    }
+  };
+
+
   const handlePhotoUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     kind: 'before' | 'after',
