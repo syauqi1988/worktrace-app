@@ -1121,7 +1121,7 @@ export default function CompletionReportPage() {
 interface PhotoSectionProps {
   kind: 'before' | 'after';
   label: string;
-  badge: { text: string; className: string };
+  badge?: { text: string; className: string };
   helper: string;
   photos: string[];
   captions?: string[];
@@ -1158,9 +1158,11 @@ function PhotoSection({
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Label className="m-0">{label}</Label>
-        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
-          {badge.text}
-        </span>
+        {badge && (
+          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+            {badge.text}
+          </span>
+        )}
       </div>
       <p className="text-xs text-muted-foreground">{helper}</p>
       {error && <p className="text-xs text-destructive">{error}</p>}
