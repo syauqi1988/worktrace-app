@@ -90,7 +90,10 @@ export async function getOrCreateApprovalToken(args: CreateApprovalArgs): Promis
     pdf_url: args.pdfUrl ?? null,
     expires_at: expiresAt,
   });
-  if (error) throw error;
+  if (error) {
+    console.error('[getOrCreateApprovalToken] Insert error:', error);
+    throw error;
+  }
   return token;
 }
 

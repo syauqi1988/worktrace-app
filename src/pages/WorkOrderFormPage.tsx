@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
@@ -11,16 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Trash2, AlertCircle, Loader2, Eye, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, AlertCircle, Loader2, Eye } from 'lucide-react';
 import { generateAndIncrement } from '@/utils/generateDocNumber';
 import { pdf } from '@react-pdf/renderer';
 import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
-import { usePlanGate } from '@/hooks/usePlanGate';
-import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
-import { getOrCreateShortLink } from '@/lib/shortLinks';
-import { renderTemplate } from '@/lib/whatsappTemplates';
 
 interface JobRow {
   id: string;
@@ -42,13 +37,6 @@ interface LineItem {
   description: string;
   qty: number;
   unit_price: number;
-}
-
-function formatPhone(phone: string): string {
-  let cleaned = phone.replace(/\D/g, '');
-  if (cleaned.startsWith('0')) cleaned = '60' + cleaned.slice(1);
-  if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
-  return cleaned;
 }
 
 function formatDate(d: string | null) {
@@ -88,9 +76,7 @@ export default function WorkOrderFormPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [logoBase64, setLogoBase64] = useState('');
-  const [sharing, setSharing] = useState(false);
   const [existingWo, setExistingWo] = useState<{ id: string; status: string } | null>(null);
-  const { checkWhatsAppShare } = usePlanGate();
 
   const total = useMemo(
     () => items.reduce((sum, i) => sum + (i.qty || 0) * (i.unit_price || 0), 0),
@@ -226,7 +212,7 @@ export default function WorkOrderFormPage() {
     return e;
   };
 
-  const handleSave = async (status: 'Draft' | 'Sent', share = false) => {
+  const handleSave = async (status: 'Draft' | 'Sent') => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     if (!user || !jobId) return;
@@ -252,23 +238,15 @@ export default function WorkOrderFormPage() {
         total,
       };
 
-      let savedId: string;
       if (editWoId) {
         const { error } = await supabase.from('work_orders').update(payload).eq('id', editWoId);
         if (error) throw error;
-        savedId = editWoId;
       } else {
-        const { data, error } = await supabase.from('work_orders').insert(payload).select('id').single();
+        const { error } = await supabase.from('work_orders').insert(payload);
         if (error) throw error;
-        savedId = data.id;
       }
 
-      if (share && status === 'Sent' && job?.customers?.phone) {
-        if (!checkWhatsAppShare()) { setSaving(false); return; }
-        await shareViaWhatsApp(savedId);
-      }
-
-      toast.success(t('workOrderForm.savedDraft'));
+      toast.success(t(status === 'Sent' ? 'workOrderForm.savedSent' : 'workOrderForm.savedDraft'));
       navigate(`/jobs/${jobId}/work-order`);
     } catch (err: any) {
       toast.error(err.message || t('forms.errorSaving'));
@@ -277,54 +255,6 @@ export default function WorkOrderFormPage() {
     }
   };
 
-  const shareViaWhatsApp = async (woId: string) => {
-    if (!job?.customers?.phone) return;
-    setSharing(true);
-    try {
-      const pdfData = await embedPdfCompanyLogo(buildPdfData());
-      const blob = await pdf(<WorkOrderPDF {...pdfData} />).toBlob();
-      const pdfUrl = await uploadApprovalPdf({
-        bucket: 'work-order-pdfs',
-        userId: user!.id,
-        documentId: woId,
-        documentNumber: woNumber,
-        blob,
-      });
-
-      const token = await getOrCreateApprovalToken({
-        userId: user!.id,
-        documentId: woId,
-        documentType: 'work_order',
-        customerName: job.customers.name,
-        customerEmail: job.customers.email || null,
-        pdfUrl,
-        expiresInDays: 30,
-      });
-      const fullUrl = buildPublicApprovalUrl(token);
-      const approvalUrl = await getOrCreateShortLink({ userId: user!.id, targetUrl: fullUrl, kind: 'approval' });
-
-      const phone = formatPhone(job.customers.phone);
-      const companyName = profile?.company_name || '';
-      const details = t('workOrderForm.waDetails', {
-        number: woNumber,
-        title,
-        startDate: formatDate(startDate),
-        location: location || '-',
-        url: approvalUrl,
-      });
-      const msg = renderTemplate(
-        (profile as any)?.whatsapp_templates,
-        'work_order',
-        { customer_name: job.customers.name, company_name: companyName },
-        details,
-      );
-      openWhatsApp(phone, msg);
-    } catch {
-      toast.error(t('workOrderForm.shareFailed'));
-    } finally {
-      setSharing(false);
-    }
-  };
 
   const handlePreview = async () => {
     setPreviewOpen(true);

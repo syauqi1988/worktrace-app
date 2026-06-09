@@ -1,0 +1,1 @@
+CREATE POLICY "Users read own work order pdfs" ON storage.objects FOR SELECT USING (bucket_id = 'work-order-pdfs' AND (auth.uid())::text = (storage.foldername(name))[1]);
