@@ -342,12 +342,16 @@ export default function CompletionReportPage() {
 
     for (let i = 0; i < files.length; i++) {
       if (current.length + i >= 10) break;
-      const file = files[i];
+      const original = files[i];
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(t('completionReport.fileTooLarge', { name: file.name }));
+      if (original.size > 5 * 1024 * 1024) {
+        toast.error(t('completionReport.fileTooLarge', { name: original.name }));
         continue;
       }
+
+      // Bake EXIF orientation into pixels so the PDF (which ignores EXIF)
+      // shows the photo the same way the user uploaded it.
+      const file = await normalizeImageOrientation(original);
 
       setUploadingKind(kind);
       const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase();
