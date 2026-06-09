@@ -233,7 +233,9 @@ export default function QuotationFormPage() {
       if (!isEdit) {
         finalNumber = await generateAndIncrement(supabase, user!.id, 'quotation');
       }
-      const payload = {
+      const profilePayment = ((profile as any)?.payment_details ?? null) as PaymentDetails | null;
+      const paymentSnapshot = includePaymentDetails && hasPaymentDetails(profilePayment) ? profilePayment : null;
+      const payload: any = {
         user_id: user!.id,
         job_id: selectedJob!.id,
         quote_number: finalNumber,
@@ -246,6 +248,8 @@ export default function QuotationFormPage() {
         notes: notes.trim() || null,
         terms: terms.trim() || null,
         valid_until: validUntil || null,
+        deductions: deductions.filter(d => d.name.trim() || (Number(d.value) || 0) > 0) as any,
+        payment_details: paymentSnapshot as any,
       };
 
       if (isEdit) {
