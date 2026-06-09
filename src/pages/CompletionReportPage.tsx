@@ -330,6 +330,33 @@ export default function CompletionReportPage() {
   // Photo upload / remove / caption
   // ─────────────────────────────────────────────────────────────────────────
 
+  /**
+   * Re-encodes an image so that any EXIF orientation flag is baked into the
+   * pixels. The PDF renderer ignores EXIF, so without this a portrait phone
+   * photo would appear sideways in the generated PDF.
+   */
+  const normalizeImageOrientation = async (file: File): Promise<File> => {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' } as any);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { bitmap.close?.(); return file; }
+      ctx.drawImage(bitmap, 0, 0);
+      bitmap.close?.();
+      const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const blob: Blob | null = await new Promise(res => canvas.toBlob(res, mime, 0.92));
+      if (!blob) return file;
+      const name = file.name.replace(/\.[^.]+$/, mime === 'image/png' ? '.png' : '.jpg');
+      return new File([blob], name, { type: mime });
+    } catch {
+      return file;
+    }
+  };
+
+
   const handlePhotoUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     kind: 'before' | 'after',
@@ -342,12 +369,16 @@ export default function CompletionReportPage() {
 
     for (let i = 0; i < files.length; i++) {
       if (current.length + i >= 10) break;
-      const file = files[i];
+      const original = files[i];
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(t('completionReport.fileTooLarge', { name: file.name }));
+      if (original.size > 5 * 1024 * 1024) {
+        toast.error(t('completionReport.fileTooLarge', { name: original.name }));
         continue;
       }
+
+      // Bake EXIF orientation into pixels so the PDF (which ignores EXIF)
+      // shows the photo the same way the user uploaded it.
+      const file = await normalizeImageOrientation(original);
 
       setUploadingKind(kind);
       const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -409,7 +440,7 @@ export default function CompletionReportPage() {
       if (!completionDate)         newErrors.completionDate  = t('completionReport.errDate');
       if (!technicianName.trim())  newErrors.technicianName  = t('completionReport.errTechnician');
       if (!workDescription.trim()) newErrors.workDescription = t('completionReport.errWorkDesc');
-      if (afterPhotos.length === 0) newErrors.photos         = t('completionReport.errPhotos');
+      
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
@@ -969,7 +1000,7 @@ export default function CompletionReportPage() {
           <PhotoSection
             kind="after"
             label={t('completionReport.afterPhotos')}
-            badge={{ text: t('completionReport.requiredBadge'), className: 'bg-red-100 text-red-700' }}
+            
             helper={t('completionReport.afterHelper')}
             photos={afterPhotos}
             captions={afterCaptions}
@@ -1121,7 +1152,7 @@ export default function CompletionReportPage() {
 interface PhotoSectionProps {
   kind: 'before' | 'after';
   label: string;
-  badge: { text: string; className: string };
+  badge?: { text: string; className: string };
   helper: string;
   photos: string[];
   captions?: string[];
@@ -1158,9 +1189,11 @@ function PhotoSection({
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Label className="m-0">{label}</Label>
-        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
-          {badge.text}
-        </span>
+        {badge && (
+          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+            {badge.text}
+          </span>
+        )}
       </div>
       <p className="text-xs text-muted-foreground">{helper}</p>
       {error && <p className="text-xs text-destructive">{error}</p>}
