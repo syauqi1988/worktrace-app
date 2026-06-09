@@ -15,6 +15,14 @@ export interface QuotationPDFProps {
     total: number;
     notes: string | null;
     terms?: string | null;
+    deductions?: Array<{ id?: string; name: string; type: 'fixed' | 'percentage'; value: number }> | null;
+    payment_details?: {
+      bank_name?: string;
+      account_number?: string;
+      account_holder?: string;
+      payment_types?: string[];
+      note?: string;
+    } | null;
   };
   job: { job_number: string; title: string } | null;
   customer: { name: string; phone: string | null; email: string | null; address: string | null } | null;
@@ -143,6 +151,16 @@ export default function QuotationPDF({ quotation, job, customer, company }: Quot
                 <Text style={s.summaryValue}>-{fmtRM(quotation.discount)}</Text>
               </View>
             )}
+            {Array.isArray(quotation.deductions) && quotation.deductions.map((d, i) => {
+              const amt = d.type === 'percentage' ? (quotation.subtotal * (Number(d.value) || 0)) / 100 : (Number(d.value) || 0);
+              if (amt <= 0 && !d.name) return null;
+              return (
+                <View key={i} style={s.summaryRow}>
+                  <Text style={s.summaryLabel}>{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</Text>
+                  <Text style={s.summaryValue}>-{fmtRM(amt)}</Text>
+                </View>
+              );
+            })}
             {quotation.tax_rate > 0 && (
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>{t('pdf.common.sst')} ({quotation.tax_rate}%)</Text>
@@ -155,6 +173,34 @@ export default function QuotationPDF({ quotation, job, customer, company }: Quot
             </View>
           </View>
         </View>
+
+        {/* Payment Details */}
+        {quotation.payment_details && (
+          (quotation.payment_details.bank_name ||
+           quotation.payment_details.account_number ||
+           quotation.payment_details.account_holder ||
+           (quotation.payment_details.payment_types && quotation.payment_details.payment_types.length > 0) ||
+           quotation.payment_details.note) && (
+            <View style={s.block}>
+              <Text style={s.blockLabel}>Maklumat Pembayaran</Text>
+              {quotation.payment_details.bank_name && (
+                <Text style={s.blockText}>Bank: {quotation.payment_details.bank_name}</Text>
+              )}
+              {quotation.payment_details.account_number && (
+                <Text style={s.blockText}>No. Akaun: {quotation.payment_details.account_number}</Text>
+              )}
+              {quotation.payment_details.account_holder && (
+                <Text style={s.blockText}>Nama: {quotation.payment_details.account_holder}</Text>
+              )}
+              {quotation.payment_details.payment_types && quotation.payment_details.payment_types.length > 0 && (
+                <Text style={s.blockText}>Jenis: {quotation.payment_details.payment_types.join(' / ')}</Text>
+              )}
+              {quotation.payment_details.note && (
+                <Text style={s.blockText}>Nota: {quotation.payment_details.note}</Text>
+              )}
+            </View>
+          )
+        )}
 
         {/* Notes */}
         {quotation.notes && (
