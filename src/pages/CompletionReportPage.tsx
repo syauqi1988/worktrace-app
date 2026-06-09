@@ -409,7 +409,7 @@ export default function CompletionReportPage() {
       if (!completionDate)         newErrors.completionDate  = t('completionReport.errDate');
       if (!technicianName.trim())  newErrors.technicianName  = t('completionReport.errTechnician');
       if (!workDescription.trim()) newErrors.workDescription = t('completionReport.errWorkDesc');
-      if (afterPhotos.length === 0) newErrors.photos         = t('completionReport.errPhotos');
+      
       if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
     }
 
@@ -969,7 +969,7 @@ export default function CompletionReportPage() {
           <PhotoSection
             kind="after"
             label={t('completionReport.afterPhotos')}
-            badge={{ text: t('completionReport.requiredBadge'), className: 'bg-red-100 text-red-700' }}
+            
             helper={t('completionReport.afterHelper')}
             photos={afterPhotos}
             captions={afterCaptions}
