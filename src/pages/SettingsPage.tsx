@@ -21,6 +21,7 @@ import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSec
 import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
 import SecuritySection from "@/components/settings/SecuritySection";
 import SubscriptionReceiptsSection from "@/components/settings/SubscriptionReceiptsSection";
+import PaymentDetailsSection from "@/components/settings/PaymentDetailsSection";
 import { getDateLocale } from "@/i18n";
 import {
   Building2,
@@ -708,6 +709,18 @@ export default function SettingsPage() {
           </div>
         )}
       </SettingsAccordion>
+
+      {/* 3b — Maklumat Pembayaran untuk Sebut Harga */}
+      <SettingsAccordion
+        id="maklumat-pembayaran-quote"
+        icon={<Landmark className="h-5 w-5" />}
+        title="Maklumat Pembayaran (Sebut Harga)"
+        description="Bank, no. akaun, jenis pembayaran yang dipaparkan dalam Sebut Harga"
+      >
+        <PaymentDetailsSection />
+      </SettingsAccordion>
+
+
 
       {/* 4 — Terma & Syarat (sub-tabs: Sebut Harga / Invois / Work Order) */}
       <SettingsAccordion
