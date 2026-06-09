@@ -17,7 +17,9 @@ import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@
 import { ProductPicker } from '@/components/ProductPicker';
 import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
 import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock, hasPaymentTermsBlock } from '@/lib/paymentTerms';
-import { Sparkles } from 'lucide-react';
+import DeductionItemsSection, { type DeductionItem, computeDeductionsTotal } from '@/components/DeductionItemsSection';
+import PaymentDetailsCard, { hasPaymentDetails, type PaymentDetails } from '@/components/PaymentDetailsCard';
+import { Sparkles, Landmark } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -72,6 +74,8 @@ export default function QuotationFormPage() {
   const [jobWarning, setJobWarning] = useState<{ message: string; link: string } | null>(null);
   const [saveDisabled, setSaveDisabled] = useState(false);
   const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
+  const [deductions, setDeductions] = useState<DeductionItem[]>([]);
+  const [includePaymentDetails, setIncludePaymentDetails] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -162,6 +166,9 @@ export default function QuotationFormPage() {
         setNotes(q.notes || '');
         setValidUntil(q.valid_until || '');
         setTerms(q.terms || '');
+        setDeductions(Array.isArray(q.deductions) ? q.deductions : []);
+        // For edit: if quotation already has snapshotted payment_details, keep included
+        setIncludePaymentDetails(!!q.payment_details && hasPaymentDetails(q.payment_details));
         const storedDiscount = Number(q.discount) || 0;
         setDiscountMode('rm');
         setDiscountValue(storedDiscount);
