@@ -17,7 +17,9 @@ import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@
 import { ProductPicker } from '@/components/ProductPicker';
 import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
 import { buildDepositTermsBlock, buildMilestoneTermsBlock, upsertPaymentTermsBlock, removePaymentTermsBlock, hasPaymentTermsBlock } from '@/lib/paymentTerms';
-import { Sparkles } from 'lucide-react';
+import DeductionItemsSection, { type DeductionItem, computeDeductionsTotal } from '@/components/DeductionItemsSection';
+import PaymentDetailsCard, { hasPaymentDetails, type PaymentDetails } from '@/components/PaymentDetailsCard';
+import { Sparkles, Landmark } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -72,6 +74,8 @@ export default function QuotationFormPage() {
   const [jobWarning, setJobWarning] = useState<{ message: string; link: string } | null>(null);
   const [saveDisabled, setSaveDisabled] = useState(false);
   const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
+  const [deductions, setDeductions] = useState<DeductionItem[]>([]);
+  const [includePaymentDetails, setIncludePaymentDetails] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -162,6 +166,9 @@ export default function QuotationFormPage() {
         setNotes(q.notes || '');
         setValidUntil(q.valid_until || '');
         setTerms(q.terms || '');
+        setDeductions(Array.isArray(q.deductions) ? q.deductions : []);
+        // For edit: if quotation already has snapshotted payment_details, keep included
+        setIncludePaymentDetails(!!q.payment_details && hasPaymentDetails(q.payment_details));
         const storedDiscount = Number(q.discount) || 0;
         setDiscountMode('rm');
         setDiscountValue(storedDiscount);
@@ -197,9 +204,10 @@ export default function QuotationFormPage() {
     if (discountMode === 'pct') return subtotal * ((discountValue || 0) / 100);
     return discountValue || 0;
   }, [subtotal, discountMode, discountValue]);
-  const afterDiscount = Math.max(0, subtotal - discountAmount);
-  const sstAmount = sstEnabled ? afterDiscount * ((sstRate || 0) / 100) : 0;
-  const grandTotal = afterDiscount + sstAmount;
+  const deductionsAmount = useMemo(() => computeDeductionsTotal(deductions, subtotal), [deductions, subtotal]);
+  const afterDeductions = Math.max(0, subtotal - discountAmount - deductionsAmount);
+  const sstAmount = sstEnabled ? afterDeductions * ((sstRate || 0) / 100) : 0;
+  const grandTotal = afterDeductions + sstAmount;
 
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
     setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
@@ -225,7 +233,9 @@ export default function QuotationFormPage() {
       if (!isEdit) {
         finalNumber = await generateAndIncrement(supabase, user!.id, 'quotation');
       }
-      const payload = {
+      const profilePayment = ((profile as any)?.payment_details ?? null) as PaymentDetails | null;
+      const paymentSnapshot = includePaymentDetails && hasPaymentDetails(profilePayment) ? profilePayment : null;
+      const payload: any = {
         user_id: user!.id,
         job_id: selectedJob!.id,
         quote_number: finalNumber,
@@ -238,6 +248,8 @@ export default function QuotationFormPage() {
         notes: notes.trim() || null,
         terms: terms.trim() || null,
         valid_until: validUntil || null,
+        deductions: deductions.filter(d => d.name.trim() || (Number(d.value) || 0) > 0) as any,
+        payment_details: paymentSnapshot as any,
       };
 
       if (isEdit) {
@@ -424,6 +436,15 @@ export default function QuotationFormPage() {
         <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
       </div>
 
+      {/* Potongan / Diskaun */}
+      <div className="bg-card rounded-xl border border-border p-4">
+        <DeductionItemsSection
+          value={deductions}
+          onChange={setDeductions}
+          subtotalForPreview={subtotal}
+        />
+      </div>
+
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm"><span className="text-muted-foreground">{t('forms.subtotal')}</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
         <div className="space-y-1.5">
@@ -439,6 +460,12 @@ export default function QuotationFormPage() {
             <span className="text-sm text-muted-foreground">− RM {discountAmount.toFixed(2)}</span>
           </div>
         </div>
+        {deductionsAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Potongan</span>
+            <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{t('forms.sstApply')}</span>
@@ -459,6 +486,32 @@ export default function QuotationFormPage() {
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
+
+      {/* Maklumat Pembayaran (from settings) */}
+      {hasPaymentDetails((profile as any)?.payment_details) ? (
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Landmark className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold">Maklumat Pembayaran</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{includePaymentDetails ? 'Disertakan' : 'Tidak disertakan'}</span>
+              <Switch checked={includePaymentDetails} onCheckedChange={setIncludePaymentDetails} />
+            </div>
+          </div>
+          {includePaymentDetails && <PaymentDetailsCard details={(profile as any).payment_details} />}
+          <Link to="/settings#maklumat-pembayaran-quote" className="text-xs text-primary hover:underline">
+            Edit di Tetapan →
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-muted/40 border border-dashed border-border rounded-xl p-4 text-sm text-muted-foreground">
+          Tiada maklumat pembayaran ditetapkan.{' '}
+          <Link to="/settings#maklumat-pembayaran-quote" className="text-primary hover:underline">Tetapkan di Tetapan →</Link>
+        </div>
+      )}
+
 
       <div className="space-y-1.5">
         <Label>{t('quotationForm.validUntil')}</Label>

@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2, Eye, AlertTriangle, X, ChevronDown, ClipboardList } from 'lucide-react';
+import PaymentDetailsCard, { hasPaymentDetails } from '@/components/PaymentDetailsCard';
+import { computeDeductionsTotal, type DeductionItem } from '@/components/DeductionItemsSection';
 import { pdf } from '@react-pdf/renderer';
 import QuotationPDF from '@/components/pdf/QuotationPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
@@ -55,6 +57,8 @@ interface Quotation {
   created_at: string;
   updated_at?: string;
   job_id: string | null;
+  deductions?: any[] | null;
+  payment_details?: any | null;
   jobs: {
     id: string;
     job_number: string;
@@ -583,6 +587,16 @@ export default function QuotationDetailPage() {
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.subtotal')}</span><span>RM {quotation.subtotal.toFixed(2)}</span></div>
           {quotation.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.discount')}</span><span>− RM {quotation.discount.toFixed(2)}</span></div>}
+          {Array.isArray(quotation.deductions) && quotation.deductions.map((d: DeductionItem, i) => {
+            const amt = d.type === 'percentage' ? (quotation.subtotal * (Number(d.value) || 0)) / 100 : (Number(d.value) || 0);
+            if (amt <= 0 && !d.name) return null;
+            return (
+              <div key={d.id || i} className="flex justify-between text-xs">
+                <span className="text-muted-foreground">{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</span>
+                <span className="text-muted-foreground">− RM {amt.toFixed(2)}</span>
+              </div>
+            );
+          })}
           {quotation.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('quotationDetail.sst', { rate: quotation.tax_rate })}</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
             <span className="font-bold text-foreground">{t('quotationDetail.grandTotal')}</span>
@@ -590,6 +604,11 @@ export default function QuotationDetailPage() {
           </div>
         </div>
       </div>
+
+      {hasPaymentDetails(quotation.payment_details) && (
+        <PaymentDetailsCard details={quotation.payment_details} />
+      )}
+
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">

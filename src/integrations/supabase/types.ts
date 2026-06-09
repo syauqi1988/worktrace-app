@@ -565,6 +565,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_id: string | null
+          deductions: Json
           discount: number
           due_date: string | null
           id: string
@@ -593,6 +594,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_id?: string | null
+          deductions?: Json
           discount?: number
           due_date?: string | null
           id?: string
@@ -621,6 +623,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_id?: string | null
+          deductions?: Json
           discount?: number
           due_date?: string | null
           id?: string
@@ -1091,6 +1094,7 @@ export type Database = {
           msic_code: string | null
           onboarding_complete: boolean
           passkey_prompt_dismissed: boolean
+          payment_details: Json | null
           payment_methods: Json | null
           phone: string | null
           plan: string
@@ -1144,6 +1148,7 @@ export type Database = {
           msic_code?: string | null
           onboarding_complete?: boolean
           passkey_prompt_dismissed?: boolean
+          payment_details?: Json | null
           payment_methods?: Json | null
           phone?: string | null
           plan?: string
@@ -1197,6 +1202,7 @@ export type Database = {
           msic_code?: string | null
           onboarding_complete?: boolean
           passkey_prompt_dismissed?: boolean
+          payment_details?: Json | null
           payment_methods?: Json | null
           phone?: string | null
           plan?: string
@@ -1257,11 +1263,13 @@ export type Database = {
       quotations: {
         Row: {
           created_at: string
+          deductions: Json
           discount: number
           id: string
           items: Json
           job_id: string | null
           notes: string | null
+          payment_details: Json | null
           quote_number: string
           status: string
           subtotal: number
@@ -1274,11 +1282,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deductions?: Json
           discount?: number
           id?: string
           items?: Json
           job_id?: string | null
           notes?: string | null
+          payment_details?: Json | null
           quote_number: string
           status?: string
           subtotal?: number
@@ -1291,11 +1301,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deductions?: Json
           discount?: number
           id?: string
           items?: Json
           job_id?: string | null
           notes?: string | null
+          payment_details?: Json | null
           quote_number?: string
           status?: string
           subtotal?: number
@@ -1740,6 +1752,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_approval_token: string | null
+          deductions: Json
           discount: number | null
           discount_type: string | null
           id: string
@@ -1761,6 +1774,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_approval_token?: string | null
+          deductions?: Json
           discount?: number | null
           discount_type?: string | null
           id?: string
@@ -1782,6 +1796,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_approval_token?: string | null
+          deductions?: Json
           discount?: number | null
           discount_type?: string | null
           id?: string
