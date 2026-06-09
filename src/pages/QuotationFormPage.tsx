@@ -436,6 +436,15 @@ export default function QuotationFormPage() {
         <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
       </div>
 
+      {/* Potongan / Diskaun */}
+      <div className="bg-card rounded-xl border border-border p-4">
+        <DeductionItemsSection
+          value={deductions}
+          onChange={setDeductions}
+          subtotalForPreview={subtotal}
+        />
+      </div>
+
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm"><span className="text-muted-foreground">{t('forms.subtotal')}</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
         <div className="space-y-1.5">
@@ -451,6 +460,12 @@ export default function QuotationFormPage() {
             <span className="text-sm text-muted-foreground">− RM {discountAmount.toFixed(2)}</span>
           </div>
         </div>
+        {deductionsAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Potongan</span>
+            <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{t('forms.sstApply')}</span>
@@ -471,6 +486,32 @@ export default function QuotationFormPage() {
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
+
+      {/* Maklumat Pembayaran (from settings) */}
+      {hasPaymentDetails((profile as any)?.payment_details) ? (
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Landmark className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold">Maklumat Pembayaran</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{includePaymentDetails ? 'Disertakan' : 'Tidak disertakan'}</span>
+              <Switch checked={includePaymentDetails} onCheckedChange={setIncludePaymentDetails} />
+            </div>
+          </div>
+          {includePaymentDetails && <PaymentDetailsCard details={(profile as any).payment_details} />}
+          <Link to="/settings#maklumat-pembayaran-quote" className="text-xs text-primary hover:underline">
+            Edit di Tetapan →
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-muted/40 border border-dashed border-border rounded-xl p-4 text-sm text-muted-foreground">
+          Tiada maklumat pembayaran ditetapkan.{' '}
+          <Link to="/settings#maklumat-pembayaran-quote" className="text-primary hover:underline">Tetapkan di Tetapan →</Link>
+        </div>
+      )}
+
 
       <div className="space-y-1.5">
         <Label>{t('quotationForm.validUntil')}</Label>
