@@ -145,6 +145,7 @@ export default function VoFormPage() {
       discount: discountValue,
       tax_rate: sstEnabled ? sstRate : 0,
       total,
+      deductions,
       notes,
       created_at: new Date().toISOString(),
     },
