@@ -205,6 +205,15 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
                 <Text style={s.summaryValue}>-{fmtRM(invoice.discount)}</Text>
               </View>
             )}
+            {deductions.map((d, i) => {
+              const amt = d.type === 'percentage' ? (invoice.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0);
+              return (
+                <View key={i} style={s.summaryRow}>
+                  <Text style={s.summaryLabel}>{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</Text>
+                  <Text style={s.summaryValue}>-{fmtRM(amt)}</Text>
+                </View>
+              );
+            })}
             {invoice.tax_rate > 0 && (
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>{t('pdf.common.sst')} ({invoice.tax_rate}%)</Text>
