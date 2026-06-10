@@ -53,7 +53,9 @@ export interface InvoicePDFProps {
 
 export default function InvoicePDF({ invoice, job, customer, company, paymentMethods }: InvoicePDFProps) {
   const t = (k: string, o?: any) => i18n.t(k, o) as string;
-  const afterDiscount = invoice.subtotal - invoice.discount;
+  const deductions = Array.isArray(invoice.deductions) ? invoice.deductions : [];
+  const deductionsTotal = deductions.reduce((sum, d) => sum + (d.type === 'percentage' ? (invoice.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0)), 0);
+  const afterDiscount = invoice.subtotal - invoice.discount - deductionsTotal;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
   const termsText = invoice.terms || t('pdf.invoice.defaultTerms');
   const termsLines = termsText.split('\n').filter(l => l.trim());
