@@ -58,6 +58,7 @@ export default function InvoiceFormPage() {
   const [discountValue, setDiscountValue] = useState(0);
   const [sstEnabled, setSstEnabled] = useState(false);
   const [sstRate, setSstRate] = useState(8);
+  const [deductions, setDeductions] = useState<DeductionItem[]>([]);
   const [issuedDate, setIssuedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() + 30);
