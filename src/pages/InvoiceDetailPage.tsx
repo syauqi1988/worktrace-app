@@ -320,7 +320,7 @@ export default function InvoiceDetailPage() {
       discount: invoice.discount,
       tax_rate: invoice.tax_rate,
       total: invoice.total,
-      deductions: deductionsList,
+      deductions: Array.isArray(invoice.deductions) ? invoice.deductions : [],
       notes: invoice.notes,
       terms: invoice.terms || profile?.invoice_terms || null,
       milestone_stages: (invoice as any).milestone_stages || null,
