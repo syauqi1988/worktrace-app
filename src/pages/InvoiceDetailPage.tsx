@@ -134,6 +134,7 @@ export default function InvoiceDetailPage() {
           tax_rate: Number(inv.tax_rate) || 0,
           total: Number(inv.total) || 0,
           lhdn_submitted: inv.lhdn_submitted || false,
+          deductions: Array.isArray(inv.deductions) ? inv.deductions : [],
           terms: inv.terms || null,
           selected_payment_methods: Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [],
           receipt_number: inv.receipt_number || null,
