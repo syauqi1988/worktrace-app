@@ -11,6 +11,7 @@ export interface VariationOrderPDFProps {
     discount: number;
     tax_rate: number;
     total: number;
+    deductions?: Array<{ id?: string; name: string; type: 'fixed' | 'percentage'; value: number }>;
     notes: string | null;
     created_at: string;
   };
