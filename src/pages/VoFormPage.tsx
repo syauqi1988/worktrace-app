@@ -120,8 +120,11 @@ export default function VoFormPage() {
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + (i.qty || 0) * (i.unit_price || 0), 0), [items]);
   const afterDiscount = Math.max(0, subtotal - discountValue);
-  const sstAmount = sstEnabled ? afterDiscount * ((sstRate || 0) / 100) : 0;
-  const total = afterDiscount + sstAmount;
+  const deductionsAmount = useMemo(() => computeDeductionsTotal(deductions, subtotal), [deductions, subtotal]);
+  const afterDeductions = Math.max(0, afterDiscount - deductionsAmount);
+  const sstAmount = sstEnabled ? afterDeductions * ((sstRate || 0) / 100) : 0;
+  const total = afterDeductions + sstAmount;
+
 
   const updateItem = (idx: number, field: keyof LineItem, value: any) => {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
