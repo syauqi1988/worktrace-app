@@ -159,6 +159,15 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
                 <Text style={s.summaryValue}>-{fmtRM(vo.discount)}</Text>
               </View>
             )}
+            {deductions.map((d, i) => {
+              const amt = d.type === 'percentage' ? (vo.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0);
+              return (
+                <View key={i} style={s.summaryRow}>
+                  <Text style={s.summaryLabel}>{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</Text>
+                  <Text style={s.summaryValue}>-{fmtRM(amt)}</Text>
+                </View>
+              );
+            })}
             {vo.tax_rate > 0 && (
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>SST ({vo.tax_rate}%)</Text>
