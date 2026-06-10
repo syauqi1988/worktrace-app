@@ -727,7 +727,9 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const afterDiscount = invoice.subtotal - invoice.discount;
+  const deductionsList = Array.isArray(invoice.deductions) ? invoice.deductions : [];
+  const deductionsTotal = deductionsList.reduce((s, d) => s + (d.type === 'percentage' ? (invoice.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0)), 0);
+  const afterDiscount = invoice.subtotal - invoice.discount - deductionsTotal;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
 
   return (
