@@ -110,6 +110,7 @@ export default function VoFormPage() {
         setDiscountValue(Number(data.discount) || 0);
         const tr = Number(data.sst_rate) || 0;
         if ((Number(data.sst) || 0) > 0) { setSstEnabled(true); setSstRate(tr || 8); }
+        setDeductions(Array.isArray((data as any).deductions) ? (data as any).deductions : []);
         setNotes(data.notes || '');
         setStatus(data.status);
       }
