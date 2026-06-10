@@ -369,6 +369,7 @@ export default function InvoiceFormPage() {
         subtotal,
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
+        deductions: deductions.filter(d => d.name.trim() || (Number(d.value) || 0) > 0) as any,
         notes: notes.trim() || null,
         terms: terms.trim() || null,
         selected_payment_methods: selectedPaymentMethods as any,
