@@ -955,6 +955,15 @@ export default function InvoiceDetailPage() {
         <div className="border-t border-border pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.subtotal')}</span><span>RM {invoice.subtotal.toFixed(2)}</span></div>
           {invoice.discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.discount')}</span><span>− RM {invoice.discount.toFixed(2)}</span></div>}
+          {deductionsList.map((d, i) => {
+            const amt = d.type === 'percentage' ? (invoice.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0);
+            return (
+              <div key={i} className="flex justify-between">
+                <span className="text-muted-foreground">{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</span>
+                <span>− RM {amt.toFixed(2)}</span>
+              </div>
+            );
+          })}
           {invoice.tax_rate > 0 && <div className="flex justify-between"><span className="text-muted-foreground">{t('invoiceDetail.sst', { rate: invoice.tax_rate })}</span><span>+ RM {sstAmount.toFixed(2)}</span></div>}
           <div className="flex justify-between border-t border-border pt-2">
             <span className="font-bold text-foreground">{t('invoiceDetail.grandTotal')}</span>
