@@ -44,7 +44,9 @@ const extra = StyleSheet.create({
 export default function VariationOrderPDF({ vo, job, quotation, customer, company }: VariationOrderPDFProps) {
   const isDeduction = vo.type === 'deduction';
   const sign = isDeduction ? -1 : 1;
-  const afterDiscount = vo.subtotal - vo.discount;
+  const deductions = Array.isArray(vo.deductions) ? vo.deductions : [];
+  const deductionsTotal = deductions.reduce((s2, d) => s2 + (d.type === 'percentage' ? (vo.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0)), 0);
+  const afterDiscount = vo.subtotal - vo.discount - deductionsTotal;
   const sstAmount = vo.tax_rate > 0 ? afterDiscount * (vo.tax_rate / 100) : 0;
   const logo = company.logo_base64 || company.logo_url;
   const ssm = [company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ');
