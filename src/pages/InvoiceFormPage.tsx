@@ -684,6 +684,16 @@ export default function InvoiceFormPage() {
             <span className="text-sm text-muted-foreground">− RM {discountAmount.toFixed(2)}</span>
           </div>
         </div>
+        {/* Deductions */}
+        <div className="pt-1">
+          <DeductionItemsSection value={deductions} onChange={setDeductions} subtotalForPreview={subtotal} />
+        </div>
+        {deductionsAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Jumlah Potongan</span>
+            <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
+          </div>
+        )}
         {/* SST */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
