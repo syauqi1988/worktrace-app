@@ -59,6 +59,7 @@ export default function VoFormPage() {
   const [discountValue, setDiscountValue] = useState(0);
   const [sstEnabled, setSstEnabled] = useState(false);
   const [sstRate, setSstRate] = useState(8);
+  const [deductions, setDeductions] = useState<DeductionItem[]>([]);
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<string>('Draft');
 
