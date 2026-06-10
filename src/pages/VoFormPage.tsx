@@ -198,6 +198,7 @@ export default function VoFormPage() {
       sst_rate: sstEnabled ? sstRate : 0,
       total,
       notes: notes.trim() || null,
+      deductions: deductions.filter(d => d.name.trim() || (Number(d.value) || 0) > 0) as any,
       status: newStatus,
     };
 
