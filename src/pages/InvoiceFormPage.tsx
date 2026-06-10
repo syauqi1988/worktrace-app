@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
 import { MilestoneBuilder, type MilestoneStage } from '@/components/invoice/MilestoneBuilder';
+import DeductionItemsSection, { type DeductionItem, computeDeductionsTotal } from '@/components/DeductionItemsSection';
 
 interface Job {
   id: string;
@@ -57,6 +58,7 @@ export default function InvoiceFormPage() {
   const [discountValue, setDiscountValue] = useState(0);
   const [sstEnabled, setSstEnabled] = useState(false);
   const [sstRate, setSstRate] = useState(8);
+  const [deductions, setDeductions] = useState<DeductionItem[]>([]);
   const [issuedDate, setIssuedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() + 30);
@@ -209,6 +211,7 @@ export default function InvoiceFormPage() {
         setDiscountValue(storedDiscount);
         const storedTaxRate = Number(inv.tax_rate) || 0;
         if (storedTaxRate > 0) { setSstEnabled(true); setSstRate(storedTaxRate); }
+        setDeductions(Array.isArray((inv as any).deductions) ? (inv as any).deductions : []);
         const savedPMs = Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [];
         if (savedPMs.length > 0) {
           setSelectedPaymentMethods(savedPMs);
@@ -243,8 +246,10 @@ export default function InvoiceFormPage() {
     return discountValue || 0;
   }, [subtotal, discountMode, discountValue]);
   const afterDiscount = Math.max(0, subtotal - discountAmount);
-  const sstAmount = sstEnabled ? afterDiscount * ((sstRate || 0) / 100) : 0;
-  const grandTotal = afterDiscount + sstAmount;
+  const deductionsAmount = useMemo(() => computeDeductionsTotal(deductions, subtotal), [deductions, subtotal]);
+  const afterDeductions = Math.max(0, afterDiscount - deductionsAmount);
+  const sstAmount = sstEnabled ? afterDeductions * ((sstRate || 0) / 100) : 0;
+  const grandTotal = afterDeductions + sstAmount;
 
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
     setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
@@ -364,6 +369,7 @@ export default function InvoiceFormPage() {
         subtotal,
         discount: discountAmount,
         tax_rate: sstEnabled ? sstRate : 0,
+        deductions: deductions.filter(d => d.name.trim() || (Number(d.value) || 0) > 0) as any,
         notes: notes.trim() || null,
         terms: terms.trim() || null,
         selected_payment_methods: selectedPaymentMethods as any,
@@ -678,6 +684,16 @@ export default function InvoiceFormPage() {
             <span className="text-sm text-muted-foreground">− RM {discountAmount.toFixed(2)}</span>
           </div>
         </div>
+        {/* Deductions */}
+        <div className="pt-1">
+          <DeductionItemsSection value={deductions} onChange={setDeductions} subtotalForPreview={subtotal} />
+        </div>
+        {deductionsAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Jumlah Potongan</span>
+            <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
+          </div>
+        )}
         {/* SST */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">

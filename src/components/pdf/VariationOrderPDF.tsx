@@ -11,6 +11,7 @@ export interface VariationOrderPDFProps {
     discount: number;
     tax_rate: number;
     total: number;
+    deductions?: Array<{ id?: string; name: string; type: 'fixed' | 'percentage'; value: number }>;
     notes: string | null;
     created_at: string;
   };
@@ -43,7 +44,9 @@ const extra = StyleSheet.create({
 export default function VariationOrderPDF({ vo, job, quotation, customer, company }: VariationOrderPDFProps) {
   const isDeduction = vo.type === 'deduction';
   const sign = isDeduction ? -1 : 1;
-  const afterDiscount = vo.subtotal - vo.discount;
+  const deductions = Array.isArray(vo.deductions) ? vo.deductions : [];
+  const deductionsTotal = deductions.reduce((s2, d) => s2 + (d.type === 'percentage' ? (vo.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0)), 0);
+  const afterDiscount = vo.subtotal - vo.discount - deductionsTotal;
   const sstAmount = vo.tax_rate > 0 ? afterDiscount * (vo.tax_rate / 100) : 0;
   const logo = company.logo_base64 || company.logo_url;
   const ssm = [company.ssm_number_new, company.ssm_number_old].filter(Boolean).join(' / ');
@@ -156,6 +159,15 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
                 <Text style={s.summaryValue}>-{fmtRM(vo.discount)}</Text>
               </View>
             )}
+            {deductions.map((d, i) => {
+              const amt = d.type === 'percentage' ? (vo.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0);
+              return (
+                <View key={i} style={s.summaryRow}>
+                  <Text style={s.summaryLabel}>{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</Text>
+                  <Text style={s.summaryValue}>-{fmtRM(amt)}</Text>
+                </View>
+              );
+            })}
             {vo.tax_rate > 0 && (
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>SST ({vo.tax_rate}%)</Text>

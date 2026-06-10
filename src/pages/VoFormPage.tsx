@@ -20,6 +20,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
+import DeductionItemsSection, { type DeductionItem, computeDeductionsTotal } from '@/components/DeductionItemsSection';
 
 interface LineItem {
   description: string;
@@ -58,6 +59,7 @@ export default function VoFormPage() {
   const [discountValue, setDiscountValue] = useState(0);
   const [sstEnabled, setSstEnabled] = useState(false);
   const [sstRate, setSstRate] = useState(8);
+  const [deductions, setDeductions] = useState<DeductionItem[]>([]);
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<string>('Draft');
 
@@ -108,6 +110,7 @@ export default function VoFormPage() {
         setDiscountValue(Number(data.discount) || 0);
         const tr = Number(data.sst_rate) || 0;
         if ((Number(data.sst) || 0) > 0) { setSstEnabled(true); setSstRate(tr || 8); }
+        setDeductions(Array.isArray((data as any).deductions) ? (data as any).deductions : []);
         setNotes(data.notes || '');
         setStatus(data.status);
       }
@@ -117,8 +120,11 @@ export default function VoFormPage() {
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + (i.qty || 0) * (i.unit_price || 0), 0), [items]);
   const afterDiscount = Math.max(0, subtotal - discountValue);
-  const sstAmount = sstEnabled ? afterDiscount * ((sstRate || 0) / 100) : 0;
-  const total = afterDiscount + sstAmount;
+  const deductionsAmount = useMemo(() => computeDeductionsTotal(deductions, subtotal), [deductions, subtotal]);
+  const afterDeductions = Math.max(0, afterDiscount - deductionsAmount);
+  const sstAmount = sstEnabled ? afterDeductions * ((sstRate || 0) / 100) : 0;
+  const total = afterDeductions + sstAmount;
+
 
   const updateItem = (idx: number, field: keyof LineItem, value: any) => {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
@@ -139,6 +145,7 @@ export default function VoFormPage() {
       discount: discountValue,
       tax_rate: sstEnabled ? sstRate : 0,
       total,
+      deductions,
       notes,
       created_at: new Date().toISOString(),
     },
@@ -192,6 +199,7 @@ export default function VoFormPage() {
       sst_rate: sstEnabled ? sstRate : 0,
       total,
       notes: notes.trim() || null,
+      deductions: deductions.filter(d => d.name.trim() || (Number(d.value) || 0) > 0) as any,
       status: newStatus,
     };
 
@@ -403,6 +411,15 @@ export default function VoFormPage() {
           <span>{t('vo.subtotal')}</span>
           <span className="font-medium">RM {subtotal.toFixed(2)}</span>
         </div>
+        <div className="pt-1">
+          <DeductionItemsSection value={deductions} onChange={setDeductions} subtotalForPreview={subtotal} />
+        </div>
+        {deductionsAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Jumlah Potongan</span>
+            <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex justify-between items-center text-sm">
           <span>{t('vo.discount')}</span>
           <Input type="number" min={0} step="0.01" value={discountValue || ''} onChange={e => setDiscountValue(Number(e.target.value) || 0)} className="w-32 h-8 text-sm text-right" />
