@@ -28,6 +28,7 @@ export interface InvoicePDFProps {
     total: number;
     notes: string | null;
     terms?: string | null;
+    deductions?: Array<{ id?: string; name: string; type: 'fixed' | 'percentage'; value: number }>;
     milestone_stages?: any[] | null;
     milestone_stage_number?: number | null;
     milestone_total_stages?: number | null;
