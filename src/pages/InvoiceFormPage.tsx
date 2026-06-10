@@ -211,6 +211,7 @@ export default function InvoiceFormPage() {
         setDiscountValue(storedDiscount);
         const storedTaxRate = Number(inv.tax_rate) || 0;
         if (storedTaxRate > 0) { setSstEnabled(true); setSstRate(storedTaxRate); }
+        setDeductions(Array.isArray((inv as any).deductions) ? (inv as any).deductions : []);
         const savedPMs = Array.isArray(inv.selected_payment_methods) ? inv.selected_payment_methods : [];
         if (savedPMs.length > 0) {
           setSelectedPaymentMethods(savedPMs);
