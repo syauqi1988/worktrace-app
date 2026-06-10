@@ -20,6 +20,7 @@ import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { getOrCreateApprovalToken, buildPublicApprovalUrl, uploadApprovalPdf } from '@/lib/approvals';
 import { getOrCreateShortLink } from '@/lib/shortLinks';
+import DeductionItemsSection, { type DeductionItem, computeDeductionsTotal } from '@/components/DeductionItemsSection';
 
 interface LineItem {
   description: string;
