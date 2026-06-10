@@ -410,6 +410,15 @@ export default function VoFormPage() {
           <span>{t('vo.subtotal')}</span>
           <span className="font-medium">RM {subtotal.toFixed(2)}</span>
         </div>
+        <div className="pt-1">
+          <DeductionItemsSection value={deductions} onChange={setDeductions} subtotalForPreview={subtotal} />
+        </div>
+        {deductionsAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Jumlah Potongan</span>
+            <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex justify-between items-center text-sm">
           <span>{t('vo.discount')}</span>
           <Input type="number" min={0} step="0.01" value={discountValue || ''} onChange={e => setDiscountValue(Number(e.target.value) || 0)} className="w-32 h-8 text-sm text-right" />
