@@ -246,8 +246,10 @@ export default function InvoiceFormPage() {
     return discountValue || 0;
   }, [subtotal, discountMode, discountValue]);
   const afterDiscount = Math.max(0, subtotal - discountAmount);
-  const sstAmount = sstEnabled ? afterDiscount * ((sstRate || 0) / 100) : 0;
-  const grandTotal = afterDiscount + sstAmount;
+  const deductionsAmount = useMemo(() => computeDeductionsTotal(deductions, subtotal), [deductions, subtotal]);
+  const afterDeductions = Math.max(0, afterDiscount - deductionsAmount);
+  const sstAmount = sstEnabled ? afterDeductions * ((sstRate || 0) / 100) : 0;
+  const grandTotal = afterDeductions + sstAmount;
 
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
     setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
