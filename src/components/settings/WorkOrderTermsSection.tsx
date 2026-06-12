@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export const DEFAULT_WO_TERMS = `1. Kerja akan dilaksanakan mengikut spesifikasi yang telah dipersetujui.
-2. Sebarang perubahan skop kerja memerlukan kelulusan bertulis.
-3. Pembayaran hendaklah dibuat dalam masa 14 hari dari tarikh invois.
-4. Syarikat tidak bertanggungjawab atas kerosakan yang sedia ada sebelum kerja bermula.
-5. Gambar sebelum dan selepas kerja diambil sebagai rekod rasmi.`;
+export const DEFAULT_WO_TERMS = `1. Work will be carried out according to the agreed specifications.
+2. Any changes to the scope of work require written approval.
+3. Payment must be made within 14 days from the invoice date.
+4. The company is not responsible for existing damage before work begins.
+5. Before and after photos are taken as official records.`;
 
 export default function WorkOrderTermsSection() {
   const { profile, updateProfile } = useAuth();
