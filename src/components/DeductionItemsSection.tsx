@@ -44,15 +44,15 @@ export default function DeductionItemsSection({ value, onChange, subtotalForPrev
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-sm">Potongan / Diskaun</Label>
+        <Label className="text-sm">Deductions / Discounts</Label>
         {list.length > 0 && (
-          <span className="text-xs text-muted-foreground">{list.length} potongan</span>
+          <span className="text-xs text-muted-foreground">{list.length} deductions</span>
         )}
       </div>
 
       {list.length === 0 && (
         <p className="text-xs text-muted-foreground">
-          Tambah potongan seperti deposit dibayar, diskaun promosi, dll.
+          Add deductions such as deposit paid, promotional discount, etc.
         </p>
       )}
 
@@ -66,7 +66,7 @@ export default function DeductionItemsSection({ value, onChange, subtotalForPrev
               <Input
                 value={d.name}
                 onChange={e => update(d.id, { name: e.target.value })}
-                placeholder="Nama potongan (cth. Deposit Pertama)"
+                placeholder="Deduction name (e.g. First Deposit)"
                 className="text-sm"
                 maxLength={80}
               />
@@ -106,7 +106,7 @@ export default function DeductionItemsSection({ value, onChange, subtotalForPrev
                 type="button"
                 onClick={() => remove(d.id)}
                 className="flex items-center justify-center h-9 text-muted-foreground hover:text-destructive"
-                aria-label="Buang potongan"
+                aria-label="Remove deduction"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -116,7 +116,7 @@ export default function DeductionItemsSection({ value, onChange, subtotalForPrev
       </div>
 
       <Button type="button" variant="outline" size="sm" onClick={add} className="gap-1.5 rounded-lg text-xs mt-2">
-        <Plus className="h-3.5 w-3.5" /> Tambah Potongan
+        <Plus className="h-3.5 w-3.5" /> Add Deduction
       </Button>
     </div>
   );
