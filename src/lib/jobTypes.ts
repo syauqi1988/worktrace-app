@@ -50,7 +50,7 @@ export const JOB_TYPES: JobTypeDef[] = [
     taglineMs: 'Full standard workflow',
     taglineEn: 'Full standard workflow',
     steps: [
-      { key: 'quotation', labelMs: 'Sebut Harga', labelEn: 'Quotation' },
+      { key: 'quotation', labelMs: 'Quotation', labelEn: 'Quotation' },
       { key: 'work_order', labelMs: 'Work Order', labelEn: 'Work Order' },
       { key: 'completion_report', labelMs: 'Laporan Siap', labelEn: 'Completion Report' },
       { key: 'invoice', labelMs: 'Invois', labelEn: 'Invoice' },
