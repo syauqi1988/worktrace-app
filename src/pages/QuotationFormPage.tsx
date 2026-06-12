@@ -546,7 +546,7 @@ export default function QuotationFormPage() {
                 toast.success('Payment terms updated');
               }}
             >
-              <Sparkles className="h-3.5 w-3.5" /> Auto-isi ke T&C
+              <Sparkles className="h-3.5 w-3.5" /> Auto-fill to T&C
             </Button>
           </div>
 

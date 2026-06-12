@@ -368,7 +368,7 @@ export default function JobFormPage() {
 
       {!isEdit && (
         <div className="space-y-1.5">
-          <Label>Preset Kerja (opsional)</Label>
+          <Label>Job Preset (optional)</Label>
           <JobPresetPicker
             onPick={(p) => {
               setTitle(p.title);
@@ -382,11 +382,11 @@ export default function JobFormPage() {
               if (p.notes) setNotes(p.notes);
               if (p.products && p.products.length) setProducts(p.products);
               setErrors((prev) => ({ ...prev, title: '' }));
-              toast({ title: `Preset "${p.name}" digunakan` });
+              toast({ title: `Preset "${p.name}" applied` });
             }}
           />
           <p className="text-[11px] text-muted-foreground">
-            Pilih untuk auto-isi tajuk, kategori, keterangan & nota
+            Pick to auto-fill title, category, description & notes
           </p>
         </div>
       )}
@@ -493,7 +493,7 @@ export default function JobFormPage() {
           {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
         </Button>
       </div>
-      <p className="text-[11px] text-muted-foreground -mt-2">Kerja ini akan disimpan automatik sebagai preset untuk guna semula.</p>
+      <p className="text-[11px] text-muted-foreground -mt-2">This job will be automatically saved as a reusable preset.</p>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );
