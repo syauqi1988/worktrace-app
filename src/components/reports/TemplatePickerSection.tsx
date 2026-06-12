@@ -158,29 +158,29 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
     <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Sparkles className="h-4 w-4 text-primary" />
-        <span className="text-sm font-medium text-foreground">Templat isian pantas</span>
+        <span className="text-sm font-medium text-foreground">Quick-fill templates</span>
       </div>
       <p className="text-xs text-muted-foreground">
-        Pilih templat untuk mengisi penerangan, bahan dan senarai semak sekaligus.
+        Pick a template to auto-fill description, materials and checklist at once.
       </p>
       <div className="flex gap-2 flex-wrap">
         <Select value={selectedId} onValueChange={apply} disabled={loading}>
           <SelectTrigger className="flex-1 min-w-[180px] bg-background">
-            <SelectValue placeholder={loading ? 'Memuat templat...' : 'Pilih templat'} />
+            <SelectValue placeholder={loading ? 'Loading templates...' : 'Select template'} />
           </SelectTrigger>
           <SelectContent>
             {templates.map(t => (
               <SelectItem key={t.id} value={t.id}>
-                {t.name}{t.user_id === null ? ' • Lalai' : ''}
+                {t.name}{t.user_id === null ? ' • Default' : ''}
               </SelectItem>
             ))}
             {templates.length === 0 && !loading && (
-              <div className="px-3 py-2 text-xs text-muted-foreground">Tiada templat</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground">No templates</div>
             )}
           </SelectContent>
         </Select>
         <Button type="button" variant="outline" size="sm" onClick={() => setManageOpen(true)} className="gap-1.5">
-          <FileText className="h-4 w-4" /> Urus
+          <FileText className="h-4 w-4" /> Manage
         </Button>
       </div>
 
