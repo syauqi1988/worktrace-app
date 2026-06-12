@@ -622,7 +622,7 @@ export default function JobDetailPage() {
       </div>
 
       {/* Variation Orders / Deductions */}
-      {report?.status === 'accepted' && (
+      {job.job_type !== 'milestone' && report?.status === 'accepted' && (
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" /> Variasi & Potongan
