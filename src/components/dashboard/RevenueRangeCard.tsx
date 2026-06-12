@@ -157,7 +157,7 @@ export default function RevenueRangeCard({ userId }: Props) {
         </>
       ) : (
         <>
-          <p className="text-[13px] text-muted-foreground pr-24">Pendapatan: {label}</p>
+          <p className="text-[13px] text-muted-foreground pr-24">Revenue: {label}</p>
           <p className="text-2xl font-semibold text-foreground mt-1">RM {revenue.toFixed(2)}</p>
         </>
       )}
