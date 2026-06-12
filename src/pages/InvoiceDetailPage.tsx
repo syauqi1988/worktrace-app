@@ -410,7 +410,7 @@ export default function InvoiceDetailPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Invois-${invoice.invoice_number}.pdf`;
+    a.download = `Invoice-${invoice.invoice_number}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -446,7 +446,7 @@ export default function InvoiceDetailPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Resit-${invoice.receipt_number}.pdf`;
+    a.download = `Receipt-${invoice.receipt_number}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };

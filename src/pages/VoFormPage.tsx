@@ -416,7 +416,7 @@ export default function VoFormPage() {
         </div>
         {deductionsAmount > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Jumlah Potongan</span>
+            <span className="text-muted-foreground">Total Deductions</span>
             <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
           </div>
         )}

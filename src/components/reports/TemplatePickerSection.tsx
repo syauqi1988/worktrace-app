@@ -158,29 +158,29 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
     <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Sparkles className="h-4 w-4 text-primary" />
-        <span className="text-sm font-medium text-foreground">Templat isian pantas</span>
+        <span className="text-sm font-medium text-foreground">Quick-fill templates</span>
       </div>
       <p className="text-xs text-muted-foreground">
-        Pilih templat untuk mengisi penerangan, bahan dan senarai semak sekaligus.
+        Pick a template to auto-fill description, materials and checklist at once.
       </p>
       <div className="flex gap-2 flex-wrap">
         <Select value={selectedId} onValueChange={apply} disabled={loading}>
           <SelectTrigger className="flex-1 min-w-[180px] bg-background">
-            <SelectValue placeholder={loading ? 'Memuat templat...' : 'Pilih templat'} />
+            <SelectValue placeholder={loading ? 'Loading templates...' : 'Select template'} />
           </SelectTrigger>
           <SelectContent>
             {templates.map(t => (
               <SelectItem key={t.id} value={t.id}>
-                {t.name}{t.user_id === null ? ' • Lalai' : ''}
+                {t.name}{t.user_id === null ? ' • Default' : ''}
               </SelectItem>
             ))}
             {templates.length === 0 && !loading && (
-              <div className="px-3 py-2 text-xs text-muted-foreground">Tiada templat</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground">No templates</div>
             )}
           </SelectContent>
         </Select>
         <Button type="button" variant="outline" size="sm" onClick={() => setManageOpen(true)} className="gap-1.5">
-          <FileText className="h-4 w-4" /> Urus
+          <FileText className="h-4 w-4" /> Manage
         </Button>
       </div>
 
@@ -188,7 +188,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       <Dialog open={manageOpen} onOpenChange={setManageOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Urus templat laporan</DialogTitle>
+            <DialogTitle>Manage Report Templates</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-[55vh] overflow-y-auto">
             {templates.map(t => (
@@ -197,13 +197,13 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                   <div className="text-sm font-medium text-foreground truncate">
                     {t.name}
                     {t.user_id === null && (
-                      <span className="ml-2 text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded">Lalai</span>
+                      <span className="ml-2 text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded">Default</span>
                     )}
                   </div>
                   {t.category && <div className="text-[11px] text-muted-foreground">{t.category}</div>}
                 </div>
                 <div className="flex gap-1">
-                  <Button type="button" size="icon" variant="ghost" onClick={() => openEdit(t)} title={t.user_id === null ? 'Salin' : 'Edit'}>
+                  <Button type="button" size="icon" variant="ghost" onClick={() => openEdit(t)} title={t.user_id === null ? 'Copy' : 'Edit'}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   {t.user_id !== null && (
@@ -217,9 +217,9 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={openNew} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Templat baru
+              <Plus className="h-4 w-4" /> New Template
             </Button>
-            <Button type="button" onClick={() => setManageOpen(false)}>Tutup</Button>
+            <Button type="button" onClick={() => setManageOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -228,28 +228,28 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing?.id ? 'Edit templat' : 'Templat baru'}</DialogTitle>
+            <DialogTitle>{editing?.id ? 'Edit Template' : 'New Template'}</DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>Nama templat</Label>
+                <Label>Template name</Label>
                 <Input
                   value={editing.name || ''}
                   onChange={e => setEditing({ ...editing, name: e.target.value })}
-                  placeholder="Cth: Servis aircond"
+                  placeholder="E.g. Aircond service"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Kategori <span className="text-xs text-muted-foreground">(opsyenal)</span></Label>
+                <Label>Category <span className="text-xs text-muted-foreground">(optional)</span></Label>
                 <Input
                   value={editing.category || ''}
                   onChange={e => setEditing({ ...editing, category: e.target.value })}
-                  placeholder="Cth: Penyelenggaraan"
+                  placeholder="E.g. Maintenance"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Penerangan kerja</Label>
+                <Label>Work description</Label>
                 <Textarea
                   rows={3}
                   value={editing.work_description || ''}
@@ -257,7 +257,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Bahan digunakan</Label>
+                <Label>Materials used</Label>
                 <Textarea
                   rows={2}
                   value={editing.materials_used || ''}
@@ -265,23 +265,23 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Senarai semak</Label>
+                <Label>Checklist</Label>
                 <Textarea
                   rows={4}
                   className="font-mono text-sm"
                   value={editingChecklistText}
                   onChange={e => setEditing({ ...editing, checklist: parseChecklist(e.target.value) })}
-                  placeholder={'[x] Item siap\n[ ] Item belum'}
+                  placeholder={'[x] Item done\n[ ] Item pending'}
                 />
-                <p className="text-[11px] text-muted-foreground">Satu item satu baris. Guna [x] siap atau [ ] belum.</p>
+                <p className="text-[11px] text-muted-foreground">One item per line. Use [x] for done or [ ] for pending.</p>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEditing(null)}>Batal</Button>
+            <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
             <Button type="button" onClick={saveTemplate} disabled={saving} className="gap-1.5">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Simpan
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>

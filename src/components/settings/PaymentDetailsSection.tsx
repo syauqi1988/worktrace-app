@@ -43,33 +43,33 @@ export default function PaymentDetailsSection() {
     };
     await updateProfile({ payment_details: payload as any } as any);
     setSaving(false);
-    toast.success('Maklumat pembayaran disimpan');
+    toast.success('Payment details saved');
   };
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Akan dipaparkan dalam Sebut Harga supaya pelanggan tahu cara membayar.
+        Will be displayed in the Quotation so customers know how to pay.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label>Nama Bank</Label>
-          <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="cth. Maybank" />
+          <Label>Bank Name</Label>
+          <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. Maybank" />
         </div>
         <div className="space-y-1.5">
-          <Label>No. Akaun</Label>
-          <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="cth. 1234-5678-9012" />
+          <Label>Account No.</Label>
+          <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="e.g. 1234-5678-9012" />
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nama Pemegang Akaun</Label>
-        <Input value={accountHolder} onChange={e => setAccountHolder(e.target.value)} placeholder="cth. Syarikat ABC Sdn Bhd" />
+        <Label>Account Holder Name</Label>
+        <Input value={accountHolder} onChange={e => setAccountHolder(e.target.value)} placeholder="e.g. ABC Company Sdn Bhd" />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Jenis Pembayaran Diterima</Label>
+        <Label>Payment Types Accepted</Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {PAYMENT_TYPES.map(t => (
             <label key={t} className="flex items-center gap-2 text-sm rounded-md border border-input p-2 cursor-pointer hover:bg-accent">
@@ -81,18 +81,18 @@ export default function PaymentDetailsSection() {
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nota Pembayaran (pilihan)</Label>
+        <Label>Payment Note (optional)</Label>
         <Textarea
           value={note}
           onChange={e => setNote(e.target.value)}
           rows={3}
-          placeholder="cth. Sila gunakan nama syarikat sebagai rujukan"
+          placeholder="e.g. Please use company name as reference"
           maxLength={300}
         />
       </div>
 
       <Button onClick={handleSave} disabled={saving} className="rounded-lg">
-        {saving ? 'Menyimpan...' : 'Simpan'}
+        {saving ? 'Saving...' : 'Save'}
       </Button>
     </div>
   );

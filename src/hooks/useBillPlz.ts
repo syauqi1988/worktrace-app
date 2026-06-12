@@ -30,7 +30,7 @@ export function useBillPlz() {
       // Redirect to BillPlz payment page
       window.location.href = data.payment_url;
     } catch (error: any) {
-      toast.error('Gagal memulakan pembayaran. Sila cuba lagi.');
+      toast.error('Failed to initiate payment. Please try again.');
       console.error('BillPlz error:', error);
     } finally {
       setIsLoading(false);

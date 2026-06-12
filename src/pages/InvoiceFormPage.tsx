@@ -295,7 +295,7 @@ export default function InvoiceFormPage() {
     const isDefaultEmpty = items.length === 1 && !items[0].description.trim() && !items[0].unit_price;
     if (availableQuote && !linkedQuoteId && isDefaultEmpty) {
       handleImportQuote();
-      toast.success(`Diisi automatik dari Sebut Harga ${availableQuote.quote_number}`);
+      toast.success(`Auto-filled from Quotation ${availableQuote.quote_number}`);
     }
     // eslint-disable-next-line
   }, [availableQuote, isEdit]);
@@ -306,7 +306,7 @@ export default function InvoiceFormPage() {
     const pending = availableVos.filter(v => !importedVoIds.includes(v.id));
     if (!pending.length) return;
     pending.forEach(handleImportVo);
-    toast.success(`${pending.length} VO/Potongan diisi automatik`);
+    toast.success(`${pending.length} VO/Deductions auto-filled`);
     // eslint-disable-next-line
   }, [availableVos, isEdit]);
 
@@ -417,7 +417,7 @@ export default function InvoiceFormPage() {
           if (error) throw error;
           createdIds.push((data as any).id);
         }
-        toast.success(`${totalStages} invois berperingkat dijana`);
+        toast.success(`${totalStages} staged invoices generated`);
         navigate(`/invoices/${createdIds[0]}`);
         return;
       }
@@ -630,7 +630,7 @@ export default function InvoiceFormPage() {
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
-                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Additional details (optional)" rows={2} className="text-xs" />
               </div>
               <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" />
               <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" />
@@ -651,7 +651,7 @@ export default function InvoiceFormPage() {
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemPlaceholder')} className="text-sm" />
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Additional details (optional)" rows={2} className="text-xs" />
               <div className="grid grid-cols-3 gap-2">
                 <div><p className="text-xs text-muted-foreground mb-1">{t('forms.itemQty')}</p><Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" /></div>
                 <div><p className="text-xs text-muted-foreground mb-1">UOM</p><Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" /></div>
@@ -690,7 +690,7 @@ export default function InvoiceFormPage() {
         </div>
         {deductionsAmount > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Jumlah Potongan</span>
+            <span className="text-muted-foreground">Total Deductions</span>
             <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
           </div>
         )}
@@ -719,18 +719,18 @@ export default function InvoiceFormPage() {
       {/* Payment Mode toggle + Milestone Builder */}
       {!isEdit && (
         <div className="space-y-2">
-          <Label>Mod Pembayaran</Label>
+          <Label>Payment Mode</Label>
           <div className="flex bg-muted rounded-md overflow-hidden text-sm w-fit">
             <button type="button" onClick={() => setPaymentMode('lump')} disabled={jobType === 'milestone'}
               className={cn('px-3 py-1.5 font-medium', paymentMode === 'lump' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground', jobType === 'milestone' && 'opacity-40 cursor-not-allowed')}>
-              Sekali Bayar
+              Lump Sum
             </button>
             <button type="button" onClick={() => setPaymentMode('milestone')}
               className={cn('px-3 py-1.5 font-medium', paymentMode === 'milestone' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>
-              Berperingkat
+              Staged
             </button>
           </div>
-          {jobType === 'milestone' && <p className="text-[11px] text-muted-foreground">Kerja jenis Milestone wajib guna pembayaran berperingkat.</p>}
+          {jobType === 'milestone' && <p className="text-[11px] text-muted-foreground">Milestone job type must use staged payments.</p>}
           {paymentMode === 'milestone' && (
             <>
               <MilestoneBuilder

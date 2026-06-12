@@ -99,10 +99,10 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
       const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = mailto;
 
-      toast.success('Permohonan dihantar. Kami akan balas dalam 1 hari bekerja.');
+      toast.success('Request submitted. We will respond within 1 business day.');
       close();
     } catch (e: any) {
-      toast.error(e?.message || 'Gagal menghantar permohonan.');
+      toast.error(e?.message || 'Failed to submit request.');
     } finally {
       setLoading(false);
     }
@@ -112,9 +112,9 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
     <Dialog open={open} onOpenChange={v => !v && close()}>
       <DialogContent className="max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>Mohon Bayaran Balik</DialogTitle>
+          <DialogTitle>Request Refund</DialogTitle>
           <DialogDescription>
-            Mengikut <Link to="/refund-policy" className="underline">Dasar Bayaran Balik WorkTrace</Link>.
+            As per the <Link to="/refund-policy" className="underline">WorkTrace Refund Policy</Link>.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,8 +128,8 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={close}>Batal</Button>
-              <Button onClick={() => setStep(2)}>Teruskan</Button>
+              <Button variant="ghost" onClick={close}>Cancel</Button>
+              <Button onClick={() => setStep(2)}>Continue</Button>
             </div>
           </div>
         )}
@@ -137,7 +137,7 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Sebab</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Reason</label>
               <div className="space-y-1.5">
                 {REASON_OPTIONS.map(r => (
                   <button
@@ -154,18 +154,18 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Rujukan transaksi BillPlz (jika ada)</label>
-              <Input value={txnRef} onChange={e => setTxnRef(e.target.value)} placeholder="cth: BP-XXXXXX" />
+              <label className="text-sm font-medium text-foreground mb-1.5 block">BillPlz transaction reference (if any)</label>
+              <Input value={txnRef} onChange={e => setTxnRef(e.target.value)} placeholder="e.g. BP-XXXXXX" />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Nota tambahan (pilihan)</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Additional notes (optional)</label>
               <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setStep(1)}>Kembali</Button>
+              <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
               <Button onClick={submit} disabled={!reasonKey || loading}>
                 {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Hantar Permohonan
+                Submit Request
               </Button>
             </div>
             <p className="text-[11px] text-muted-foreground text-center">
