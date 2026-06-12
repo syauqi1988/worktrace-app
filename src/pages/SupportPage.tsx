@@ -31,10 +31,10 @@ const PRIORITY_STYLES: Record<string, string> = {
 
 const CATEGORY_LABELS: Record<string, string> = {
   bug: '🐛 Bug',
-  billing: '💳 Bil',
-  feature: '💡 Cadangan',
-  account: '👤 Akaun',
-  general: '❓ Am',
+  billing: '💳 Billing',
+  feature: '💡 Suggestion',
+  account: '👤 Account',
+  general: '❓ General',
 };
 
 export default function SupportPage() {
