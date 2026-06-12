@@ -11,14 +11,14 @@ export type MilestoneTrigger =
   | 'specific_date';
 
 export const TRIGGER_OPTIONS: { value: MilestoneTrigger; labelMs: string; labelEn: string }[] = [
-  { value: 'on_wo_accepted',      labelMs: 'Sebelum kerja bermula (Work Order diterima)', labelEn: 'Before work starts (WO accepted)' },
-  { value: 'after_deposit_paid',  labelMs: 'Selepas bayaran deposit diterima',            labelEn: 'After deposit received' },
-  { value: 'mid_progress',        labelMs: 'Semasa kerja berjalan',                       labelEn: 'Mid-progress' },
-  { value: 'half_done',           labelMs: 'Kerja 50% siap',                              labelEn: 'Work 50% done' },
-  { value: 'on_completion_report',labelMs: 'Laporan Siap dihantar',                        labelEn: 'Completion report submitted' },
-  { value: 'on_handover',         labelMs: 'Penyerahan kerja kepada pelanggan',           labelEn: 'Handover to customer' },
-  { value: 'days_from_invoice',   labelMs: 'Dalam X hari dari tarikh invois',             labelEn: 'X days from invoice date' },
-  { value: 'specific_date',       labelMs: 'Tarikh tertentu',                              labelEn: 'Specific date' },
+  { value: 'on_wo_accepted',      labelMs: 'Before work starts (WO accepted)', labelEn: 'Before work starts (WO accepted)' },
+  { value: 'after_deposit_paid',  labelMs: 'After deposit received',            labelEn: 'After deposit received' },
+  { value: 'mid_progress',        labelMs: 'Mid-progress',                       labelEn: 'Mid-progress' },
+  { value: 'half_done',           labelMs: 'Work 50% done',                              labelEn: 'Work 50% done' },
+  { value: 'on_completion_report',labelMs: 'Completion report submitted',                        labelEn: 'Completion report submitted' },
+  { value: 'on_handover',         labelMs: 'Handover to customer',           labelEn: 'Handover to customer' },
+  { value: 'days_from_invoice',   labelMs: 'X days from invoice date',             labelEn: 'X days from invoice date' },
+  { value: 'specific_date',       labelMs: 'Specific date',                              labelEn: 'Specific date' },
 ];
 
 export interface MilestoneTemplate {
