@@ -144,10 +144,11 @@ export default function JobDetailPage() {
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase.from('invoices')
-          .select('id, invoice_number, total, status, due_date')
+          .select('id, invoice_number, total, status, due_date, milestone_stage_number, milestone_total_stages, milestone_stages, created_at')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .maybeSingle(),
+          .order('milestone_stage_number', { ascending: true, nullsFirst: false })
+          .order('created_at', { ascending: true }),
         supabase.from('completion_reports')
           .select('id, report_number, status, completion_date, work_description, technician_name, materials_used, customer_signature, notes, photos, accepted_at')
           .eq('job_id', id)
