@@ -78,6 +78,9 @@ interface Invoice {
   total: number;
   status: string;
   due_date: string | null;
+  milestone_stage_number?: number | null;
+  milestone_total_stages?: number | null;
+  milestone_stages?: any;
 }
 
 interface CompletionReport {
