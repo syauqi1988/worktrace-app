@@ -91,7 +91,7 @@ export function MilestoneBuilder({ total, value, onChange, defaultTemplate = '30
   return (
     <div className="space-y-3 bg-card rounded-xl border border-border p-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-sm font-semibold text-foreground">Pembayaran Berperingkat</p>
+        <p className="text-sm font-semibold text-foreground">Milestone Payment</p>
         <div className="flex bg-muted rounded-md overflow-hidden text-xs">
           <button type="button" onClick={() => setMode('pct')} className={cn('px-2.5 py-1 font-medium', mode === 'pct' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>%</button>
           <button type="button" onClick={() => setMode('amt')} className={cn('px-2.5 py-1 font-medium', mode === 'amt' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>RM</button>
@@ -99,7 +99,7 @@ export function MilestoneBuilder({ total, value, onChange, defaultTemplate = '30
       </div>
 
       <div>
-        <Label className="text-xs">Templat</Label>
+        <Label className="text-xs">Template</Label>
         <div className="flex flex-wrap gap-1.5 mt-1">
           {MILESTONE_TEMPLATES.map((tpl) => (
             <button
@@ -130,11 +130,11 @@ export function MilestoneBuilder({ total, value, onChange, defaultTemplate = '30
               )}
             </div>
             <div className="col-span-8 md:col-span-2 space-y-1">
-              <Label className="text-[10px] text-muted-foreground">Jumlah</Label>
+              <Label className="text-[10px] text-muted-foreground">Amount</Label>
               <div className="h-8 px-2 flex items-center text-xs font-medium bg-muted rounded-md">RM {(s.amount || 0).toFixed(2)}</div>
             </div>
             <div className="col-span-10 md:col-span-3 space-y-1">
-              <Label className="text-[10px] text-muted-foreground">Pencetus</Label>
+              <Label className="text-[10px] text-muted-foreground">Trigger</Label>
               <select value={s.trigger} onChange={(e) => updateStage(i, { trigger: e.target.value as MilestoneTrigger })} className="h-8 w-full text-xs border border-input rounded-md bg-background px-2">
                 {TRIGGER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.labelMs}</option>)}
               </select>
@@ -148,14 +148,14 @@ export function MilestoneBuilder({ total, value, onChange, defaultTemplate = '30
         ))}
       </div>
 
-      <Button type="button" variant="outline" size="sm" onClick={addStage} className="gap-1 text-xs"><Plus className="h-3.5 w-3.5" /> Tambah Peringkat</Button>
+      <Button type="button" variant="outline" size="sm" onClick={addStage} className="gap-1 text-xs"><Plus className="h-3.5 w-3.5" /> Add Stage</Button>
 
       <div className={cn('flex items-center justify-between gap-2 rounded-lg p-2 text-xs font-medium border', valid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700')}>
         <div className="flex items-center gap-1.5">
           {valid ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-          <span>Jumlah: {sumPct.toFixed(2)}% — RM {sumAmt.toFixed(2)}</span>
+          <span>Total: {sumPct.toFixed(2)}% — RM {sumAmt.toFixed(2)}</span>
         </div>
-        <span>Total invois: RM {total.toFixed(2)}</span>
+        <span>Invoice total: RM {total.toFixed(2)}</span>
       </div>
     </div>
   );

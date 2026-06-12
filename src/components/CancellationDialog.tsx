@@ -122,7 +122,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
                 <Trans i18nKey="dialog.stillActive" values={{ date: endDateStr }} components={[<strong key="0" />]} />
               </p>
               <p className="text-xs text-blue-700 mt-1.5">
-                Layak bayaran balik? Lihat <a href="/refund-policy" className="underline">Dasar Bayaran Balik</a>.
+                Eligible for refund? View <a href="/refund-policy" className="underline">Refund Policy</a>.
               </p>
             </div>
             <Button onClick={resetAndClose} className="w-full rounded-lg">{t('dialog.stayPro')}</Button>
