@@ -116,6 +116,7 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [report, setReport] = useState<CompletionReport | null>(null);
   const [workOrder, setWorkOrder] = useState<{ id: string; wo_number: string; status: string; total: number } | null>(null);
   const [vos, setVos] = useState<Array<{ id: string; vo_number: string; type: string; status: string; total: number; reason: string | null }>>([]);
