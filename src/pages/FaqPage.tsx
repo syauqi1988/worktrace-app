@@ -234,7 +234,7 @@ export default function FaqPage() {
                 : 'border-border text-muted-foreground hover:border-primary/50'
             }`}
           >
-            {c === 'all' ? (isMs ? 'Semua' : 'All') : c}
+            {c === 'all' ? (isMs ? 'All' : 'All') : c}
           </button>
         ))}
       </div>
@@ -243,7 +243,7 @@ export default function FaqPage() {
         <p className="text-sm text-muted-foreground">{isMs ? 'Memuatkan...' : 'Loading...'}</p>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-10">
-          {isMs ? 'Tiada soalan ditemui.' : 'No FAQs found.'}
+          {isMs ? 'No questions found.' : 'No FAQs found.'}
         </p>
       ) : (
         <div className="space-y-5">

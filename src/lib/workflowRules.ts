@@ -42,7 +42,7 @@ export const WORKFLOW_MATRIX: WorkflowMatrix = {
       lockLevel: 'warn',
       prerequisiteStatus: ['Accepted', 'Sent'],
       errorMessage: '',
-      warnMessage: 'Work Order belum diterima. Pelanggan tidak ada rekod persetujuan skop kerja.',
+      warnMessage: 'Work Order has not been accepted. Customer has no record of work scope agreement.',
     },
     invoice: {
       prerequisite: 'completion_report',
