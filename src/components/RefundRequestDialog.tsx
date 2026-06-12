@@ -99,7 +99,7 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
       const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = mailto;
 
-      toast.success('Permohonan dihantar. Kami akan balas dalam 1 hari bekerja.');
+      toast.success('Request submitted. We will respond within 1 business day.');
       close();
     } catch (e: any) {
       toast.error(e?.message || 'Gagal menghantar permohonan.');
