@@ -164,7 +164,9 @@ export default function JobDetailPage() {
       ]);
       setJob(jobRes.data as unknown as Job);
       setQuotation(quoRes.data as Quotation | null);
-      setInvoice(invRes.data as Invoice | null);
+      const invList = ((invRes.data as any[]) || []) as Invoice[];
+      setInvoices(invList);
+      setInvoice(invList[0] ?? null);
       setReport(reportRes.data as CompletionReport | null);
       setWorkOrder(woRes.data as any);
       const { data: voData } = await (supabase as any).from('variation_orders')
