@@ -444,7 +444,7 @@ export default function QuotationDetailPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SebuthHarga-${quotation.quote_number}.pdf`;
+    a.download = `Quotation-${quotation.quote_number}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };

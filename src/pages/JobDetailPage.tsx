@@ -810,7 +810,7 @@ export default function JobDetailPage() {
           if (previewUrl) {
             const a = document.createElement('a');
             a.href = previewUrl;
-            a.download = `Laporan-${report?.report_number || 'RPT'}.pdf`;
+            a.download = `Report-${report?.report_number || 'RPT'}.pdf`;
             a.click();
           }
         }}

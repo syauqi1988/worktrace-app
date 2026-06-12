@@ -198,7 +198,7 @@ export default function FaqPage() {
         className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4 hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        {isMs ? 'Kembali' : 'Back'}
+        {isMs ? 'Back' : 'Back'}
       </button>
 
       <div className="flex items-center gap-2 mb-2">
@@ -209,7 +209,7 @@ export default function FaqPage() {
       </div>
       <p className="text-sm text-muted-foreground mb-5">
         {isMs
-          ? 'Cari jawapan pantas tentang penggunaan WorkTrace.'
+          ? 'Quick answers about using WorkTrace.'
           : 'Quick answers about using WorkTrace.'}
       </p>
 
@@ -218,7 +218,7 @@ export default function FaqPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={isMs ? 'Cari soalan...' : 'Search questions...'}
+          placeholder={isMs ? 'Search questions...' : 'Search questions...'}
           className="pl-9"
         />
       </div>
