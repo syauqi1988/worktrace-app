@@ -166,7 +166,7 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 bg-card">
         {/* Mobile logo */}
         <div className="md:hidden mb-8">
-          <img src={logo} alt="WorkTrace" className="h-10 logo-dark" style={{ background: 'transparent' }} />
+          <img src={logo} alt="WorkTrace" className="h-16 logo-dark border-4 border-white rounded-2xl shadow-lg" style={{ background: 'transparent' }} />
         </div>
 
         {/* Referral welcome banner */}
