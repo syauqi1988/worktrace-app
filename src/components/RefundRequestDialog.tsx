@@ -112,9 +112,9 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
     <Dialog open={open} onOpenChange={v => !v && close()}>
       <DialogContent className="max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>Mohon Bayaran Balik</DialogTitle>
+          <DialogTitle>Request Refund</DialogTitle>
           <DialogDescription>
-            Mengikut <Link to="/refund-policy" className="underline">Dasar Bayaran Balik WorkTrace</Link>.
+            As per the <Link to="/refund-policy" className="underline">WorkTrace Refund Policy</Link>.
           </DialogDescription>
         </DialogHeader>
 
