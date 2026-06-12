@@ -67,7 +67,7 @@ export function JobPresetPicker({ onPick }: { onPick: (p: PickedPreset) => void 
         >
           <span className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
-            Pick from Job Presets
+            Pilih dari Preset Kerja
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </button>
@@ -80,16 +80,16 @@ export function JobPresetPicker({ onPick }: { onPick: (p: PickedPreset) => void 
               autoFocus
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search presets..."
+              placeholder="Cari preset..."
               className="pl-8 h-8 text-sm"
             />
           </div>
         </div>
         <div className="max-h-72 overflow-y-auto">
-          {loading && <p className="px-3 py-2 text-sm text-muted-foreground">Loading...</p>}
+          {loading && <p className="px-3 py-2 text-sm text-muted-foreground">Memuatkan...</p>}
           {!loading && filtered.length === 0 && (
             <p className="px-3 py-3 text-sm text-muted-foreground text-center">
-              No presets. Add in the "Job Presets" menu.
+              Tiada preset. Tambah di menu "Preset Kerja".
             </p>
           )}
           {!loading && filtered.map((p) => (

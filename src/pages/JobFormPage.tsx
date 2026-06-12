@@ -368,7 +368,7 @@ export default function JobFormPage() {
 
       {!isEdit && (
         <div className="space-y-1.5">
-          <Label>Job Preset (optional)</Label>
+          <Label>Preset Kerja (opsional)</Label>
           <JobPresetPicker
             onPick={(p) => {
               setTitle(p.title);
@@ -382,11 +382,11 @@ export default function JobFormPage() {
               if (p.notes) setNotes(p.notes);
               if (p.products && p.products.length) setProducts(p.products);
               setErrors((prev) => ({ ...prev, title: '' }));
-              toast({ title: `Preset "${p.name}" applied` });
+              toast({ title: `Preset "${p.name}" digunakan` });
             }}
           />
           <p className="text-[11px] text-muted-foreground">
-            Pick to auto-fill title, category, description & notes
+            Pilih untuk auto-isi tajuk, kategori, keterangan & nota
           </p>
         </div>
       )}
@@ -403,11 +403,11 @@ export default function JobFormPage() {
       </div>
 
       <div className="space-y-2">
-        <Label>Job Type</Label>
+        <Label>Jenis Kerja</Label>
         <JobTypeSelector value={jobType} onChange={setJobType} />
         {jobType === 'deposit' && (
           <div className="flex items-center gap-2 pt-1">
-            <Label className="text-xs text-muted-foreground">Deposit Percentage</Label>
+            <Label className="text-xs text-muted-foreground">Peratusan Deposit</Label>
             <Input
               type="number"
               min={10}
@@ -422,7 +422,7 @@ export default function JobFormPage() {
         )}
         {!isEdit && (
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-muted-foreground">Set as default for new jobs</span>
+            <span className="text-xs text-muted-foreground">Tetapkan sebagai lalai untuk kerja baru</span>
             <Switch checked={setAsDefault} onCheckedChange={setSetAsDefault} />
           </div>
         )}
@@ -442,7 +442,7 @@ export default function JobFormPage() {
               {category && !allCategories.includes(category) && (
                 <SelectItem key={category} value={category}>{category}</SelectItem>
               )}
-              <SelectItem value="__add__" className="text-primary">+ Add new category…</SelectItem>
+              <SelectItem value="__add__" className="text-primary">+ Tambah kategori baru…</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -478,8 +478,8 @@ export default function JobFormPage() {
       </div>
 
       <div className="space-y-1.5">
-        <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Products / Job Items</Label>
-        <p className="text-[11px] text-muted-foreground -mt-0.5">Products added will auto-fill into Quotations & Invoices.</p>
+        <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item Kerja</Label>
+        <p className="text-[11px] text-muted-foreground -mt-0.5">Produk yang ditambah akan auto-isi ke Sebut Harga & Invois.</p>
         <JobProductsEditor items={products} onChange={setProducts} />
       </div>
 
@@ -493,7 +493,7 @@ export default function JobFormPage() {
           {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
         </Button>
       </div>
-      <p className="text-[11px] text-muted-foreground -mt-2">This job will be automatically saved as a reusable preset.</p>
+      <p className="text-[11px] text-muted-foreground -mt-2">Kerja ini akan disimpan automatik sebagai preset untuk guna semula.</p>
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
     </div>
   );

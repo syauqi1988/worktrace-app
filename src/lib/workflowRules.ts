@@ -35,20 +35,20 @@ export const WORKFLOW_MATRIX: WorkflowMatrix = {
       lockLevel: 'warn',
       prerequisiteStatus: ['Accepted', 'Sent'],
       errorMessage: '',
-      warnMessage: 'Quotation has not been sent. Customer does not have written approval.',
+      warnMessage: 'Sebut Harga belum dihantar. Pelanggan tidak mempunyai persetujuan bertulis.',
     },
     completion_report: {
       prerequisite: 'work_order',
       lockLevel: 'warn',
       prerequisiteStatus: ['Accepted', 'Sent'],
       errorMessage: '',
-      warnMessage: 'Work Order has not been accepted. Customer has no record of work scope agreement.',
+      warnMessage: 'Work Order belum diterima. Pelanggan tidak ada rekod persetujuan skop kerja.',
     },
     invoice: {
       prerequisite: 'completion_report',
       lockLevel: 'hard',
       prerequisiteStatus: ['submitted', 'Completed', 'accepted'],
-      errorMessage: 'Completion Report must be submitted before invoice can be generated. This ensures work has been completed before payment.',
+      errorMessage: 'Laporan Siap mesti dihantar sebelum invois boleh dijana. Ini memastikan kerja telah disempurnakan sebelum bayaran.',
       warnMessage: '',
     },
     vo: null,
@@ -61,7 +61,7 @@ export const WORKFLOW_MATRIX: WorkflowMatrix = {
       lockLevel: 'warn',
       prerequisiteStatus: ['Accepted'],
       errorMessage: '',
-      warnMessage: 'Quotation has not been accepted by customer.',
+      warnMessage: 'Sebut Harga belum diterima pelanggan.',
     },
     completion_report: {
       prerequisite: 'work_order',
@@ -81,7 +81,7 @@ export const WORKFLOW_MATRIX: WorkflowMatrix = {
       lockLevel: 'warn',
       prerequisiteStatus: ['Accepted'],
       errorMessage: '',
-      warnMessage: 'Quotation has not been accepted by customer.',
+      warnMessage: 'Sebut Harga belum diterima pelanggan.',
     },
     completion_report: {
       prerequisite: 'work_order',
@@ -101,7 +101,7 @@ export const WORKFLOW_MATRIX: WorkflowMatrix = {
       lockLevel: 'warn',
       prerequisiteStatus: ['Accepted'],
       errorMessage: '',
-      warnMessage: 'Contract Work Order recommended before starting cycle.',
+      warnMessage: 'Work Order kontrak disyorkan sebelum mulakan kitaran.',
     },
     completion_report: null,
     invoice: null,
@@ -158,9 +158,9 @@ export function checkWorkflowGate(
 }
 
 export const SKIP_REASON_OPTIONS: { value: string; labelMs: string }[] = [
-  { value: 'small_or_repeat',  labelMs: 'Small job / repeat customer' },
-  { value: 'verbal_agreement', labelMs: 'Customer agreed verbally' },
-  { value: 'emergency',        labelMs: 'Emergency — document later' },
-  { value: 'customer_request', labelMs: 'Customer requested to skip' },
-  { value: 'other',            labelMs: 'Other' },
+  { value: 'small_or_repeat',  labelMs: 'Kerja kecil / pelanggan tetap' },
+  { value: 'verbal_agreement', labelMs: 'Pelanggan bersetuju secara lisan' },
+  { value: 'emergency',        labelMs: 'Kecemasan — dokumen kemudian' },
+  { value: 'customer_request', labelMs: 'Pelanggan minta langkau' },
+  { value: 'other',            labelMs: 'Lain-lain' },
 ];

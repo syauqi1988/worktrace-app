@@ -41,13 +41,13 @@ export default function CompletionSummaryReportPDF({ data }: { data: MonthlySumm
             </View>
           </View>
           <View style={pdfStyles.headerRight}>
-            <Text style={pdfStyles.docTitle}>MONTHLY REPORT</Text>
+            <Text style={pdfStyles.docTitle}>LAPORAN BULANAN</Text>
             <View style={pdfStyles.metaRow}>
-              <Text style={pdfStyles.metaLabel}>Period:</Text>
+              <Text style={pdfStyles.metaLabel}>Tempoh:</Text>
               <Text style={pdfStyles.metaValue}>{data.periodLabel}</Text>
             </View>
             <View style={pdfStyles.metaRow}>
-              <Text style={pdfStyles.metaLabel}>Generated:</Text>
+              <Text style={pdfStyles.metaLabel}>Tarikh Jana:</Text>
               <Text style={pdfStyles.metaValue}>{fmtDate(new Date().toISOString())}</Text>
             </View>
           </View>
@@ -58,29 +58,29 @@ export default function CompletionSummaryReportPDF({ data }: { data: MonthlySumm
         {/* Jobs Summary */}
         <View style={pdfStyles.block}>
           <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: COLORS.BLACK, marginBottom: 6 }}>
-            Job Summary
+            Ringkasan Kerja
           </Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <StatCell label="Total Jobs" value={String(data.jobs.total)} />
-            <StatCell label="Completed" value={String(data.jobs.completed)} />
-            <StatCell label="Active" value={String(data.jobs.active)} />
-            <StatCell label="Cancelled" value={String(data.jobs.cancelled)} />
+            <StatCell label="Jumlah Kerja" value={String(data.jobs.total)} />
+            <StatCell label="Siap" value={String(data.jobs.completed)} />
+            <StatCell label="Aktif" value={String(data.jobs.active)} />
+            <StatCell label="Dibatal" value={String(data.jobs.cancelled)} />
           </View>
         </View>
 
         {/* Invoices Summary */}
         <View style={pdfStyles.block}>
           <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: COLORS.BLACK, marginBottom: 6 }}>
-            Invoice Summary
+            Ringkasan Invois
           </Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <StatCell label="Total Invoices" value={String(data.invoices.total)} />
-            <StatCell label="Paid" value={String(data.invoices.paid)} />
-            <StatCell label="Unpaid" value={String(data.invoices.outstanding)} />
+            <StatCell label="Jumlah Invois" value={String(data.invoices.total)} />
+            <StatCell label="Dibayar" value={String(data.invoices.paid)} />
+            <StatCell label="Belum Bayar" value={String(data.invoices.outstanding)} />
           </View>
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-            <StatCell label="Received" value={fmtRM(data.invoices.paidAmount)} wide />
-            <StatCell label="Outstanding" value={fmtRM(data.invoices.outstandingAmount)} wide />
+            <StatCell label="Diterima" value={fmtRM(data.invoices.paidAmount)} wide />
+            <StatCell label="Tertunggak" value={fmtRM(data.invoices.outstandingAmount)} wide />
           </View>
         </View>
 
@@ -88,11 +88,11 @@ export default function CompletionSummaryReportPDF({ data }: { data: MonthlySumm
         {data.byCategory.length > 0 && (
           <View style={pdfStyles.block}>
             <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: COLORS.BLACK, marginBottom: 6 }}>
-              Jobs by Category
+              Kerja Mengikut Kategori
             </Text>
             <View style={pdfStyles.tableHeader}>
-              <Text style={[pdfStyles.tableHeaderText, { flex: 1 }]}>Category</Text>
-              <Text style={[pdfStyles.tableHeaderText, { width: 60, textAlign: 'right' }]}>Count</Text>
+              <Text style={[pdfStyles.tableHeaderText, { flex: 1 }]}>Kategori</Text>
+              <Text style={[pdfStyles.tableHeaderText, { width: 60, textAlign: 'right' }]}>Bilangan</Text>
             </View>
             {data.byCategory.map((c, i) => (
               <View key={i} style={pdfStyles.tableRow}>
@@ -107,12 +107,12 @@ export default function CompletionSummaryReportPDF({ data }: { data: MonthlySumm
         {data.topCustomers.length > 0 && (
           <View style={pdfStyles.block}>
             <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: COLORS.BLACK, marginBottom: 6 }}>
-              Top 5 Customers (By Revenue)
+              5 Pelanggan Teratas (Mengikut Pendapatan)
             </Text>
             <View style={pdfStyles.tableHeader}>
-              <Text style={[pdfStyles.tableHeaderText, { flex: 1 }]}>Customer</Text>
-              <Text style={[pdfStyles.tableHeaderText, { width: 60, textAlign: 'right' }]}>Invoices</Text>
-              <Text style={[pdfStyles.tableHeaderText, { width: 90, textAlign: 'right' }]}>Amount</Text>
+              <Text style={[pdfStyles.tableHeaderText, { flex: 1 }]}>Pelanggan</Text>
+              <Text style={[pdfStyles.tableHeaderText, { width: 60, textAlign: 'right' }]}>Invois</Text>
+              <Text style={[pdfStyles.tableHeaderText, { width: 90, textAlign: 'right' }]}>Jumlah</Text>
             </View>
             {data.topCustomers.map((c, i) => (
               <View key={i} style={pdfStyles.tableRow}>

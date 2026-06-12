@@ -1,6 +1,6 @@
 // Centralised WhatsApp message templates.
 // Each template has:
-//  - editable parts the user can customise from Settings (greeting, intro, closing)
+//  - editable parts the user can customise from Tetapan (greeting, intro, closing)
 //  - a fixed "core" block (numbers, totals, links) that we keep locked so the
 //    message remains accurate and the link is never broken.
 
@@ -16,7 +16,7 @@ export type TemplateKey =
 export interface TemplateEditable {
   greeting: string; // line 1 — e.g. "Assalamualaikum / Salam Sejahtera {customer_name},"
   intro: string;   // 1–3 lines after greeting — the friendly framing
-  closing: string; // last line(s) — e.g. "Thank you!"
+  closing: string; // last line(s) — e.g. "Terima kasih!"
 }
 
 export interface TemplateMeta {
@@ -30,110 +30,110 @@ export interface TemplateMeta {
 }
 
 export const TEMPLATE_PLACEHOLDERS: Record<string, string> = {
-  customer_name: "Customer name",
-  company_name: "Your company name",
+  customer_name: "Nama pelanggan",
+  company_name: "Nama syarikat anda",
 };
 
 export const TEMPLATES: TemplateMeta[] = [
   {
     key: "quotation",
-    label: "Quotation",
-    description: "Send quotation to customer via WhatsApp",
+    label: "Sebut Harga",
+    description: "Hantar sebut harga kepada pelanggan via WhatsApp",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *Quotation No:* QUO-0001\n💰 *Total:* RM 1,500.00\n\nPlease click the link below to *view & confirm* the quotation:\n🔗 https://...",
+      "📋 *No. Sebut Harga:* QUO-0001\n💰 *Jumlah:* RM 1,500.00\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 https://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Thank you for your interest in our services. 🙏\n\nHere is the quotation from *{company_name}*:",
+        "Terima kasih kerana berminat dengan perkhidmatan kami. 🙏\n\nBerikut adalah sebut harga daripada *{company_name}*:",
       closing:
-        "You may click *Accept* or *Reject* directly from the link.\n\nThank you!\n*{company_name}*",
+        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
     key: "invoice",
-    label: "Invoice",
-    description: "Send new invoice to customer",
+    label: "Invois",
+    description: "Hantar invois baru kepada pelanggan",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "🧾 *Invoice No:* INV-0001\n💰 *Total:* RM 1,500.00\n📅 *Due Date:* 30 Apr 2026\n\n👉 Tap here to view invoice & submit payment proof:\nhttps://...",
+      "🧾 *No. Invois:* INV-0001\n💰 *Jumlah:* RM 1,500.00\n📅 *Bayar Sebelum:* 30 Apr 2026\n\n👉 Tekan sini untuk lihat invois & hantar bukti bayaran:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Thank you for trusting *{company_name}*. 🙏\n\nHere is the invoice for the completed work:",
-      closing: "For any questions, please contact us.\n\n*{company_name}*",
+        "Terima kasih atas kepercayaan anda kepada *{company_name}*. 🙏\n\nBerikut adalah invois untuk kerja yang telah siap:",
+      closing: "Sebarang pertanyaan, sila hubungi kami.\n\n*{company_name}*",
     },
   },
   {
     key: "invoice_reminder",
-    label: "Invoice Reminder",
-    description: "Friendly reminder for unpaid invoices",
+    label: "Peringatan Invois",
+    description: "Peringatan mesra untuk invois yang belum dibayar",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "🧾 *Invoice No:* INV-0001\n💰 *Total:* RM 1,500.00\n📅 *Due Date:* 30 Apr 2026\n\n👉 Tap here to view invoice & submit payment proof:\nhttps://...",
+      "🧾 *No. Invois:* INV-0001\n💰 *Jumlah:* RM 1,500.00\n📅 *Bayar Sebelum:* 30 Apr 2026\n\n👉 Tekan sini untuk lihat invois & hantar bukti bayaran:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "This is a friendly reminder from *{company_name}* regarding the following invoice:",
-      closing: "Please assist to settle the payment. Thank you!\n\n*{company_name}*",
+        "Ini adalah peringatan mesra daripada *{company_name}* berkenaan invois berikut:",
+      closing: "Mohon kerjasama untuk selesaikan bayaran. Terima kasih!\n\n*{company_name}*",
     },
   },
   {
     key: "work_order",
     label: "Work Order",
-    description: "Send work order to customer / team",
+    description: "Hantar work order kepada pelanggan / team",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *Work Order No:* WO-0001\n🔨 *Job Title:* Light Installation\n\n👉 Tap here to view & confirm work order:\nhttps://...",
+      "📋 *No. Work Order:* WO-0001\n🔨 *Tajuk Kerja:* Pemasangan Lampu\n\n👉 Tekan sini untuk lihat & sahkan work order:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Thank you for your trust. 🙏\n\nHere is the Work Order from *{company_name}*:",
+        "Terima kasih atas kepercayaan anda. 🙏\n\nBerikut adalah Work Order daripada *{company_name}*:",
       closing:
-        "You may click *Accept* or *Reject* directly from the link.\n\nThank you!\n*{company_name}*",
+        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
     key: "completion_report",
-    label: "Completion Report",
-    description: "Send completion report to customer",
+    label: "Laporan Kerja Siap",
+    description: "Hantar completion report kepada pelanggan",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *Report No:* RPT-0001\n🔨 *Job:* Light Installation\n📅 *Completion Date:* 28 Apr 2026\n\n👉 Tap here to *view & confirm* the report:\nhttps://...",
+      "📋 *No. Laporan:* RPT-0001\n🔨 *Kerja:* Pemasangan Lampu\n📅 *Tarikh Siap:* 28 Apr 2026\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Alhamdulillah, the work has been completed. 🙏\n\nHere is the Completion Report from *{company_name}*:",
+        "Alhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *{company_name}*:",
       closing:
-        "You may click *Accept* or *Reject* directly from the link.\n\nThank you!\n*{company_name}*",
+        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
     key: "receipt",
-    label: "Payment Receipt",
-    description: "Send receipt after payment is confirmed",
+    label: "Resit Pembayaran",
+    description: "Hantar resit selepas pembayaran disahkan",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "🧾 *Receipt No:* RCP-0001\n🧾 *Invoice No:* INV-0001\n💰 *Amount Paid:* RM 1,500.00\n📅 *Payment Date:* 28 Apr 2026\n\n👉 Tap here to download receipt:\nhttps://...",
+      "🧾 *No. Resit:* RCP-0001\n🧾 *No. Invois:* INV-0001\n💰 *Jumlah Dibayar:* RM 1,500.00\n📅 *Tarikh Bayaran:* 28 Apr 2026\n\n👉 Tekan sini untuk muat turun resit:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Thank you for your payment. 🙏✅\n\nHere is the official payment receipt from *{company_name}*:",
+        "Terima kasih atas pembayaran anda. 🙏✅\n\nBerikut adalah resit pembayaran rasmi daripada *{company_name}*:",
       closing:
-        "Thank you for choosing our services. 😊\n\n*{company_name}*",
+        "Terima kasih kerana memilih perkhidmatan kami. 😊\n\n*{company_name}*",
     },
   },
   {
     key: "job_followup",
-    label: "Job Follow-up",
-    description: "Quick message to follow up on job status",
+    label: "Follow-up Kerja",
+    description: "Mesej cepat untuk follow-up status kerja",
     placeholders: ["customer_name", "company_name", "job_number"],
-    detailsPreview: "(No details block — just your message)",
+    detailsPreview: "(Tiada blok butiran — hanya mesej anda sahaja)",
     defaults: {
       greeting: "Hi {customer_name},",
       intro:
-        "I would like to follow up on job {job_number}. Could you confirm the latest status?",
-      closing: "Thank you!",
+        "Saya nak follow up berkenaan kerja {job_number}. Boleh confirm status terkini?",
+      closing: "Terima kasih!",
     },
   },
 ];
@@ -211,13 +211,13 @@ export function milestonePaymentMessage(opts: {
   payUrl: string;
 }): string {
   const lines = [
-    `📋 *Stage ${opts.stageNumber} of ${opts.totalStages}* — ${opts.stageLabel}`,
-    `🧾 *Invoice No:* ${opts.invoiceNumber}`,
-    `💰 *Stage payment:* RM ${opts.stageAmount.toFixed(2)}`,
-    `📊 *Invoice total:* RM ${opts.invoiceTotal.toFixed(2)}`,
-    `✅ *Paid so far:* RM ${opts.paidSoFar.toFixed(2)}`,
+    `📋 *Peringkat ${opts.stageNumber} dari ${opts.totalStages}* — ${opts.stageLabel}`,
+    `🧾 *No. Invois:* ${opts.invoiceNumber}`,
+    `💰 *Bayaran peringkat ini:* RM ${opts.stageAmount.toFixed(2)}`,
+    `📊 *Total invois:* RM ${opts.invoiceTotal.toFixed(2)}`,
+    `✅ *Telah dibayar:* RM ${opts.paidSoFar.toFixed(2)}`,
   ];
-  if (opts.dueDate) lines.push(`📅 *Due Date:* ${opts.dueDate}`);
-  lines.push('', '👉 Tap to pay / submit payment proof:', opts.payUrl);
+  if (opts.dueDate) lines.push(`📅 *Bayar Sebelum:* ${opts.dueDate}`);
+  lines.push('', '👉 Tekan untuk bayar / hantar bukti bayaran:', opts.payUrl);
   return lines.join('\n');
 }

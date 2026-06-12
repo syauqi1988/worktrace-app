@@ -625,23 +625,23 @@ export default function JobDetailPage() {
       {job.job_type !== 'milestone' && report?.status === 'accepted' && (
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5" /> Variations & Deductions
+            <FileText className="h-3.5 w-3.5" /> Variasi & Potongan
           </p>
           <p className="text-xs text-muted-foreground mb-3">
-            Add Variation Order or Deduction before generating the final invoice.
+            Tambah Variation Order atau Potongan sebelum menjana invois akhir.
           </p>
           <div className="flex flex-wrap gap-2 mb-3">
             <Button variant="outline" size="sm" className="text-xs gap-1"
               onClick={() => navigate(`/jobs/${job.id}/vo/new?type=addition`)}>
-              <FileText className="h-3.5 w-3.5" /> + Add VO
+              <FileText className="h-3.5 w-3.5" /> + Tambah VO
             </Button>
             <Button variant="outline" size="sm" className="text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
               onClick={() => navigate(`/jobs/${job.id}/vo/new?type=deduction`)}>
-              <FileText className="h-3.5 w-3.5" /> + Add Deduction
+              <FileText className="h-3.5 w-3.5" /> + Tambah Potongan
             </Button>
           </div>
           {vos.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No variations.</p>
+            <p className="text-xs text-muted-foreground">Tiada variasi.</p>
           ) : (
             <div className="space-y-2">
               {vos.map(v => {
@@ -653,7 +653,7 @@ export default function JobDetailPage() {
                         <span className="text-sm font-bold text-primary">{v.vo_number}</span>
                         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
                           isDed ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-                        }`}>{isDed ? 'Deduction' : 'VO'}</span>
+                        }`}>{isDed ? 'Potongan' : 'VO'}</span>
                         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
                           v.status === 'Accepted' ? 'bg-green-100 text-green-700' :
                           v.status === 'Sent' ? 'bg-blue-100 text-blue-700' :
@@ -673,14 +673,14 @@ export default function JobDetailPage() {
                       </Button>
                       <Button variant="ghost" size="sm" className="text-xs text-red-600 hover:text-red-700"
                         onClick={async () => {
-                          if (!confirm(`Delete ${v.vo_number}?`)) return;
+                          if (!confirm(`Padam ${v.vo_number}?`)) return;
                           const { error } = await (supabase as any).from('variation_orders').delete().eq('id', v.id);
                           if (error) {
-                            toast({ title: 'Error', description: error.message, variant: 'destructive' });
+                            toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
                           } else {
                             await (supabase as any).from('customer_approvals').delete().eq('document_id', v.id).eq('document_type', 'variation_order');
                             setVos(prev => prev.filter(x => x.id !== v.id));
-                            toast({ title: 'VO deleted' });
+                            toast({ title: 'VO dipadam' });
                           }
                         }}>
                         <Trash2 className="h-3.5 w-3.5" />
@@ -702,12 +702,12 @@ export default function JobDetailPage() {
         const finalTotal = quoteTotal + additions - deductions;
         return (
           <div className="bg-card rounded-xl border border-border p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Financial Summary</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ringkasan Kewangan</p>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Original Quotation</span><span>RM {quoteTotal.toFixed(2)}</span></div>
-              {additions > 0 && <div className="flex justify-between"><span className="text-blue-700">+ Variations</span><span className="text-blue-700">+RM {additions.toFixed(2)}</span></div>}
-              {deductions > 0 && <div className="flex justify-between"><span className="text-red-700">− Deductions</span><span className="text-red-700">−RM {deductions.toFixed(2)}</span></div>}
-              <div className="flex justify-between border-t border-border pt-2 mt-2 font-bold"><span>Final Amount</span><span className="text-primary">RM {finalTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Sebut Harga Asal</span><span>RM {quoteTotal.toFixed(2)}</span></div>
+              {additions > 0 && <div className="flex justify-between"><span className="text-blue-700">+ Variasi</span><span className="text-blue-700">+RM {additions.toFixed(2)}</span></div>}
+              {deductions > 0 && <div className="flex justify-between"><span className="text-red-700">− Potongan</span><span className="text-red-700">−RM {deductions.toFixed(2)}</span></div>}
+              <div className="flex justify-between border-t border-border pt-2 mt-2 font-bold"><span>Jumlah Akhir</span><span className="text-primary">RM {finalTotal.toFixed(2)}</span></div>
             </div>
           </div>
         );
@@ -810,7 +810,7 @@ export default function JobDetailPage() {
           if (previewUrl) {
             const a = document.createElement('a');
             a.href = previewUrl;
-            a.download = `Report-${report?.report_number || 'RPT'}.pdf`;
+            a.download = `Laporan-${report?.report_number || 'RPT'}.pdf`;
             a.click();
           }
         }}

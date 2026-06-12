@@ -444,7 +444,7 @@ export default function QuotationDetailPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Quotation-${quotation.quote_number}.pdf`;
+    a.download = `SebuthHarga-${quotation.quote_number}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -639,7 +639,7 @@ export default function QuotationDetailPage() {
               <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
             </Button>
             <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
-              <ClipboardList className="h-4 w-4" /> Create Work Order
+              <ClipboardList className="h-4 w-4" /> Buat Work Order
             </Button>
           </>
         )}

@@ -305,7 +305,7 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Report-${periodLabel.replace(/\s+/g, '-')}.pdf`;
+      a.download = `${isEN ? 'Report' : 'Laporan'}-${periodLabel.replace(/\s+/g, '-')}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(t('reports.downloaded'));

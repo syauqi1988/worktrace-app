@@ -49,7 +49,7 @@ export default function ConfirmDialog({
         </AlertDialogHeader>
         {children}
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose} disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onClose} disabled={isLoading}>Batal</AlertDialogCancel>
           <Button onClick={onConfirm} disabled={isLoading} className={variantClass}>
             {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             {confirmLabel}

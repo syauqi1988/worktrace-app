@@ -36,12 +36,12 @@ export function SkipStepModal({ open, onClose, stepLabel, message, onConfirm, on
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-amber-700">
             <AlertTriangle className="h-5 w-5" />
-            Skip {stepLabel}?
+            Langkau {stepLabel}?
           </DialogTitle>
         </DialogHeader>
         {message && <p className="text-sm text-muted-foreground">{message}</p>}
         <div className="space-y-2 pt-2">
-          <p className="text-sm font-medium">Select reason:</p>
+          <p className="text-sm font-medium">Pilih sebab:</p>
           {SKIP_REASON_OPTIONS.map((opt) => (
             <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer">
               <input
@@ -60,7 +60,7 @@ export function SkipStepModal({ open, onClose, stepLabel, message, onConfirm, on
               autoFocus
               value={otherText}
               onChange={(e) => setOtherText(e.target.value)}
-              placeholder="Your reason…"
+              placeholder="Sebab anda…"
               className="mt-1"
             />
           )}
@@ -68,11 +68,11 @@ export function SkipStepModal({ open, onClose, stepLabel, message, onConfirm, on
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3">
           {onBack && (
             <Button variant="default" onClick={onBack}>
-              {backLabel ?? `Go Back — Generate ${stepLabel} First`}
+              {backLabel ?? `Kembali — Jana ${stepLabel} Dulu`}
             </Button>
           )}
           <Button variant="outline" onClick={handleConfirm}>
-            Continue Without {stepLabel} →
+            Teruskan Tanpa {stepLabel} →
           </Button>
         </div>
       </DialogContent>

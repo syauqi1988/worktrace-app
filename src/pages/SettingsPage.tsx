@@ -714,8 +714,8 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="maklumat-pembayaran-quote"
         icon={<Landmark className="h-5 w-5" />}
-        title="Payment Details (Quotation)"
-        description="Bank, account no., payment types shown in Quotation"
+        title="Maklumat Pembayaran (Sebut Harga)"
+        description="Bank, no. akaun, jenis pembayaran yang dipaparkan dalam Sebut Harga"
       >
         <PaymentDetailsSection />
       </SettingsAccordion>
@@ -774,12 +774,12 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="keutamaan-kerja"
         icon={<Briefcase className="h-5 w-5" />}
-        title="Job Preferences"
-        description="Default settings for job type & milestone payments"
+        title="Keutamaan Kerja"
+        description="Tetapan lalai untuk jenis kerja & pembayaran berperingkat"
       >
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Default Job Type</label>
-          <p className="text-xs text-muted-foreground mb-2">Every new job will start with this type.</p>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Jenis Kerja Lalai</label>
+          <p className="text-xs text-muted-foreground mb-2">Setiap kerja baru akan bermula dengan jenis ini.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {JOB_TYPES.map((jt) => (
               <button
@@ -845,14 +845,14 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="preset-kerja"
         icon={<Briefcase className="h-5 w-5" />}
-        title="Job Presets"
-        description="Manage preset templates to create jobs quickly."
+        title="Preset Kerja"
+        description="Urus templet preset untuk cipta kerja dengan pantas."
       >
         <p className="text-sm text-muted-foreground">
-          Create and manage job presets (items, pricing, T&C) to reuse when creating new jobs.
+          Cipta dan urus preset kerja (item, harga, T&C) untuk digunakan semula bila buat kerja baru.
         </p>
         <Button onClick={() => navigate('/job-presets')} className="rounded-lg gap-2">
-          <Briefcase className="h-4 w-4" /> Open Job Presets
+          <Briefcase className="h-4 w-4" /> Buka Preset Kerja
         </Button>
       </SettingsAccordion>
 
@@ -1046,8 +1046,8 @@ export default function SettingsPage() {
                 const until = elig.status === 'full' ? elig.fullRefundUntil : elig.proratedRefundUntil;
                 const tone = elig.status === 'full' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800';
                 const label = elig.status === 'full'
-                  ? `You are eligible for a full refund until ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`
-                  : `You are eligible for a pro-rated refund until ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                  ? `Anda layak bayaran balik penuh sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`
+                  : `Anda layak bayaran balik pro-rated sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`;
                 return <div className={`text-xs rounded-lg border p-2.5 ${tone}`}>{label}</div>;
               }
               return null;
@@ -1063,11 +1063,11 @@ export default function SettingsPage() {
                 onClick={() => setRefundOpen(true)}
                 className="text-[13px] font-medium text-foreground hover:underline"
               >
-                Request Refund
+                Mohon Bayaran Balik
               </button>
             </div>
             <Link to="/refund-policy" className="block text-center text-[12px] text-muted-foreground hover:underline">
-              View Refund Policy
+              Lihat Dasar Bayaran Balik
             </Link>
           </div>
         ) : null}

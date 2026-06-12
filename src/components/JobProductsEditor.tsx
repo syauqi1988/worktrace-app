@@ -39,7 +39,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
       {items.length === 0 && (
         <div className="bg-muted/40 border border-dashed border-border rounded-lg p-4 text-center">
           <Package className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-          <p className="text-xs text-muted-foreground">No products. Add from your product list.</p>
+          <p className="text-xs text-muted-foreground">Tiada produk. Tambah dari senarai produk anda.</p>
         </div>
       )}
 
@@ -57,7 +57,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
               <Textarea
                 value={it.description_detail || ''}
                 onChange={(e) => update(i, 'description_detail', e.target.value)}
-                placeholder="Additional details (optional)"
+                placeholder="Butiran tambahan (pilihan)"
                 rows={2}
                 className="text-xs"
               />
@@ -72,7 +72,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="text-[10px] text-muted-foreground">Quantity</label>
+              <label className="text-[10px] text-muted-foreground">Kuantiti</label>
               <Input
                 type="number" min={0}
                 value={it.qty || ''}
@@ -90,7 +90,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
               />
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground">Price (RM)</label>
+              <label className="text-[10px] text-muted-foreground">Harga (RM)</label>
               <Input
                 type="number" min={0} step="0.01"
                 value={it.unit_price || ''}
@@ -111,7 +111,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
           onClick={addBlank}
           className="flex-1 flex items-center justify-center gap-1 h-10 rounded-md border border-dashed border-border text-sm text-muted-foreground hover:text-primary hover:border-primary"
         >
-          <Plus className="h-4 w-4" /> Add Empty Row
+          <Plus className="h-4 w-4" /> Tambah Baris Kosong
         </button>
       </div>
     </div>

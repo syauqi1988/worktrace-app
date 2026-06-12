@@ -60,8 +60,8 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
           <View style={s.headerLeftRow}>
             {logo ? <Image src={logo} style={s.logo} /> : null}
             <View style={s.companyBlock}>
-              <Text style={s.companyName}>{company.company_name || 'Company'}</Text>
-              {ssm ? <Text style={s.companyText}>Reg. No: {ssm}</Text> : null}
+              <Text style={s.companyName}>{company.company_name || 'Syarikat'}</Text>
+              {ssm ? <Text style={s.companyText}>No. Daftar: {ssm}</Text> : null}
               {company.address ? <Text style={s.companyText}>{company.address}</Text> : null}
               {company.phone ? <Text style={s.companyText}>Tel: {company.phone}</Text> : null}
             </View>
@@ -73,13 +73,13 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
               <Text style={s.metaValue}>{vo.vo_number}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Date</Text>
+              <Text style={s.metaLabel}>Tarikh</Text>
               <Text style={s.metaValue}>{fmtDate(vo.created_at)}</Text>
             </View>
             <View style={s.metaRow}>
-              <Text style={s.metaLabel}>Type</Text>
+              <Text style={s.metaLabel}>Jenis</Text>
               <Text style={[s.metaValue, isDeduction ? extra.redText : extra.greenText]}>
-                {isDeduction ? 'Deduction' : 'Addition'}
+                {isDeduction ? 'Potongan' : 'Tambahan'}
               </Text>
             </View>
           </View>
@@ -89,12 +89,12 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
 
         <View style={s.twoCol}>
           <View style={s.col}>
-            <Text style={s.sectionLabel}>Job Reference</Text>
+            <Text style={s.sectionLabel}>Rujukan Kerja</Text>
             {job ? <Text style={s.partyName}>{job.job_number}</Text> : null}
             {job ? <Text style={s.partyText}>{job.title}</Text> : null}
             {quotation ? (
               <View style={s.partyMetaRow}>
-                <Text style={s.partyMetaLabel}>Original Quotation</Text>
+                <Text style={s.partyMetaLabel}>Sebut Harga Asal</Text>
                 <Text style={s.partyMetaValue}>{quotation.quote_number}</Text>
               </View>
             ) : null}
@@ -118,10 +118,10 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
 
         <View style={[s.tableHeader, { marginTop: 12 }]}>
           <Text style={[s.tableHeaderText, s.colNo]}>No</Text>
-          <Text style={[s.tableHeaderText, s.colDesc]}>Description</Text>
+          <Text style={[s.tableHeaderText, s.colDesc]}>Keterangan</Text>
           <Text style={[s.tableHeaderText, s.colQty]}>Qty</Text>
-          <Text style={[s.tableHeaderText, s.colUnit]}>Price</Text>
-          <Text style={[s.tableHeaderText, s.colAmt]}>Amount</Text>
+          <Text style={[s.tableHeaderText, s.colUnit]}>Harga</Text>
+          <Text style={[s.tableHeaderText, s.colAmt]}>Jumlah</Text>
         </View>
         {vo.items.map((item, i) => {
           const detailLines = (item.description_detail || '').split('\n').map(l => l.trim()).filter(Boolean);
@@ -155,7 +155,7 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
             </View>
             {vo.discount > 0 && (
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>Discount</Text>
+                <Text style={s.summaryLabel}>Diskaun</Text>
                 <Text style={s.summaryValue}>-{fmtRM(vo.discount)}</Text>
               </View>
             )}
@@ -163,7 +163,7 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
               const amt = d.type === 'percentage' ? (vo.subtotal * (Number(d.value) || 0) / 100) : (Number(d.value) || 0);
               return (
                 <View key={i} style={s.summaryRow}>
-                  <Text style={s.summaryLabel}>{d.name || 'Deduction'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</Text>
+                  <Text style={s.summaryLabel}>{d.name || 'Potongan'}{d.type === 'percentage' ? ` (${d.value}%)` : ''}</Text>
                   <Text style={s.summaryValue}>-{fmtRM(amt)}</Text>
                 </View>
               );
@@ -175,7 +175,7 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
               </View>
             )}
             <View style={s.summaryTotalRow}>
-              <Text style={s.summaryTotalLabel}>{isDeduction ? 'Deduction' : 'Addition'}</Text>
+              <Text style={s.summaryTotalLabel}>{isDeduction ? 'Potongan' : 'Tambahan'}</Text>
               <Text style={[s.summaryTotalValue, isDeduction ? extra.redText : extra.greenText]}>
                 {isDeduction ? '-' : '+'}{fmtRM(vo.total)}
               </Text>
@@ -185,20 +185,20 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
 
         {quotation && (
           <View style={{ marginTop: 14 }}>
-            <Text style={s.sectionLabel}>Impact on Quotation</Text>
+            <Text style={s.sectionLabel}>Kesan ke atas Sebut Harga</Text>
             <View style={extra.reasonBox}>
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>Original Amount</Text>
+                <Text style={s.summaryLabel}>Jumlah Asal</Text>
                 <Text style={s.summaryValue}>{fmtRM(quotation.total)}</Text>
               </View>
               <View style={s.summaryRow}>
-                <Text style={s.summaryLabel}>{isDeduction ? 'Deduction' : 'VO Addition'}</Text>
+                <Text style={s.summaryLabel}>{isDeduction ? 'Potongan' : 'VO Tambahan'}</Text>
                 <Text style={[s.summaryValue, isDeduction ? extra.redText : extra.greenText]}>
                   {isDeduction ? '-' : '+'}{fmtRM(vo.total)}
                 </Text>
               </View>
               <View style={s.summaryTotalRow}>
-                <Text style={s.summaryTotalLabel}>Final Amount</Text>
+                <Text style={s.summaryTotalLabel}>Jumlah Akhir</Text>
                 <Text style={s.summaryTotalValue}>{fmtRM(finalAmount)}</Text>
               </View>
             </View>
@@ -207,27 +207,27 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
 
         {vo.notes ? (
           <View style={s.block}>
-            <Text style={s.blockLabel}>Notes</Text>
+            <Text style={s.blockLabel}>Nota</Text>
             <Text style={s.blockText}>{vo.notes}</Text>
           </View>
         ) : null}
 
         <View style={extra.signRow}>
           <View style={extra.signBox}>
-            <Text style={extra.signLabel}>Company Signature</Text>
+            <Text style={extra.signLabel}>Tandatangan Syarikat</Text>
             <Text style={extra.signLine}>Nama: ____________________</Text>
-            <Text style={extra.signLine}>Date: ___________________</Text>
+            <Text style={extra.signLine}>Tarikh: ___________________</Text>
           </View>
           <View style={extra.signBox}>
-            <Text style={extra.signLabel}>Customer Signature</Text>
+            <Text style={extra.signLabel}>Tandatangan Pelanggan</Text>
             <Text style={extra.signLine}>Nama: ____________________</Text>
-            <Text style={extra.signLine}>Date: ___________________</Text>
+            <Text style={extra.signLine}>Tarikh: ___________________</Text>
           </View>
         </View>
 
         <View style={s.footer} fixed>
           <Text style={s.footerText}>{company.company_name || ''}</Text>
-          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
+          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Muka ${pageNumber} / ${totalPages}`} />
         </View>
       </Page>
     </Document>

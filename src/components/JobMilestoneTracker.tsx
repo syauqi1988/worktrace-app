@@ -105,7 +105,7 @@ export function JobMilestoneTracker({ invoices }: Props) {
                         : 'bg-blue-100 text-blue-700'
                     )}
                   >
-                    {isPaid ? 'Paid' : isOverdue ? 'Overdue' : isLocked ? 'Locked' : s.status}
+                    {isPaid ? 'Dibayar' : isOverdue ? 'Lewat' : isLocked ? 'Terkunci' : s.status}
                   </span>
                 </div>
               </div>

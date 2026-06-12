@@ -19,25 +19,25 @@ export function buildDepositTermsBlock(total: number, depositPct: number): strin
   const balancePct = 100 - pct;
   const balanceAmt = total - depositAmt;
   const lines = [
-    'PAYMENT TERMS:',
-    `1. Deposit ${pct}% (RM ${fmt(depositAmt)}) must be paid before work begins.`,
-    `2. Balance ${balancePct}% (RM ${fmt(balanceAmt)}) must be paid after work is completed and handed over.`,
-    '3. Official receipt will be issued after each payment is received.',
+    'SYARAT BAYARAN:',
+    `1. Deposit ${pct}% (RM ${fmt(depositAmt)}) perlu dijelaskan sebelum kerja bermula.`,
+    `2. Baki ${balancePct}% (RM ${fmt(balanceAmt)}) perlu dijelaskan selepas kerja siap dan diserahkan.`,
+    '3. Resit rasmi akan dikeluarkan selepas setiap bayaran diterima.',
   ];
   return wrap(lines.join('\n'));
 }
 
 export function buildMilestoneTermsBlock(total: number, stages: MilestoneStage[]): string {
   if (!stages.length) return '';
-  const head = ['MILESTONE PAYMENT TERMS:'];
+  const head = ['SYARAT BAYARAN BERPERINGKAT:'];
   const body = stages.map((s, i) => {
     const pct = Number(s.percentage) || 0;
     const amt = Number(s.amount) || (total * pct) / 100;
     return `${i + 1}. ${s.label} — ${pct}% (RM ${fmt(amt)})`;
   });
   const tail = [
-    `Total amount: RM ${fmt(total)}`,
-    'Each payment must be settled according to the stage set before the next stage begins.',
+    `Jumlah keseluruhan: RM ${fmt(total)}`,
+    'Setiap bayaran perlu dijelaskan mengikut peringkat yang ditetapkan sebelum peringkat berikutnya bermula.',
   ];
   return wrap([...head, ...body, '', ...tail].join('\n'));
 }

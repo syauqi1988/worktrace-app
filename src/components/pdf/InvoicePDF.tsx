@@ -112,7 +112,7 @@ export default function InvoicePDF({ invoice, job, customer, company, paymentMet
         {invoice.milestone_stage_number && invoice.milestone_total_stages ? (
           <View style={{ backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE', borderRadius: 6, padding: 8, marginBottom: 10 }}>
             <Text style={{ fontSize: 10, fontWeight: 700, color: '#1D4ED8' }}>
-              Milestone Payment — Stage {invoice.milestone_stage_number} of {invoice.milestone_total_stages}
+              Pembayaran Berperingkat — Peringkat {invoice.milestone_stage_number} dari {invoice.milestone_total_stages}
             </Text>
             {Array.isArray(invoice.milestone_stages) && invoice.milestone_stages[invoice.milestone_stage_number - 1]?.label && (
               <Text style={{ fontSize: 9, color: '#1E3A8A', marginTop: 2 }}>

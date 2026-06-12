@@ -198,7 +198,7 @@ export default function FaqPage() {
         className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4 hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        {isMs ? 'Back' : 'Back'}
+        {isMs ? 'Kembali' : 'Back'}
       </button>
 
       <div className="flex items-center gap-2 mb-2">
@@ -209,7 +209,7 @@ export default function FaqPage() {
       </div>
       <p className="text-sm text-muted-foreground mb-5">
         {isMs
-          ? 'Quick answers about using WorkTrace.'
+          ? 'Cari jawapan pantas tentang penggunaan WorkTrace.'
           : 'Quick answers about using WorkTrace.'}
       </p>
 
@@ -218,7 +218,7 @@ export default function FaqPage() {
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={isMs ? 'Search questions...' : 'Search questions...'}
+          placeholder={isMs ? 'Cari soalan...' : 'Search questions...'}
           className="pl-9"
         />
       </div>
@@ -234,7 +234,7 @@ export default function FaqPage() {
                 : 'border-border text-muted-foreground hover:border-primary/50'
             }`}
           >
-            {c === 'all' ? (isMs ? 'All' : 'All') : c}
+            {c === 'all' ? (isMs ? 'Semua' : 'All') : c}
           </button>
         ))}
       </div>
@@ -243,7 +243,7 @@ export default function FaqPage() {
         <p className="text-sm text-muted-foreground">{isMs ? 'Memuatkan...' : 'Loading...'}</p>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-10">
-          {isMs ? 'No questions found.' : 'No FAQs found.'}
+          {isMs ? 'Tiada soalan ditemui.' : 'No FAQs found.'}
         </p>
       ) : (
         <div className="space-y-5">

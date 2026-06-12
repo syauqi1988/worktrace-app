@@ -8,7 +8,7 @@ export default function ShortLinkRedirectPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!code) { setError('Invalid link'); return; }
+    if (!code) { setError('Pautan tidak sah'); return; }
     (async () => {
       const { data } = await supabase
         .from('short_links')
@@ -16,7 +16,7 @@ export default function ShortLinkRedirectPage() {
         .eq('code', code)
         .maybeSingle();
       if (!data?.target_url) {
-        setError('Link not found or expired');
+        setError('Pautan tidak dijumpai atau telah tamat tempoh');
         return;
       }
       // Allowlist trusted domains to prevent open-redirect phishing.
@@ -35,12 +35,12 @@ export default function ShortLinkRedirectPage() {
           (suffix) => u.hostname === suffix || u.hostname.endsWith('.' + suffix)
         );
         if (!allowed) {
-          setError('Link leads to an untrusted domain');
+          setError('Pautan menuju ke domain yang tidak dipercayai');
           return;
         }
         window.location.replace(u.toString());
       } catch {
-        setError('Invalid link');
+        setError('Pautan tidak sah');
       }
     })();
   }, [code]);
@@ -51,7 +51,7 @@ export default function ShortLinkRedirectPage() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <XCircle className="h-12 w-12 text-destructive mx-auto mb-3" />
-          <h1 className="text-xl font-bold mb-1">Invalid Link</h1>
+          <h1 className="text-xl font-bold mb-1">Pautan tidak sah</h1>
           <p className="text-muted-foreground text-sm">{error}</p>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function ShortLinkRedirectPage() {
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="text-center text-muted-foreground">
         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-        <p className="text-sm">Redirecting…</p>
+        <p className="text-sm">Mengalih halaman…</p>
       </div>
     </div>
   );

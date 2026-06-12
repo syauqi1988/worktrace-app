@@ -143,7 +143,7 @@ export default function WhatsAppTemplatesSection() {
             value={draft.greeting}
             onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
             rows={2}
-            placeholder="e.g. Hello {customer_name},"
+            placeholder="cth: Assalamualaikum {customer_name},"
             disabled={isWorkOrderLocked}
           />
         </div>

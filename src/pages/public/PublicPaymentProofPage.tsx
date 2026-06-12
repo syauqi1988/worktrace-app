@@ -183,9 +183,9 @@ export default function PublicPaymentProofPage() {
           <div className="bg-card border border-border rounded-xl p-4">
             {row.milestone_stage && (
               <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">Milestone Payment</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">Pembayaran Berperingkat</p>
                 <p className="text-sm font-bold text-blue-900 mt-0.5">
-                  Stage {row.milestone_stage}{row.milestone_label ? ` — ${row.milestone_label}` : ''}
+                  Peringkat {row.milestone_stage}{row.milestone_label ? ` — ${row.milestone_label}` : ''}
                 </p>
               </div>
             )}

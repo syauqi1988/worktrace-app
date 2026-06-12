@@ -26,12 +26,12 @@ export const DEFAULT_DOC_SETTINGS: Record<DocType, DocNumberSettings> = {
 };
 
 export const DOC_TYPE_LABELS: Record<DocType, string> = {
-  quotation: 'Quotation',
+  quotation: 'Sebut Harga',
   work_order: 'Work Order',
-  invoice: 'Invoice',
-  completion_report: 'Completion Report',
-  receipt: 'Payment Receipt',
-  vo: 'VO / Deduction',
+  invoice: 'Invois',
+  completion_report: 'Laporan Siap Kerja',
+  receipt: 'Resit Bayaran',
+  vo: 'VO / Potongan',
 };
 
 export const generateDocNumber = (settings: DocNumberSettings): string => {

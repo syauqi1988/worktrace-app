@@ -14,9 +14,9 @@ export const TAG_PALETTE = [
 export const SUGGESTED_TAGS: ColoredTag[] = [
   { label: 'VIP', color: '#EAB308' },
   { label: 'Repeat', color: '#3B82F6' },
-  { label: 'Corporate', color: '#0F172A' },
-  { label: 'New', color: '#22C55E' },
-  { label: 'On Hold', color: '#64748B' },
+  { label: 'Korporat', color: '#0F172A' },
+  { label: 'Baru', color: '#22C55E' },
+  { label: 'Tertangguh', color: '#64748B' },
 ];
 
 /** Normalize legacy string[] tags to ColoredTag[] */
