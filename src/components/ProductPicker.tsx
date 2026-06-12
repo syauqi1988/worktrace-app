@@ -86,7 +86,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
   const handleSubmitNew = async () => {
     if (!user) return;
     if (!newName.trim()) {
-      toast.error('Nama item diperlukan');
+      toast.error('Item name required');
       return;
     }
     const price = Number(newPrice) || 0;
@@ -102,7 +102,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
           is_active: true,
         } as any);
         if (error) throw error;
-        toast.success('Produk disimpan ke katalog');
+        toast.success('Product saved to catalog');
       }
       onPick({
         description: newName.trim(),
@@ -113,7 +113,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
       resetNew();
       setOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Gagal simpan produk');
+      toast.error(err.message || 'Failed to save product');
     } finally {
       setSaving(false);
     }
@@ -124,7 +124,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
       <PopoverTrigger asChild>
         <button
           type="button"
-          title="Pilih dari Produk"
+          title="Pick from Products"
           className="flex items-center justify-center h-10 w-10 rounded-md border border-input bg-background text-muted-foreground hover:text-primary hover:border-primary"
         >
           <Package className="h-4 w-4" />
@@ -140,15 +140,15 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
                   autoFocus
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Cari produk..."
+                  placeholder="Search products..."
                   className="pl-8 h-8 text-sm"
                 />
               </div>
             </div>
             <div className="max-h-64 overflow-y-auto">
-              {loading && <p className="px-3 py-2 text-sm text-muted-foreground">Memuatkan...</p>}
+              {loading && <p className="px-3 py-2 text-sm text-muted-foreground">Loading...</p>}
               {!loading && filtered.length === 0 && (
-                <p className="px-3 py-3 text-sm text-muted-foreground text-center">Tiada produk dijumpai.</p>
+                <p className="px-3 py-3 text-sm text-muted-foreground text-center">No products found.</p>
               )}
               {!loading && filtered.map(p => (
                 <button
@@ -186,7 +186,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
                 className="w-full gap-1.5 text-xs"
                 onClick={() => setView('new')}
               >
-                <Plus className="h-3.5 w-3.5" /> Tambah Produk Baru
+                <Plus className="h-3.5 w-3.5" /> Add New Product
               </Button>
             </div>
           </>
@@ -198,13 +198,13 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
               <button type="button" onClick={() => setView('list')} className="text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <p className="text-sm font-semibold">Produk Baru</p>
+              <p className="text-sm font-semibold">New Product</p>
             </div>
             <div className="space-y-2">
               <Input
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                placeholder="Nama item / perkhidmatan *"
+                placeholder="Item / service name *"
                 className="h-9 text-sm"
                 autoFocus
                 maxLength={120}
@@ -212,7 +212,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
               <Input
                 value={newDesc}
                 onChange={e => setNewDesc(e.target.value)}
-                placeholder="Penerangan (pilihan)"
+                placeholder="Description (optional)"
                 className="h-9 text-sm"
                 maxLength={200}
               />
@@ -230,7 +230,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
                   step="0.01"
                   value={newPrice}
                   onChange={e => setNewPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Harga (RM) *"
+                  placeholder="Price (RM) *"
                   className="h-9 text-sm"
                 />
               </div>
@@ -250,7 +250,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
               disabled={saving}
               className="w-full h-9 text-sm"
             >
-              {saving ? 'Menyimpan...' : 'Tambah ke Dokumen'}
+              {saving ? 'Saving...' : 'Add to Document'}
             </Button>
           </div>
         )}
