@@ -45,7 +45,7 @@ export const JOB_TYPES: JobTypeDef[] = [
     id: 'standard',
     icon: '🔧',
     color: 'blue',
-    nameMs: 'Kerja Standard',
+    nameMs: 'Standard Job',
     nameEn: 'Standard Job',
     taglineMs: 'Ikut workflow penuh',
     taglineEn: 'Full standard workflow',
