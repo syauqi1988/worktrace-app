@@ -295,7 +295,7 @@ export default function InvoiceFormPage() {
     const isDefaultEmpty = items.length === 1 && !items[0].description.trim() && !items[0].unit_price;
     if (availableQuote && !linkedQuoteId && isDefaultEmpty) {
       handleImportQuote();
-      toast.success(`Diisi automatik dari Sebut Harga ${availableQuote.quote_number}`);
+      toast.success(`Auto-filled from Quotation ${availableQuote.quote_number}`);
     }
     // eslint-disable-next-line
   }, [availableQuote, isEdit]);
