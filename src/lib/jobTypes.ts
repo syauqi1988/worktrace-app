@@ -47,7 +47,7 @@ export const JOB_TYPES: JobTypeDef[] = [
     color: 'blue',
     nameMs: 'Standard Job',
     nameEn: 'Standard Job',
-    taglineMs: 'Ikut workflow penuh',
+    taglineMs: 'Full standard workflow',
     taglineEn: 'Full standard workflow',
     steps: [
       { key: 'quotation', labelMs: 'Sebut Harga', labelEn: 'Quotation' },
