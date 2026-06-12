@@ -712,6 +712,9 @@ export default function JobDetailPage() {
         );
       })()}
 
+      {job.job_type === 'milestone' && invoices.some(i => i.milestone_stage_number) ? (
+        <JobMilestoneTracker invoices={invoices as any} />
+      ) : (
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
           <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.invoice')}
@@ -735,21 +738,26 @@ export default function JobDetailPage() {
               {t('jobDetail.viewInvoice')}
             </Button>
           </div>
-        ) : (
+        ) : (() => {
+          const isMilestone = job.job_type === 'milestone';
+          const canCreate = isMilestone ? quotation?.status === 'Accepted' : report?.status === 'accepted';
+          return (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'accepted' ? t('jobDetail.noInvoice') : t('jobDetail.invoiceNeedsReport')}
+              {canCreate ? t('jobDetail.noInvoice') : (isMilestone ? 'Sebut Harga belum diterima.' : t('jobDetail.invoiceNeedsReport'))}
             </p>
-            {report?.status === 'accepted' ? (
+            {canCreate ? (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
                   <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
                 </Button>
-                <Button variant="outline" size="sm" className="text-xs gap-1"
-                  onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
-                  <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
-                </Button>
+                {!isMilestone && (
+                  <Button variant="outline" size="sm" className="text-xs gap-1"
+                    onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
+                    <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
+                  </Button>
+                )}
               </div>
             ) : (
               <Button variant="outline" size="sm" className="text-xs gap-1"
@@ -759,8 +767,10 @@ export default function JobDetailPage() {
               </Button>
             )}
           </div>
-        )}
+          );
+        })()}
       </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-3">
