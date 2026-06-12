@@ -227,7 +227,7 @@ export default function VariationOrderPDF({ vo, job, quotation, customer, compan
 
         <View style={s.footer} fixed>
           <Text style={s.footerText}>{company.company_name || ''}</Text>
-          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Muka ${pageNumber} / ${totalPages}`} />
+          <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
         </View>
       </Page>
     </Document>

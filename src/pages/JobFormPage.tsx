@@ -403,11 +403,11 @@ export default function JobFormPage() {
       </div>
 
       <div className="space-y-2">
-        <Label>Jenis Kerja</Label>
+        <Label>Job Type</Label>
         <JobTypeSelector value={jobType} onChange={setJobType} />
         {jobType === 'deposit' && (
           <div className="flex items-center gap-2 pt-1">
-            <Label className="text-xs text-muted-foreground">Peratusan Deposit</Label>
+            <Label className="text-xs text-muted-foreground">Deposit Percentage</Label>
             <Input
               type="number"
               min={10}
@@ -422,7 +422,7 @@ export default function JobFormPage() {
         )}
         {!isEdit && (
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-muted-foreground">Tetapkan sebagai lalai untuk kerja baru</span>
+            <span className="text-xs text-muted-foreground">Set as default for new jobs</span>
             <Switch checked={setAsDefault} onCheckedChange={setSetAsDefault} />
           </div>
         )}
@@ -442,7 +442,7 @@ export default function JobFormPage() {
               {category && !allCategories.includes(category) && (
                 <SelectItem key={category} value={category}>{category}</SelectItem>
               )}
-              <SelectItem value="__add__" className="text-primary">+ Tambah kategori baru…</SelectItem>
+              <SelectItem value="__add__" className="text-primary">+ Add new category…</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -478,8 +478,8 @@ export default function JobFormPage() {
       </div>
 
       <div className="space-y-1.5">
-        <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item Kerja</Label>
-        <p className="text-[11px] text-muted-foreground -mt-0.5">Produk yang ditambah akan auto-isi ke Sebut Harga & Invois.</p>
+        <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Products / Job Items</Label>
+        <p className="text-[11px] text-muted-foreground -mt-0.5">Products added will auto-fill into Quotations & Invoices.</p>
         <JobProductsEditor items={products} onChange={setProducts} />
       </div>
 

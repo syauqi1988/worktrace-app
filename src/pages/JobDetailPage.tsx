@@ -702,12 +702,12 @@ export default function JobDetailPage() {
         const finalTotal = quoteTotal + additions - deductions;
         return (
           <div className="bg-card rounded-xl border border-border p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ringkasan Kewangan</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Financial Summary</p>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Sebut Harga Asal</span><span>RM {quoteTotal.toFixed(2)}</span></div>
-              {additions > 0 && <div className="flex justify-between"><span className="text-blue-700">+ Variasi</span><span className="text-blue-700">+RM {additions.toFixed(2)}</span></div>}
-              {deductions > 0 && <div className="flex justify-between"><span className="text-red-700">− Potongan</span><span className="text-red-700">−RM {deductions.toFixed(2)}</span></div>}
-              <div className="flex justify-between border-t border-border pt-2 mt-2 font-bold"><span>Jumlah Akhir</span><span className="text-primary">RM {finalTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Original Quotation</span><span>RM {quoteTotal.toFixed(2)}</span></div>
+              {additions > 0 && <div className="flex justify-between"><span className="text-blue-700">+ Variations</span><span className="text-blue-700">+RM {additions.toFixed(2)}</span></div>}
+              {deductions > 0 && <div className="flex justify-between"><span className="text-red-700">− Deductions</span><span className="text-red-700">−RM {deductions.toFixed(2)}</span></div>}
+              <div className="flex justify-between border-t border-border pt-2 mt-2 font-bold"><span>Final Amount</span><span className="text-primary">RM {finalTotal.toFixed(2)}</span></div>
             </div>
           </div>
         );

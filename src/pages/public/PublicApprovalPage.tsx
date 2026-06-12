@@ -127,7 +127,7 @@ export default function PublicApprovalPage() {
   const docLabel =
     row.document_type === 'quotation' ? t('publicApproval.docQuotation')
     : row.document_type === 'work_order' ? t('publicApproval.docWorkOrder')
-    : row.document_type === 'variation_order' ? 'Variation Order / Potongan'
+    : row.document_type === 'variation_order' ? 'Variation Order / Deduction'
     : t('publicApproval.docCompletion');
   const numberCol =
     row.document_type === 'quotation' ? 'quote_number'
