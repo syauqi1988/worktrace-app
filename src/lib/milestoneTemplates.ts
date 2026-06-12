@@ -38,8 +38,8 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     label: '30/40/30',
     stages: [
       { labelMs: 'Deposit',           labelEn: 'Deposit',        percentage: 30, trigger: 'on_wo_accepted' },
-      { labelMs: 'Bayaran Pertengahan', labelEn: 'Mid-payment',  percentage: 40, trigger: 'mid_progress' },
-      { labelMs: 'Bayaran Akhir',     labelEn: 'Final Payment',  percentage: 30, trigger: 'on_completion_report' },
+      { labelMs: 'Mid-payment', labelEn: 'Mid-payment',  percentage: 40, trigger: 'mid_progress' },
+      { labelMs: 'Final Payment',     labelEn: 'Final Payment',  percentage: 30, trigger: 'on_completion_report' },
     ],
   },
   {
@@ -47,7 +47,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     label: '50/50',
     stages: [
       { labelMs: 'Deposit',       labelEn: 'Deposit',       percentage: 50, trigger: 'on_wo_accepted' },
-      { labelMs: 'Bayaran Akhir', labelEn: 'Final Payment', percentage: 50, trigger: 'on_completion_report' },
+      { labelMs: 'Final Payment', labelEn: 'Final Payment', percentage: 50, trigger: 'on_completion_report' },
     ],
   },
   {
@@ -55,19 +55,19 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     label: '20/30/30/20',
     stages: [
       { labelMs: 'Deposit',       labelEn: 'Deposit',       percentage: 20, trigger: 'on_wo_accepted' },
-      { labelMs: 'Peringkat 1',   labelEn: 'Stage 1',       percentage: 30, trigger: 'mid_progress' },
-      { labelMs: 'Peringkat 2',   labelEn: 'Stage 2',       percentage: 30, trigger: 'mid_progress' },
-      { labelMs: 'Bayaran Akhir', labelEn: 'Final Payment', percentage: 20, trigger: 'on_completion_report' },
+      { labelMs: 'Stage 1',   labelEn: 'Stage 1',       percentage: 30, trigger: 'mid_progress' },
+      { labelMs: 'Stage 2',   labelEn: 'Stage 2',       percentage: 30, trigger: 'mid_progress' },
+      { labelMs: 'Final Payment', labelEn: 'Final Payment', percentage: 20, trigger: 'on_completion_report' },
     ],
   },
   {
     key: '25/25/25/25',
     label: '25/25/25/25',
     stages: [
-      { labelMs: 'Bayaran 1', labelEn: 'Payment 1', percentage: 25, trigger: 'on_wo_accepted' },
-      { labelMs: 'Bayaran 2', labelEn: 'Payment 2', percentage: 25, trigger: 'mid_progress' },
-      { labelMs: 'Bayaran 3', labelEn: 'Payment 3', percentage: 25, trigger: 'mid_progress' },
-      { labelMs: 'Bayaran 4', labelEn: 'Payment 4', percentage: 25, trigger: 'on_completion_report' },
+      { labelMs: 'Payment 1', labelEn: 'Payment 1', percentage: 25, trigger: 'on_wo_accepted' },
+      { labelMs: 'Payment 2', labelEn: 'Payment 2', percentage: 25, trigger: 'mid_progress' },
+      { labelMs: 'Payment 3', labelEn: 'Payment 3', percentage: 25, trigger: 'mid_progress' },
+      { labelMs: 'Payment 4', labelEn: 'Payment 4', percentage: 25, trigger: 'on_completion_report' },
     ],
   },
   {
@@ -75,7 +75,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     label: '30/70',
     stages: [
       { labelMs: 'Deposit',       labelEn: 'Deposit',       percentage: 30, trigger: 'on_wo_accepted' },
-      { labelMs: 'Bayaran Akhir', labelEn: 'Final Payment', percentage: 70, trigger: 'on_completion_report' },
+      { labelMs: 'Final Payment', labelEn: 'Final Payment', percentage: 70, trigger: 'on_completion_report' },
     ],
   },
   ...buildEvenSplitTemplates([6, 7, 8, 9, 10]),
@@ -90,13 +90,13 @@ function buildEvenSplitTemplates(counts: number[]): MilestoneTemplate[] {
       const pct = isLast ? Math.round((100 - base * (n - 1)) * 100) / 100 : base;
       const trigger: MilestoneTrigger = isFirst ? 'on_wo_accepted' : isLast ? 'on_completion_report' : 'mid_progress';
       return {
-        labelMs: isFirst ? 'Deposit' : isLast ? 'Bayaran Akhir' : `Peringkat ${i}`,
+        labelMs: isFirst ? 'Deposit' : isLast ? 'Final Payment' : `Stage ${i}`,
         labelEn: isFirst ? 'Deposit' : isLast ? 'Final Payment' : `Stage ${i}`,
         percentage: pct,
         trigger,
       };
     });
-    return { key: `${n}x`, label: `${n} Peringkat`, stages };
+    return { key: `${n}x`, label: `${n} Stages`, stages };
   });
 }
 
