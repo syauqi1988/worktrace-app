@@ -23,6 +23,7 @@ import {
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2, AlertTriangle
 } from 'lucide-react';
 import { WorkflowBar } from '@/components/workflow/WorkflowBar';
+import { JobMilestoneTracker } from '@/components/JobMilestoneTracker';
 import { getJobType, type JobType, type WorkflowStepKey } from '@/lib/jobTypes';
 import { format as fmtDate } from 'date-fns';
 
@@ -78,6 +79,9 @@ interface Invoice {
   total: number;
   status: string;
   due_date: string | null;
+  milestone_stage_number?: number | null;
+  milestone_total_stages?: number | null;
+  milestone_stages?: any;
 }
 
 interface CompletionReport {
@@ -113,6 +117,7 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [report, setReport] = useState<CompletionReport | null>(null);
   const [workOrder, setWorkOrder] = useState<{ id: string; wo_number: string; status: string; total: number } | null>(null);
   const [vos, setVos] = useState<Array<{ id: string; vo_number: string; type: string; status: string; total: number; reason: string | null }>>([]);
@@ -140,10 +145,11 @@ export default function JobDetailPage() {
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase.from('invoices')
-          .select('id, invoice_number, total, status, due_date')
+          .select('id, invoice_number, total, status, due_date, milestone_stage_number, milestone_total_stages, milestone_stages, created_at')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .maybeSingle(),
+          .order('milestone_stage_number', { ascending: true, nullsFirst: false })
+          .order('created_at', { ascending: true }),
         supabase.from('completion_reports')
           .select('id, report_number, status, completion_date, work_description, technician_name, materials_used, customer_signature, notes, photos, accepted_at')
           .eq('job_id', id)
@@ -159,7 +165,9 @@ export default function JobDetailPage() {
       ]);
       setJob(jobRes.data as unknown as Job);
       setQuotation(quoRes.data as Quotation | null);
-      setInvoice(invRes.data as Invoice | null);
+      const invList = ((invRes.data as any[]) || []) as Invoice[];
+      setInvoices(invList);
+      setInvoice(invList[0] ?? null);
       setReport(reportRes.data as CompletionReport | null);
       setWorkOrder(woRes.data as any);
       const { data: voData } = await (supabase as any).from('variation_orders')
@@ -614,7 +622,7 @@ export default function JobDetailPage() {
       </div>
 
       {/* Variation Orders / Deductions */}
-      {report?.status === 'accepted' && (
+      {job.job_type !== 'milestone' && report?.status === 'accepted' && (
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" /> Variasi & Potongan
@@ -705,6 +713,9 @@ export default function JobDetailPage() {
         );
       })()}
 
+      {job.job_type === 'milestone' && invoices.some(i => i.milestone_stage_number) ? (
+        <JobMilestoneTracker invoices={invoices as any} />
+      ) : (
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
           <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.invoice')}
@@ -728,21 +739,26 @@ export default function JobDetailPage() {
               {t('jobDetail.viewInvoice')}
             </Button>
           </div>
-        ) : (
+        ) : (() => {
+          const isMilestone = job.job_type === 'milestone';
+          const canCreate = isMilestone ? quotation?.status === 'Accepted' : report?.status === 'accepted';
+          return (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {report?.status === 'accepted' ? t('jobDetail.noInvoice') : t('jobDetail.invoiceNeedsReport')}
+              {canCreate ? t('jobDetail.noInvoice') : (isMilestone ? 'Sebut Harga belum diterima.' : t('jobDetail.invoiceNeedsReport'))}
             </p>
-            {report?.status === 'accepted' ? (
+            {canCreate ? (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="text-xs gap-1"
                   onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
                   <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
                 </Button>
-                <Button variant="outline" size="sm" className="text-xs gap-1"
-                  onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
-                  <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
-                </Button>
+                {!isMilestone && (
+                  <Button variant="outline" size="sm" className="text-xs gap-1"
+                    onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
+                    <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
+                  </Button>
+                )}
               </div>
             ) : (
               <Button variant="outline" size="sm" className="text-xs gap-1"
@@ -752,8 +768,10 @@ export default function JobDetailPage() {
               </Button>
             )}
           </div>
-        )}
+          );
+        })()}
       </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-3">
