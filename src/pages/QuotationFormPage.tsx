@@ -403,7 +403,7 @@ export default function QuotationFormPage() {
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
-                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Additional details (optional)" rows={2} className="text-xs" />
               </div>
               <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" />
               <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" />
@@ -420,23 +420,23 @@ export default function QuotationFormPage() {
                 <button onClick={() => removeItem(i)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
               )}
               <div className="flex gap-2">
-                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Penerangan item" className="text-sm" />
+                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Item description" className="text-sm" />
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Additional details (optional)" rows={2} className="text-xs" />
               <div className="grid grid-cols-3 gap-2">
                 <div><p className="text-xs text-muted-foreground mb-1">Qty</p><Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" /></div>
                 <div><p className="text-xs text-muted-foreground mb-1">UOM</p><Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" /></div>
-                <div><p className="text-xs text-muted-foreground mb-1">Harga (RM)</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" /></div>
+                <div><p className="text-xs text-muted-foreground mb-1">Price (RM)</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" /></div>
               </div>
-              <div className="text-right text-sm font-medium text-foreground">Jumlah: RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
+              <div className="text-right text-sm font-medium text-foreground">Total: RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
             </div>
           ))}
         </div>
-        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
+        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Add Item</Button>
       </div>
 
-      {/* Potongan / Diskaun */}
+      {/* Deductions / Discounts */}
       <div className="bg-card rounded-xl border border-border p-4">
         <DeductionItemsSection
           value={deductions}
@@ -462,7 +462,7 @@ export default function QuotationFormPage() {
         </div>
         {deductionsAmount > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Potongan</span>
+            <span className="text-muted-foreground">Deductions</span>
             <span className="text-muted-foreground">− RM {deductionsAmount.toFixed(2)}</span>
           </div>
         )}
@@ -493,22 +493,22 @@ export default function QuotationFormPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Landmark className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold">Maklumat Pembayaran</span>
+              <span className="text-sm font-semibold">Payment Details</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{includePaymentDetails ? 'Disertakan' : 'Tidak disertakan'}</span>
+              <span className="text-xs text-muted-foreground">{includePaymentDetails ? 'Included' : 'Not included'}</span>
               <Switch checked={includePaymentDetails} onCheckedChange={setIncludePaymentDetails} />
             </div>
           </div>
           {includePaymentDetails && <PaymentDetailsCard details={(profile as any).payment_details} />}
           <Link to="/settings#maklumat-pembayaran-quote" className="text-xs text-primary hover:underline">
-            Edit di Tetapan →
+            Edit in Settings →
           </Link>
         </div>
       ) : (
         <div className="bg-muted/40 border border-dashed border-border rounded-xl p-4 text-sm text-muted-foreground">
-          Tiada maklumat pembayaran ditetapkan.{' '}
-          <Link to="/settings#maklumat-pembayaran-quote" className="text-primary hover:underline">Tetapkan di Tetapan →</Link>
+          No payment details set.{' '}
+          <Link to="/settings#maklumat-pembayaran-quote" className="text-primary hover:underline">Set in Settings →</Link>
         </div>
       )}
 
@@ -528,9 +528,9 @@ export default function QuotationFormPage() {
         <div className="space-y-2 bg-card rounded-xl border border-border p-4">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
-              <p className="text-sm font-semibold text-foreground">Struktur Bayaran</p>
+              <p className="text-sm font-semibold text-foreground">Payment Structure</p>
               <p className="text-xs text-muted-foreground">
-                {selectedJob.job_type === 'deposit' ? 'Tetapkan peratus deposit. Tekan butang untuk masukkan ke dalam T&C.' : 'Tetapkan peringkat bayaran. Tekan butang untuk masukkan ke dalam T&C.'}
+                {selectedJob.job_type === 'deposit' ? 'Set deposit percentage. Click button to insert into T&C.' : 'Set payment stages. Click button to insert into T&C.'}
               </p>
             </div>
             <Button
@@ -541,9 +541,9 @@ export default function QuotationFormPage() {
                 const block = selectedJob.job_type === 'deposit'
                   ? buildDepositTermsBlock(grandTotal, depositPct)
                   : buildMilestoneTermsBlock(grandTotal, milestoneStages);
-                if (!block) { toast.error('Tetapkan peringkat dahulu'); return; }
+                if (!block) { toast.error('Set stages first'); return; }
                 setTerms(prev => upsertPaymentTermsBlock(prev, block));
-                toast.success('Syarat bayaran dikemaskini');
+                toast.success('Payment terms updated');
               }}
             >
               <Sparkles className="h-3.5 w-3.5" /> Auto-isi ke T&C
