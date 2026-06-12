@@ -23,6 +23,7 @@ import {
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2, AlertTriangle
 } from 'lucide-react';
 import { WorkflowBar } from '@/components/workflow/WorkflowBar';
+import { JobMilestoneTracker } from '@/components/JobMilestoneTracker';
 import { getJobType, type JobType, type WorkflowStepKey } from '@/lib/jobTypes';
 import { format as fmtDate } from 'date-fns';
 
