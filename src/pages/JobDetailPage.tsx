@@ -537,13 +537,8 @@ export default function JobDetailPage() {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {quotation?.status === 'Accepted'
-                  ? t('jobDetail.woReady')
-                  : t('jobDetail.woNeedsAccept')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('jobDetail.woReady')}</p>
               <Button variant="outline" size="sm" className="text-xs gap-1"
-                disabled={quotation?.status !== 'Accepted'}
                 onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>
                 <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.createWo')}
               </Button>
