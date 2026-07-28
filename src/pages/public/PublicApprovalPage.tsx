@@ -51,7 +51,7 @@ export default function PublicApprovalPage() {
       setRow(r);
 
       // Best-effort view timestamp for audit trail — no user action required.
-      supabase.rpc('mark_approval_viewed', { p_token: token }).catch(() => {});
+      try { await supabase.rpc('mark_approval_viewed', { p_token: token }); } catch { /* ignore */ }
 
       const { data: summary } = await supabase.rpc('get_public_document_summary', { p_token: token });
       const s: any = summary;
