@@ -486,6 +486,81 @@ export type Database = {
         }
         Relationships: []
       }
+      email_campaigns: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          bounced_count: number | null
+          clicked_count: number | null
+          created_at: string
+          delivered_count: number | null
+          from_email: string | null
+          from_name: string | null
+          id: string
+          name: string
+          opened_count: number | null
+          preview_text: string | null
+          provider: string | null
+          reply_to: string | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          target_segment: string | null
+          total_recipients: number | null
+          unsubscribed_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          bounced_count?: number | null
+          clicked_count?: number | null
+          created_at?: string
+          delivered_count?: number | null
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          name: string
+          opened_count?: number | null
+          preview_text?: string | null
+          provider?: string | null
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          target_segment?: string | null
+          total_recipients?: number | null
+          unsubscribed_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          bounced_count?: number | null
+          clicked_count?: number | null
+          created_at?: string
+          delivered_count?: number | null
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          name?: string
+          opened_count?: number | null
+          preview_text?: string | null
+          provider?: string | null
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          target_segment?: string | null
+          total_recipients?: number | null
+          unsubscribed_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       faqs: {
         Row: {
           answer_en: string
@@ -785,6 +860,161 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_sources: {
+        Row: {
+          campaign: string | null
+          content: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          ip_country: string | null
+          landing_page: string | null
+          medium: string | null
+          referral_code_used: string | null
+          source: string | null
+          term: string | null
+          user_id: string | null
+        }
+        Insert: {
+          campaign?: string | null
+          content?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_country?: string | null
+          landing_page?: string | null
+          medium?: string | null
+          referral_code_used?: string | null
+          source?: string | null
+          term?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          campaign?: string | null
+          content?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_country?: string | null
+          landing_page?: string | null
+          medium?: string | null
+          referral_code_used?: string | null
+          source?: string | null
+          term?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      lead_stages: {
+        Row: {
+          contact_count: number | null
+          created_at: string
+          id: string
+          last_contacted_at: string | null
+          moved_at: string | null
+          notes: string | null
+          stage: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          contact_count?: number | null
+          created_at?: string
+          id?: string
+          last_contacted_at?: string | null
+          moved_at?: string | null
+          notes?: string | null
+          stage?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          contact_count?: number | null
+          created_at?: string
+          id?: string
+          last_contacted_at?: string | null
+          moved_at?: string | null
+          notes?: string | null
+          stage?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_stages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_integrations: {
+        Row: {
+          api_endpoint: string | null
+          api_key: string | null
+          api_secret: string | null
+          config: Json | null
+          created_at: string
+          display_name: string | null
+          id: string
+          instance_id: string | null
+          is_active: boolean | null
+          is_default: boolean | null
+          last_tested_at: string | null
+          phone_number: string | null
+          provider: string
+          sender_email: string | null
+          sender_name: string | null
+          test_status: string | null
+          type: string
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          api_endpoint?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          config?: Json | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          instance_id?: string | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          last_tested_at?: string | null
+          phone_number?: string | null
+          provider: string
+          sender_email?: string | null
+          sender_name?: string | null
+          test_status?: string | null
+          type: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          api_endpoint?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          config?: Json | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          instance_id?: string | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          last_tested_at?: string | null
+          phone_number?: string | null
+          provider?: string
+          sender_email?: string | null
+          sender_name?: string | null
+          test_status?: string | null
+          type?: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -1844,6 +2074,69 @@ export type Database = {
           id?: string
           purpose?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_campaigns: {
+        Row: {
+          created_at: string
+          delivered_count: number | null
+          failed_count: number | null
+          id: string
+          message: string
+          name: string
+          provider: string | null
+          read_count: number | null
+          replied_count: number | null
+          scheduled_at: string | null
+          sender_phone: string | null
+          sent_at: string | null
+          sent_count: number | null
+          status: string | null
+          target_segment: string | null
+          template_name: string | null
+          total_recipients: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_count?: number | null
+          failed_count?: number | null
+          id?: string
+          message: string
+          name: string
+          provider?: string | null
+          read_count?: number | null
+          replied_count?: number | null
+          scheduled_at?: string | null
+          sender_phone?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string | null
+          target_segment?: string | null
+          template_name?: string | null
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivered_count?: number | null
+          failed_count?: number | null
+          id?: string
+          message?: string
+          name?: string
+          provider?: string | null
+          read_count?: number | null
+          replied_count?: number | null
+          scheduled_at?: string | null
+          sender_phone?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string | null
+          target_segment?: string | null
+          template_name?: string | null
+          total_recipients?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
