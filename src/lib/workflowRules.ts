@@ -1,9 +1,10 @@
-// Workflow lock matrix — single source of truth for "can I create this doc?".
+// Workflow gating — DEPRECATED.
 //
-// HARD = blocked, must satisfy prereq first
-// WARN = allowed with skip-reason modal
-// OPEN = no restriction
-// NA   = doc not part of this job type's workflow
+// Customer approval as a blocking mechanism has been removed system-wide.
+// Every document can now be created back-to-back as soon as the previous one
+// exists (or freely, if the workflow has no prerequisite). checkWorkflowGate()
+// is kept for backwards compatibility with call sites, but it always returns
+// `allowed: true`. Do not reintroduce approval-based gating here.
 
 import type { JobType } from './jobTypes';
 
@@ -27,95 +28,13 @@ export interface WorkflowRule {
 
 type WorkflowMatrix = Record<JobType, Partial<Record<DocumentType, WorkflowRule | null>>>;
 
+// Intentionally empty: no gating. Kept for type compatibility with old imports.
 export const WORKFLOW_MATRIX: WorkflowMatrix = {
-  standard: {
-    quotation: null,
-    work_order: {
-      prerequisite: 'quotation',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted', 'Sent'],
-      errorMessage: '',
-      warnMessage: 'Sebut Harga belum dihantar. Pelanggan tidak mempunyai persetujuan bertulis.',
-    },
-    completion_report: {
-      prerequisite: 'work_order',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted', 'Sent'],
-      errorMessage: '',
-      warnMessage: 'Work Order belum diterima. Pelanggan tidak ada rekod persetujuan skop kerja.',
-    },
-    invoice: {
-      prerequisite: 'completion_report',
-      lockLevel: 'hard',
-      prerequisiteStatus: ['submitted', 'Completed', 'accepted'],
-      errorMessage: 'Laporan Siap mesti dihantar sebelum invois boleh dijana. Ini memastikan kerja telah disempurnakan sebelum bayaran.',
-      warnMessage: '',
-    },
-    vo: null,
-    receipt: null,
-  },
-  deposit: {
-    quotation: null,
-    work_order: {
-      prerequisite: 'quotation',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted'],
-      errorMessage: '',
-      warnMessage: 'Sebut Harga belum diterima pelanggan.',
-    },
-    completion_report: {
-      prerequisite: 'work_order',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted'],
-      errorMessage: '',
-      warnMessage: 'Work Order belum diterima.',
-    },
-    invoice: null, // per-stage logic handled in milestone flow
-    vo: null,
-    receipt: null,
-  },
-  milestone: {
-    quotation: null,
-    work_order: {
-      prerequisite: 'quotation',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted'],
-      errorMessage: '',
-      warnMessage: 'Sebut Harga belum diterima pelanggan.',
-    },
-    completion_report: {
-      prerequisite: 'work_order',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted'],
-      errorMessage: '',
-      warnMessage: 'Work Order belum diterima.',
-    },
-    invoice: null, // final-stage lock handled in milestone flow
-    vo: null,
-    receipt: null,
-  },
-  contract: {
-    quotation: null,
-    work_order: {
-      prerequisite: 'quotation',
-      lockLevel: 'warn',
-      prerequisiteStatus: ['Accepted'],
-      errorMessage: '',
-      warnMessage: 'Work Order kontrak disyorkan sebelum mulakan kitaran.',
-    },
-    completion_report: null,
-    invoice: null,
-    vo: null,
-    receipt: null,
-  },
-  express: {
-    quotation: null,
-    work_order: null,
-    completion_report: null,
-    invoice: null,
-    vo: null,
-    receipt: null,
-  },
+  standard: {},
+  deposit: {},
+  milestone: {},
+  contract: {},
+  express: {},
 };
 
 export interface GateInput {
@@ -132,35 +51,11 @@ export interface GateResult {
 }
 
 export function checkWorkflowGate(
-  jobType: JobType,
-  targetDoc: DocumentType,
-  jobData: GateInput
+  _jobType: JobType,
+  _targetDoc: DocumentType,
+  _jobData: GateInput,
 ): GateResult {
-  const rule = WORKFLOW_MATRIX[jobType]?.[targetDoc];
-  if (!rule) {
-    return { allowed: true, lockLevel: 'open', message: '' };
-  }
-
-  const prereqDoc = jobData[rule.prerequisite as keyof GateInput];
-  const prereqStatus = prereqDoc?.status ?? null;
-  const met = !!prereqDoc && (!rule.prerequisiteStatus || rule.prerequisiteStatus.includes(String(prereqStatus)));
-
-  if (met) {
-    return { allowed: true, lockLevel: 'open', message: '', prerequisite: rule.prerequisite };
-  }
-
-  return {
-    allowed: rule.lockLevel !== 'hard',
-    lockLevel: rule.lockLevel,
-    message: rule.lockLevel === 'hard' ? rule.errorMessage : rule.warnMessage,
-    prerequisite: rule.prerequisite,
-  };
+  return { allowed: true, lockLevel: 'open', message: '' };
 }
 
-export const SKIP_REASON_OPTIONS: { value: string; labelMs: string }[] = [
-  { value: 'small_or_repeat',  labelMs: 'Kerja kecil / pelanggan tetap' },
-  { value: 'verbal_agreement', labelMs: 'Pelanggan bersetuju secara lisan' },
-  { value: 'emergency',        labelMs: 'Kecemasan — dokumen kemudian' },
-  { value: 'customer_request', labelMs: 'Pelanggan minta langkau' },
-  { value: 'other',            labelMs: 'Lain-lain' },
-];
+export const SKIP_REASON_OPTIONS: { value: string; labelMs: string }[] = [];

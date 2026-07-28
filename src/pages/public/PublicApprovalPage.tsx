@@ -3,11 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, XCircle, FileText, Download, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { getDateLocale } from '@/i18n';
+import { FileText, Download, XCircle, Share2 } from 'lucide-react';
 import CompletionReportView from '@/components/reports/CompletionReportView';
 
 interface ApprovalRow {
@@ -24,6 +21,14 @@ interface ApprovalRow {
   user_id: string;
 }
 
+/**
+ * Public shared-document view.
+ *
+ * Approval as a blocking action has been removed. This page is now view/share
+ * only — the customer can open the PDF, download it, or share it further.
+ * Legacy `action` values (accepted/rejected) on old rows are ignored for
+ * gating purposes but the page still renders cleanly for historical data.
+ */
 export default function PublicApprovalPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
@@ -31,9 +36,6 @@ export default function PublicApprovalPage() {
   const [row, setRow] = useState<ApprovalRow | null>(null);
   const [doc, setDoc] = useState<any>(null);
   const [company, setCompany] = useState<{ company_name: string | null; logo_url: string | null } | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [rejectMode, setRejectMode] = useState(false);
-  const [reason, setReason] = useState('');
 
   useEffect(() => {
     if (!token) return;
@@ -48,9 +50,8 @@ export default function PublicApprovalPage() {
       const r = data as ApprovalRow;
       setRow(r);
 
-      if (!r.action) {
-        await supabase.rpc('mark_approval_viewed', { p_token: token });
-      }
+      // Best-effort view timestamp for audit trail — no user action required.
+      supabase.rpc('mark_approval_viewed', { p_token: token }).catch(() => {});
 
       const { data: summary } = await supabase.rpc('get_public_document_summary', { p_token: token });
       const s: any = summary;
@@ -67,41 +68,15 @@ export default function PublicApprovalPage() {
     })();
   }, [token]);
 
-  const respond = async (action: 'accepted' | 'rejected') => {
-    if (!row) return;
-    if (action === 'rejected' && !reason.trim()) {
-      toast.error(t('publicApproval.needReason'));
-      return;
+  const handleShare = async () => {
+    if (!row?.pdf_url) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: docLabel, url: row.pdf_url });
+        return;
+      } catch { /* user cancelled */ }
     }
-    setSubmitting(true);
-    const { error } = await supabase.rpc('respond_to_approval', {
-      p_token: row.token,
-      p_action: action,
-      p_reason: action === 'rejected' ? reason.trim() : null,
-    });
-
-    if (error) {
-      toast.error(t('publicApproval.submitFailed'));
-      setSubmitting(false);
-      return;
-    }
-
-    const respondedAt = new Date().toISOString();
-    setRow({ ...row, action, responded_at: respondedAt, reason });
-    setSubmitting(false);
-    toast.success(action === 'accepted' ? t('publicApproval.thanksAccepted') : t('publicApproval.responseSent'));
-
-    // Stamp the shared PDF with action + timestamp so the same link shows it.
-    try {
-      const { data: stamped } = await supabase.functions.invoke('stamp-approval-pdf', {
-        body: { token: row.token },
-      });
-      if (stamped?.pdf_url) {
-        setRow((prev) => (prev ? { ...prev, pdf_url: stamped.pdf_url } : prev));
-      }
-    } catch (e) {
-      console.warn('stamp-approval-pdf failed', e);
-    }
+    try { await navigator.clipboard.writeText(row.pdf_url); } catch { /* ignore */ }
   };
 
   if (loading) {
@@ -123,7 +98,6 @@ export default function PublicApprovalPage() {
     );
   }
 
-  const expired = row.expires_at && new Date(row.expires_at) < new Date();
   const docLabel =
     row.document_type === 'quotation' ? t('publicApproval.docQuotation')
     : row.document_type === 'work_order' ? t('publicApproval.docWorkOrder')
@@ -153,40 +127,31 @@ export default function PublicApprovalPage() {
         </div>
 
         {row.document_type === 'completion_report' && doc ? (
-          <>
-            <CompletionReportView
-              report={{
-                report_number: doc.report_number,
-                completion_date: doc.completion_date,
-                technician_name: doc.technician_name,
-                work_description: doc.work_description,
-                materials_used: doc.materials_used,
-                customer_signature: doc.customer_signature,
-                notes: doc.notes,
-                status: doc.status,
-                accepted_at: doc.accepted_at,
-                submitted_at: doc.submitted_at,
-                before_photos: Array.isArray(doc.before_photos) ? doc.before_photos : [],
-                after_photos: Array.isArray(doc.after_photos) && doc.after_photos.length
-                  ? doc.after_photos
-                  : (Array.isArray(doc.photos) ? doc.photos : []),
-                location_label: doc.location_label,
-                project_ref: doc.project_ref,
-                checklist: Array.isArray(doc.checklist) ? doc.checklist : [],
-                photo_captions: doc.photo_captions || { before: [], after: [] },
-              }}
-              job={doc.jobs ? { job_number: doc.jobs.job_number, title: doc.jobs.title, category: doc.jobs.category } : null}
-              customer={doc.jobs?.customers ? { name: doc.jobs.customers.name, phone: doc.jobs.customers.phone, address: doc.jobs.customers.address } : null}
-              company={{ company_name: company?.company_name || null, logo_url: company?.logo_url || null }}
-            />
-            {row.pdf_url && (
-              <Button asChild variant="outline" className="w-full rounded-lg gap-2">
-                <a href={row.pdf_url} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-4 w-4" /> {t('publicApproval.downloadPdf')}
-                </a>
-              </Button>
-            )}
-          </>
+          <CompletionReportView
+            report={{
+              report_number: doc.report_number,
+              completion_date: doc.completion_date,
+              technician_name: doc.technician_name,
+              work_description: doc.work_description,
+              materials_used: doc.materials_used,
+              customer_signature: doc.customer_signature,
+              notes: doc.notes,
+              status: doc.status,
+              accepted_at: doc.accepted_at,
+              submitted_at: doc.submitted_at,
+              before_photos: Array.isArray(doc.before_photos) ? doc.before_photos : [],
+              after_photos: Array.isArray(doc.after_photos) && doc.after_photos.length
+                ? doc.after_photos
+                : (Array.isArray(doc.photos) ? doc.photos : []),
+              location_label: doc.location_label,
+              project_ref: doc.project_ref,
+              checklist: Array.isArray(doc.checklist) ? doc.checklist : [],
+              photo_captions: doc.photo_captions || { before: [], after: [] },
+            }}
+            job={doc.jobs ? { job_number: doc.jobs.job_number, title: doc.jobs.title, category: doc.jobs.category } : null}
+            customer={doc.jobs?.customers ? { name: doc.jobs.customers.name, phone: doc.jobs.customers.phone, address: doc.jobs.customers.address } : null}
+            company={{ company_name: company?.company_name || null, logo_url: company?.logo_url || null }}
+          />
         ) : (
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div>
@@ -199,50 +164,27 @@ export default function PublicApprovalPage() {
                 <p className="text-2xl font-bold text-primary">RM {Number(doc.total || 0).toFixed(2)}</p>
               </div>
             )}
-            {row.pdf_url && (
-              <Button asChild variant="outline" className="w-full rounded-lg gap-2">
-                <a href={row.pdf_url} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-4 w-4" /> {t('publicApproval.viewPdf')}
-                </a>
-              </Button>
-            )}
           </div>
         )}
 
-        {row.action ? (
-          <div className={`border rounded-xl p-4 text-center ${row.action === 'accepted' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-            {row.action === 'accepted' ? <CheckCircle2 className="h-10 w-10 mx-auto mb-2" /> : <XCircle className="h-10 w-10 mx-auto mb-2" />}
-            <p className="font-bold">
-              {row.action === 'accepted' ? t('publicApproval.approved') : t('publicApproval.rejected')}
-            </p>
-            {row.reason && <p className="text-sm mt-2">{t('publicApproval.reasonLabel')} {row.reason}</p>}
-            {row.responded_at && (
-              <p className="text-xs mt-2 opacity-75">{new Date(row.responded_at).toLocaleString(getDateLocale())}</p>
-            )}
-          </div>
-        ) : expired ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center text-amber-800">
-            <p className="font-medium">{t('publicApproval.linkExpired')}</p>
-          </div>
-        ) : rejectMode ? (
-          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <p className="text-sm font-medium">{t('publicApproval.rejectPrompt')}</p>
-            <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} placeholder={t('publicApproval.rejectPlaceholder')} />
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setRejectMode(false)} disabled={submitting}>{t('publicApproval.cancel')}</Button>
-              <Button variant="destructive" className="flex-1" onClick={() => respond('rejected')} disabled={submitting}>
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('publicApproval.submit')}
+        {/* View / Download / Share — no accept/reject action */}
+        {row.pdf_url && (
+          <div className="grid grid-cols-1 gap-2">
+            <Button asChild className="w-full rounded-lg gap-2 h-11">
+              <a href={row.pdf_url} target="_blank" rel="noopener noreferrer">
+                <FileText className="h-4 w-4" /> {t('publicApproval.viewPdf')}
+              </a>
+            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button asChild variant="outline" className="w-full rounded-lg gap-2">
+                <a href={row.pdf_url} target="_blank" rel="noopener noreferrer" download>
+                  <Download className="h-4 w-4" /> {t('publicApproval.downloadPdf')}
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full rounded-lg gap-2" onClick={handleShare}>
+                <Share2 className="h-4 w-4" /> Share
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={() => respond('accepted')} disabled={submitting} className="bg-green-600 hover:bg-green-700 text-white rounded-lg gap-2 h-12">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />} {t('publicApproval.accept')}
-            </Button>
-            <Button onClick={() => setRejectMode(true)} variant="outline" disabled={submitting} className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2 h-12">
-              <XCircle className="h-5 w-5" /> {t('publicApproval.reject')}
-            </Button>
           </div>
         )}
 
