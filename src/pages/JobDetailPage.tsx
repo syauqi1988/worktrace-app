@@ -604,11 +604,8 @@ export default function JobDetailPage() {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {quotation?.status === 'Accepted' ? t('jobDetail.reportReady') : t('jobDetail.reportNeedsAccept')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('jobDetail.reportReady')}</p>
             <Button variant="outline" size="sm" className="text-xs gap-1"
-              disabled={quotation?.status !== 'Accepted'}
               onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
               <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.fillReport')}
             </Button>
@@ -616,8 +613,8 @@ export default function JobDetailPage() {
         )}
       </div>
 
-      {/* Variation Orders / Deductions */}
-      {job.job_type !== 'milestone' && report?.status === 'accepted' && (
+      {/* Variation Orders / Deductions — no longer gated on customer approval */}
+      {job.job_type !== 'milestone' && (
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" /> Variasi & Potongan
@@ -690,7 +687,7 @@ export default function JobDetailPage() {
       )}
 
       {/* Financial Summary */}
-      {report?.status === 'accepted' && quotation && (() => {
+      {quotation && (() => {
         const quoteTotal = Number(quotation.total) || 0;
         const additions = vos.filter(v => v.type === 'addition' && v.status === 'Accepted').reduce((s, v) => s + (Number(v.total) || 0), 0);
         const deductions = vos.filter(v => v.type === 'deduction' && v.status === 'Accepted').reduce((s, v) => s + (Number(v.total) || 0), 0);
@@ -734,37 +731,23 @@ export default function JobDetailPage() {
               {t('jobDetail.viewInvoice')}
             </Button>
           </div>
-        ) : (() => {
-          const isMilestone = job.job_type === 'milestone';
-          const canCreate = isMilestone ? quotation?.status === 'Accepted' : report?.status === 'accepted';
-          return (
+        ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {canCreate ? t('jobDetail.noInvoice') : (isMilestone ? 'Sebut Harga belum diterima.' : t('jobDetail.invoiceNeedsReport'))}
-            </p>
-            {canCreate ? (
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="text-xs gap-1"
-                  onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
-                  <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
-                </Button>
-                {!isMilestone && (
-                  <Button variant="outline" size="sm" className="text-xs gap-1"
-                    onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
-                    <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
-                  </Button>
-                )}
-              </div>
-            ) : (
+            <p className="text-sm text-muted-foreground">{t('jobDetail.noInvoice')}</p>
+            <div className="flex gap-2">
               <Button variant="outline" size="sm" className="text-xs gap-1"
-                disabled
                 onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
                 <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
               </Button>
-            )}
+              {job.job_type !== 'milestone' && (
+                <Button variant="outline" size="sm" className="text-xs gap-1"
+                  onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
+                  <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
+                </Button>
+              )}
+            </div>
           </div>
-          );
-        })()}
+        )}
       </div>
       )}
 

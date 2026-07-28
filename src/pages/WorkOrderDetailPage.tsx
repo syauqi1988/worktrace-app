@@ -356,27 +356,15 @@ export default function WorkOrderDetailPage() {
         </DropdownMenu>
       </div>
 
-      {wo.status === 'Sent' && (
-        <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4">
-          <div className="inline-flex items-center gap-2 bg-white/70 text-[#1D4ED8] text-sm font-medium px-3 py-1.5 rounded-full">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {t('workOrderDetail.waitingApproval')}
-          </div>
-          <p className="text-xs text-[#1D4ED8]/80 mt-2">{t('workOrderDetail.waitingApprovalDesc')}</p>
-        </div>
-      )}
-
-      {wo.status === 'Accepted' && (
+      {wo.status === 'Accepted' && !report && (
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium text-[#15803D]">{t('workOrderDetail.accepted')}</p>
           {wo.accepted_at && (
             <p className="text-xs text-[#15803D]/80">{t('workOrderDetail.confirmedAt', { date: formatDateTime(wo.accepted_at) })}</p>
           )}
-          {!report && (
-            <Button onClick={() => navigate(`/jobs/${jobId}/completion-report`)} size="sm" className="rounded-lg gap-1.5">
-              <ClipboardCheck className="h-4 w-4" /> {t('workOrderDetail.createReport')}
-            </Button>
-          )}
+          <Button onClick={() => navigate(`/jobs/${jobId}/completion-report`)} size="sm" className="rounded-lg gap-1.5">
+            <ClipboardCheck className="h-4 w-4" /> {t('workOrderDetail.createReport')}
+          </Button>
         </div>
       )}
 

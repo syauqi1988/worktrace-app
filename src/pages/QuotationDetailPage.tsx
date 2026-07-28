@@ -610,48 +610,23 @@ export default function QuotationDetailPage() {
       )}
 
 
-      {/* Action Buttons */}
+      {/* Action Buttons — no longer gated on customer approval */}
       <div className="flex flex-wrap gap-3">
-        {(quotation.status === 'Draft' || quotation.status === 'Created') && (
-          <>
-            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
-            </Button>
-            <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="flex-1 rounded-lg gap-2">
-              {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('quotationDetail.send')}</>}
-            </Button>
-          </>
+        <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
+          <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
+        </Button>
+        {quotation.job_id && (
+          <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} className="flex-1 rounded-lg gap-2">
+            <ClipboardList className="h-4 w-4" /> Buat Work Order
+          </Button>
         )}
-        {quotation.status === 'Sent' && (
-          <>
-            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
-            </Button>
-            <Button disabled className="flex-1 rounded-lg gap-2 bg-amber-500 text-white opacity-90 cursor-not-allowed hover:bg-amber-500">
-              <Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.waiting')}
-            </Button>
-            <Button onClick={() => updateStatus('Rejected')} variant="outline" className="flex-1 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10">{t('quotationDetail.rejected')}</Button>
-          </>
-        )}
-        {quotation.status === 'Accepted' && (
-          <>
-            <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-              <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
-            </Button>
-            <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} disabled={!quotation.job_id} className="flex-1 rounded-lg gap-2">
-              <ClipboardList className="h-4 w-4" /> Buat Work Order
-            </Button>
-          </>
-        )}
-        {quotation.status === 'Rejected' && (
-          <div className="w-full space-y-3">
+        {quotation.status === 'Rejected' && rejectionReason && (
+          <div className="w-full">
             <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
-                {rejectionReason && (
-                  <p className="text-sm text-[#92400E] mt-1 whitespace-pre-wrap">{rejectionReason}</p>
-                )}
+                <p className="text-sm text-[#92400E] mt-1 whitespace-pre-wrap">{rejectionReason}</p>
               </div>
             </div>
           </div>
