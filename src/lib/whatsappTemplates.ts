@@ -41,13 +41,13 @@ export const TEMPLATES: TemplateMeta[] = [
     description: "Hantar sebut harga kepada pelanggan via WhatsApp",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *No. Sebut Harga:* QUO-0001\n💰 *Jumlah:* RM 1,500.00\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 https://...",
+      "📋 *No. Sebut Harga:* QUO-0001\n💰 *Jumlah:* RM 1,500.00\n\nSila klik pautan di bawah untuk melihat sebut harga:\n🔗 https://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Terima kasih kerana berminat dengan perkhidmatan kami. 🙏\n\nBerikut adalah sebut harga daripada *{company_name}*:",
+        "Terima kasih kerana berminat dengan perkhidmatan kami. 🙏\n\nBerikut adalah sebut harga daripada *{company_name}* untuk semakan anda:",
       closing:
-        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
+        "Sila semak dan hubungi kami sekiranya ada sebarang pertanyaan.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
