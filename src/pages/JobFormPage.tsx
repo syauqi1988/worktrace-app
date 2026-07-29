@@ -410,11 +410,22 @@ export default function JobFormPage() {
             <Label className="text-xs text-muted-foreground">Peratusan Deposit</Label>
             <Input
               type="number"
-              min={10}
-              max={90}
+              inputMode="numeric"
+              min={5}
+              max={100}
               step={1}
-              value={depositPct}
-              onChange={(e) => setDepositPct(Math.max(10, Math.min(90, Number(e.target.value) || 30)))}
+              value={Number.isFinite(depositPct) ? depositPct : ''}
+              onChange={(e) => {
+                const raw = e.target.value.replace('%', '').trim();
+                if (raw === '') { setDepositPct(NaN as any); return; }
+                const n = Number(raw);
+                if (!Number.isFinite(n)) return;
+                setDepositPct(n);
+              }}
+              onBlur={() => {
+                if (!Number.isFinite(depositPct)) { setDepositPct(50); return; }
+                setDepositPct(Math.min(100, Math.max(5, Math.round(depositPct))));
+              }}
               className="h-8 w-20 text-sm"
             />
             <span className="text-sm text-muted-foreground">%</span>
