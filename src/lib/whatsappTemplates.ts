@@ -99,13 +99,13 @@ export const TEMPLATES: TemplateMeta[] = [
     description: "Hantar completion report kepada pelanggan",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *No. Laporan:* RPT-0001\n🔨 *Kerja:* Pemasangan Lampu\n📅 *Tarikh Siap:* 28 Apr 2026\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\nhttps://...",
+      "📋 *No. Laporan:* RPT-0001\n🔨 *Kerja:* Pemasangan Lampu\n📅 *Tarikh Siap:* 28 Apr 2026\n\n👉 Tekan sini untuk lihat laporan:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Alhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *{company_name}*:",
+        "Alhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *{company_name}* untuk simpanan anda.",
       closing:
-        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
+        "Terima kasih kerana memilih perkhidmatan kami. 😊\n\n*{company_name}*",
     },
   },
   {
