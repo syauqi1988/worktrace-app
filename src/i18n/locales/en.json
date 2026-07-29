@@ -463,7 +463,7 @@
     "savedSent": "Work Order sent!",
     "shareFailed": "Failed to share PDF",
     "previewFailed": "Failed to preview",
-    "waDetails": "📋 *Work Order No.:* {{number}}\n🔨 *Job Title:* {{title}}\n📅 *Start Date:* {{startDate}}\n📍 *Location:* {{location}}\n\nPlease click the link below to *view & confirm* the work order:\n🔗 {{url}}"
+    "waDetails": "📋 *Work Order No.:* {{number}}\n🔨 *Job Title:* {{title}}\n📅 *Start Date:* {{startDate}}\n📍 *Location:* {{location}}\n\nPlease click the link below to view the work order:\n🔗 {{url}}"
   },
   "support": {
     "title": "Support Center",
@@ -787,7 +787,7 @@
     "noWo": "No Work Order for this job.",
     "create": "Create Work Order",
     "previewTitle": "Preview — {{number}}",
-    "waDetails": "📋 *Work Order No.:* {{number}}\n🔨 *Job Title:* {{title}}\n📅 *Start Date:* {{startDate}}\n📍 *Location:* {{location}}\n\nPlease click the link below to *view & confirm* the work order:\n🔗 {{url}}"
+    "waDetails": "📋 *Work Order No.:* {{number}}\n🔨 *Job Title:* {{title}}\n📅 *Start Date:* {{startDate}}\n📍 *Location:* {{location}}\n\nPlease click the link below to view the work order:\n🔗 {{url}}"
   },
   "jobDetail": {
     "notFound": "Job not found.",
@@ -844,7 +844,7 @@
     "error": "Error",
     "previewTitle": "Preview — {{name}}",
     "reportShareFail": "Failed to share report",
-    "waReportDetails": "📋 *Report No.:* {{number}}\n🔨 *Job:* {{title}}\n📅 *Completion Date:* {{date}}\n\n👉 Tap here to *view & confirm* the report:\n{{url}}"
+    "waReportDetails": "📋 *Report No.:* {{number}}\n🔨 *Job:* {{title}}\n📅 *Completion Date:* {{date}}\n\n👉 Tap here to view the report:\n{{url}}"
   },
   "quotationDetail": {
     "notFound": "Quotation not found.",
@@ -896,7 +896,7 @@
     "linkFailed": "Failed to generate link. Check your internet connection.",
     "previewFailed": "Failed to generate PDF preview",
     "previewTitle": "Preview — {{number}}",
-    "waDetails": "📋 *Quotation No.:* {{number}}\n💰 *Total:* RM {{total}}\n\nPlease click the link below to *view & confirm* the quotation:\n🔗 {{url}}"
+    "waDetails": "📋 *Quotation No.:* {{number}}\n💰 *Total:* RM {{total}}\n\nPlease click the link below to view the quotation:\n🔗 {{url}}"
   },
   "invoiceDetail": {
     "notFound": "Invoice not found.",
@@ -1326,7 +1326,7 @@
     "waReportNo": "📋 *Report No.:* {{number}}",
     "waJob": "🔨 *Job:* {{title}}",
     "waCompletionDate": "📅 *Completion Date:* {{date}}",
-    "waTapToView": "👉 Tap here to *view & confirm* the report:"
+    "waTapToView": "👉 Tap here to view the report:"
   },
   "completionReportView": {
     "title": "Job Completion Report",
@@ -2122,6 +2122,6 @@
     "noPhone": "Customer has no phone number",
     "shareError": "Failed to share report",
     "editModeOpened": "Edit mode opened. Resubmit after changes.",
-    "waDetails": "📋 *Report No.:* {{number}}\n🔨 *Job:* {{job}}\n📅 *Completion Date:* {{date}}\n\n👉 Tap here to *view & confirm* the report:\n{{link}}"
+    "waDetails": "📋 *Report No.:* {{number}}\n🔨 *Job:* {{job}}\n📅 *Completion Date:* {{date}}\n\n👉 Tap here to view the report:\n{{link}}"
   }
 }
