@@ -84,13 +84,13 @@ export const TEMPLATES: TemplateMeta[] = [
     description: "Hantar work order kepada pelanggan / team",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *No. Work Order:* WO-0001\n🔨 *Tajuk Kerja:* Pemasangan Lampu\n\n👉 Tekan sini untuk lihat & sahkan work order:\nhttps://...",
+      "📋 *No. Work Order:* WO-0001\n🔨 *Tajuk Kerja:* Pemasangan Lampu\n\n👉 Tekan sini untuk lihat work order:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Terima kasih atas kepercayaan anda. 🙏\n\nBerikut adalah Work Order daripada *{company_name}*:",
+        "Terima kasih atas kepercayaan anda. 🙏\n\nBerikut adalah Work Order daripada *{company_name}* untuk makluman anda. Kerja akan dijalankan seperti yang dijadualkan.",
       closing:
-        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
+        "Sekiranya ada sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
