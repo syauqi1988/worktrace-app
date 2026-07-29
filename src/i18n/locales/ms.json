@@ -463,7 +463,7 @@
     "savedSent": "Work Order dihantar!",
     "shareFailed": "Gagal kongsi PDF",
     "previewFailed": "Gagal pratonton",
-    "waDetails": "📋 *No. Work Order:* {{number}}\n🔨 *Tajuk Kerja:* {{title}}\n📅 *Tarikh Mula:* {{startDate}}\n📍 *Lokasi:* {{location}}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 {{url}}"
+    "waDetails": "📋 *No. Work Order:* {{number}}\n🔨 *Tajuk Kerja:* {{title}}\n📅 *Tarikh Mula:* {{startDate}}\n📍 *Lokasi:* {{location}}\n\nSila klik pautan di bawah untuk melihat work order:\n🔗 {{url}}"
   },
   "support": {
     "title": "Pusat Sokongan",
@@ -787,7 +787,7 @@
     "noWo": "Tiada Work Order untuk kerja ini.",
     "create": "Buat Work Order",
     "previewTitle": "Pratonton — {{number}}",
-    "waDetails": "📋 *No. Work Order:* {{number}}\n🔨 *Tajuk Kerja:* {{title}}\n📅 *Tarikh Mula:* {{startDate}}\n📍 *Lokasi:* {{location}}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* work order:\n🔗 {{url}}"
+    "waDetails": "📋 *No. Work Order:* {{number}}\n🔨 *Tajuk Kerja:* {{title}}\n📅 *Tarikh Mula:* {{startDate}}\n📍 *Lokasi:* {{location}}\n\nSila klik pautan di bawah untuk melihat work order:\n🔗 {{url}}"
   },
   "jobDetail": {
     "notFound": "Kerja tidak dijumpai.",
@@ -844,7 +844,7 @@
     "error": "Ralat",
     "previewTitle": "Pratonton — {{name}}",
     "reportShareFail": "Gagal kongsi laporan",
-    "waReportDetails": "📋 *No. Laporan:* {{number}}\n🔨 *Kerja:* {{title}}\n📅 *Tarikh Siap:* {{date}}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n{{url}}"
+    "waReportDetails": "📋 *No. Laporan:* {{number}}\n🔨 *Kerja:* {{title}}\n📅 *Tarikh Siap:* {{date}}\n\n👉 Tekan sini untuk lihat laporan:\n{{url}}"
   },
   "quotationDetail": {
     "notFound": "Sebut harga tidak dijumpai.",
@@ -896,7 +896,7 @@
     "linkFailed": "Gagal menjana pautan. Semak sambungan internet anda.",
     "previewFailed": "Gagal menjana pratonton PDF",
     "previewTitle": "Pratonton — {{number}}",
-    "waDetails": "📋 *No. Sebut Harga:* {{number}}\n💰 *Jumlah:* RM {{total}}\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 {{url}}"
+    "waDetails": "📋 *No. Sebut Harga:* {{number}}\n💰 *Jumlah:* RM {{total}}\n\nSila klik pautan di bawah untuk melihat sebut harga:\n🔗 {{url}}"
   },
   "invoiceDetail": {
     "notFound": "Invois tidak dijumpai.",
@@ -1326,7 +1326,7 @@
     "waReportNo": "📋 *No. Laporan:* {{number}}",
     "waJob": "🔨 *Kerja:* {{title}}",
     "waCompletionDate": "📅 *Tarikh Siap:* {{date}}",
-    "waTapToView": "👉 Tekan sini untuk *lihat & sahkan* laporan:"
+    "waTapToView": "👉 Tekan sini untuk lihat laporan:"
   },
   "completionReportView": {
     "title": "Laporan Siap Kerja",
@@ -2122,6 +2122,6 @@
     "noPhone": "Pelanggan tiada nombor telefon",
     "shareError": "Gagal kongsi laporan",
     "editModeOpened": "Mod edit dibuka. Hantar semula selepas perubahan.",
-    "waDetails": "📋 *No. Laporan:* {{number}}\n🔨 *Kerja:* {{job}}\n📅 *Tarikh Siap:* {{date}}\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\n{{link}}"
+    "waDetails": "📋 *No. Laporan:* {{number}}\n🔨 *Kerja:* {{job}}\n📅 *Tarikh Siap:* {{date}}\n\n👉 Tekan sini untuk lihat laporan:\n{{link}}"
   }
 }

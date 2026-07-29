@@ -41,13 +41,13 @@ export const TEMPLATES: TemplateMeta[] = [
     description: "Hantar sebut harga kepada pelanggan via WhatsApp",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *No. Sebut Harga:* QUO-0001\n💰 *Jumlah:* RM 1,500.00\n\nSila klik pautan di bawah untuk *melihat & mengesahkan* sebut harga:\n🔗 https://...",
+      "📋 *No. Sebut Harga:* QUO-0001\n💰 *Jumlah:* RM 1,500.00\n\nSila klik pautan di bawah untuk melihat sebut harga:\n🔗 https://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Terima kasih kerana berminat dengan perkhidmatan kami. 🙏\n\nBerikut adalah sebut harga daripada *{company_name}*:",
+        "Terima kasih kerana berminat dengan perkhidmatan kami. 🙏\n\nBerikut adalah sebut harga daripada *{company_name}* untuk semakan anda:",
       closing:
-        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
+        "Sila semak dan hubungi kami sekiranya ada sebarang pertanyaan.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
@@ -84,13 +84,13 @@ export const TEMPLATES: TemplateMeta[] = [
     description: "Hantar work order kepada pelanggan / team",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *No. Work Order:* WO-0001\n🔨 *Tajuk Kerja:* Pemasangan Lampu\n\n👉 Tekan sini untuk lihat & sahkan work order:\nhttps://...",
+      "📋 *No. Work Order:* WO-0001\n🔨 *Tajuk Kerja:* Pemasangan Lampu\n\n👉 Tekan sini untuk lihat work order:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Terima kasih atas kepercayaan anda. 🙏\n\nBerikut adalah Work Order daripada *{company_name}*:",
+        "Terima kasih atas kepercayaan anda. 🙏\n\nBerikut adalah Work Order daripada *{company_name}* untuk makluman anda. Kerja akan dijalankan seperti yang dijadualkan.",
       closing:
-        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
+        "Sekiranya ada sebarang pertanyaan, sila hubungi kami.\n\nTerima kasih!\n*{company_name}*",
     },
   },
   {
@@ -99,13 +99,13 @@ export const TEMPLATES: TemplateMeta[] = [
     description: "Hantar completion report kepada pelanggan",
     placeholders: ["customer_name", "company_name"],
     detailsPreview:
-      "📋 *No. Laporan:* RPT-0001\n🔨 *Kerja:* Pemasangan Lampu\n📅 *Tarikh Siap:* 28 Apr 2026\n\n👉 Tekan sini untuk *lihat & sahkan* laporan:\nhttps://...",
+      "📋 *No. Laporan:* RPT-0001\n🔨 *Kerja:* Pemasangan Lampu\n📅 *Tarikh Siap:* 28 Apr 2026\n\n👉 Tekan sini untuk lihat laporan:\nhttps://...",
     defaults: {
       greeting: "Assalamualaikum / Salam Sejahtera {customer_name},",
       intro:
-        "Alhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *{company_name}*:",
+        "Alhamdulillah, kerja telah siap dilaksanakan. 🙏\n\nBerikut adalah Laporan Siap Kerja daripada *{company_name}* untuk simpanan anda.",
       closing:
-        "Anda boleh klik *Terima* atau *Tolak* terus dari pautan tersebut.\n\nTerima kasih!\n*{company_name}*",
+        "Terima kasih kerana memilih perkhidmatan kami. 😊\n\n*{company_name}*",
     },
   },
   {
