@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Landmark, ClipboardCheck, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Search, Plus, X, Trash2, AlertCircle, ChevronDown, Info, Landmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
 import { ProductPicker } from '@/components/ProductPicker';
@@ -74,10 +74,6 @@ export default function InvoiceFormPage() {
   const [blockedJobId, setBlockedJobId] = useState<string | null>(null);
   const [linkedQuoteId, setLinkedQuoteId] = useState<string | null>(null);
 
-  // Completion report gate
-  const [reportStatus, setReportStatus] = useState<'checking' | 'none' | 'draft' | 'submitted'>('checking');
-  const [reportJobId, setReportJobId] = useState<string | null>(null);
-
   // LHDN fields
   const [lhdnOpen, setLhdnOpen] = useState(false);
   const [customerTin, setCustomerTin] = useState('');
@@ -97,26 +93,6 @@ export default function InvoiceFormPage() {
   const [paymentMode, setPaymentMode] = useState<'lump' | 'milestone'>('lump');
   const [milestoneStages, setMilestoneStages] = useState<MilestoneStage[]>([]);
   const [jobType, setJobType] = useState<string>('standard');
-
-  // Check completion report for job
-  const checkCompletionReport = async (jobId: string) => {
-    if (!user) return;
-    const { data } = await supabase.from('completion_reports')
-      .select('id, status')
-      .eq('job_id', jobId)
-      .eq('user_id', user.id)
-      .maybeSingle();
-    if (!data) {
-      setReportStatus('none');
-      setReportJobId(jobId);
-    } else if (data.status === 'draft') {
-      setReportStatus('draft');
-      setReportJobId(jobId);
-    } else {
-      setReportStatus('submitted');
-      setReportJobId(jobId);
-    }
-  };
 
   const fetchAvailableVos = async (jobId: string) => {
     if (!user) return;
@@ -169,8 +145,6 @@ export default function InvoiceFormPage() {
           .then(({ data }) => {
             if (data) setAvailableQuote(data as any);
           });
-        // Check completion report
-        checkCompletionReport(jobId);
         fetchAvailableVos(jobId);
       }
     }
@@ -219,8 +193,6 @@ export default function InvoiceFormPage() {
           const methods = Array.isArray(profile.payment_methods) ? profile.payment_methods : [];
           setSelectedPaymentMethods(methods.map((m: any) => m.id));
         }
-        // For edit, set report as submitted (since invoice already exists)
-        setReportStatus('submitted');
       }
       setLoading(false);
     }
@@ -322,12 +294,11 @@ export default function InvoiceFormPage() {
 
     if (!isEdit && user) {
       const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
-      // Fire all 4 independent reads in parallel
+      // Fire independent reads in parallel
       const [existingRes, quoteRes] = await Promise.all([
         supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle(),
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
           .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle(),
-        checkCompletionReport(j.id),
         fetchAvailableVos(j.id),
       ]);
       const existing = existingRes.data;
@@ -475,31 +446,6 @@ export default function InvoiceFormPage() {
     );
   }
 
-  // Blocked by missing completion report (only for new invoices with job_id)
-  if (!isEdit && selectedJob && reportStatus !== 'checking' && reportStatus !== 'submitted' && reportJobId) {
-    return (
-      <div className="p-4 md:p-6 space-y-5 max-w-2xl">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
-          <h1 className="text-xl font-bold text-foreground">{t('invoiceForm.new')}</h1>
-        </div>
-        <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-6 space-y-3">
-          <div className="flex items-center gap-2">
-            <ClipboardCheck className="h-5 w-5 text-[#B45309]" />
-            <h2 className="text-base font-bold text-[#B45309]">{t('invoiceForm.reportRequiredTitle')}</h2>
-          </div>
-          <p className="text-sm text-[#B45309]">{t('invoiceForm.reportRequiredBody')}</p>
-          <div className="flex gap-3 pt-2">
-            <Button onClick={() => navigate(`/jobs/${reportJobId}/completion-report`)} className="rounded-lg gap-1.5">
-              <ClipboardCheck className="h-4 w-4" /> {t('invoiceForm.fillReport')}
-            </Button>
-            <Button variant="outline" onClick={() => navigate(`/jobs/${reportJobId}`)} className="rounded-lg">{t('invoiceForm.backToJob')}</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
       {/* Header */}
@@ -507,14 +453,6 @@ export default function InvoiceFormPage() {
         <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
         <h1 className="text-xl font-bold text-foreground">{isEdit ? t('invoiceForm.edit') : t('invoiceForm.new')}</h1>
       </div>
-
-      {/* Report submitted banner */}
-      {!isEdit && reportStatus === 'submitted' && (
-        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-3 flex items-center gap-2">
-          <CheckCircle className="h-4 w-4 text-[#15803D]" />
-          <span className="text-sm font-medium text-[#15803D]">{t('invoiceForm.reportSubmitted')}</span>
-        </div>
-      )}
 
       {/* Invoice Number */}
       <div className="space-y-1.5">
