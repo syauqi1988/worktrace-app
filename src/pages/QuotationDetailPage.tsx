@@ -64,6 +64,8 @@ interface Quotation {
     job_number: string;
     title: string;
     customer_id: string | null;
+    job_type?: string | null;
+    milestone_config?: any;
   } | null;
 }
 
