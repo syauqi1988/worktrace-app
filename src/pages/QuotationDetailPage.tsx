@@ -204,9 +204,43 @@ export default function QuotationDetailPage() {
     navigate('/quotations');
   };
 
+  const isStagedJob = (jt?: string | null) => jt === 'deposit' || jt === 'milestone';
+
+  const buildStages = (): { label: string; percentage: number; amount: number }[] => {
+    const total = Number(quotation?.total) || 0;
+    const cfg = (quotation?.jobs as any)?.milestone_config || {};
+    const jt = (quotation?.jobs as any)?.job_type;
+    if (jt === 'deposit') {
+      const pct = Math.max(0, Math.min(100, Number(cfg.deposit_percentage) || 30));
+      const depositAmt = Math.round(((total * pct) / 100) * 100) / 100;
+      return [
+        { label: `Deposit ${pct}%`, percentage: pct, amount: depositAmt },
+        { label: `Baki ${100 - pct}%`, percentage: 100 - pct, amount: Math.round((total - depositAmt) * 100) / 100 },
+      ];
+    }
+    const planned = Array.isArray(cfg.stages) ? cfg.stages : [];
+    if (planned.length) {
+      return planned.map((s: any, i: number) => {
+        const pct = Number(s.percentage) || 0;
+        return {
+          label: s.label || `Peringkat ${i + 1}`,
+          percentage: pct,
+          amount: Number(s.amount) || Math.round(((total * pct) / 100) * 100) / 100,
+        };
+      });
+    }
+    // Fallback: 30/40/30
+    return [30, 40, 30].map((pct, i) => ({
+      label: `Peringkat ${i + 1}`,
+      percentage: pct,
+      amount: Math.round(((total * pct) / 100) * 100) / 100,
+    }));
+  };
+
   const handleConvertToInvoice = async () => {
     if (!quotation) return;
-    if (quotation.job_id) {
+    const staged = isStagedJob((quotation.jobs as any)?.job_type);
+    if (quotation.job_id && !staged) {
       const { data: existingInvoice } = await supabase
         .from('invoices')
         .select('id, invoice_number, status, total')
@@ -230,23 +264,52 @@ export default function QuotationDetailPage() {
     if (!quotation) return;
     setConverting(true);
     try {
-      const invoiceNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 30);
-
-      const { data, error } = await supabase.from('invoices').insert({
+      const base = {
         user_id: user!.id,
         job_id: quotation.job_id,
         customer_id: quotation.jobs?.customer_id || null,
         quote_id: quotation.id,
-        invoice_number: invoiceNumber,
         items: quotation.items as any,
         subtotal: quotation.subtotal,
         discount: quotation.discount,
         tax_rate: quotation.tax_rate,
-        total: quotation.total,
         status: 'Created',
         due_date: dueDate.toISOString().slice(0, 10),
+      };
+
+      if (isStagedJob((quotation.jobs as any)?.job_type)) {
+        const stages = buildStages();
+        const planSnapshot = stages.map((s, i) => ({
+          stage_number: i + 1, label: s.label, percentage: s.percentage, amount: s.amount,
+        }));
+        const createdIds: string[] = [];
+        for (let i = 0; i < stages.length; i++) {
+          // Each stage gets its own dedicated invoice number
+          const finalNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+          const { data, error } = await supabase.from('invoices').insert({
+            ...base,
+            invoice_number: finalNumber,
+            total: stages[i].amount,
+            milestone_stages: planSnapshot as any,
+            milestone_stage_number: i + 1,
+            milestone_total_stages: stages.length,
+            notes: `[${stages[i].label}] ${quotation.notes || ''}`.trim(),
+          } as any).select('id').single();
+          if (error) throw error;
+          createdIds.push((data as any).id);
+        }
+        toast.success(`${stages.length} invois berperingkat dijana`);
+        navigate(`/invoices/${createdIds[0]}`);
+        return;
+      }
+
+      const invoiceNumber = await generateAndIncrement(supabase, user!.id, 'invoice');
+      const { data, error } = await supabase.from('invoices').insert({
+        ...base,
+        invoice_number: invoiceNumber,
+        total: quotation.total,
         notes: quotation.notes,
       }).select('id').single();
       if (error) throw error;
