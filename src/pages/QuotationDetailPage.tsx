@@ -104,7 +104,7 @@ export default function QuotationDetailPage() {
     let active = true;
     async function fetch() {
       const { data } = await supabase.from('quotations')
-        .select('*, jobs(id, job_number, title, customer_id, customers(name, phone, email, address, tin_number))')
+        .select('*, jobs(id, job_number, title, customer_id, job_type, milestone_config, customers(name, phone, email, address, tin_number))')
         .eq('id', id)
         .single();
       if (active && data) {
