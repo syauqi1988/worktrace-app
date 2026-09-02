@@ -35,6 +35,8 @@ interface QuotationRow {
 
 interface LineItem {
   description: string;
+  description_detail?: string;
+  uom?: string;
   qty: number;
   unit_price: number;
 }
