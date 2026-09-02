@@ -176,6 +176,10 @@ export default function WorkOrderFormPage() {
   };
   const addItem = () => items.length < 20 && setItems(prev => [...prev, { description: '', qty: 1, unit_price: 0 }]);
   const removeItem = (i: number) => items.length > 1 && setItems(prev => prev.filter((_, idx) => idx !== i));
+  const applyProduct = (i: number, p: { description: string; description_detail: string; unit_price: number; uom: string }) =>
+    setItems(prev => prev.map((it, idx) => idx === i ? { ...it, ...p } : it));
+  const addFromProduct = (p: { description: string; description_detail: string; unit_price: number; uom: string }) =>
+    setItems(prev => (prev.length >= 20 ? prev : [...prev.filter(it => it.description.trim() || it.unit_price), { ...p, qty: 1 }]));
 
   const buildPdfData = () => ({
     wo: {
