@@ -88,8 +88,9 @@ export default function SupportDetailPage() {
   if (loading) return <div className="p-6 text-center text-muted-foreground text-sm">{t('supportDetail.loading')}</div>;
   if (!ticket) return <div className="p-6 text-center text-muted-foreground">{t('supportDetail.notFound')}</div>;
 
-  const attachments = Array.isArray(ticket.attachments) ? ticket.attachments : [];
+  const attachments: string[] = Array.isArray(ticket.attachments) ? ticket.attachments : [];
   const locale = getDateLocale();
+
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-3xl">
