@@ -180,16 +180,14 @@ export default function SupportDetailPage() {
         <h2 className="text-base font-bold text-foreground">{ticket.subject}</h2>
         <p className="text-sm text-foreground whitespace-pre-wrap">{ticket.description}</p>
         {attachments.length > 0 && (
-          <div className="space-y-1 pt-2">
+          <div className="space-y-2 pt-2">
             <p className="text-xs text-muted-foreground font-medium">{t('supportDetail.attachments')}</p>
             {attachments.map((url: string, i: number) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-                <Paperclip className="h-3 w-3" />
-                {t('supportDetail.fileN', { n: i + 1 })}
-              </a>
+              <Attachment key={i} url={url} index={i} />
             ))}
           </div>
         )}
+
       </div>
 
       <div className="space-y-3">
