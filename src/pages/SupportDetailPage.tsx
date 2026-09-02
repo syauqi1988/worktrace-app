@@ -16,7 +16,47 @@ const STATUS_STYLES: Record<string, string> = {
   closed: 'bg-gray-100 text-gray-600',
 };
 
+const BUCKET = 'ticket-attachments';
+
+function storagePath(url: string) {
+  const marker = `/${BUCKET}/`;
+  const i = url.indexOf(marker);
+  const raw = i >= 0 ? url.slice(i + marker.length).split('?')[0] : url;
+  try { return decodeURIComponent(raw); } catch { return raw; }
+}
+
+function Attachment({ url, index }: { url: string; index: number }) {
+  const { t } = useTranslation();
+  const [signed, setSigned] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    supabase.storage.from(BUCKET).createSignedUrl(storagePath(url), 3600).then(({ data }) => {
+      if (active) setSigned(data?.signedUrl ?? null);
+    });
+    return () => { active = false; };
+  }, [url]);
+
+  const href = signed || url;
+  const isImage = /\.(png|jpe?g|gif|webp|heic|bmp)$/i.test(storagePath(url));
+
+  return (
+    <div className="space-y-1">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+        <Paperclip className="h-3 w-3" />
+        {t('supportDetail.fileN', { n: index + 1 })}
+      </a>
+      {isImage && signed && (
+        <a href={signed} target="_blank" rel="noopener noreferrer" className="block">
+          <img src={signed} alt={t('supportDetail.fileN', { n: index + 1 })} className="max-h-64 rounded-lg border border-border object-contain" loading="lazy" />
+        </a>
+      )}
+    </div>
+  );
+}
+
 export default function SupportDetailPage() {
+
   const { t } = useTranslation();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
