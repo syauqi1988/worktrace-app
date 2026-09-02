@@ -16,6 +16,7 @@ import { pdf } from '@react-pdf/renderer';
 import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
+import { ProductPicker } from '@/components/ProductPicker';
 
 interface JobRow {
   id: string;
