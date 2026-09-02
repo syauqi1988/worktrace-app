@@ -16,6 +16,7 @@ import { pdf } from '@react-pdf/renderer';
 import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
+import { ProductPicker } from '@/components/ProductPicker';
 
 interface JobRow {
   id: string;
@@ -35,6 +36,8 @@ interface QuotationRow {
 
 interface LineItem {
   description: string;
+  description_detail?: string;
+  uom?: string;
   qty: number;
   unit_price: number;
 }
@@ -173,6 +176,10 @@ export default function WorkOrderFormPage() {
   };
   const addItem = () => items.length < 20 && setItems(prev => [...prev, { description: '', qty: 1, unit_price: 0 }]);
   const removeItem = (i: number) => items.length > 1 && setItems(prev => prev.filter((_, idx) => idx !== i));
+  const applyProduct = (i: number, p: { description: string; description_detail: string; unit_price: number; uom: string }) =>
+    setItems(prev => prev.map((it, idx) => idx === i ? { ...it, ...p } : it));
+  const addFromProduct = (p: { description: string; description_detail: string; unit_price: number; uom: string }) =>
+    setItems(prev => (prev.length >= 20 ? prev : [...prev.filter(it => it.description.trim() || it.unit_price), { ...p, qty: 1 }]));
 
   const buildPdfData = () => ({
     wo: {
@@ -384,18 +391,26 @@ export default function WorkOrderFormPage() {
         {items.map((item, i) => (
           <div key={i} className="bg-card rounded-xl border border-border p-3 space-y-2">
             <div className="flex items-start gap-2">
-              <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemPlaceholder')} className="flex-1 text-sm" />
+              <ProductPicker onPick={p => applyProduct(i, p)} />
+              <div className="flex-1 space-y-1.5">
+                <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemPlaceholder')} className="text-sm" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail', e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+              </div>
               {items.length > 1 && (
                 <button onClick={() => removeItem(i)} className="text-muted-foreground hover:text-destructive p-2"><Trash2 className="h-4 w-4" /></button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <div><p className="text-xs text-muted-foreground mb-1">{t('forms.itemQty')}</p><Input type="number" min={1} value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value) || 0)} className="text-sm" /></div>
+              <div><p className="text-xs text-muted-foreground mb-1">UOM</p><Input value={item.uom || ''} onChange={e => updateItem(i, 'uom', e.target.value)} placeholder="Unit" className="text-sm" /></div>
               <div><p className="text-xs text-muted-foreground mb-1">{t('forms.itemUnitPriceRm')}</p><Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} className="text-sm" /></div>
             </div>
           </div>
         ))}
-        <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> {t('forms.addItem')}</Button>
+        <div className="flex gap-2">
+          <ProductPicker onPick={addFromProduct} />
+          <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="flex-1 gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> {t('forms.addItem')}</Button>
+        </div>
         <div className="flex justify-between items-center pt-2 border-t border-border">
           <span className="text-sm font-medium">{t('workOrderForm.itemsTotal')}</span>
           <span className="text-base font-bold text-primary">RM {total.toFixed(2)}</span>
