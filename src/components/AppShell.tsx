@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package
+  Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
+  ShoppingCart, ChevronDown
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -33,17 +34,35 @@ type NavItem = {
   teamOnly?: boolean;
 };
 
-function buildNavItems(t: (k: string) => string): NavItem[] {
+type NavGroup = {
+  group: string;
+  label: string;
+  icon: any;
+  children: NavItem[];
+};
+
+type NavEntry = NavItem | NavGroup;
+
+const isGroup = (e: NavEntry): e is NavGroup => 'group' in e;
+
+function buildNavItems(t: (k: string) => string): NavEntry[] {
   return [
     { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: '/jobs', label: t('nav.jobs'), icon: Briefcase, tutorialId: 'jobs-nav' },
     { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
     { to: '/products', label: t('nav.products'), icon: Package },
-    { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
+    {
+      group: 'sales',
+      label: t('nav.sales'),
+      icon: ShoppingCart,
+      children: [
+        { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
+        { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
+        { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
+      ],
+    },
     { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList },
     { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
-    { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
-    { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
     { to: '/support', label: t('nav.support'), icon: LifeBuoy },
     { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
@@ -74,6 +93,9 @@ function isNavActive(pathname: string, to: string) {
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>(() =>
+    /^\/(quotations|invoices|receipts)/.test(window.location.pathname) ? ['sales'] : []
+  );
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [supportNotifCount, setSupportNotifCount] = useState(0);
@@ -141,6 +163,66 @@ export default function AppShell() {
         ? 'bg-primary text-primary-foreground'
         : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
     }`;
+  };
+
+  const renderItem = (item: NavItem, mobile: boolean, nested = false) => {
+    const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
+    return (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        data-tutorial={item.tutorialId}
+        className={() => `${navLinkClass(item.to)} ${nested ? 'ml-6' : ''}`}
+        onClick={(e) => {
+          if (isTeamOnlyLocked) {
+            e.preventDefault();
+            toast.info(t('workOrders.comingSoon', { label: item.label }));
+            return;
+          }
+          if (mobile) setSidebarOpen(false);
+        }}
+      >
+        <item.icon className="h-4 w-4" />
+        <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
+        {isTeamOnlyLocked && (
+          <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+            <Lock className="h-2.5 w-2.5" /> Team
+          </span>
+        )}
+        {item.to === '/support' && supportNotifCount > 0 && (
+          <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+            {supportNotifCount}
+          </span>
+        )}
+      </NavLink>
+    );
+  };
+
+  const renderEntry = (entry: NavEntry, mobile = false) => {
+    if (!isGroup(entry)) return renderItem(entry, mobile);
+    const open = openGroups.includes(entry.group);
+    return (
+      <div key={entry.group}>
+        <button
+          onClick={() =>
+            setOpenGroups(prev =>
+              prev.includes(entry.group) ? prev.filter(g => g !== entry.group) : [...prev, entry.group]
+            )
+          }
+          className="w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
+          style={{ width: 'calc(100% - 1rem)' }}
+        >
+          <entry.icon className="h-4 w-4" />
+          <span>{entry.label}</span>
+          <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <div className="mt-1 space-y-1">
+            {entry.children.map(child => renderItem(child, mobile, true))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -220,36 +302,7 @@ export default function AppShell() {
         {/* Sidebar — desktop */}
         <aside data-tutorial="sidebar" className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
           <nav className="flex-1 py-4 space-y-1">
-            {NAV_ITEMS.map(item => {
-              const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  data-tutorial={item.tutorialId}
-                  className={() => navLinkClass(item.to)}
-                  onClick={(e) => {
-                    if (isTeamOnlyLocked) {
-                      e.preventDefault();
-                      toast.info(t('workOrders.comingSoon', { label: item.label }));
-                    }
-                  }}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
-                  {isTeamOnlyLocked && (
-                    <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
-                      <Lock className="h-2.5 w-2.5" /> Team
-                    </span>
-                  )}
-                  {item.to === '/support' && supportNotifCount > 0 && (
-                    <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
-                      {supportNotifCount}
-                    </span>
-                  )}
-                </NavLink>
-              );
-            })}
+            {NAV_ITEMS.map(entry => renderEntry(entry))}
           </nav>
         </aside>
 
@@ -265,37 +318,7 @@ export default function AppShell() {
                 </button>
               </div>
               <nav className="flex-1 py-4 space-y-1">
-                {NAV_ITEMS.map(item => {
-                  const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={(e) => {
-                        if (isTeamOnlyLocked) {
-                          e.preventDefault();
-                          toast.info(t('workOrders.comingSoon', { label: item.label }));
-                          return;
-                        }
-                        setSidebarOpen(false);
-                      }}
-                      className={() => navLinkClass(item.to)}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
-                      {isTeamOnlyLocked && (
-                        <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
-                          <Lock className="h-2.5 w-2.5" /> Team
-                        </span>
-                      )}
-                      {item.to === '/support' && supportNotifCount > 0 && (
-                        <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
-                          {supportNotifCount}
-                        </span>
-                      )}
-                    </NavLink>
-                  );
-                })}
+                {NAV_ITEMS.map(entry => renderEntry(entry, true))}
               </nav>
             </aside>
           </>
