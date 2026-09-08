@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
-  Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package
+  Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
+  ShoppingCart, ChevronDown
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
