@@ -162,6 +162,66 @@ export default function AppShell() {
     }`;
   };
 
+  const renderItem = (item: NavItem, mobile: boolean, nested = false) => {
+    const isTeamOnlyLocked = item.teamOnly && profile?.plan !== 'team';
+    return (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        data-tutorial={item.tutorialId}
+        className={() => `${navLinkClass(item.to)} ${nested ? 'ml-6' : ''}`}
+        onClick={(e) => {
+          if (isTeamOnlyLocked) {
+            e.preventDefault();
+            toast.info(t('workOrders.comingSoon', { label: item.label }));
+            return;
+          }
+          if (mobile) setSidebarOpen(false);
+        }}
+      >
+        <item.icon className="h-4 w-4" />
+        <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
+        {isTeamOnlyLocked && (
+          <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+            <Lock className="h-2.5 w-2.5" /> Team
+          </span>
+        )}
+        {item.to === '/support' && supportNotifCount > 0 && (
+          <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold h-4 min-w-[16px] rounded-full flex items-center justify-center px-1">
+            {supportNotifCount}
+          </span>
+        )}
+      </NavLink>
+    );
+  };
+
+  const renderEntry = (entry: NavEntry, mobile = false) => {
+    if (!isGroup(entry)) return renderItem(entry, mobile);
+    const open = openGroups.includes(entry.group);
+    return (
+      <div key={entry.group}>
+        <button
+          onClick={() =>
+            setOpenGroups(prev =>
+              prev.includes(entry.group) ? prev.filter(g => g !== entry.group) : [...prev, entry.group]
+            )
+          }
+          className="w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
+          style={{ width: 'calc(100% - 1rem)' }}
+        >
+          <entry.icon className="h-4 w-4" />
+          <span>{entry.label}</span>
+          <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <div className="mt-1 space-y-1">
+            {entry.children.map(child => renderItem(child, mobile, true))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <InstallPromptBanner />
