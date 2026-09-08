@@ -93,7 +93,9 @@ function isNavActive(pathname: string, to: string) {
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const [openGroups, setOpenGroups] = useState<string[]>(() =>
+    /^\/(quotations|invoices|receipts)/.test(window.location.pathname) ? ['sales'] : []
+  );
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [supportNotifCount, setSupportNotifCount] = useState(0);
