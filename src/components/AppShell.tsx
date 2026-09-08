@@ -33,17 +33,35 @@ type NavItem = {
   teamOnly?: boolean;
 };
 
-function buildNavItems(t: (k: string) => string): NavItem[] {
+type NavGroup = {
+  group: string;
+  label: string;
+  icon: any;
+  children: NavItem[];
+};
+
+type NavEntry = NavItem | NavGroup;
+
+const isGroup = (e: NavEntry): e is NavGroup => 'group' in e;
+
+function buildNavItems(t: (k: string) => string): NavEntry[] {
   return [
     { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: '/jobs', label: t('nav.jobs'), icon: Briefcase, tutorialId: 'jobs-nav' },
     { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
     { to: '/products', label: t('nav.products'), icon: Package },
-    { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
+    {
+      group: 'sales',
+      label: t('nav.sales'),
+      icon: ShoppingCart,
+      children: [
+        { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
+        { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
+        { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
+      ],
+    },
     { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList },
     { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
-    { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
-    { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
     { to: '/support', label: t('nav.support'), icon: LifeBuoy },
     { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
