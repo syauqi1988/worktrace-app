@@ -118,6 +118,7 @@ export default function AppShell() {
     const g: string[] = [];
     if (/^\/(quotations|invoices|receipts)/.test(p)) g.push('sales');
     if (/^\/(jobs|work-orders|completion-reports)/.test(p)) g.push('jobs');
+    if (/^\/(purchase-orders|goods-received-notes|bills|credit-notes|purchase-payments|refunds)/.test(p)) g.push('purchases');
     return g;
   });
   const [quickActionOpen, setQuickActionOpen] = useState(false);
