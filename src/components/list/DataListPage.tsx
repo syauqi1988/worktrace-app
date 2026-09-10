@@ -293,12 +293,13 @@ export default function DataListPage<T>({
             {getAmount && (
               <tfoot>
                 <tr className="border-t-2 border-border bg-muted/40 font-semibold">
-                  <td colSpan={colCount - 1} className="px-3 py-3 text-right text-muted-foreground">
+                  <td colSpan={(selectable ? 1 : 0) + Math.max(1, amountIdx)} className="px-3 py-3 text-right text-muted-foreground">
                     Total {amountHeader} ({sorted.length} {sorted.length === 1 ? 'item' : 'items'})
                   </td>
                   <td className="px-3 py-3 text-right whitespace-nowrap">
                     {currency} {money(total)}
                   </td>
+                  {trailingCols > 0 && <td colSpan={trailingCols} />}
                 </tr>
               </tfoot>
             )}
