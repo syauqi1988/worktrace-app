@@ -8,7 +8,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
-  ShoppingCart, ChevronDown
+  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -70,6 +70,19 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
         { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
       ],
     },
+    {
+      group: 'purchases',
+      label: 'Purchases',
+      icon: ShoppingBag,
+      children: [
+        { to: '/purchase-orders', label: 'Purchase Orders', icon: ClipboardList },
+        { to: '/goods-received-notes', label: 'Goods Received Notes', icon: PackageCheck },
+        { to: '/bills', label: 'Bills', icon: FileText },
+        { to: '/credit-notes', label: 'Credit Notes', icon: FileMinus },
+        { to: '/purchase-payments', label: 'Payments', icon: Banknote },
+        { to: '/refunds', label: 'Refunds', icon: Undo2 },
+      ],
+    },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
     { to: '/support', label: t('nav.support'), icon: LifeBuoy },
     { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
@@ -105,6 +118,7 @@ export default function AppShell() {
     const g: string[] = [];
     if (/^\/(quotations|invoices|receipts)/.test(p)) g.push('sales');
     if (/^\/(jobs|work-orders|completion-reports)/.test(p)) g.push('jobs');
+    if (/^\/(purchase-orders|goods-received-notes|bills|credit-notes|purchase-payments|refunds)/.test(p)) g.push('purchases');
     return g;
   });
   const [quickActionOpen, setQuickActionOpen] = useState(false);
