@@ -8,7 +8,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
-  ShoppingCart, ChevronDown
+  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -68,6 +68,19 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
         { to: '/quotations', label: t('nav.quotations'), icon: FileText, tutorialId: 'quotations-nav' },
         { to: '/invoices', label: t('nav.invoices'), icon: Receipt, tutorialId: 'invoices-nav' },
         { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
+      ],
+    },
+    {
+      group: 'purchases',
+      label: 'Purchases',
+      icon: ShoppingBag,
+      children: [
+        { to: '/purchase-orders', label: 'Purchase Orders', icon: ClipboardList },
+        { to: '/goods-received-notes', label: 'Goods Received Notes', icon: PackageCheck },
+        { to: '/bills', label: 'Bills', icon: FileText },
+        { to: '/credit-notes', label: 'Credit Notes', icon: FileMinus },
+        { to: '/purchase-payments', label: 'Payments', icon: Banknote },
+        { to: '/refunds', label: 'Refunds', icon: Undo2 },
       ],
     },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
