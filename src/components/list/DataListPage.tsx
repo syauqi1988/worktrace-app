@@ -126,6 +126,9 @@ export default function DataListPage<T>({
   };
 
   const colCount = columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0);
+  const foundAmountIdx = columns.findIndex(c => c.key === 'amount' || c.key === 'total');
+  const amountIdx = foundAmountIdx >= 0 ? foundAmountIdx : columns.length - 1;
+  const trailingCols = (columns.length - 1 - amountIdx) + (rowActions ? 1 : 0);
 
   return (
     <div className="p-4 md:p-6 space-y-4">
