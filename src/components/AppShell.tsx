@@ -48,7 +48,16 @@ const isGroup = (e: NavEntry): e is NavGroup => 'group' in e;
 function buildNavItems(t: (k: string) => string): NavEntry[] {
   return [
     { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-    { to: '/jobs', label: t('nav.jobs'), icon: Briefcase, tutorialId: 'jobs-nav' },
+    {
+      group: 'jobs',
+      label: t('nav.jobs'),
+      icon: Briefcase,
+      children: [
+        { to: '/jobs', label: t('nav.jobs'), icon: Briefcase, tutorialId: 'jobs-nav' },
+        { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList },
+        { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
+      ],
+    },
     { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
     { to: '/products', label: t('nav.products'), icon: Package },
     {
@@ -61,8 +70,6 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
         { to: '/receipts', label: t('nav.receipts'), icon: Receipt },
       ],
     },
-    { to: '/work-orders', label: t('nav.workOrders'), icon: ClipboardList },
-    { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
     { to: '/support', label: t('nav.support'), icon: LifeBuoy },
     { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
@@ -93,9 +100,13 @@ function isNavActive(pathname: string, to: string) {
 
 export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openGroups, setOpenGroups] = useState<string[]>(() =>
-    /^\/(quotations|invoices|receipts)/.test(window.location.pathname) ? ['sales'] : []
-  );
+  const [openGroups, setOpenGroups] = useState<string[]>(() => {
+    const p = window.location.pathname;
+    const g: string[] = [];
+    if (/^\/(quotations|invoices|receipts)/.test(p)) g.push('sales');
+    if (/^\/(jobs|work-orders|completion-reports)/.test(p)) g.push('jobs');
+    return g;
+  });
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [supportNotifCount, setSupportNotifCount] = useState(0);
