@@ -138,6 +138,12 @@ const App = () => (
                 <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
                 <Route path="receipts" element={<ReceiptsListPage />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="goods-received-notes" element={<GoodsReceivedNotesPage />} />
+                <Route path="bills" element={<BillsPage />} />
+                <Route path="credit-notes" element={<CreditNotesPage />} />
+                <Route path="purchase-payments" element={<PurchasePaymentsPage />} />
+                <Route path="refunds" element={<RefundsPage />} />
                 <Route path="support" element={<SupportPage />} />
                 <Route path="support/new" element={<SupportNewPage />} />
                 <Route path="support/:id" element={<SupportDetailPage />} />
