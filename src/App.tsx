@@ -54,6 +54,12 @@ const RefundPolicyPage = lazy(() => import("@/pages/RefundPolicyPage"));
 const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
 const JobPresetsPage = lazy(() => import("@/pages/JobPresetsPage"));
 const FaqPage = lazy(() => import("@/pages/FaqPage"));
+const PurchaseOrdersPage = lazy(() => import("@/pages/purchases/PurchaseOrdersPage"));
+const GoodsReceivedNotesPage = lazy(() => import("@/pages/purchases/GoodsReceivedNotesPage"));
+const BillsPage = lazy(() => import("@/pages/purchases/BillsPage"));
+const CreditNotesPage = lazy(() => import("@/pages/purchases/CreditNotesPage"));
+const PurchasePaymentsPage = lazy(() => import("@/pages/purchases/PurchasePaymentsPage"));
+const RefundsPage = lazy(() => import("@/pages/purchases/RefundsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +138,12 @@ const App = () => (
                 <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
                 <Route path="receipts" element={<ReceiptsListPage />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="goods-received-notes" element={<GoodsReceivedNotesPage />} />
+                <Route path="bills" element={<BillsPage />} />
+                <Route path="credit-notes" element={<CreditNotesPage />} />
+                <Route path="purchase-payments" element={<PurchasePaymentsPage />} />
+                <Route path="refunds" element={<RefundsPage />} />
                 <Route path="support" element={<SupportPage />} />
                 <Route path="support/new" element={<SupportNewPage />} />
                 <Route path="support/:id" element={<SupportDetailPage />} />
