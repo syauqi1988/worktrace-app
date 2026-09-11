@@ -54,6 +54,12 @@ const RefundPolicyPage = lazy(() => import("@/pages/RefundPolicyPage"));
 const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
 const JobPresetsPage = lazy(() => import("@/pages/JobPresetsPage"));
 const FaqPage = lazy(() => import("@/pages/FaqPage"));
+const PurchaseOrdersPage = lazy(() => import("@/pages/purchases/PurchaseOrdersPage"));
+const GoodsReceivedNotesPage = lazy(() => import("@/pages/purchases/GoodsReceivedNotesPage"));
+const BillsPage = lazy(() => import("@/pages/purchases/BillsPage"));
+const CreditNotesPage = lazy(() => import("@/pages/purchases/CreditNotesPage"));
+const PurchasePaymentsPage = lazy(() => import("@/pages/purchases/PurchasePaymentsPage"));
+const RefundsPage = lazy(() => import("@/pages/purchases/RefundsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
