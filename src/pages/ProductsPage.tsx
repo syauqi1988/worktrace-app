@@ -20,6 +20,7 @@ import {
 import { Package, Plus, Search, Edit2, Trash2, Tag, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDateLocale } from '@/i18n';
+import DataListPage, { ListColumn } from '@/components/list/DataListPage';
 
 type Product = {
   id: string;
