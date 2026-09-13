@@ -153,7 +153,7 @@ export default function DataListPage<T>({
 
       {/* Filter bar */}
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap items-end gap-3 [&>div]:flex-1 md:[&>div]:flex-none [&_input]:w-full md:[&_input]:w-[150px] [&_button[role=combobox]]:w-full md:[&_button[role=combobox]]:w-[170px]">
           {getDate && (
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">Date Range</p>
@@ -220,8 +220,56 @@ export default function DataListPage<T>({
           </div>
         </div>
 
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-2">
+          {loading && <p className="py-8 text-center text-muted-foreground text-sm">Loading...</p>}
+          {!loading && pageRows.length === 0 && (
+            <p className="py-8 text-center text-muted-foreground text-sm">{emptyMessage}</p>
+          )}
+          {!loading && pageRows.map(row => {
+            const id = getRowId(row);
+            const [primary, ...rest] = columns;
+            return (
+              <div
+                key={id}
+                className={`rounded-lg border border-border bg-background p-3 ${onRowClick ? 'active:bg-muted/60' : ''}`}
+                onClick={() => onRowClick?.(row)}
+              >
+                <div className="flex items-start gap-2">
+                  {selectable && (
+                    <div className="pt-0.5" onClick={e => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selected.includes(id)}
+                        onCheckedChange={c => setSelected(prev => c ? [...prev, id] : prev.filter(i => i !== id))}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="font-medium text-foreground break-words">{primary?.render(row)}</div>
+                    {rest.map(col => (
+                      <div key={col.key} className="flex items-start justify-between gap-3 text-xs">
+                        <span className="text-muted-foreground shrink-0">{col.header}</span>
+                        <span className="text-right text-foreground break-words">{col.render(row)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {rowActions && (
+                    <div className="shrink-0" onClick={e => e.stopPropagation()}>{rowActions(row)}</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {getAmount && !loading && pageRows.length > 0 && (
+            <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2.5 text-sm font-semibold">
+              <span className="text-muted-foreground">Total {amountHeader} ({sorted.length})</span>
+              <span>{currency} {money(total)}</span>
+            </div>
+          )}
+        </div>
+
         {/* Table */}
-        <div className="overflow-x-auto -mx-4 md:mx-0">
+        <div className="hidden md:block overflow-x-auto -mx-4 md:mx-0">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-y border-border bg-muted/40">
