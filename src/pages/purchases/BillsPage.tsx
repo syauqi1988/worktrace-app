@@ -1,13 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import DataListPage from '@/components/list/DataListPage';
 import { PurchaseDoc, statusBadge } from './shared';
 
 export default function BillsPage() {
+  const navigate = useNavigate();
   return (
     <DataListPage<PurchaseDoc>
       breadcrumb="Purchases"
       title="Bills"
       newLabel="New Bill"
-      onNew={() => {}}
+      onNew={() => navigate('/bills/new')}
       rows={[]}
       getRowId={r => r.id}
       emptyMessage="No bills found."
