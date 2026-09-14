@@ -1,13 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import DataListPage from '@/components/list/DataListPage';
 import { PurchaseDoc, statusBadge } from './shared';
 
 export default function CreditNotesPage() {
+  const navigate = useNavigate();
   return (
     <DataListPage<PurchaseDoc>
       breadcrumb="Purchases"
       title="Credit Notes"
       newLabel="New Credit Note"
-      onNew={() => {}}
+      onNew={() => navigate('/credit-notes/new')}
       rows={[]}
       getRowId={r => r.id}
       emptyMessage="No credit notes found."

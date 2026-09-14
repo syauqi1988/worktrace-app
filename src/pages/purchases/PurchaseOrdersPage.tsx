@@ -1,13 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import DataListPage from '@/components/list/DataListPage';
 import { PurchaseDoc, statusBadge } from './shared';
 
 export default function PurchaseOrdersPage() {
+  const navigate = useNavigate();
   return (
     <DataListPage<PurchaseDoc>
       breadcrumb="Purchases"
       title="Purchase Orders"
       newLabel="New Purchase Order"
-      onNew={() => {}}
+      onNew={() => navigate('/purchase-orders/new')}
       rows={[]}
       getRowId={r => r.id}
       emptyMessage="No purchase orders found."

@@ -1,13 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import DataListPage from '@/components/list/DataListPage';
 import { PurchaseDoc, statusBadge } from './shared';
 
 export default function GoodsReceivedNotesPage() {
+  const navigate = useNavigate();
   return (
     <DataListPage<PurchaseDoc>
       breadcrumb="Purchases"
       title="Goods Received Notes"
       newLabel="New GRN"
-      onNew={() => {}}
+      onNew={() => navigate('/goods-received-notes/new')}
       rows={[]}
       getRowId={r => r.id}
       emptyMessage="No goods received notes found."
