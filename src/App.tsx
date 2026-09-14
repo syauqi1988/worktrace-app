@@ -60,6 +60,12 @@ const BillsPage = lazy(() => import("@/pages/purchases/BillsPage"));
 const CreditNotesPage = lazy(() => import("@/pages/purchases/CreditNotesPage"));
 const PurchasePaymentsPage = lazy(() => import("@/pages/purchases/PurchasePaymentsPage"));
 const RefundsPage = lazy(() => import("@/pages/purchases/RefundsPage"));
+const PurchaseOrderFormPage = lazy(() => import("@/pages/purchases/PurchaseOrderFormPage"));
+const GoodsReceivedNoteFormPage = lazy(() => import("@/pages/purchases/GoodsReceivedNoteFormPage"));
+const BillFormPage = lazy(() => import("@/pages/purchases/BillFormPage"));
+const CreditNoteFormPage = lazy(() => import("@/pages/purchases/CreditNoteFormPage"));
+const PurchasePaymentFormPage = lazy(() => import("@/pages/purchases/PurchasePaymentFormPage"));
+const RefundFormPage = lazy(() => import("@/pages/purchases/RefundFormPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,11 +145,17 @@ const App = () => (
                 <Route path="receipts" element={<ReceiptsListPage />} />
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
                 <Route path="goods-received-notes" element={<GoodsReceivedNotesPage />} />
+                <Route path="goods-received-notes/new" element={<GoodsReceivedNoteFormPage />} />
                 <Route path="bills" element={<BillsPage />} />
+                <Route path="bills/new" element={<BillFormPage />} />
                 <Route path="credit-notes" element={<CreditNotesPage />} />
+                <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
                 <Route path="purchase-payments" element={<PurchasePaymentsPage />} />
+                <Route path="purchase-payments/new" element={<PurchasePaymentFormPage />} />
                 <Route path="refunds" element={<RefundsPage />} />
+                <Route path="refunds/new" element={<RefundFormPage />} />
                 <Route path="support" element={<SupportPage />} />
                 <Route path="support/new" element={<SupportNewPage />} />
                 <Route path="support/:id" element={<SupportDetailPage />} />
