@@ -8,7 +8,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
-  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2, Truck, UserCog, BookOpen, ArrowLeftRight, Landmark, Coins, ListTree
+  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2, Truck, UserCog, BookOpen, ArrowLeftRight, Landmark, Coins, ListTree, Building2, ArrowDownToLine, ArrowUpFromLine, Repeat, Wallet
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -93,6 +93,17 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
       ],
     },
     {
+      group: 'bank',
+      label: 'Bank',
+      icon: Building2,
+      children: [
+        { to: '/money-in', label: 'Money In', icon: ArrowDownToLine },
+        { to: '/money-out', label: 'Money Out', icon: ArrowUpFromLine },
+        { to: '/transfers', label: 'Transfers', icon: Repeat },
+        { to: '/bank-accounts', label: 'Accounts', icon: Wallet },
+      ],
+    },
+    {
       group: 'accounting',
       label: 'Accounting',
       icon: BookOpen,
@@ -140,6 +151,7 @@ export default function AppShell() {
     if (/^\/(quotations|invoices|receipts)/.test(p)) g.push('sales');
     if (/^\/(jobs|work-orders|completion-reports)/.test(p)) g.push('jobs');
     if (/^\/(customers|suppliers|employees)/.test(p)) g.push('contacts');
+    if (/^\/(money-in|money-out|transfers|bank-accounts)/.test(p)) g.push('bank');
     if (/^\/(journal-entries|contras|fixed-assets|deemed-payments|chart-of-accounts)/.test(p)) g.push('accounting');
     if (/^\/(purchase-orders|goods-received-notes|bills|credit-notes|purchase-payments|refunds)/.test(p)) g.push('purchases');
     return g;

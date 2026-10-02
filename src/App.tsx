@@ -170,6 +170,10 @@ const App = () => (
                 <Route path="purchase-payments/new" element={<PurchasePaymentFormPage />} />
                 <Route path="refunds" element={<RefundsPage />} />
                 <Route path="refunds/new" element={<RefundFormPage />} />
+                <Route path="money-in" element={<PlaceholderPage title="Money In" />} />
+                <Route path="money-out" element={<PlaceholderPage title="Money Out" />} />
+                <Route path="transfers" element={<PlaceholderPage title="Transfers" />} />
+                <Route path="bank-accounts" element={<PlaceholderPage title="Accounts" />} />
                 <Route path="journal-entries" element={<PlaceholderPage title="Journal Entries" />} />
                 <Route path="contras" element={<PlaceholderPage title="Contras" />} />
                 <Route path="fixed-assets" element={<PlaceholderPage title="Fixed Assets" />} />
