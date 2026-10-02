@@ -73,6 +73,8 @@ const ContactFormPage = lazy(() => import("@/pages/contacts/ContactFormPage"));
 const supplierForm = <ContactFormPage table="suppliers" label="Supplier" listPath="/suppliers" secondaryLabel="Company" secondaryField="company" />;
 const employeeForm = <ContactFormPage table="employees" label="Employee" listPath="/employees" secondaryLabel="Position" secondaryField="position" />;
 
+const PlaceholderPage = lazy(() => import("@/pages/PlaceholderPage"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -168,6 +170,11 @@ const App = () => (
                 <Route path="purchase-payments/new" element={<PurchasePaymentFormPage />} />
                 <Route path="refunds" element={<RefundsPage />} />
                 <Route path="refunds/new" element={<RefundFormPage />} />
+                <Route path="journal-entries" element={<PlaceholderPage title="Journal Entries" />} />
+                <Route path="contras" element={<PlaceholderPage title="Contras" />} />
+                <Route path="fixed-assets" element={<PlaceholderPage title="Fixed Assets" />} />
+                <Route path="deemed-payments" element={<PlaceholderPage title="Deemed Payments" />} />
+                <Route path="chart-of-accounts" element={<PlaceholderPage title="Chart of Accounts" />} />
                 <Route path="support" element={<SupportPage />} />
                 <Route path="support/new" element={<SupportNewPage />} />
                 <Route path="support/:id" element={<SupportDetailPage />} />

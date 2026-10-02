@@ -8,7 +8,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
-  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2, Truck, UserCog
+  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2, Truck, UserCog, BookOpen, ArrowLeftRight, Landmark, Coins, ListTree
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -92,6 +92,18 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
         { to: '/refunds', label: 'Refunds', icon: Undo2 },
       ],
     },
+    {
+      group: 'accounting',
+      label: 'Accounting',
+      icon: BookOpen,
+      children: [
+        { to: '/journal-entries', label: 'Journal Entries', icon: BookOpen },
+        { to: '/contras', label: 'Contras', icon: ArrowLeftRight },
+        { to: '/fixed-assets', label: 'Fixed Assets', icon: Landmark },
+        { to: '/deemed-payments', label: 'Deemed Payments', icon: Coins },
+        { to: '/chart-of-accounts', label: 'Chart of Accounts', icon: ListTree },
+      ],
+    },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
     { to: '/support', label: t('nav.support'), icon: LifeBuoy },
     { to: '/settings', label: t('nav.settings'), icon: Settings, tutorialId: 'settings-nav' },
@@ -128,6 +140,7 @@ export default function AppShell() {
     if (/^\/(quotations|invoices|receipts)/.test(p)) g.push('sales');
     if (/^\/(jobs|work-orders|completion-reports)/.test(p)) g.push('jobs');
     if (/^\/(customers|suppliers|employees)/.test(p)) g.push('contacts');
+    if (/^\/(journal-entries|contras|fixed-assets|deemed-payments|chart-of-accounts)/.test(p)) g.push('accounting');
     if (/^\/(purchase-orders|goods-received-notes|bills|credit-notes|purchase-payments|refunds)/.test(p)) g.push('purchases');
     return g;
   });
