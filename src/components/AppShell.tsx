@@ -8,7 +8,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
   Menu, X, Plus, User, LogOut, Gift, LifeBuoy, ClipboardList, ClipboardCheck, FileBarChart, Lock, Package,
-  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2
+  ShoppingCart, ChevronDown, ShoppingBag, PackageCheck, FileMinus, Banknote, Undo2, Truck, UserCog
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetTrigger, SheetClose,
@@ -58,7 +58,16 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
         { to: '/completion-reports', label: t('nav.completionReports'), icon: ClipboardCheck },
       ],
     },
-    { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
+    {
+      group: 'contacts',
+      label: 'Contacts',
+      icon: Users,
+      children: [
+        { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
+        { to: '/suppliers', label: 'Suppliers', icon: Truck },
+        { to: '/employees', label: 'Employees', icon: UserCog },
+      ],
+    },
     { to: '/products', label: t('nav.products'), icon: Package },
     {
       group: 'sales',
@@ -118,6 +127,7 @@ export default function AppShell() {
     const g: string[] = [];
     if (/^\/(quotations|invoices|receipts)/.test(p)) g.push('sales');
     if (/^\/(jobs|work-orders|completion-reports)/.test(p)) g.push('jobs');
+    if (/^\/(customers|suppliers|employees)/.test(p)) g.push('contacts');
     if (/^\/(purchase-orders|goods-received-notes|bills|credit-notes|purchase-payments|refunds)/.test(p)) g.push('purchases');
     return g;
   });

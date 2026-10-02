@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
+import ContactPicker from '@/components/contacts/ContactPicker';
 
 export type PurchaseFormProps = {
   breadcrumb?: string;
@@ -77,7 +78,20 @@ export default function PurchaseFormPage({
       content: (
         <div className="grid md:grid-cols-2 gap-4">
           <Field label={partyLabel} required>
-            <Input value={party} onChange={e => setParty(e.target.value)} placeholder={`Select ${partyLabel}`} />
+            <ContactPicker
+              kind="suppliers"
+              label={partyLabel}
+              value={party}
+              onChange={(name, c) => {
+                setParty(name);
+                if (c) {
+                  setBillingAttention(name);
+                  setBillingAddress(c.address || '');
+                  setShippingAttention(name);
+                  setShippingAddress(c.address || '');
+                }
+              }}
+            />
           </Field>
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 text-sm font-medium">
