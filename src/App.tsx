@@ -67,6 +67,12 @@ const CreditNoteFormPage = lazy(() => import("@/pages/purchases/CreditNoteFormPa
 const PurchasePaymentFormPage = lazy(() => import("@/pages/purchases/PurchasePaymentFormPage"));
 const RefundFormPage = lazy(() => import("@/pages/purchases/RefundFormPage"));
 
+const SuppliersListPage = lazy(() => import("@/pages/contacts/SuppliersListPage"));
+const EmployeesListPage = lazy(() => import("@/pages/contacts/EmployeesListPage"));
+const ContactFormPage = lazy(() => import("@/pages/contacts/ContactFormPage"));
+const supplierForm = <ContactFormPage table="suppliers" label="Supplier" listPath="/suppliers" secondaryLabel="Company" secondaryField="company" />;
+const employeeForm = <ContactFormPage table="employees" label="Employee" listPath="/employees" secondaryLabel="Position" secondaryField="position" />;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -133,6 +139,12 @@ const App = () => (
                 <Route path="customers/new" element={<CustomerFormPage />} />
                 <Route path="customers/:id" element={<CustomerDetailPage />} />
                 <Route path="customers/:id/edit" element={<CustomerFormPage />} />
+                <Route path="suppliers" element={<SuppliersListPage />} />
+                <Route path="suppliers/new" element={supplierForm} />
+                <Route path="suppliers/:id/edit" element={supplierForm} />
+                <Route path="employees" element={<EmployeesListPage />} />
+                <Route path="employees/new" element={employeeForm} />
+                <Route path="employees/:id/edit" element={employeeForm} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="quotations" element={<QuotationsListPage />} />
                 <Route path="quotations/new" element={<QuotationFormPage />} />
