@@ -67,7 +67,7 @@ export default function DataFormPage({
   };
 
   return (
-    <div className="pb-44 md:pb-28">
+    <div className="pb-28">
       {/* Floating top header */}
       <div className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
         <div className="px-4 md:px-6 pt-3 pb-2">
@@ -130,7 +130,7 @@ export default function DataFormPage({
       </div>
 
       {/* Floating save bar */}
-      <div className="fixed bottom-16 md:bottom-0 inset-x-0 z-[45] border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
+      <div className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
         <div className="flex items-center justify-end gap-3">
           {footerExtra}
           <Button onClick={onSave} disabled={saving} className="min-w-28">
