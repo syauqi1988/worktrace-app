@@ -241,7 +241,7 @@ export default function AppShell() {
         <button
           onClick={() =>
             setOpenGroups(prev =>
-              prev.includes(entry.group) ? prev.filter(g => g !== entry.group) : [...prev, entry.group]
+              prev.includes(entry.group) ? [] : [entry.group]
             )
           }
           className="w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
