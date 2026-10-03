@@ -1,3 +1,4 @@
+import { useTx } from '@/i18n/dual';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,10 +32,11 @@ type Job = { id: string; job_number: string; title: string; status: string; cate
 type Rep = { id: string; report_number: string; status: string | null; created_at: string; job_id: string; jobs: { title: string } | null };
 
 function Card({ title, right, children, className = '' }: { title: string; right?: ReactNode; children: ReactNode; className?: string }) {
+  const tx = useTx();
   return (
     <div className={`bg-card border border-border rounded-xl p-4 md:p-6 min-w-0 ${className}`}>
       <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
-        <h2 className="text-lg md:text-xl font-medium text-primary">{title}</h2>
+        <h2 className="text-lg md:text-xl font-medium text-primary">{tx(title)}</h2>
         {right}
       </div>
       {children}
@@ -43,9 +45,10 @@ function Card({ title, right, children, className = '' }: { title: string; right
 }
 
 function Net({ value, label }: { value: number; label: string }) {
+  const tx = useTx();
   return (
     <p className="text-sm md:text-base font-semibold text-foreground mb-3">
-      NET {rm(value)} <span className="font-normal text-muted-foreground uppercase">{label}</span>
+      {tx('NET')} {rm(value)} <span className="font-normal text-muted-foreground uppercase">{tx(label)}</span>
     </p>
   );
 }
@@ -87,11 +90,12 @@ function PeriodFilter({ value, onChange, presets }: { value: Period; onChange: (
     if (preset === 'custom' && !value.from) { const r = resolve(value); onChange({ preset, from: iso(r.from), to: iso(r.to > new Date(2099, 0) ? new Date() : r.to) }); }
     else onChange({ ...value, preset });
   };
+  const tx = useTx();
   const cls = 'h-9 rounded-lg border border-input bg-background px-2 text-sm';
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
       <select value={value.preset} onChange={e => set(e.target.value)} className={cls}>
-        {presets.map(v => <option key={v} value={v}>{PRESETS[v]}</option>)}
+        {presets.map(v => <option key={v} value={v}>{tx(PRESETS[v])}</option>)}
       </select>
       {value.preset === 'custom' && (
         <div className="flex items-center gap-1 w-full sm:w-auto">
@@ -106,7 +110,8 @@ function PeriodFilter({ value, onChange, presets }: { value: Period; onChange: (
 const P = (preset: string): Period => ({ preset, from: '', to: '' });
 
 function Empty({ text }: { text: string }) {
-  return <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">{text}</div>;
+  const tx = useTx();
+  return <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">{tx(text)}</div>;
 }
 
 function AgingBar({ buckets }: { buckets: number[] }) {
@@ -130,6 +135,7 @@ function AgingBar({ buckets }: { buckets: number[] }) {
 }
 
 export default function DashboardPage() {
+  const tx = useTx();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -257,7 +263,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-3 md:p-6 space-y-4 bg-muted/30 min-h-full">
-      <h1 className="sr-only">Dashboard</h1>
+      <h1 className="sr-only">{tx('Dashboard')}</h1>
 
       {/* KPI tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -267,9 +273,9 @@ export default function DashboardPage() {
               <t.icon className="h-7 w-7" />
             </div>
             <div className="p-3 md:p-4">
-              <p className="text-xs font-semibold tracking-wide">{t.label}</p>
+              <p className="text-xs font-semibold tracking-wide">{tx(t.label)}</p>
               <p className="text-xl md:text-2xl font-semibold">{rm(t.value)}</p>
-              <p className="text-sm md:text-base">{t.sub}</p>
+              <p className="text-sm md:text-base">{tx(t.sub)}</p>
             </div>
           </div>
         ))}
@@ -277,8 +283,8 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Jobs */}
-        <Card title="Jobs" right={<div className="flex items-center gap-2"><PeriodFilter value={jobsP} onChange={setJobsP} presets={['all', ...PAST]} /><button onClick={() => navigate('/jobs')} className="text-sm text-primary whitespace-nowrap">View all</button></div>}>
-          <p className="text-sm font-semibold mb-3">TOTAL {fJobs.length} <span className="font-normal text-muted-foreground">JOBS</span></p>
+        <Card title="Jobs" right={<div className="flex items-center gap-2"><PeriodFilter value={jobsP} onChange={setJobsP} presets={['all', ...PAST]} /><button onClick={() => navigate('/jobs')} className="text-sm text-primary whitespace-nowrap">{tx('View all')}</button></div>}>
+          <p className="text-sm font-semibold mb-3">TOTAL {fJobs.length} <span className="font-normal text-muted-foreground">{tx('JOBS')}</span></p>
           <div className="h-48">
             <ResponsiveContainer>
               <BarChart data={jobStatusData} margin={{ left: -20, right: 8 }}>
@@ -286,7 +292,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="name" tick={axis} interval={0} />
                 <YAxis tick={axis} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="value" name="Jobs" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="value" name={tx('Jobs')} radius={[4, 4, 0, 0]}>
                   {jobStatusData.map((_, idx) => <Cell key={idx} fill={AGING_COLORS[idx]} />)}
                 </Bar>
               </BarChart>
@@ -319,8 +325,8 @@ export default function DashboardPage() {
                 <XAxis dataKey="m" tick={axis} />
                 <YAxis tick={axis} tickFormatter={k} />
                 <Tooltip formatter={(v: number) => rm(v)} />
-                <Line type="linear" dataKey="current" name="This year" stroke={C('chart-income')} strokeWidth={2} dot={false} />
-                <Line type="linear" dataKey="last" name="Last year" stroke={C('chart-income')} strokeDasharray="6 4" strokeOpacity={0.6} dot={false} />
+                <Line type="linear" dataKey="current" name={tx('This year')} stroke={C('chart-income')} strokeWidth={2} dot={false} />
+                <Line type="linear" dataKey="last" name={tx('Last year')} stroke={C('chart-income')} strokeDasharray="6 4" strokeOpacity={0.6} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -335,9 +341,9 @@ export default function DashboardPage() {
                 <XAxis dataKey="m" tick={axis} />
                 <YAxis tick={axis} tickFormatter={k} />
                 <Tooltip formatter={(v: number) => rm(v)} />
-                <Bar dataKey="net" name="Net" fill={C('primary')} />
-                <Line dataKey="income" name="Income" stroke={C('chart-income')} strokeWidth={2} />
-                <Line dataKey="expense" name="Expense" stroke={C('destructive')} strokeWidth={2} />
+                <Bar dataKey="net" name={tx('Net')} fill={C('primary')} />
+                <Line dataKey="income" name={tx('Income')} stroke={C('chart-income')} strokeWidth={2} />
+                <Line dataKey="expense" name={tx('Expense')} stroke={C('destructive')} strokeWidth={2} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -352,9 +358,9 @@ export default function DashboardPage() {
                 <YAxis yAxisId="l" tick={axis} tickFormatter={k} />
                 <YAxis yAxisId="r" orientation="right" tick={axis} tickFormatter={k} />
                 <Tooltip formatter={(v: number) => rm(v)} />
-                <Bar yAxisId="l" dataKey="inflow" name="Inflow" stackId="a" fill={C('chart-income')} />
-                <Bar yAxisId="l" dataKey="outflow" name="Outflow" stackId="a" fill={C('chart-expense')} />
-                <Line yAxisId="r" dataKey="balance" name="Ending balance" stroke={C('primary')} strokeWidth={2} dot={false} />
+                <Bar yAxisId="l" dataKey="inflow" name={tx('Inflow')} stackId="a" fill={C('chart-income')} />
+                <Bar yAxisId="l" dataKey="outflow" name={tx('Outflow')} stackId="a" fill={C('chart-expense')} />
+                <Line yAxisId="r" dataKey="balance" name={tx('Ending balance')} stroke={C('primary')} strokeWidth={2} dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -369,8 +375,8 @@ export default function DashboardPage() {
                 <YAxis yAxisId="l" tick={axis} tickFormatter={k} />
                 <YAxis yAxisId="r" orientation="right" tick={axis} tickFormatter={k} />
                 <Tooltip formatter={(v: number) => rm(v)} />
-                <Bar yAxisId="l" dataKey="inflow" name="Expected inflow" fill={C('chart-income')} fillOpacity={0.6} />
-                <Line yAxisId="r" dataKey="balance" name="Projected balance" stroke={C('primary')} strokeDasharray="6 4" strokeWidth={2} dot={false} />
+                <Bar yAxisId="l" dataKey="inflow" name={tx('Expected inflow')} fill={C('chart-income')} fillOpacity={0.6} />
+                <Line yAxisId="r" dataKey="balance" name={tx('Projected balance')} stroke={C('primary')} strokeDasharray="6 4" strokeWidth={2} dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -420,8 +426,8 @@ export default function DashboardPage() {
         </Card>
 
         {/* Completion reports */}
-        <Card title="Completion Reports" right={<div className="flex items-center gap-2"><PeriodFilter value={repP} onChange={setRepP} presets={['all', ...PAST]} /><button onClick={() => navigate('/completion-reports')} className="text-sm text-primary whitespace-nowrap">View all</button></div>}>
-          <p className="text-sm font-semibold mb-3">TOTAL {fReps.length} <span className="font-normal text-muted-foreground">REPORTS</span></p>
+        <Card title="Completion Reports" right={<div className="flex items-center gap-2"><PeriodFilter value={repP} onChange={setRepP} presets={['all', ...PAST]} /><button onClick={() => navigate('/completion-reports')} className="text-sm text-primary whitespace-nowrap">{tx('View all')}</button></div>}>
+          <p className="text-sm font-semibold mb-3">TOTAL {fReps.length} <span className="font-normal text-muted-foreground">{tx('REPORTS')}</span></p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {reportStatusData.map((s, idx) => (
               <div key={s.name} className="rounded-lg border border-border p-3">

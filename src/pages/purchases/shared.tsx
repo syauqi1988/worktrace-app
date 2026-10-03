@@ -1,4 +1,7 @@
 import { ReactNode } from 'react';
+import { useTx } from '@/i18n/dual';
+
+function StatusLabel({ s }: { s: string }) { const tx = useTx(); return <>{tx(s)}</>; }
 
 export type PurchaseDoc = {
   id: string;
@@ -25,7 +28,7 @@ const tone: Record<string, string> = {
 export function statusBadge(status: string): ReactNode {
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${tone[status] || 'bg-muted text-muted-foreground'}`}>
-      {status}
+      <StatusLabel s={status} />
     </span>
   );
 }

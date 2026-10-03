@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import DataListPage, { ListColumn } from '@/components/list/DataListPage';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { useL, useTx } from '@/i18n/dual';
 
 type EmployeeRow = {
   id: string;
@@ -21,6 +22,8 @@ type EmployeeRow = {
 export default function EmployeesListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const tx = useTx();
+  const l = useL();
   const [rows, setRows] = useState<EmployeeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -48,7 +51,7 @@ export default function EmployeesListPage() {
     setConfirmOpen(false);
     if (error) { toast.error(error.message); return; }
     setRows(prev => prev.filter(r => !ids.includes(r.id)));
-    toast.success('Employees deleted');
+    toast.success(tx('Employees deleted'));
     pending.clear();
     setPending(null);
   }
@@ -58,14 +61,14 @@ export default function EmployeesListPage() {
     { key: 'position', header: 'Position', sortValue: r => r.position || '', render: r => r.position || '—' },
     { key: 'phone', header: 'Phone', render: r => r.phone || '—' },
     { key: 'email', header: 'Email', render: r => r.email || '—' },
-    { key: 'status', header: 'Status', render: r => (r.is_active ? 'Active' : 'Inactive') },
+    { key: 'status', header: 'Status', render: r => tx(r.is_active ? 'Active' : 'Inactive') },
   ];
 
   return (
     <>
       <DataListPage<EmployeeRow>
         breadcrumb="Contacts"
-        title="Employees"
+        title={tx('Employees')}
         newLabel="New Employee"
         onNew={() => navigate('/employees/new')}
         rows={rows}
@@ -92,9 +95,9 @@ export default function EmployeesListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Delete employees"
-        body={`Delete ${pending?.ids.length || 0} employee(s)?`}
-        confirmLabel="Delete"
+        title={tx('Delete employees')}
+        body={l(`Delete ${pending?.ids.length || 0} employee(s)?`, `Padam ${pending?.ids.length || 0} pekerja?`)}
+        confirmLabel={tx('Delete')}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

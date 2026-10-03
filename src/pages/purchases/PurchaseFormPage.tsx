@@ -1,3 +1,4 @@
+import { useTx } from '@/i18n/dual';
 import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import DataFormPage, { Field, FormSection } from '@/components/form/DataFormPage';
@@ -31,6 +32,7 @@ export default function PurchaseFormPage({
   referenceLabel = 'Reference No.',
   statuses = ['Draft', 'Pending Approval', 'Ready'],
 }: PurchaseFormProps) {
+  const tx = useTx();
   const [party, setParty] = useState('');
   const [showShipping, setShowShipping] = useState(true);
   const [shippingInfo, setShippingInfo] = useState('');
@@ -62,7 +64,7 @@ export default function PurchaseFormPage({
   const total = Math.max(0, subTotal - discountGiven);
 
   const handleSave = () => {
-    if (!party.trim()) { toast({ title: `${partyLabel} is required`, variant: 'destructive' }); return; }
+    if (!party.trim()) { toast({ title: `${tx(partyLabel)} ${tx('is required')}`, variant: 'destructive' }); return; }
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
@@ -102,7 +104,7 @@ export default function PurchaseFormPage({
               value={shippingInfo}
               onChange={e => setShippingInfo(e.target.value)}
               disabled={!showShipping}
-              placeholder="Shipping instructions, tracking no & etc."
+              placeholder={tx('Shipping instructions, tracking no & etc.')}
             />
           </div>
           <Field label="Billing Attention">
@@ -168,7 +170,7 @@ export default function PurchaseFormPage({
                   onClick={() => setTaxMode(m)}
                   className={`px-3 py-1.5 text-sm ${taxMode === m ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
                 >
-                  Tax {m === 'inclusive' ? 'Inclusive' : 'Exclusive'}
+                  {tx(m === 'inclusive' ? 'Tax Inclusive' : 'Tax Exclusive')}
                 </button>
               ))}
             </div>
@@ -178,24 +180,24 @@ export default function PurchaseFormPage({
             <table className="w-full min-w-[820px] text-sm">
               <thead>
                 <tr className="border-y border-border bg-muted/40 text-left">
-                  <th className="px-2 py-2 font-semibold">Item</th>
-                  <th className="px-2 py-2 font-semibold">Account</th>
-                  <th className="px-2 py-2 font-semibold text-right">Quantity</th>
-                  <th className="px-2 py-2 font-semibold text-right">Unit Price</th>
-                  <th className="px-2 py-2 font-semibold text-right">Amount</th>
-                  <th className="px-2 py-2 font-semibold text-right">Discount</th>
-                  <th className="px-2 py-2 font-semibold text-right">Tax</th>
+                  <th className="px-2 py-2 font-semibold">{tx('Item')}</th>
+                  <th className="px-2 py-2 font-semibold">{tx('Account')}</th>
+                  <th className="px-2 py-2 font-semibold text-right">{tx('Quantity')}</th>
+                  <th className="px-2 py-2 font-semibold text-right">{tx('Unit Price')}</th>
+                  <th className="px-2 py-2 font-semibold text-right">{tx('Amount')}</th>
+                  <th className="px-2 py-2 font-semibold text-right">{tx('Discount')}</th>
+                  <th className="px-2 py-2 font-semibold text-right">{tx('Tax')}</th>
                   <th className="w-10" />
                 </tr>
               </thead>
               <tbody>
                 {lines.length === 0 && (
-                  <tr><td colSpan={8} className="px-2 py-10 text-center text-muted-foreground">No data</td></tr>
+                  <tr><td colSpan={8} className="px-2 py-10 text-center text-muted-foreground">{tx('No data')}</td></tr>
                 )}
                 {lines.map(l => (
                   <tr key={l.id} className="border-b border-border">
-                    <td className="px-2 py-2"><Input value={l.item} onChange={e => setLine(l.id, { item: e.target.value })} placeholder="Item" /></td>
-                    <td className="px-2 py-2"><Input value={l.account} onChange={e => setLine(l.id, { account: e.target.value })} placeholder="Account" /></td>
+                    <td className="px-2 py-2"><Input value={l.item} onChange={e => setLine(l.id, { item: e.target.value })} placeholder={tx('Item')} /></td>
+                    <td className="px-2 py-2"><Input value={l.account} onChange={e => setLine(l.id, { account: e.target.value })} placeholder={tx('Account')} /></td>
                     <td className="px-2 py-2"><Input type="number" className="text-right" value={l.qty} onChange={e => setLine(l.id, { qty: Number(e.target.value) })} /></td>
                     <td className="px-2 py-2"><Input type="number" className="text-right" value={l.price} onChange={e => setLine(l.id, { price: Number(e.target.value) })} /></td>
                     <td className="px-2 py-2 text-right whitespace-nowrap">{money(l.qty * l.price)}</td>
@@ -221,8 +223,8 @@ export default function PurchaseFormPage({
             </Button>
             <div className="w-full lg:w-[380px] border border-border rounded-lg divide-y divide-border">
               {[
-                ['Sub Total', money(subTotal)],
-                ['Discount Given', money(discountGiven)],
+                [tx('Sub Total'), money(subTotal)],
+                [tx('Discount Given'), money(discountGiven)],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between px-3 py-2.5 text-sm">
                   <span>{k}</span><span>RM {v}</span>
@@ -236,7 +238,7 @@ export default function PurchaseFormPage({
                 <span className="text-muted-foreground">RM 0.00</span>
               </label>
               <div className="flex items-center justify-between px-3 py-3 text-sm font-bold">
-                <span>TOTAL</span><span>RM {money(total)}</span>
+                <span>{tx('TOTAL')}</span><span>RM {money(total)}</span>
               </div>
             </div>
           </div>
@@ -252,16 +254,16 @@ export default function PurchaseFormPage({
             <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="border-y border-border bg-muted/40 text-left">
-                  <th className="px-2 py-2 font-semibold">Term</th>
-                  <th className="px-2 py-2 font-semibold">Due On</th>
-                  <th className="px-2 py-2 font-semibold text-right">Amount</th>
-                  <th className="px-2 py-2 font-semibold">Description</th>
+                  <th className="px-2 py-2 font-semibold">{tx('Term')}</th>
+                  <th className="px-2 py-2 font-semibold">{tx('Due On')}</th>
+                  <th className="px-2 py-2 font-semibold text-right">{tx('Amount')}</th>
+                  <th className="px-2 py-2 font-semibold">{tx('Description')}</th>
                   <th className="w-10" />
                 </tr>
               </thead>
               <tbody>
                 {terms.length === 0 && (
-                  <tr><td colSpan={5} className="px-2 py-6 text-center text-muted-foreground">No payment terms</td></tr>
+                  <tr><td colSpan={5} className="px-2 py-6 text-center text-muted-foreground">{tx('No payment terms')}</td></tr>
                 )}
                 {terms.map(t => (
                   <tr key={t.id} className="border-b border-border">
@@ -297,7 +299,7 @@ export default function PurchaseFormPage({
       description: 'Additional information such as remarks and country specific fields.',
       content: (
         <Field label="Remarks">
-          <Textarea rows={4} value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Remarks displayed on the form." />
+          <Textarea rows={4} value={remarks} onChange={e => setRemarks(e.target.value)} placeholder={tx('Remarks displayed on the form.')} />
         </Field>
       ),
     },
@@ -308,7 +310,7 @@ export default function PurchaseFormPage({
       content: (
         <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-border rounded-lg py-10 cursor-pointer hover:bg-muted/40 transition-colors">
           <Plus className="h-6 w-6 text-primary" />
-          <span className="text-sm font-medium">Drop files to upload</span>
+          <span className="text-sm font-medium">{tx('Drop files to upload')}</span>
           <span className="text-xs text-muted-foreground">or tap to select files</span>
           <input type="file" multiple className="hidden" />
         </label>
@@ -327,7 +329,7 @@ export default function PurchaseFormPage({
                 onClick={() => setStatus(s)}
                 className={`px-4 py-2 text-sm ${status === s ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
               >
-                {s}
+                {tx(s)}
               </button>
             ))}
           </div>

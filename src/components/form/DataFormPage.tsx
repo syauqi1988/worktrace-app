@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTx } from '@/i18n/dual';
 import { Label } from '@/components/ui/label';
 
 export type FormSection = {
@@ -26,11 +27,12 @@ type Props = {
 export function Field({
   label, required, hint, children, className,
 }: { label: string; required?: boolean; hint?: string; children: ReactNode; className?: string }) {
+  const tx = useTx();
   return (
     <div className={`space-y-1.5 ${className || ''}`}>
       <Label className="text-sm">
         {required && <span className="text-destructive mr-0.5">*</span>}
-        {label}
+        {tx(label)}
       </Label>
       {children}
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
@@ -43,6 +45,7 @@ export default function DataFormPage({
   autosaveLabel, footerExtra, onBack,
 }: Props) {
   const navigate = useNavigate();
+  const tx = useTx();
   const [active, setActive] = useState(sections[0]?.id);
   const refs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -74,17 +77,17 @@ export default function DataFormPage({
             <button
               onClick={() => (onBack ? onBack() : navigate(-1))}
               className="text-muted-foreground hover:text-foreground shrink-0"
-              aria-label="Back"
+              aria-label={tx('Back')}
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="min-w-0 flex-1">
-              {breadcrumb && <p className="text-xs text-muted-foreground truncate">{breadcrumb}</p>}
-              <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{title}</h1>
+              {breadcrumb && <p className="text-xs text-muted-foreground truncate">{tx(breadcrumb)}</p>}
+              <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{tx(title)}</h1>
             </div>
             {autosaveLabel && (
               <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                {autosaveLabel} <RefreshCw className="h-4 w-4" />
+                {tx(autosaveLabel)} <RefreshCw className="h-4 w-4" />
               </span>
             )}
           </div>
@@ -101,7 +104,7 @@ export default function DataFormPage({
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {s.title}
+                {tx(s.title)}
               </button>
             ))}
           </div>
@@ -119,8 +122,8 @@ export default function DataFormPage({
           >
             <div className="grid md:grid-cols-[260px_1fr] gap-4 md:gap-8">
               <div>
-                <h2 className="text-base font-semibold text-foreground">{s.title}</h2>
-                {s.description && <p className="text-sm text-muted-foreground mt-1">{s.description}</p>}
+                <h2 className="text-base font-semibold text-foreground">{tx(s.title)}</h2>
+                {s.description && <p className="text-sm text-muted-foreground mt-1">{tx(s.description)}</p>}
               </div>
               <div className="min-w-0">{s.content}</div>
             </div>
@@ -133,7 +136,7 @@ export default function DataFormPage({
         <div className="flex items-center justify-end gap-3">
           {footerExtra}
           <Button onClick={onSave} disabled={saving} className="min-w-28 w-full sm:w-auto">
-            {saving ? 'Saving...' : saveLabel}
+            {saving ? tx('Saving...') : tx(saveLabel)}
           </Button>
         </div>
       </div>

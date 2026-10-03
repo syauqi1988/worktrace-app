@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { useL, useTx } from '@/i18n/dual';
 
 type Props = {
   table: 'suppliers' | 'employees';
@@ -21,6 +22,8 @@ export default function ContactFormPage({ table, label, listPath, secondaryLabel
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const tx = useTx();
+  const l = useL();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>({
     name: '', [secondaryField]: '', phone: '', email: '', address: '', notes: '', is_active: true,
@@ -37,7 +40,7 @@ export default function ContactFormPage({ table, label, listPath, secondaryLabel
   const set = (patch: any) => setForm((f: any) => ({ ...f, ...patch }));
 
   const handleSave = async () => {
-    if (!form.name?.trim()) { toast.error('Name is required'); return; }
+    if (!form.name?.trim()) { toast.error(tx('Name is required')); return; }
     setSaving(true);
     const payload = {
       user_id: user?.id,
@@ -55,7 +58,7 @@ export default function ContactFormPage({ table, label, listPath, secondaryLabel
     const { error } = await q;
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(`${label} saved`);
+    toast.success(tx(`${label} saved`));
     navigate(listPath);
   };
 
@@ -63,7 +66,7 @@ export default function ContactFormPage({ table, label, listPath, secondaryLabel
     {
       id: 'details',
       title: 'Details',
-      description: `Basic information for this ${label.toLowerCase()}.`,
+      description: l(`Basic information for this ${label.toLowerCase()}.`, `Maklumat asas untuk ${tx(label).toLowerCase()} ini.`),
       content: (
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Name" required>
