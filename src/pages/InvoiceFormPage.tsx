@@ -1,3 +1,5 @@
+import DataFormPage from '@/components/form/DataFormPage';
+import { useL } from '@/i18n/dual';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +40,7 @@ interface LineItem {
 
 export default function InvoiceFormPage() {
   const { t } = useTranslation();
+  const l = useL();
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const { user, profile } = useAuth();
@@ -447,13 +450,16 @@ export default function InvoiceFormPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? t('invoiceForm.edit') : t('invoiceForm.new')}</h1>
-      </div>
-
+    <DataFormPage
+      breadcrumb={l('Home / Invoices', 'Utama / Invois')}
+      title={`${isEdit ? t('invoiceForm.edit') : t('invoiceForm.new')}${invoiceNumber ? ` · ${invoiceNumber}` : ''}`}
+      onBack={() => navigate(-1)}
+      onSave={() => handleSave('Draft')}
+      saving={submitting}
+      saveDisabled={saveDisabled}
+      saveLabel={isEdit ? t('invoiceForm.saveEdit') : t('invoiceForm.saveDraft')}
+      sections={[
+        { id: 'general', title: l('General Info', 'Maklumat Am'), content: (<div className="space-y-4">
       {/* Invoice Number */}
       <div className="space-y-1.5">
         <Label>{t('invoiceForm.invoiceNumber')}</Label>
@@ -553,10 +559,9 @@ export default function InvoiceFormPage() {
           </div>
         </div>
       )}
-
-
+        </div>) },
+        { id: 'items', title: t('workOrderForm.items'), content: (
       <div className="space-y-3">
-        <Label>{t('workOrderForm.items')} *</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         {/* Desktop table */}
         <div className="hidden md:block">
@@ -601,8 +606,8 @@ export default function InvoiceFormPage() {
         </div>
         <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> {t('forms.addItem')}</Button>
       </div>
-
-      {/* Summary */}
+        ) },
+        { id: 'summary', title: l('Summary', 'Ringkasan'), content: (
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">{t('forms.subtotal')}</span>
@@ -653,7 +658,8 @@ export default function InvoiceFormPage() {
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
-
+        ) },
+        { id: 'payment', title: l('Payment', 'Bayaran'), content: (<div className="space-y-4">
       {/* Payment Mode toggle + Milestone Builder */}
       {!isEdit && (
         <div className="space-y-2">
@@ -682,32 +688,6 @@ export default function InvoiceFormPage() {
           )}
         </div>
       )}
-
-
-      {/* Dates */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label>{t('invoiceForm.issuedDate')}</Label>
-          <Input type="date" value={issuedDate} onChange={e => setIssuedDate(e.target.value)} className="rounded-lg" />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('invoiceForm.dueDate')}</Label>
-          <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="rounded-lg" />
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div className="space-y-1.5">
-        <Label>{t('forms.notes')}</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
-      </div>
-
-      {/* Terms & Conditions */}
-      <div className="space-y-1.5">
-        <Label>{t('forms.termsConditions')}</Label>
-        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={t('invoiceForm.termsPlaceholder')} />
-        <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
-      </div>
 
       {/* Payment Methods Selection */}
       {(() => {
@@ -740,7 +720,32 @@ export default function InvoiceFormPage() {
           </div>
         );
       })()}
+        </div>) },
+        { id: 'other', title: l('Additional Info', 'Maklumat Tambahan'), content: (<div className="space-y-4">
+      {/* Dates */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label>{t('invoiceForm.issuedDate')}</Label>
+          <Input type="date" value={issuedDate} onChange={e => setIssuedDate(e.target.value)} className="rounded-lg" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t('invoiceForm.dueDate')}</Label>
+          <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="rounded-lg" />
+        </div>
+      </div>
 
+      {/* Notes */}
+      <div className="space-y-1.5">
+        <Label>{t('forms.notes')}</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
+      </div>
+
+      {/* Terms & Conditions */}
+      <div className="space-y-1.5">
+        <Label>{t('forms.termsConditions')}</Label>
+        <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={5} placeholder={t('invoiceForm.termsPlaceholder')} />
+        <p className="text-xs text-muted-foreground">{t('forms.termsHint')}</p>
+      </div>
       {/* LHDN Section */}
       {profile?.lhdn_enabled && (
         <Collapsible open={lhdnOpen} onOpenChange={setLhdnOpen}>
@@ -783,11 +788,8 @@ export default function InvoiceFormPage() {
           </CollapsibleContent>
         </Collapsible>
       )}
-
-      {/* Save Button */}
-      <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-        {submitting ? t('forms.saving') : (isEdit ? t('invoiceForm.saveEdit') : t('invoiceForm.saveDraft'))}
-      </Button>
-    </div>
+        </div>) },
+      ]}
+    />
   );
 }
