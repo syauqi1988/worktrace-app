@@ -545,21 +545,8 @@ export default function QuotationDetailPage() {
   const afterDiscount = quotation.subtotal - quotation.discount;
   const sstAmount = quotation.tax_rate > 0 ? afterDiscount * (quotation.tax_rate / 100) : 0;
 
-  const duplicateQuotation = async () => {
-    if (!user) return;
-    setDuplicating(true);
-    try {
-      const { data: src } = await supabase.from('quotations').select('*').eq('id', quotation.id).single();
-      const num = await generateAndIncrement(supabase, user.id, 'quotation');
-      const { id: _i, created_at: _c, updated_at: _u, ...rest } = (src || {}) as any;
-      const { data, error } = await supabase.from('quotations').insert({ ...rest, quote_number: num, status: 'Created' } as any).select('id').single();
-      if (error) throw error;
-      toast.success(l('Quotation duplicated', 'Sebut harga disalin'));
-      navigate(`/quotations/${data.id}/edit`);
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally { setDuplicating(false); }
-  };
+  const duplicateQuotation = () => navigate(`/quotations/new?duplicate=${quotation.id}`);
+
 
   return (
     <>
@@ -589,7 +576,7 @@ export default function QuotationDetailPage() {
       headerActions={<DocActionsBar
         transfers={[
           { label: l('Transfer to Work Order', 'Pindah ke Work Order'), onClick: () => navigate(`/jobs/${quotation.job_id}/work-order/new`), hidden: !quotation.job_id },
-          { label: l('Transfer to Invoice', 'Pindah ke Invois'), onClick: handleConvertToInvoice },
+          { label: l('Transfer to Invoice', 'Pindah ke Invois'), onClick: () => navigate(`/invoices/new?quote_id=${quotation.id}${quotation.job_id ? `&job_id=${quotation.job_id}` : ''}`) },
         ]}
         onEdit={canEdit ? () => navigate(`/quotations/${quotation.id}/edit`) : undefined}
         actions={pdfData ? [{ label: l('Download PDF', 'Muat Turun PDF'), onClick: handlePreviewDownload, icon: <Download className="h-4 w-4" /> }] : []}

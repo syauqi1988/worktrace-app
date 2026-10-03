@@ -355,29 +355,8 @@ export default function JobDetailPage() {
     );
   }
 
-  const duplicateJob = async () => {
-    if (!job || !user) return;
-    setDuplicating(true);
-    try {
-      const { data: src } = await supabase.from('jobs').select('*').eq('id', job.id).single();
-      const { count } = await supabase.from('jobs').select('id', { count: 'exact', head: true });
-      const jobNumber = `JOB-${String((count ?? 0) + 1).padStart(4, '0')}`;
-      const s: any = src || {};
-      const { data, error } = await supabase.from('jobs').insert({
-        user_id: user.id, customer_id: s.customer_id, job_number: jobNumber,
-        title: `${s.title} (${l('Copy', 'Salinan')})`, category: s.category, status: 'Lead',
-        description: s.description, notes: s.notes, products: s.products ?? [],
-        job_type: s.job_type, milestone_config: s.milestone_config,
-      } as any).select('id').single();
-      if (error) throw error;
-      toast({ title: l('Job duplicated', 'Kerja disalin') });
-      navigate(`/jobs/${data.id}/edit`);
-    } catch (e: any) {
-      toast({ title: t('jobDetail.error'), description: e.message, variant: 'destructive' });
-    } finally {
-      setDuplicating(false);
-    }
-  };
+  const duplicateJob = () => navigate(`/jobs/new?duplicate=${job!.id}`);
+
 
   const headerActions = (
     <>
