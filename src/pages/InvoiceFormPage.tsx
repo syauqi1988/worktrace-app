@@ -599,11 +599,11 @@ export default function InvoiceFormPage() {
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         {/* Desktop table */}
         <div className="hidden md:block">
-          <div className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
+          <div className="grid grid-cols-[36px_minmax(0,1fr)_56px_56px_88px_96px_28px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
             <span></span><span>{t('forms.itemDescription')}</span><span>{t('forms.itemQty')}</span><span>UOM</span><span>{t('forms.itemUnitPrice')}</span><span>{t('forms.itemTotal')}</span><span></span>
           </div>
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 mb-2 items-start">
+            <div key={i} className="grid grid-cols-[36px_minmax(0,1fr)_56px_56px_88px_96px_28px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
