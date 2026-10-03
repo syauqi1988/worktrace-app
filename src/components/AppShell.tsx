@@ -46,7 +46,7 @@ type NavEntry = NavItem | NavGroup;
 
 const isGroup = (e: NavEntry): e is NavGroup => 'group' in e;
 
-function buildNavItems(t: (k: string) => string): NavEntry[] {
+function buildNavItems(t: (k: string) => string, tx: (k: string) => string = (k) => k): NavEntry[] {
   return [
     { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     {
@@ -165,7 +165,7 @@ export default function AppShell() {
   const location = useLocation();
   const { shouldAutoStart } = useTutorial('dashboard');
   const { t } = useTranslation();
-  const NAV_ITEMS = buildNavItems(t);
+  const NAV_ITEMS = buildNavItems(t, tx);
   const BOTTOM_TABS = buildBottomTabs(t);
   const QUICK_ACTIONS = buildQuickActions(t);
 
