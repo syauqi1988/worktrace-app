@@ -350,11 +350,11 @@ export default function VoFormPage() {
       <div className="space-y-2">
         <Label>{t('vo.items')}</Label>
         <div className="hidden md:block">
-          <div className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
+          <div className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
             <span></span><span>{t('vo.description')}</span><span>{t('vo.qty')}</span><span>{t('vo.uom')}</span><span>{t('vo.price')}</span><span>{t('vo.amount')}</span><span></span>
           </div>
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 mb-2 items-start">
+            <div key={i} className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm" />
@@ -369,7 +369,7 @@ export default function VoFormPage() {
                 className="flex items-center justify-center h-10 text-muted-foreground hover:text-destructive disabled:opacity-30">
                 <Trash2 className="h-4 w-4" />
               </button>
-              <div className="col-start-2 col-end-7"><Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.itemDetail')} rows={4} className="text-sm min-h-[96px] resize-y" /></div>
+              <div className="col-start-2 col-end-[-1]"><Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.itemDetail')} rows={5} className="text-sm min-h-[120px] resize-y" /></div>
             </div>
           ))}
         </div>
@@ -387,7 +387,7 @@ export default function VoFormPage() {
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm flex-1" />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.detailShort')} rows={4} className="text-sm min-h-[96px] resize-y" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder={t('vo.detailShort')} rows={5} className="text-sm min-h-[120px] resize-y" />
               <div className="grid grid-cols-3 gap-2">
                 <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder={t('vo.qty')} className="text-sm" />
                 <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder={t('vo.uom')} className="text-sm" />

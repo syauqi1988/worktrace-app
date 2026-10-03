@@ -422,11 +422,11 @@ export default function QuotationFormPage() {
       <div className="space-y-3">
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         <div className="hidden md:block">
-          <div className="grid grid-cols-[40px_minmax(0,1fr)_64px_64px_100px_100px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
+          <div className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
             <span></span><span>{t('forms.itemDescription')}</span><span>{t('forms.itemQty')}</span><span>UOM</span><span>{t('forms.itemUnitPrice')}</span><span>{t('forms.itemTotal')}</span><span></span>
           </div>
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[40px_minmax(0,1fr)_64px_64px_100px_100px_36px] gap-2 mb-2 items-start">
+            <div key={i} className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
@@ -436,7 +436,7 @@ export default function QuotationFormPage() {
               <Input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(i, 'unit_price', Number(e.target.value) || 0)} placeholder="0.00" className="text-sm" />
               <div className="flex items-center px-3 text-sm font-medium text-foreground bg-muted rounded-md h-10">RM {((item.qty || 0) * (item.unit_price || 0)).toFixed(2)}</div>
               <button onClick={() => removeItem(i)} disabled={items.length <= 1} className="flex items-center justify-center h-10 text-muted-foreground hover:text-destructive disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
-              <div className="col-start-2 col-end-7"><Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={4} className="text-sm min-h-[96px] resize-y" /></div>
+              <div className="col-start-2 col-end-[-1]"><Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={5} className="text-sm min-h-[120px] resize-y" /></div>
             </div>
           ))}
         </div>
@@ -450,7 +450,7 @@ export default function QuotationFormPage() {
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Penerangan item" className="text-sm" />
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={4} className="text-sm min-h-[96px] resize-y" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={5} className="text-sm min-h-[120px] resize-y" />
               <div className="grid grid-cols-3 gap-2">
                 <div><p className="text-xs text-muted-foreground mb-1">Qty</p><Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" /></div>
                 <div><p className="text-xs text-muted-foreground mb-1">UOM</p><Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" /></div>
