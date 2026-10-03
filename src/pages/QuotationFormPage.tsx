@@ -463,11 +463,7 @@ export default function QuotationFormPage() {
         <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
       </div>
 
-        <DeductionItemsSection
-          value={deductions}
-          onChange={setDeductions}
-          subtotalForPreview={subtotal}
-        />
+
         </div>) },
         { id: 'summary', title: l('Summary', 'Ringkasan'), content: (
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">

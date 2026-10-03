@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -99,6 +99,9 @@ function checklistToText(items: ChecklistItem[]): string {
 export default function CompletionReportPage() {
   const { t } = useTranslation();
   const { id: jobId } = useParams<{ id: string }>();
+  const [crSearch] = useSearchParams();
+  const reportIdParam = crSearch.get('report');
+  const isNewReport = crSearch.get('new') === '1';
   const { user, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -174,12 +177,16 @@ export default function CompletionReportPage() {
           .select('id, job_number, title, category, customer_id, customers(name, phone, email, address)')
           .eq('id', jobId)
           .single(),
-        supabase
-          .from('completion_reports')
-          .select('*')
-          .eq('job_id', jobId)
-          .eq('user_id', user!.id)
-          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        isNewReport
+          ? Promise.resolve({ data: null } as any)
+          : reportIdParam
+          ? supabase.from('completion_reports').select('*').eq('id', reportIdParam).eq('user_id', user!.id).maybeSingle()
+          : supabase
+            .from('completion_reports')
+            .select('*')
+            .eq('job_id', jobId)
+            .eq('user_id', user!.id)
+            .order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase
           .from('profiles')
           .select('doc_number_settings')
@@ -230,7 +237,7 @@ export default function CompletionReportPage() {
     }
 
     load();
-  }, [user, jobId, profile]);
+  }, [user, jobId, profile, reportIdParam, isNewReport]);
 
   // Realtime: reflect customer accept / reject immediately
   useEffect(() => {
@@ -783,14 +790,6 @@ export default function CompletionReportPage() {
               className="rounded-lg gap-2"
             >
               <Receipt className="h-4 w-4" /> {t('completionReport.createInvoice')}
-            </Button>
-            <Button
-              onClick={() => navigate(`/jobs/${jobId}/vo/new`)}
-              size="sm"
-              variant="outline"
-              className="rounded-lg gap-2"
-            >
-              <FileText className="h-4 w-4" /> {t('completionReport.voDeduction')}
             </Button>
             {job.customers?.phone && (
               <Button

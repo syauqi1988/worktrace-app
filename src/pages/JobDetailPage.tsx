@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import DataFormPage from '@/components/form/DataFormPage';
 import { useL } from '@/i18n/dual';
-import { ChevronDown, ArrowLeftRight, Ban, Copy, Share2 } from 'lucide-react';
+import { ChevronDown, ArrowLeftRight, Ban, Copy, Share2, Plus } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub,
   DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
@@ -138,6 +138,9 @@ export default function JobDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [logoBase64, setLogoBase64] = useState('');
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [workOrders, setWorkOrders] = useState<any[]>([]);
+  const [reports, setReports] = useState<CompletionReport[]>([]);
   const { checkWhatsAppShare } = usePlanGate();
 
   useEffect(() => {
@@ -152,7 +155,7 @@ export default function JobDetailPage() {
           .select('id, quote_number, total, status, valid_until')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
+          .order('created_at', { ascending: false }),
         supabase.from('invoices')
           .select('id, invoice_number, total, status, due_date, milestone_stage_number, milestone_total_stages, milestone_stages, created_at')
           .eq('job_id', id)
@@ -163,22 +166,26 @@ export default function JobDetailPage() {
           .select('id, report_number, status, completion_date, work_description, technician_name, materials_used, customer_signature, notes, photos, accepted_at')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
+          .order('created_at', { ascending: false }),
         supabase.from('work_orders')
           .select('id, wo_number, status, total')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
+          .order('created_at', { ascending: false }),
       ]);
       setJob(jobRes.data as unknown as Job);
-      setQuotation(quoRes.data as Quotation | null);
+      const qList = ((quoRes.data as any[]) || []) as Quotation[];
+      setQuotations(qList);
+      setQuotation(qList[0] ?? null);
       const invList = ((invRes.data as any[]) || []) as Invoice[];
       setInvoices(invList);
       setInvoice(invList[0] ?? null);
-      setReport(reportRes.data as CompletionReport | null);
-      setWorkOrder(woRes.data as any);
+      const rList = ((reportRes.data as any[]) || []) as CompletionReport[];
+      setReports(rList);
+      setReport(rList[0] ?? null);
+      const wList = ((woRes.data as any[]) || []);
+      setWorkOrders(wList);
+      setWorkOrder(wList[0] ?? null);
       const { data: voData } = await (supabase as any).from('variation_orders')
         .select('id, vo_number, type, status, total, reason')
         .eq('job_id', id).eq('user_id', user!.id)
@@ -372,11 +379,8 @@ export default function JobDetailPage() {
             <DropdownMenuSubContent className="bg-popover z-50">
               <DropdownMenuItem onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>{l('Transfer to Quotation', 'Pindah ke Sebut Harga')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>{l('Transfer to Work Order', 'Pindah ke Work Order')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>{l('Transfer to Completion Report', 'Pindah ke Laporan Siap')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/completion-report${reports.length ? '?new=1' : ''}`)}>{l('Transfer to Completion Report', 'Pindah ke Laporan Siap')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>{l('Transfer to Invoice', 'Pindah ke Invois')}</DropdownMenuItem>
-              {job.job_type !== 'milestone' && (
-                <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>{l('Transfer to Variation Order', 'Pindah ke VO')}</DropdownMenuItem>
-              )}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuItem className="gap-2" onClick={() => navigate(`/jobs/${job.id}/edit`)}><Edit className="h-4 w-4" /> {t('jobDetail.editJob')}</DropdownMenuItem>
@@ -517,281 +521,38 @@ export default function JobDetailPage() {
       </div>
         ) },
         { id: 'documents', title: l('Documents', 'Dokumen'), content: (<div className="space-y-4">
-      {/* Related Quotation */}
-      <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <FileText className="h-3.5 w-3.5" /> {t('jobDetail.quotation')}
-        </p>
-        {quotation ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-primary">{quotation.quote_number}</span>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                quotation.status === 'Accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
-                quotation.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
-                quotation.status === 'Rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
-                'bg-[#F1F5F9] text-[#64748B]'
-              }`}>{quotation.status}</span>
-            </div>
-            <p className="text-sm font-semibold text-foreground">RM {Number(quotation.total).toFixed(2)}</p>
-            {quotation.valid_until && (
-              <p className="text-xs text-muted-foreground">{t('jobDetail.validUntil', { date: formatDate(quotation.valid_until) })}</p>
-            )}
-            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
-              onClick={() => navigate(`/quotations/${quotation.id}`)}>
-              {t('jobDetail.viewQuote')}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{t('jobDetail.noQuote')}</p>
-            <Button variant="outline" size="sm" className="text-xs gap-1"
-              onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>
-              <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createQuote')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Work Order Card */}
-      {(
-
-        <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.workOrder')}
-          </p>
-          {workOrder ? (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-primary">{workOrder.wo_number}</span>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                  workOrder.status === 'Accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
-                  workOrder.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
-                  workOrder.status === 'Rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
-                  'bg-[#F1F5F9] text-[#64748B]'
-                }`}>{workOrder.status}</span>
-              </div>
-              <p className="text-sm font-semibold text-foreground">RM {Number(workOrder.total).toFixed(2)}</p>
-              <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
-                onClick={() => navigate(`/jobs/${job.id}/work-order`)}>
-                {t('jobDetail.viewWo')}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{t('jobDetail.woReady')}</p>
-              <Button variant="outline" size="sm" className="text-xs gap-1"
-                onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>
-                <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.createWo')}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Completion Report Card */}
-      <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.completionReport')}
-        </p>
-        {report ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-primary">{report.report_number}</span>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                report.status === 'accepted' ? 'bg-[#DCFCE7] text-[#15803D]' :
-                report.status === 'submitted' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
-                report.status === 'rejected' ? 'bg-[#FEE2E2] text-[#B91C1C]' :
-                'bg-[#F1F5F9] text-[#64748B]'
-              }`}>
-                {report.status === 'accepted' ? t('jobDetail.statusAccepted') :
-                 report.status === 'submitted' ? t('jobDetail.statusSubmitted') :
-                 report.status === 'rejected' ? t('jobDetail.statusRejected') : t('jobDetail.statusDraft')}
-              </span>
-            </div>
-            {report.status === 'submitted' && (
-              <div className="flex items-center gap-1.5 text-[#1D4ED8]">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span className="text-xs font-medium">{t('jobDetail.waitingCustomer')}</span>
-              </div>
-            )}
-            {report.status === 'accepted' && (
-              <div className="flex items-center gap-1.5 text-[#15803D]">
-                <CheckCircle className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">{t('jobDetail.confirmedByCustomer')}</span>
-              </div>
-            )}
-            <div className="flex flex-wrap gap-2 mt-1">
-              {report.status === 'draft' ? (
-                <Button variant="outline" size="sm" className="text-xs gap-1"
-                  onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  <Edit className="h-3.5 w-3.5" /> {t('jobDetail.editReport')}
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" className="text-xs gap-1"
-                  onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-                  {t('jobDetail.viewReport')}
-                </Button>
-              )}
-              <Button variant="outline" size="sm" className="text-xs gap-1" onClick={handleReportPreview}>
-                <Eye className="h-3.5 w-3.5" /> {t('jobDetail.previewPdf')}
-              </Button>
-              {(report.status === 'submitted' || report.status === 'accepted' || report.status === 'rejected') && job.customers?.phone && (
-                <Button size="sm" className="text-xs gap-1" onClick={handleReportWhatsApp} disabled={isSharing}>
-                  {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
-                  {t('jobDetail.shareWa')}
-                </Button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{t('jobDetail.reportReady')}</p>
-            <Button variant="outline" size="sm" className="text-xs gap-1"
-              onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>
-              <ClipboardCheck className="h-3.5 w-3.5" /> {t('jobDetail.fillReport')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Variation Orders / Deductions — no longer gated on customer approval */}
-      {job.job_type !== 'milestone' && (
-        <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5" /> Variasi & Potongan
-          </p>
-          <p className="text-xs text-muted-foreground mb-3">
-            Tambah Variation Order atau Potongan sebelum menjana invois akhir.
-          </p>
-          <div className="flex flex-wrap gap-2 mb-3">
-            <Button variant="outline" size="sm" className="text-xs gap-1"
-              onClick={() => navigate(`/jobs/${job.id}/vo/new?type=addition`)}>
-              <FileText className="h-3.5 w-3.5" /> + Tambah VO
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
-              onClick={() => navigate(`/jobs/${job.id}/vo/new?type=deduction`)}>
-              <FileText className="h-3.5 w-3.5" /> + Tambah Potongan
-            </Button>
-          </div>
-          {vos.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Tiada variasi.</p>
-          ) : (
-            <div className="space-y-2">
-              {vos.map(v => {
-                const isDed = v.type === 'deduction';
-                return (
-                  <div key={v.id} className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-primary">{v.vo_number}</span>
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                          isDed ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-                        }`}>{isDed ? 'Potongan' : 'VO'}</span>
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                          v.status === 'Accepted' ? 'bg-green-100 text-green-700' :
-                          v.status === 'Sent' ? 'bg-blue-100 text-blue-700' :
-                          v.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-slate-100 text-slate-600'
-                        }`}>{v.status}</span>
-                      </div>
-                      <p className={`text-sm font-semibold ${isDed ? 'text-red-700' : 'text-foreground'}`}>
-                        {isDed ? '-' : '+'}RM {Number(v.total).toFixed(2)}
-                      </p>
-                      {v.reason && <p className="text-xs text-muted-foreground truncate">{v.reason}</p>}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" className="text-xs"
-                        onClick={() => navigate(`/jobs/${job.id}/vo/${v.id}/edit`)}>
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-xs text-red-600 hover:text-red-700"
-                        onClick={async () => {
-                          if (!confirm(`Padam ${v.vo_number}?`)) return;
-                          const { error } = await (supabase as any).from('variation_orders').delete().eq('id', v.id);
-                          if (error) {
-                            toast({ title: 'Ralat', description: error.message, variant: 'destructive' });
-                          } else {
-                            await (supabase as any).from('customer_approvals').delete().eq('document_id', v.id).eq('document_type', 'variation_order');
-                            setVos(prev => prev.filter(x => x.id !== v.id));
-                            toast({ title: 'VO dipadam' });
-                          }
-                        }}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Financial Summary */}
-      {quotation && (() => {
-        const quoteTotal = Number(quotation.total) || 0;
-        const additions = vos.filter(v => v.type === 'addition' && v.status === 'Accepted').reduce((s, v) => s + (Number(v.total) || 0), 0);
-        const deductions = vos.filter(v => v.type === 'deduction' && v.status === 'Accepted').reduce((s, v) => s + (Number(v.total) || 0), 0);
-        const finalTotal = quoteTotal + additions - deductions;
-        return (
-          <div className="bg-card rounded-xl border border-border p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ringkasan Kewangan</p>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Sebut Harga Asal</span><span>RM {quoteTotal.toFixed(2)}</span></div>
-              {additions > 0 && <div className="flex justify-between"><span className="text-blue-700">+ Variasi</span><span className="text-blue-700">+RM {additions.toFixed(2)}</span></div>}
-              {deductions > 0 && <div className="flex justify-between"><span className="text-red-700">− Potongan</span><span className="text-red-700">−RM {deductions.toFixed(2)}</span></div>}
-              <div className="flex justify-between border-t border-border pt-2 mt-2 font-bold"><span>Jumlah Akhir</span><span className="text-primary">RM {finalTotal.toFixed(2)}</span></div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {false && invoices.some(i => i.milestone_stage_number) ? (
-        <JobMilestoneTracker invoices={invoices as any} />
-      ) : (
-      <div className="bg-card rounded-xl border border-border p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.invoice')}
-        </p>
-        {invoice ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-primary">{invoice.invoice_number}</span>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                invoice.status === 'Paid' ? 'bg-[#DCFCE7] text-[#15803D]' :
-                invoice.status === 'Sent' ? 'bg-[#DBEAFE] text-[#1D4ED8]' :
-                'bg-[#F1F5F9] text-[#64748B]'
-              }`}>{invoice.status}</span>
-            </div>
-            <p className="text-sm font-semibold text-foreground">RM {Number(invoice.total).toFixed(2)}</p>
-            {invoice.due_date && (
-              <p className="text-xs text-muted-foreground">{t('jobDetail.payBefore', { date: formatDate(invoice.due_date) })}</p>
-            )}
-            <Button variant="outline" size="sm" className="text-xs gap-1 mt-1"
-              onClick={() => navigate(`/invoices/${invoice.id}`)}>
-              {t('jobDetail.viewInvoice')}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{t('jobDetail.noInvoice')}</p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="text-xs gap-1"
-                onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>
-                <Receipt className="h-3.5 w-3.5" /> {t('jobDetail.createInvoice')}
-              </Button>
-              {job.job_type !== 'milestone' && (
-                <Button variant="outline" size="sm" className="text-xs gap-1"
-                  onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>
-                  <FileText className="h-3.5 w-3.5" /> {t('jobDetail.createVo')}
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-      )}
+      <DocGroup
+        icon={<FileText className="h-3.5 w-3.5" />}
+        title={t('jobDetail.quotation')}
+        emptyText={t('jobDetail.noQuote')}
+        createLabel={l('New Quotation', 'Sebut Harga Baru')}
+        onCreate={() => navigate(`/quotations/new?job_id=${job.id}`)}
+        items={quotations.map(q => ({ id: q.id, number: q.quote_number, status: q.status, total: q.total, onView: () => navigate(`/quotations/${q.id}`) }))}
+      />
+      <DocGroup
+        icon={<ClipboardCheck className="h-3.5 w-3.5" />}
+        title={t('jobDetail.workOrder')}
+        emptyText={t('jobDetail.woReady')}
+        createLabel={l('New Work Order', 'Work Order Baru')}
+        onCreate={() => navigate(`/jobs/${job.id}/work-order/new`)}
+        items={workOrders.map((w: any) => ({ id: w.id, number: w.wo_number, status: w.status, total: w.total, onView: () => navigate(`/jobs/${job.id}/work-order?wo=${w.id}`) }))}
+      />
+      <DocGroup
+        icon={<ClipboardCheck className="h-3.5 w-3.5" />}
+        title={t('jobDetail.completionReport')}
+        emptyText={t('jobDetail.reportReady')}
+        createLabel={l('New Report', 'Laporan Baru')}
+        onCreate={() => navigate(`/jobs/${job.id}/completion-report${reports.length ? '?new=1' : ''}`)}
+        items={reports.map(r => ({ id: r.id, number: r.report_number, status: r.status === 'accepted' ? t('jobDetail.statusAccepted') : r.status === 'submitted' ? t('jobDetail.statusSubmitted') : r.status === 'rejected' ? t('jobDetail.statusRejected') : t('jobDetail.statusDraft'), onView: () => navigate(`/jobs/${job.id}/completion-report?report=${r.id}`) }))}
+      />
+      <DocGroup
+        icon={<Receipt className="h-3.5 w-3.5" />}
+        title={t('jobDetail.invoice')}
+        emptyText={t('jobDetail.noInvoice')}
+        createLabel={l('New Invoice', 'Invois Baru')}
+        onCreate={() => navigate(`/invoices/new?job_id=${job.id}`)}
+        items={invoices.map(i => ({ id: i.id, number: i.invoice_number, status: i.status, total: i.total, onView: () => navigate(`/invoices/${i.id}`) }))}
+      />
         </div>) },
       ]}
     />
@@ -830,5 +591,40 @@ export default function JobDetailPage() {
         title={t('jobDetail.previewTitle', { name: report?.report_number || 'Laporan' })}
       />
     </>
+  );
+}
+
+
+function DocGroup({ icon, title, emptyText, createLabel, onCreate, items }: {
+  icon: React.ReactNode; title: string; emptyText: string; createLabel: string; onCreate: () => void;
+  items: { id: string; number: string; status: string; total?: number | null; onView: () => void }[];
+}) {
+  const l = useL();
+  return (
+    <div className="bg-card rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">{icon} {title}{items.length > 0 && ` (${items.length})`}</p>
+        <Button size="sm" className="text-xs gap-1 h-8" onClick={onCreate}><Plus className="h-3.5 w-3.5" /> {createLabel}</Button>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{emptyText}</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map(it => (
+            <button key={it.id} type="button" onClick={it.onView}
+              className="w-full flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border hover:bg-accent text-left">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-primary truncate">{it.number}</p>
+                {it.total != null && <p className="text-xs text-muted-foreground">RM {Number(it.total).toFixed(2)}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{it.status}</span>
+                <span className="text-xs text-primary font-medium">{l('View', 'Lihat')}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
