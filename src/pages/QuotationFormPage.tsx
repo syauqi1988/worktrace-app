@@ -1,3 +1,5 @@
+import DataFormPage from '@/components/form/DataFormPage';
+import { useL } from '@/i18n/dual';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -314,14 +316,16 @@ export default function QuotationFormPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? t('quotationForm.edit') : t('quotationForm.new')}</h1>
-      </div>
-
+    <DataFormPage
+      breadcrumb={l('Home / Quotations', 'Utama / Sebut Harga')}
+      title={`${isEdit ? t('quotationForm.edit') : t('quotationForm.new')}${quoteNumber ? ` · ${quoteNumber}` : ''}`}
+      onBack={() => navigate(-1)}
+      onSave={() => handleSave('Draft')}
+      saving={submitting}
+      saveDisabled={saveDisabled}
+      saveLabel={isEdit ? t('quotationForm.saveEdit') : t('quotationForm.saveDraft')}
+      sections={[
+        { id: 'general', title: l('General Info', 'Maklumat Am'), content: (<div className="space-y-4">
       <div className="space-y-1.5">
         <Label>{t('quotationForm.quoteNumber')}</Label>
         <Input value={quoteNumber} readOnly className="bg-muted" />
@@ -391,8 +395,9 @@ export default function QuotationFormPage() {
         </div>
       )}
 
+        </div>) },
+        { id: 'items', title: t('quotationForm.items'), content: (<div className="space-y-4">
       <div className="space-y-3">
-        <Label>{t('quotationForm.items')}</Label>
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         <div className="hidden md:block">
           <div className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
@@ -436,15 +441,14 @@ export default function QuotationFormPage() {
         <Button variant="outline" onClick={addItem} disabled={items.length >= 20} className="gap-1.5 rounded-lg text-sm"><Plus className="h-4 w-4" /> Tambah Item</Button>
       </div>
 
-      {/* Potongan / Diskaun */}
-      <div className="bg-card rounded-xl border border-border p-4">
         <DeductionItemsSection
           value={deductions}
           onChange={setDeductions}
           subtotalForPreview={subtotal}
         />
       </div>
-
+        </div>) },
+        { id: 'summary', title: l('Summary', 'Ringkasan'), content: (
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex justify-between text-sm"><span className="text-muted-foreground">{t('forms.subtotal')}</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
         <div className="space-y-1.5">
@@ -486,8 +490,8 @@ export default function QuotationFormPage() {
           <span className="text-lg font-bold text-primary">RM {grandTotal.toFixed(2)}</span>
         </div>
       </div>
-
-      {/* Maklumat Pembayaran (from settings) */}
+        ) },
+        { id: 'payment', title: l('Payment', 'Bayaran'), content: (<div className="space-y-4">
       {hasPaymentDetails((profile as any)?.payment_details) ? (
         <div className="bg-card rounded-xl border border-border p-4 space-y-3">
           <div className="flex items-center justify-between gap-3">
@@ -512,18 +516,6 @@ export default function QuotationFormPage() {
         </div>
       )}
 
-
-      <div className="space-y-1.5">
-        <Label>{t('quotationForm.validUntil')}</Label>
-        <Input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className="rounded-lg" />
-      </div>
-
-      <div className="space-y-1.5">
-        <Label>{t('forms.notes')}</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
-      </div>
-
-      {/* Payment structure (deposit / milestone) — auto-injects into T&C */}
       {(selectedJob?.job_type === 'deposit' || selectedJob?.job_type === 'milestone') && (
         <div className="space-y-2 bg-card rounded-xl border border-border p-4">
           <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -577,7 +569,17 @@ export default function QuotationFormPage() {
           )}
         </div>
       )}
+        </div>) },
+        { id: 'other', title: l('Additional Info', 'Maklumat Tambahan'), content: (<div className="space-y-4">
+      <div className="space-y-1.5">
+        <Label>{t('quotationForm.validUntil')}</Label>
+        <Input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className="rounded-lg" />
+      </div>
 
+      <div className="space-y-1.5">
+        <Label>{t('forms.notes')}</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('forms.notesPlaceholder')} />
+      </div>
       <div className="space-y-1.5">
         <Label>{t('forms.termsConditions')}</Label>
         <Textarea value={terms} onChange={e => setTerms(e.target.value)} rows={6} placeholder={t('quotationForm.termsPlaceholder')} />
@@ -590,10 +592,8 @@ export default function QuotationFormPage() {
           )}
         </div>
       </div>
-
-      <Button onClick={() => handleSave('Draft')} disabled={submitting || saveDisabled} className="w-full rounded-lg h-11">
-        {submitting ? t('forms.saving') : (isEdit ? t('quotationForm.saveEdit') : t('quotationForm.saveDraft'))}
-      </Button>
-    </div>
+        </div>) },
+      ]}
+    />
   );
 }
