@@ -341,7 +341,7 @@ export default function InvoiceFormPage() {
       const existing = existingRes.data;
       if (existing && !isMilestoneJob) {
         setJobWarning({ message: t('invoiceForm.jobHasInvoice'), link: `/invoices/${existing.id}` });
-        setSaveDisabled(true);
+        setSaveDisabled(false);
       } else {
         setJobWarning(null);
         setSaveDisabled(false);
@@ -461,7 +461,7 @@ export default function InvoiceFormPage() {
   }
 
   // Blocked by existing invoice
-  if (!isEdit && existingInvoice && blockedJobId) {
+  if (false && !isEdit && existingInvoice && blockedJobId) {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">

@@ -313,7 +313,7 @@ export default function QuotationFormPage() {
     );
   }
 
-  if (!isEdit && existingQuotation && blockedJobId) {
+  if (false && !isEdit && existingQuotation && blockedJobId) {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
@@ -379,7 +379,7 @@ export default function QuotationFormPage() {
                         const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
                         if (existing) {
                           setJobWarning({ message: t('quotationForm.jobHasQuote'), link: `/quotations/${existing.id}` });
-                          setSaveDisabled(true);
+                          setSaveDisabled(false);
                         } else {
                           setJobWarning(null);
                           setSaveDisabled(false);

@@ -299,7 +299,7 @@ export default function WorkOrderFormPage() {
     );
   }
 
-  if (existingWo && !editWoId) {
+  if (false && existingWo && !editWoId) {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
