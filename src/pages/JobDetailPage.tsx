@@ -22,6 +22,13 @@ import {
   ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin,
   CalendarDays, FileText, Receipt, MessageCircle, ClipboardCheck, CheckCircle, Eye, Loader2, AlertTriangle
 } from 'lucide-react';
+import DataFormPage from '@/components/form/DataFormPage';
+import { useL } from '@/i18n/dual';
+import { ChevronDown, ArrowLeftRight, Ban, Copy, Share2 } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub,
+  DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { WorkflowBar } from '@/components/workflow/WorkflowBar';
 import { JobMilestoneTracker } from '@/components/JobMilestoneTracker';
 import { getJobType, type JobType, type WorkflowStepKey } from '@/lib/jobTypes';
@@ -346,26 +353,85 @@ export default function JobDetailPage() {
     );
   }
 
-  return (
-    <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-foreground">{job.job_number}</h1>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[job.status]}`}>{job.status}</span>
-          </div>
-          <p className="text-sm text-muted-foreground truncate">{job.title}</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => navigate(`/jobs/${job.id}/edit`)} className="gap-1.5 shrink-0">
-          <Edit className="h-3.5 w-3.5" /> {t('jobDetail.edit')}
-        </Button>
-      </div>
+  const duplicateJob = async () => {
+    if (!job || !user) return;
+    setDuplicating(true);
+    try {
+      const { data: src } = await supabase.from('jobs').select('*').eq('id', job.id).single();
+      const { count } = await supabase.from('jobs').select('id', { count: 'exact', head: true });
+      const jobNumber = `JOB-${String((count ?? 0) + 1).padStart(4, '0')}`;
+      const s: any = src || {};
+      const { data, error } = await supabase.from('jobs').insert({
+        user_id: user.id, customer_id: s.customer_id, job_number: jobNumber,
+        title: `${s.title} (${l('Copy', 'Salinan')})`, category: s.category, status: 'Lead',
+        description: s.description, notes: s.notes, products: s.products ?? [],
+        job_type: s.job_type, milestone_config: s.milestone_config,
+      } as any).select('id').single();
+      if (error) throw error;
+      toast({ title: l('Job duplicated', 'Kerja disalin') });
+      navigate(`/jobs/${data.id}/edit`);
+    } catch (e: any) {
+      toast({ title: t('jobDetail.error'), description: e.message, variant: 'destructive' });
+    } finally {
+      setDuplicating(false);
+    }
+  };
 
-      {/* Workflow bar — driven by job_type */}
+  const headerActions = (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
+            <ChevronDown className="h-4 w-4" /> {l('Actions', 'Tindakan')}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="gap-2"><ArrowLeftRight className="h-4 w-4" /> {l('Transfer to...', 'Pindah ke...')}</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="bg-popover z-50">
+              <DropdownMenuItem onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>{l('Transfer to Quotation', 'Pindah ke Sebut Harga')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>{l('Transfer to Work Order', 'Pindah ke Work Order')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>{l('Transfer to Completion Report', 'Pindah ke Laporan Siap')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>{l('Transfer to Invoice', 'Pindah ke Invois')}</DropdownMenuItem>
+              {job.job_type !== 'milestone' && (
+                <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>{l('Transfer to Variation Order', 'Pindah ke VO')}</DropdownMenuItem>
+              )}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuItem className="gap-2" onClick={() => navigate(`/jobs/${job.id}/edit`)}><Edit className="h-4 w-4" /> {t('jobDetail.editJob')}</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {job.status !== 'Cancelled' && (
+            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleStatusChange('Cancelled')}>
+              <Ban className="h-4 w-4" /> {l('Cancel Job', 'Batal Kerja')}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4" /> {t('jobDetail.delete')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={duplicateJob} disabled={duplicating}>
+        {duplicating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />} {l('Duplicate', 'Salin')}
+      </Button>
+      <Button size="sm" className="gap-1.5 shrink-0" disabled={!whatsappUrl}
+        onClick={() => whatsappUrl && window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}>
+        <Share2 className="h-4 w-4" /> {l('QuickShare', 'Kongsi Pantas')}
+      </Button>
+    </>
+  );
+
+  return (
+    <>
+    <DataFormPage
+      breadcrumb={l('Home / Jobs', 'Utama / Kerja')}
+      title={job.job_number}
+      titleBadge={<span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[job.status]}`}>{job.status}</span>}
+      headerActions={headerActions}
+      onBack={() => navigate(-1)}
+      onSave={() => navigate(`/jobs/${job.id}/edit`)}
+      saveLabel={t('jobDetail.editJob')}
+      sections={[
+        { id: 'workflow', title: l('Workflow', 'Aliran Kerja'), description: job.title, content: (
       <div className="bg-card rounded-xl border border-border p-3">
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
           {getJobType(job.job_type as JobType).icon} {getJobType(job.job_type as JobType).nameMs}
@@ -389,10 +455,8 @@ export default function JobDetailPage() {
           </div>
         )}
       </div>
-
-
-      {/* Customer Card */}
-      {job.customers && (
+        ) },
+        ...(job.customers ? [{ id: 'customer', title: t('jobDetail.customer'), content: (
         <div className="bg-card rounded-xl border border-border p-4 space-y-2">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('jobDetail.customer')}</p>
           <p className="text-base font-semibold text-foreground">{job.customers.name}</p>
@@ -421,9 +485,8 @@ export default function JobDetailPage() {
             </div>
           )}
         </div>
-      )}
-
-      {/* Job Info Card */}
+        ) }] : []),
+        { id: 'info', title: t('jobDetail.jobInfo'), content: (
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('jobDetail.jobInfo')}</p>
         <div className="grid grid-cols-2 gap-3">
@@ -474,7 +537,8 @@ export default function JobDetailPage() {
           </div>
         )}
       </div>
-
+        ) },
+        { id: 'documents', title: l('Documents', 'Dokumen'), content: (<div className="space-y-4">
       {/* Related Quotation */}
       <div className="bg-card rounded-xl border border-border p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
@@ -750,17 +814,9 @@ export default function JobDetailPage() {
         )}
       </div>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button onClick={() => navigate(`/jobs/${job.id}/edit`)} className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> {t('jobDetail.editJob')}
-        </Button>
-        <Button variant="outline" onClick={() => setDeleteOpen(true)} className="rounded-lg gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" /> {t('jobDetail.delete')}
-        </Button>
-      </div>
-
+        </div>) },
+      ]}
+    />
       {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
@@ -795,6 +851,6 @@ export default function JobDetailPage() {
         open={previewOpen}
         title={t('jobDetail.previewTitle', { name: report?.report_number || 'Laporan' })}
       />
-    </div>
+    </>
   );
 }
