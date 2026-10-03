@@ -1135,16 +1135,8 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button
-                  onClick={shareWhatsApp}
-                  size="sm"
-                  className="rounded-lg gap-1.5 text-white"
-                  style={{ backgroundColor: "#25D366" }}
-                >
-                  <MessageCircle className="h-3.5 w-3.5" /> {t("settings.referral.shareWa")}
-                </Button>
-                <Button onClick={shareTelegram} size="sm" variant="outline" className="rounded-lg gap-1.5">
-                  <Send className="h-3.5 w-3.5" /> {t("settings.referral.telegram")}
+                <Button onClick={shareWhatsApp} size="sm" className="rounded-lg gap-1.5">
+                  <Share2 className="h-3.5 w-3.5" /> {t("settings.referral.shareWa")}
                 </Button>
               </div>
             </div>
