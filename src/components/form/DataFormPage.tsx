@@ -23,6 +23,10 @@ type Props = {
   autosaveLabel?: string;
   footerExtra?: ReactNode;
   onBack?: () => void;
+  /** Badge shown next to the title (e.g. status) */
+  titleBadge?: ReactNode;
+  /** Action buttons shown in the header (wrap below title on mobile) */
+  headerActions?: ReactNode;
 };
 
 export function Field({
@@ -43,7 +47,7 @@ export function Field({
 
 export default function DataFormPage({
   breadcrumb, title, sections, onSave, saving, saveLabel = 'Save', saveDisabled,
-  autosaveLabel, footerExtra, onBack,
+  autosaveLabel, footerExtra, onBack, titleBadge, headerActions,
 }: Props) {
   const navigate = useNavigate();
   const tx = useTx();
@@ -84,8 +88,12 @@ export default function DataFormPage({
             </button>
             <div className="min-w-0 flex-1">
               {breadcrumb && <p className="text-xs text-muted-foreground truncate">{tx(breadcrumb)}</p>}
-              <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{tx(title)}</h1>
+              <div className="flex items-center gap-2 min-w-0">
+                <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{tx(title)}</h1>
+                {titleBadge}
+              </div>
             </div>
+            {headerActions && <div className="hidden md:flex items-center gap-2 shrink-0">{headerActions}</div>}
             {autosaveLabel && (
               <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground">
                 {tx(autosaveLabel)} <RefreshCw className="h-4 w-4" />
@@ -93,6 +101,9 @@ export default function DataFormPage({
             )}
           </div>
         </div>
+        {headerActions && (
+          <div className="md:hidden px-4 pb-2 flex items-center gap-2 overflow-x-auto">{headerActions}</div>
+        )}
         <div className="px-2 md:px-6 overflow-x-auto">
           <div className="flex gap-1 min-w-max">
             {sections.map(s => (
