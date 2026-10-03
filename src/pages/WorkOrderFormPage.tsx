@@ -17,6 +17,8 @@ import WorkOrderPDF from '@/components/pdf/WorkOrderPDF';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { embedPdfCompanyLogo, imageUrlToBase64 } from '@/utils/imageToBase64';
 import { ProductPicker } from '@/components/ProductPicker';
+import DataFormPage from '@/components/form/DataFormPage';
+import { useL } from '@/i18n/dual';
 
 interface JobRow {
   id: string;
@@ -318,17 +320,21 @@ export default function WorkOrderFormPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-5 max-w-2xl pb-28 md:pb-6">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">{editWoId ? t('workOrderForm.edit') : t('workOrderForm.new')}</h1>
-          <p className="text-sm text-muted-foreground">{woNumber}</p>
-        </div>
-      </div>
-
+    <>
+    <DataFormPage
+      breadcrumb={`${l('Home', 'Utama')} / ${t('workOrderForm.new')}`}
+      title={`${editWoId ? t('workOrderForm.edit') : t('workOrderForm.new')}${woNumber ? ` · ${woNumber}` : ''}`}
+      onBack={() => navigate(-1)}
+      onSave={() => handleSave('Draft')}
+      saving={saving}
+      saveLabel={t('workOrderForm.saveDraft')}
+      footerExtra={
+        <Button variant="outline" onClick={handlePreview} className="gap-2">
+          <Eye className="h-4 w-4" /> {t('workOrderForm.previewPdf')}
+        </Button>
+      }
+      sections={[
+        { id: 'job', title: t('workOrderForm.jobInfo'), content: (<>
       {/* Job context */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-2">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('workOrderForm.jobInfo')}</p>
@@ -341,6 +347,8 @@ export default function WorkOrderFormPage() {
         </div>
       </div>
 
+        </>) },
+        { id: 'details', title: l('Details', 'Butiran'), content: (<div className="space-y-4">
       <div className="space-y-1.5">
         <Label>{t('workOrderForm.title')}</Label>
         <Input value={title} onChange={e => { setTitle(e.target.value); setErrors(p => ({ ...p, title: '' })); }} />
@@ -385,9 +393,10 @@ export default function WorkOrderFormPage() {
         <Textarea rows={3} value={instructions} onChange={e => setInstructions(e.target.value)} />
       </div>
 
+        </div>) },
+        { id: 'items', title: t('workOrderForm.items'), content: (
       {/* Items */}
       <div className="space-y-3">
-        <Label>{t('workOrderForm.items')}</Label>
         {items.map((item, i) => (
           <div key={i} className="bg-card rounded-xl border border-border p-3 space-y-2">
             <div className="flex items-start gap-2">
@@ -417,22 +426,16 @@ export default function WorkOrderFormPage() {
         </div>
       </div>
 
+        ) },
+        { id: 'terms', title: t('workOrderForm.termsLabel'), content: (
       <div className="space-y-1.5">
         <Label>{t('workOrderForm.termsLabel')}</Label>
         <Textarea rows={5} value={terms} onChange={e => setTerms(e.target.value)} />
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col gap-2">
-        <Button onClick={() => handleSave('Draft')} disabled={saving} className="rounded-lg">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : null}
-          {t('workOrderForm.saveDraft')}
-        </Button>
-        <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2">
-          <Eye className="h-4 w-4" /> {t('workOrderForm.previewPdf')}
-        </Button>
-      </div>
-
+        ) },
+      ]}
+    />
       <PDFPreviewModal
         open={previewOpen}
         title={t('workOrderForm.previewTitle', { number: woNumber })}
@@ -447,6 +450,6 @@ export default function WorkOrderFormPage() {
           a.click();
         }}
       />
-    </div>
+    </>
   );
 }
