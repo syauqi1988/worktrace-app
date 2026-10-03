@@ -33,7 +33,7 @@ type Rep = { id: string; report_number: string; status: string | null; created_a
 function Card({ title, right, children, className = '' }: { title: string; right?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <div className={`bg-card border border-border rounded-xl p-4 md:p-6 min-w-0 ${className}`}>
-      <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
         <h2 className="text-lg md:text-xl font-medium text-primary">{title}</h2>
         {right}
       </div>
@@ -50,14 +50,60 @@ function Net({ value, label }: { value: number; label: string }) {
   );
 }
 
-function RangeSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: [string, string][] }) {
+type Period = { preset: string; from: string; to: string };
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const PRESETS: Record<string, string> = {
+  all: 'All Time', this_year: 'This Year', ytd: 'Year to Date', last_year: 'Last Year', this_month: 'This Month',
+  '3': 'Last 3 Months', '6': 'Last 6 Months', '9': 'Last 9 Months', '12': 'Last 12 Months',
+  next3: 'Next 3 Months', next6: 'Next 6 Months', next12: 'Next 12 Months', custom: 'Custom',
+};
+const PAST = ['this_month', '3', '6', '9', '12', 'this_year', 'ytd', 'last_year', 'custom'];
+function resolve(p: Period): { from: Date; to: Date } {
+  const t = new Date(new Date().toDateString()), y = t.getFullYear(), m = t.getMonth();
+  switch (p.preset) {
+    case 'all': return { from: new Date(2000, 0, 1), to: new Date(2100, 0, 1) };
+    case 'this_year': return { from: new Date(y, 0, 1), to: new Date(y, 11, 31) };
+    case 'ytd': return { from: new Date(y, 0, 1), to: t };
+    case 'last_year': return { from: new Date(y - 1, 0, 1), to: new Date(y - 1, 11, 31) };
+    case 'this_month': return { from: new Date(y, m, 1), to: new Date(y, m + 1, 0) };
+    case 'next3': case 'next6': case 'next12': { const n = Number(p.preset.slice(4)); return { from: new Date(y, m, 1), to: new Date(y, m + n, 0) }; }
+    case 'custom': {
+      const from = p.from ? new Date(p.from) : new Date(y, m, 1), to = p.to ? new Date(p.to) : t;
+      return from <= to ? { from, to } : { from: to, to: from };
+    }
+    default: { const n = Number(p.preset); return { from: new Date(y, m - n + 1, 1), to: new Date(y, m + 1, 0) }; }
+  }
+}
+const inRange = (d: Date, r: { from: Date; to: Date }) => d >= r.from && d <= new Date(r.to.getFullYear(), r.to.getMonth(), r.to.getDate(), 23, 59, 59);
+const monthsIn = (r: { from: Date; to: Date }) => {
+  const out: Date[] = []; const d = new Date(r.from.getFullYear(), r.from.getMonth(), 1);
+  while (d <= r.to && out.length < 120) { out.push(new Date(d)); d.setMonth(d.getMonth() + 1); }
+  return out;
+};
+const periodLabel = (p: Period) => p.preset === 'custom' ? 'Custom' : PRESETS[p.preset];
+
+function PeriodFilter({ value, onChange, presets }: { value: Period; onChange: (p: Period) => void; presets: string[] }) {
+  const set = (preset: string) => {
+    if (preset === 'custom' && !value.from) { const r = resolve(value); onChange({ preset, from: iso(r.from), to: iso(r.to > new Date(2099, 0) ? new Date() : r.to) }); }
+    else onChange({ ...value, preset });
+  };
+  const cls = 'h-9 rounded-lg border border-input bg-background px-2 text-sm';
   return (
-    <select value={value} onChange={e => onChange(e.target.value)}
-      className="h-9 rounded-lg border border-input bg-background px-2 text-sm">
-      {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-    </select>
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <select value={value.preset} onChange={e => set(e.target.value)} className={cls}>
+        {presets.map(v => <option key={v} value={v}>{PRESETS[v]}</option>)}
+      </select>
+      {value.preset === 'custom' && (
+        <div className="flex items-center gap-1 w-full sm:w-auto">
+          <input type="date" value={value.from} onChange={e => onChange({ ...value, from: e.target.value })} className={`${cls} flex-1 min-w-0`} />
+          <span className="text-muted-foreground text-sm">–</span>
+          <input type="date" value={value.to} onChange={e => onChange({ ...value, to: e.target.value })} className={`${cls} flex-1 min-w-0`} />
+        </div>
+      )}
+    </div>
   );
 }
+const P = (preset: string): Period => ({ preset, from: '', to: '' });
 
 function Empty({ text }: { text: string }) {
   return <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">{text}</div>;
@@ -90,9 +136,14 @@ export default function DashboardPage() {
   const [invoices, setInvoices] = useState<Inv[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [reports, setReports] = useState<Rep[]>([]);
-  const [incomeRange, setIncomeRange] = useState('year');
-  const [plRange, setPlRange] = useState('9');
-  const [breakRange, setBreakRange] = useState('12');
+  const [incomeP, setIncomeP] = useState<Period>(P('this_year'));
+  const [plP, setPlP] = useState<Period>(P('9'));
+  const [trendP, setTrendP] = useState<Period>(P('12'));
+  const [forecastP, setForecastP] = useState<Period>(P('next12'));
+  const [breakP, setBreakP] = useState<Period>(P('12'));
+  const [expenseP, setExpenseP] = useState<Period>(P('12'));
+  const [jobsP, setJobsP] = useState<Period>(P('all'));
+  const [repP, setRepP] = useState<Period>(P('all'));
 
   useEffect(() => {
     if (!user) return;
@@ -127,52 +178,36 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unpaid]);
 
-  // Income: this year vs last year by month
-  const incomeData = useMemo(() => {
-    const y = today.getFullYear();
-    const cur = Array(12).fill(0), prev = Array(12).fill(0);
-    paid.forEach(i => {
-      const d = paidDate(i);
-      if (d.getFullYear() === y) cur[d.getMonth()] += Number(i.total || 0);
-      if (d.getFullYear() === y - 1) prev[d.getMonth()] += Number(i.total || 0);
-    });
-    const end = incomeRange === 'year' ? 12 : today.getMonth() + 1;
-    return MONTHS.slice(0, end).map((m, idx) => ({ m, current: cur[idx], last: prev[idx] }));
+  const sumMonth = (list: Inv[], key: string) => list.filter(i => monthKey(paidDate(i)) === key).reduce((t, i) => t + Number(i.total || 0), 0);
+  const incomeData = useMemo(() => monthsIn(resolve(incomeP)).map(d => {
+    const ly = new Date(d.getFullYear() - 1, d.getMonth(), 1);
+    return { m: monthKey(d), current: sumMonth(paid, monthKey(d)), last: sumMonth(paid, monthKey(ly)) };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paid, incomeRange]);
+  }), [paid, incomeP]);
   const incomeNet = incomeData.reduce((s, d) => s + d.current, 0);
 
-  // Last N months helper
-  const lastMonths = (n: number) => Array.from({ length: n }, (_, idx) => {
-    const d = new Date(today.getFullYear(), today.getMonth() - (n - 1 - idx), 1);
-    return { key: monthKey(d), d };
-  });
-
-  const plData = useMemo(() => {
-    const ms = lastMonths(Number(plRange));
-    return ms.map(({ key }) => {
-      const income = paid.filter(i => monthKey(paidDate(i)) === key).reduce((s, i) => s + Number(i.total || 0), 0);
-      const expense = 0;
-      return { m: key, income, expense, net: income - expense };
-    });
+  const plData = useMemo(() => monthsIn(resolve(plP)).map(d => {
+    const income = sumMonth(paid, monthKey(d)); const expense = 0;
+    return { m: monthKey(d), income, expense, net: income - expense };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paid, plRange]);
+  }), [paid, plP]);
   const plNet = plData.reduce((s, d) => s + d.net, 0);
 
   const trendData = useMemo(() => {
-    let bal = 0;
-    return lastMonths(12).map(({ key }) => {
-      const inflow = paid.filter(i => monthKey(paidDate(i)) === key).reduce((s, i) => s + Number(i.total || 0), 0);
-      const outflow = 0;
+    const r = resolve(trendP);
+    let bal = paid.filter(i => paidDate(i) < r.from).reduce((t, i) => t + Number(i.total || 0), 0);
+    return monthsIn(r).map(d => {
+      const inflow = sumMonth(paid, monthKey(d)); const outflow = 0;
       bal += inflow - outflow;
-      return { m: key, inflow, outflow: -outflow, balance: bal };
+      return { m: monthKey(d), inflow, outflow: -outflow, balance: bal };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paid]);
+  }, [paid, trendP]);
 
   const forecastData = useMemo(() => {
-    const ms = Array.from({ length: 12 }, (_, idx) => monthKey(new Date(today.getFullYear(), today.getMonth() + idx, 1)));
-    let bal = trendData[trendData.length - 1]?.balance || 0;
+    const r = resolve(forecastP);
+    const ms = monthsIn(r).map(monthKey);
+    let bal = paid.filter(i => paidDate(i) < r.from).reduce((t, i) => t + Number(i.total || 0), 0);
     return ms.map((key, idx) => {
       const inflow = unpaid.filter(i => {
         const d = i.due_date ? new Date(i.due_date) : today;
@@ -182,23 +217,25 @@ export default function DashboardPage() {
       return { m: key, inflow, balance: bal };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unpaid, trendData]);
+  }, [unpaid, paid, forecastP]);
 
   const incomeBreakdown = useMemo(() => {
-    const from = new Date(today.getFullYear(), today.getMonth() - Number(breakRange) + 1, 1);
+    const rg = resolve(breakP);
     const map: Record<string, number> = {};
-    paid.filter(i => paidDate(i) >= from).forEach(i => {
+    paid.filter(i => inRange(paidDate(i), rg)).forEach(i => {
       const c = i.jobs?.category || 'Other';
       map[c] = (map[c] || 0) + Number(i.total || 0);
     });
     return Object.entries(map).map(([name, value]) => ({ name, value }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paid, breakRange]);
+  }, [paid, breakP]);
   const breakdownNet = incomeBreakdown.reduce((s, d) => s + d.value, 0);
 
-  const jobStatusData = JOB_STATUSES.map(s => ({ name: s, value: jobs.filter(j => j.status === s).length }));
+  const fJobs = useMemo(() => { const rg = resolve(jobsP); return jobs.filter(j => inRange(new Date(j.created_at), rg)); }, [jobs, jobsP]);
+  const fReps = useMemo(() => { const rg = resolve(repP); return reports.filter(x => inRange(new Date(x.created_at), rg)); }, [reports, repP]);
+  const jobStatusData = JOB_STATUSES.map(s => ({ name: s, value: fJobs.filter(j => j.status === s).length }));
   const reportStatusData = REPORT_STATUSES.map(s => ({
-    name: s[0].toUpperCase() + s.slice(1), value: reports.filter(r => (r.status || 'draft') === s).length,
+    name: s[0].toUpperCase() + s.slice(1), value: fReps.filter(r => (r.status || 'draft') === s).length,
   }));
 
   const kpis = [
@@ -239,11 +276,42 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Jobs */}
+        <Card title="Jobs" right={<div className="flex items-center gap-2"><PeriodFilter value={jobsP} onChange={setJobsP} presets={['all', ...PAST]} /><button onClick={() => navigate('/jobs')} className="text-sm text-primary whitespace-nowrap">View all</button></div>}>
+          <p className="text-sm font-semibold mb-3">TOTAL {fJobs.length} <span className="font-normal text-muted-foreground">JOBS</span></p>
+          <div className="h-48">
+            <ResponsiveContainer>
+              <BarChart data={jobStatusData} margin={{ left: -20, right: 8 }}>
+                <CartesianGrid stroke={C('border')} vertical={false} />
+                <XAxis dataKey="name" tick={axis} interval={0} />
+                <YAxis tick={axis} allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="value" name="Jobs" radius={[4, 4, 0, 0]}>
+                  {jobStatusData.map((_, idx) => <Cell key={idx} fill={AGING_COLORS[idx]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="divide-y divide-border mt-3">
+            {fJobs.slice(0, 5).map(j => (
+              <button key={j.id} onClick={() => navigate(`/jobs/${j.id}`)}
+                className="w-full flex items-center justify-between gap-3 py-2.5 text-sm text-left hover:bg-muted/50">
+                <span className="min-w-0">
+                  <span className="text-primary font-medium">{j.job_number}</span>
+                  <span className="block text-xs text-muted-foreground truncate">{j.title} · {j.customers?.name || '—'}</span>
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground shrink-0">{j.status}</span>
+              </button>
+            ))}
+            {fJobs.length === 0 && <Empty text="No jobs yet" />}
+          </div>
+        </Card>
+
         <Card title="Outstanding Invoices"><AgingBar buckets={aging} /></Card>
         <Card title="Outstanding Bills"><AgingBar buckets={[0, 0, 0, 0, 0]} /></Card>
 
-        <Card title="Income" right={<RangeSelect value={incomeRange} onChange={setIncomeRange} options={[['year', 'This Year'], ['ytd', 'Year to Date']]} />}>
-          <Net value={incomeNet} label="This Year" />
+        <Card title="Income" right={<PeriodFilter value={incomeP} onChange={setIncomeP} presets={PAST} />}>
+          <Net value={incomeNet} label={periodLabel(incomeP)} />
           <div className="h-64">
             <ResponsiveContainer>
               <LineChart data={incomeData} margin={{ left: -10, right: 8 }}>
@@ -258,8 +326,8 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Profit & Loss" right={<RangeSelect value={plRange} onChange={setPlRange} options={[['3', '3-month'], ['6', '6-month'], ['9', '9-month'], ['12', '12-month']]} />}>
-          <Net value={plNet} label={`${plRange}-Month`} />
+        <Card title="Profit & Loss" right={<PeriodFilter value={plP} onChange={setPlP} presets={PAST} />}>
+          <Net value={plNet} label={periodLabel(plP)} />
           <div className="h-64">
             <ResponsiveContainer>
               <ComposedChart data={plData} margin={{ left: -10, right: 8 }}>
@@ -275,7 +343,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Cashflow Trend" right={<span className="text-sm text-muted-foreground">12-Month</span>}>
+        <Card title="Cashflow Trend" right={<PeriodFilter value={trendP} onChange={setTrendP} presets={PAST} />}>
           <div className="h-64">
             <ResponsiveContainer>
               <ComposedChart data={trendData} stackOffset="sign" margin={{ left: -10, right: 0 }}>
@@ -292,7 +360,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Cashflow Forecast" right={<span className="text-sm text-muted-foreground">12-Month</span>}>
+        <Card title="Cashflow Forecast" right={<PeriodFilter value={forecastP} onChange={setForecastP} presets={['next3', 'next6', 'next12', 'custom']} />}>
           <div className="h-64">
             <ResponsiveContainer>
               <ComposedChart data={forecastData} margin={{ left: -10, right: 0 }}>
@@ -329,8 +397,8 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card title="Income Breakdown" right={<RangeSelect value={breakRange} onChange={setBreakRange} options={[['3', '3-Month'], ['6', '6-Month'], ['12', '12-Month']]} />}>
-          <Net value={breakdownNet} label={`${breakRange}-Month`} />
+        <Card title="Income Breakdown" right={<PeriodFilter value={breakP} onChange={setBreakP} presets={PAST} />}>
+          <Net value={breakdownNet} label={periodLabel(breakP)} />
           {incomeBreakdown.length === 0 ? <Empty text="No paid invoices in this period" /> : (
             <div className="h-64">
               <ResponsiveContainer>
@@ -346,45 +414,14 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card title="Expense Breakdown">
-          <Net value={0} label="12-Month" />
+        <Card title="Expense Breakdown" right={<PeriodFilter value={expenseP} onChange={setExpenseP} presets={PAST} />}>
+          <Net value={0} label={periodLabel(expenseP)} />
           <Empty text="No expenses recorded yet" />
         </Card>
 
-        {/* Jobs */}
-        <Card title="Jobs" right={<button onClick={() => navigate('/jobs')} className="text-sm text-primary">View all</button>}>
-          <p className="text-sm font-semibold mb-3">TOTAL {jobs.length} <span className="font-normal text-muted-foreground">JOBS</span></p>
-          <div className="h-48">
-            <ResponsiveContainer>
-              <BarChart data={jobStatusData} margin={{ left: -20, right: 8 }}>
-                <CartesianGrid stroke={C('border')} vertical={false} />
-                <XAxis dataKey="name" tick={axis} interval={0} />
-                <YAxis tick={axis} allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" name="Jobs" radius={[4, 4, 0, 0]}>
-                  {jobStatusData.map((_, idx) => <Cell key={idx} fill={AGING_COLORS[idx]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="divide-y divide-border mt-3">
-            {jobs.slice(0, 5).map(j => (
-              <button key={j.id} onClick={() => navigate(`/jobs/${j.id}`)}
-                className="w-full flex items-center justify-between gap-3 py-2.5 text-sm text-left hover:bg-muted/50">
-                <span className="min-w-0">
-                  <span className="text-primary font-medium">{j.job_number}</span>
-                  <span className="block text-xs text-muted-foreground truncate">{j.title} · {j.customers?.name || '—'}</span>
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground shrink-0">{j.status}</span>
-              </button>
-            ))}
-            {jobs.length === 0 && <Empty text="No jobs yet" />}
-          </div>
-        </Card>
-
         {/* Completion reports */}
-        <Card title="Completion Reports" right={<button onClick={() => navigate('/completion-reports')} className="text-sm text-primary">View all</button>}>
-          <p className="text-sm font-semibold mb-3">TOTAL {reports.length} <span className="font-normal text-muted-foreground">REPORTS</span></p>
+        <Card title="Completion Reports" right={<div className="flex items-center gap-2"><PeriodFilter value={repP} onChange={setRepP} presets={['all', ...PAST]} /><button onClick={() => navigate('/completion-reports')} className="text-sm text-primary whitespace-nowrap">View all</button></div>}>
+          <p className="text-sm font-semibold mb-3">TOTAL {fReps.length} <span className="font-normal text-muted-foreground">REPORTS</span></p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {reportStatusData.map((s, idx) => (
               <div key={s.name} className="rounded-lg border border-border p-3">
@@ -395,7 +432,7 @@ export default function DashboardPage() {
             ))}
           </div>
           <div className="divide-y divide-border mt-3">
-            {reports.slice(0, 5).map(r => (
+            {fReps.slice(0, 5).map(r => (
               <button key={r.id} onClick={() => navigate(`/jobs/${r.job_id}/completion-report`)}
                 className="w-full flex items-center justify-between gap-3 py-2.5 text-sm text-left hover:bg-muted/50">
                 <span className="min-w-0">
@@ -405,7 +442,7 @@ export default function DashboardPage() {
                 <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground capitalize shrink-0">{r.status || 'draft'}</span>
               </button>
             ))}
-            {reports.length === 0 && <Empty text="No completion reports yet" />}
+            {fReps.length === 0 && <Empty text="No completion reports yet" />}
           </div>
         </Card>
       </div>
