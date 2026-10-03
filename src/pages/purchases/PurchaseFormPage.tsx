@@ -64,7 +64,7 @@ export default function PurchaseFormPage({
   const total = Math.max(0, subTotal - discountGiven);
 
   const handleSave = () => {
-    if (!party.trim()) { toast({ title: `${partyLabel} is required`, variant: 'destructive' }); return; }
+    if (!party.trim()) { toast({ title: `${tx(partyLabel)} ${tx('is required')}`, variant: 'destructive' }); return; }
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
@@ -329,7 +329,7 @@ export default function PurchaseFormPage({
                 onClick={() => setStatus(s)}
                 className={`px-4 py-2 text-sm ${status === s ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'}`}
               >
-                {s}
+                {tx(s)}
               </button>
             ))}
           </div>

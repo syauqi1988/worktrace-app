@@ -86,6 +86,7 @@ export const MS_DICT: Record<string, string> = {
   'Ready': 'Sedia',
   'Reference No.': 'No. Rujukan',
   'Add Line': 'Tambah Baris',
+  'is required': 'diperlukan',
   'Add Term': 'Tambah Terma',
 };
 
