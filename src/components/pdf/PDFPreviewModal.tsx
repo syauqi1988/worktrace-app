@@ -32,6 +32,7 @@ export default function PDFPreviewModal({
   onShare,
 }: PDFPreviewModalProps) {
   const { t } = useTranslation();
+  const l = useL();
   const [numPages, setNumPages] = useState(0);
   const [pageWidth, setPageWidth] = useState(720);
   const [renderError, setRenderError] = useState<string | null>(null);
