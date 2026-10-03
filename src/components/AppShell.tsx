@@ -286,7 +286,7 @@ export default function AppShell() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen md:h-screen md:overflow-hidden flex flex-col bg-background">
       <InstallPromptBanner />
       <ExpiryBanner />
       <AnnouncementModal />
@@ -358,9 +358,9 @@ export default function AppShell() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden md:min-h-0">
         {/* Sidebar — desktop */}
-        <aside data-tutorial="sidebar" className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0">
+        <aside data-tutorial="sidebar" className="hidden md:flex flex-col w-[220px] bg-sidebar border-r border-border shrink-0 overflow-y-auto">
           <nav className="flex-1 py-4 space-y-1">
             {NAV_ITEMS.map(entry => renderEntry(entry))}
           </nav>
