@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Document as PreviewDocument, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import { Loader2, MessageCircle, X } from 'lucide-react';
+import { Loader2, MessageCircle, X, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
@@ -81,8 +81,8 @@ export default function PDFPreviewModal({
             </Button>
 
             {onShare ? (
-              <Button size="sm" onClick={onShare} className="h-8 text-xs text-white" style={{ backgroundColor: '#25D366' }}>
-                <MessageCircle className="mr-1 h-3.5 w-3.5" /> WhatsApp
+              <Button size="sm" onClick={onShare} className="h-8 text-xs">
+                <Share2 className="mr-1 h-3.5 w-3.5" /> {l('Share', 'Kongsi')}
               </Button>
             ) : null}
 

@@ -10,8 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Edit, Trash2, Phone, Mail, MapPin, Hash,
-  Briefcase, MessageCircle, Pencil, Plus,
-} from 'lucide-react';
+  Briefcase, MessageCircle, Pencil, Plus, Share2 } from 'lucide-react';
 import TagInput from '@/components/customers/TagInput';
 import { ColoredTag, normalizeTags, TagBadge } from '@/components/customers/TagBadge';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
@@ -192,7 +191,7 @@ export default function CustomerDetailPage() {
             {whatsappUrl && (
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full hover:bg-green-100">
-                <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                <Share2 className="h-3.5 w-3.5" /> WhatsApp
               </a>
             )}
           </div>

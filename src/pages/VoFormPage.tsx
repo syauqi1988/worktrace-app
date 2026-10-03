@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Trash2, Loader2, MessageCircle, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Loader2, MessageCircle, Eye, Share2 } from 'lucide-react';
 import { ProductPicker } from '@/components/ProductPicker';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { generateAndIncrement, generateDocNumber, DEFAULT_DOC_SETTINGS } from '@/utils/generateDocNumber';
@@ -454,7 +454,7 @@ export default function VoFormPage() {
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {t('vo.saveDraft')}
         </Button>
         <Button onClick={handleGenerateAndSend} disabled={submitting} variant="secondary" className="gap-2">
-          <MessageCircle className="h-4 w-4" /> {t('vo.sendWhatsApp')}
+          <Share2 className="h-4 w-4" /> {t('vo.sendWhatsApp')}
         </Button>
       </div>
 
