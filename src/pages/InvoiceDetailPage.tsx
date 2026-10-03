@@ -20,8 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { toast } from 'sonner';
 import {
   ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays,
-  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown, Receipt as ReceiptIcon
-} from 'lucide-react';
+  MessageCircle, FileText, Download, Loader2, CheckCircle, Landmark, Eye, X, Copy, ChevronDown, Receipt as ReceiptIcon, Share2 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
 import ReceiptPDF from '@/components/pdf/ReceiptPDF';
@@ -797,8 +796,8 @@ export default function InvoiceDetailPage() {
         ]}
         onEdit={(invoice.status === 'Draft' || invoice.status === 'Created') ? () => navigate(`/invoices/${invoice.id}/edit`) : undefined}
         actions={[
-          { label: t('invoiceDetail.reminder'), onClick: sendPaymentReminder, icon: <MessageCircle className="h-4 w-4" />, hidden: !hasPhone || invoice.status === 'Paid' },
-          { label: t('invoiceDetail.requestProofWa'), onClick: requestPaymentProof, icon: <MessageCircle className="h-4 w-4" />, hidden: !hasPhone || invoice.status === 'Paid' },
+          { label: t('invoiceDetail.reminder'), onClick: sendPaymentReminder, icon: <Share2 className="h-4 w-4" />, hidden: !hasPhone || invoice.status === 'Paid' },
+          { label: t('invoiceDetail.requestProofWa'), onClick: requestPaymentProof, icon: <Share2 className="h-4 w-4" />, hidden: !hasPhone || invoice.status === 'Paid' },
           { label: l('Download PDF', 'Muat Turun PDF'), onClick: handlePreviewDownload, icon: <Download className="h-4 w-4" />, hidden: !pdfData },
         ]}
         onDelete={() => setDeleteOpen(true)}
@@ -847,8 +846,8 @@ export default function InvoiceDetailPage() {
               <Download className="h-3.5 w-3.5" /> {t('invoiceDetail.downloadReceipt')}
             </Button>
             {hasPhone && (
-              <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
-                {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+              <Button size="sm" className="text-xs gap-1" onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
+                {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
                 {t('invoiceDetail.shareReceiptWa')}
               </Button>
             )}
@@ -886,7 +885,7 @@ export default function InvoiceDetailPage() {
             {hasPhone && (
               <a href={buildWhatsAppUrl(formatPhone(customerPhone))} target="_blank" rel="noopener noreferrer"
                 className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full hover:bg-green-100">
-                <MessageCircle className="h-3 w-3" /> WhatsApp
+                <Share2 className="h-3 w-3" /> WhatsApp
               </a>
             )}
           </div>
@@ -1090,10 +1089,10 @@ export default function InvoiceDetailPage() {
                 }
               }}
               disabled={isSharing}
-              className="flex-1 rounded-lg gap-2 text-white"
-              style={{ backgroundColor: '#25D366' }}
+              className="flex-1 rounded-lg gap-2"
+             
             >
-              {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
               {t('invoiceDetail.sendInvoice')}
             </Button>
           </>
@@ -1101,14 +1100,14 @@ export default function InvoiceDetailPage() {
         {(invoice.status === 'Sent' || isOverdue) && (
           <>
             {hasPhone && (!proof || proof.status === 'rejected') && (
-              <Button onClick={requestPaymentProof} disabled={requestingProof} className="flex-1 rounded-lg gap-2 bg-green-600 hover:bg-green-700">
-                {requestingProof ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+              <Button onClick={requestPaymentProof} disabled={requestingProof} className="flex-1 rounded-lg gap-2">
+                {requestingProof ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
                 {t('invoiceDetail.requestProofWa')}
               </Button>
             )}
             {hasPhone && (
               <Button onClick={sendPaymentReminder} variant="outline" className="flex-1 rounded-lg gap-2 text-green-600 border-green-200 hover:bg-green-50">
-                <MessageCircle className="h-4 w-4" /> {t('invoiceDetail.reminder')}
+                <Share2 className="h-4 w-4" /> {t('invoiceDetail.reminder')}
               </Button>
             )}
             <Button onClick={() => setPayOpen(true)} variant="outline" className="rounded-lg gap-2">

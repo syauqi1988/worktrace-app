@@ -17,21 +17,29 @@ export function buildWhatsAppUrl(phone: string | null | undefined, text?: string
 }
 
 /**
- * Open WhatsApp. Uses https://wa.me/ which opens the native app on mobile
- * if installed, or WhatsApp Web otherwise.
- * Pass an optional pre-opened window (e.g. opened synchronously inside a click
- * handler before async work) to avoid popup blockers.
+ * Share using the device's standard share sheet (WhatsApp, Telegram, Gmail,
+ * Messages, Quick Share, etc). Falls back to WhatsApp link when the browser
+ * has no share sheet (most desktop browsers).
  */
 export function openWhatsApp(
   phone: string | null | undefined,
   text?: string,
   pendingWindow?: Window | null,
 ) {
-  const url = buildWhatsAppUrl(phone, text);
-
-  if (pendingWindow && !pendingWindow.closed) {
-    pendingWindow.location.href = url;
+  const fallback = () => {
+    const url = buildWhatsAppUrl(phone, text);
+    if (pendingWindow && !pendingWindow.closed) { pendingWindow.location.href = url; return; }
+    window.open(url, '_blank');
+  };
+  const nav: any = typeof navigator !== 'undefined' ? navigator : null;
+  if (nav?.share && text) {
+    if (pendingWindow && !pendingWindow.closed) { try { pendingWindow.close(); } catch { /* ignore */ } }
+    nav.share({ text }).catch((err: any) => {
+      if (err?.name === 'AbortError') return; // user closed the sheet
+      const url = buildWhatsAppUrl(phone, text);
+      window.open(url, '_blank');
+    });
     return;
   }
-  window.open(url, '_blank');
+  fallback();
 }

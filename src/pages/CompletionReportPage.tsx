@@ -12,8 +12,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, X, Loader2, Eye, MessageCircle,
   CheckCircle, XCircle, Receipt, Camera, ImageIcon,
-  Edit, Trash2, FileText,
-} from 'lucide-react';
+  Edit, Trash2, FileText, Share2 } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { pdf } from '@react-pdf/renderer';
 import CompletionReportPDF from '@/components/pdf/CompletionReportPDF';
@@ -798,12 +797,12 @@ export default function CompletionReportPage() {
                 onClick={handleWhatsAppShare}
                 disabled={sharing}
                 size="sm"
-                className="text-white rounded-lg gap-2"
-                style={{ backgroundColor: '#25D366' }}
+                className="rounded-lg gap-2"
+               
               >
                 {sharing
                   ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <MessageCircle className="h-4 w-4" />}
+                  : <Share2 className="h-4 w-4" />}
                 {t('completionReport.reshareWa')}
               </Button>
             )}

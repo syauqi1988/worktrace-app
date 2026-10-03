@@ -448,7 +448,7 @@ export default function JobDetailPage() {
               {whatsappUrl && (
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full hover:bg-green-100">
-                  <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                  <Share2 className="h-3.5 w-3.5" /> WhatsApp
                 </a>
               )}
             </div>
@@ -640,8 +640,8 @@ export default function JobDetailPage() {
                 <Eye className="h-3.5 w-3.5" /> {t('jobDetail.previewPdf')}
               </Button>
               {(report.status === 'submitted' || report.status === 'accepted' || report.status === 'rejected') && job.customers?.phone && (
-                <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={handleReportWhatsApp} disabled={isSharing}>
-                  {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                <Button size="sm" className="text-xs gap-1" onClick={handleReportWhatsApp} disabled={isSharing}>
+                  {isSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
                   {t('jobDetail.shareWa')}
                 </Button>
               )}
