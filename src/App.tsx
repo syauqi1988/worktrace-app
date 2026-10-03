@@ -52,7 +52,6 @@ const PublicPaymentProofPage = lazy(() => import("@/pages/public/PublicPaymentPr
 const ShortLinkRedirectPage = lazy(() => import("@/pages/public/ShortLinkRedirectPage"));
 const RefundPolicyPage = lazy(() => import("@/pages/RefundPolicyPage"));
 const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
-const JobPresetsPage = lazy(() => import("@/pages/JobPresetsPage"));
 const FaqPage = lazy(() => import("@/pages/FaqPage"));
 const PurchaseOrdersPage = lazy(() => import("@/pages/purchases/PurchaseOrdersPage"));
 const GoodsReceivedNotesPage = lazy(() => import("@/pages/purchases/GoodsReceivedNotesPage"));
@@ -127,7 +126,6 @@ const App = () => (
                 <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="jobs" element={<JobsListPage />} />
                 <Route path="jobs/new" element={<JobFormPage />} />
-                <Route path="job-presets" element={<JobPresetsPage />} />
                 <Route path="jobs/:id" element={<JobDetailPage />} />
                 <Route path="jobs/:id/edit" element={<JobFormPage />} />
                 <Route path="jobs/:id/completion-report" element={<CompletionReportPage />} />

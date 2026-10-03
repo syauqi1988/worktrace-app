@@ -19,7 +19,6 @@ import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, CalendarDays, Search, Plus, Package, Bookmark } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { JobPresetPicker } from '@/components/JobPresetPicker';
 import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
 import { JobTypeSelector } from '@/components/workflow/JobTypeSelector';
 import { Switch } from '@/components/ui/switch';
@@ -390,30 +389,6 @@ export default function JobFormPage() {
         {errors.customer && <p className="text-xs text-destructive">{errors.customer}</p>}
       </div>
 
-      {!isEdit && (
-        <div className="space-y-1.5">
-          <Label>Preset Kerja (opsional)</Label>
-          <JobPresetPicker
-            onPick={(p) => {
-              setTitle(p.title);
-              setCategory(p.category || 'Other');
-              if (p.category && !allCategories.includes(p.category)) {
-                const next = [...customCategories, p.category];
-                setCustomCategories(next);
-                try { localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(next)); } catch {}
-              }
-              if (p.description) setDescription(p.description);
-              if (p.notes) setNotes(p.notes);
-              if (p.products && p.products.length) setProducts(p.products);
-              setErrors((prev) => ({ ...prev, title: '' }));
-              toast({ title: `Preset "${p.name}" digunakan` });
-            }}
-          />
-          <p className="text-[11px] text-muted-foreground">
-            Pilih untuk auto-isi tajuk, kategori, keterangan & nota
-          </p>
-        </div>
-      )}
         </div>) },
         { id: 'details', title: l('Job Details', 'Butiran Kerja'), content: (<div className="space-y-4">
       <div className="space-y-1.5">
