@@ -49,6 +49,7 @@ export default function QuotationFormPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const l = useL();
   const [searchParams] = useSearchParams();
 
   const [jobs, setJobs] = useState<Job[]>([]);
