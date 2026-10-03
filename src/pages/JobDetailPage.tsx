@@ -418,7 +418,7 @@ export default function JobDetailPage() {
           {getJobType(job.job_type as JobType).icon} {getJobType(job.job_type as JobType).nameMs}
         </p>
         <WorkflowBar
-          jobType={(job.job_type as JobType) || 'standard'}
+          jobType={'standard'}
           completed={new Set<WorkflowStepKey>([
             ...(quotation ? ['quotation' as WorkflowStepKey] : []),
             ...(report ? ['completion_report' as WorkflowStepKey] : []),
@@ -750,7 +750,7 @@ export default function JobDetailPage() {
         );
       })()}
 
-      {job.job_type === 'milestone' && invoices.some(i => i.milestone_stage_number) ? (
+      {false && invoices.some(i => i.milestone_stage_number) ? (
         <JobMilestoneTracker invoices={invoices as any} />
       ) : (
       <div className="bg-card rounded-xl border border-border p-4">

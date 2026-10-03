@@ -132,7 +132,7 @@ export default function InvoiceFormPage() {
       if (found) {
         setSelectedJob(found);
         setJobType(jt);
-        if (isMilestoneJob) setPaymentMode('milestone');
+        if (isMilestoneJob) setPaymentMode('lump');
         if (found.customers?.tin_number) setCustomerTin(found.customers.tin_number);
       }
       if (user && !isEdit) {
@@ -327,7 +327,7 @@ export default function InvoiceFormPage() {
     if (j.customers?.tin_number) setCustomerTin(j.customers.tin_number);
     const jt = (j.job_type as string) || 'standard';
     setJobType(jt);
-    if (jt === 'deposit' || jt === 'milestone') setPaymentMode('milestone');
+    if (jt === 'deposit' || jt === 'milestone') setPaymentMode('lump');
 
     if (!isEdit && user) {
       const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
@@ -695,7 +695,7 @@ export default function InvoiceFormPage() {
         ) },
         { id: 'payment', title: l('Payment', 'Bayaran'), content: (<div className="space-y-4">
       {/* Payment Mode toggle + Milestone Builder */}
-      {!isEdit && (
+      {false && !isEdit && (
         <div className="space-y-2">
           <Label>Mod Pembayaran</Label>
           <div className="flex bg-muted rounded-md overflow-hidden text-sm w-fit">
@@ -703,7 +703,7 @@ export default function InvoiceFormPage() {
               className={cn('px-3 py-1.5 font-medium', paymentMode === 'lump' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground', jobType === 'milestone' && 'opacity-40 cursor-not-allowed')}>
               Sekali Bayar
             </button>
-            <button type="button" onClick={() => setPaymentMode('milestone')}
+            <button type="button" onClick={() => setPaymentMode('lump')}
               className={cn('px-3 py-1.5 font-medium', paymentMode === 'milestone' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>
               Berperingkat
             </button>

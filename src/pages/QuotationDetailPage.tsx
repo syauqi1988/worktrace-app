@@ -209,7 +209,7 @@ export default function QuotationDetailPage() {
     navigate('/quotations');
   };
 
-  const isStagedJob = (jt?: string | null) => jt === 'deposit' || jt === 'milestone';
+  const isStagedJob = (_jt?: string | null) => false;
 
   const buildStages = (): { label: string; percentage: number; amount: number }[] => {
     const total = Number(quotation?.total) || 0;

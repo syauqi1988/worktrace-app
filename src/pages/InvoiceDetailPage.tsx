@@ -992,7 +992,7 @@ export default function InvoiceDetailPage() {
 
       {/* Milestone Tracker — only shown when this invoice is part of a milestone series */}
       {invoice.jobs && (invoice as any).milestone_stage_number && user && (
-        <MilestoneTracker invoiceId={invoice.id} jobId={invoice.jobs.id} userId={user.id} />
+        {false && <MilestoneTracker invoiceId={invoice.id} jobId={invoice.jobs.id} userId={user.id} />}
       )}
 
 
