@@ -1,4 +1,6 @@
 import { tm } from '@/i18n/dual';
+import i18n from '@/i18n';
+const isEn = () => i18n.language?.startsWith('en');
 import { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -51,8 +53,8 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
 
   const headline = (() => {
     switch (eligibility.status) {
-      case 'full': return { icon: <CheckCircle2 className="h-6 w-6 text-emerald-600" />, title: tm("Anda layak bayaran balik PENUH"), body: `Berdasarkan tarikh pembayaran (${fmt(eligibility.fullRefundUntil ? new Date(eligibility.fullRefundUntil.getTime() - 14*24*60*60*1000) : null)}), anda masih dalam tempoh jaminan 14 hari sehingga ${fmt(eligibility.fullRefundUntil)}.` };
-      case 'prorated': return { icon: <AlertTriangle className="h-6 w-6 text-amber-600" />, title: tm("Anda layak bayaran balik PRO-RATED"), body: `Untuk pelan tahunan, bayaran balik pro-rated boleh dimohon sehingga ${fmt(eligibility.proratedRefundUntil)} (30 hari dari pembayaran). Bayaran balik dikira mengikut bulan penuh yang belum digunakan.` };
+      case 'full': return { icon: <CheckCircle2 className="h-6 w-6 text-emerald-600" />, title: tm("Anda layak bayaran balik PENUH"), body: (isEn() ? `Based on your payment date (${fmt(eligibility.fullRefundUntil ? new Date(eligibility.fullRefundUntil.getTime() - 14*24*60*60*1000) : null)}), you are still within the 14-day guarantee until ${fmt(eligibility.fullRefundUntil)}.` : `Berdasarkan tarikh pembayaran (${fmt(eligibility.fullRefundUntil ? new Date(eligibility.fullRefundUntil.getTime() - 14*24*60*60*1000) : null)}), anda masih dalam tempoh jaminan 14 hari sehingga ${fmt(eligibility.fullRefundUntil)}.`) };
+      case 'prorated': return { icon: <AlertTriangle className="h-6 w-6 text-amber-600" />, title: tm("Anda layak bayaran balik PRO-RATED"), body: isEn() ? `For yearly plans, a pro-rated refund can be requested until ${fmt(eligibility.proratedRefundUntil)} (30 days from payment). Refunds are calculated by full unused months.` : `Untuk pelan tahunan, bayaran balik pro-rated boleh dimohon sehingga ${fmt(eligibility.proratedRefundUntil)} (30 hari dari pembayaran). Bayaran balik dikira mengikut bulan penuh yang belum digunakan.` };
       case 'none_free': return { icon: <XCircle className="h-6 w-6 text-muted-foreground" />, title: tm("Tiada bayaran untuk dikembalikan"), body: tm("Anda berada di pelan percuma — tiada caj telah dikenakan.") };
       case 'none_window': return { icon: <XCircle className="h-6 w-6 text-destructive" />, title: tm("Tempoh bayaran balik telah tamat"), body: tm("Tempoh kelayakan bayaran balik telah berlalu. Anda masih boleh hantar permohonan untuk situasi khas (caj berganda, caj tidak dibenarkan, gangguan major).") };
       default: return { icon: null, title: '', body: '' };
@@ -149,7 +151,7 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
                       reasonKey === r.key ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-foreground hover:bg-accent'
                     }`}
                   >
-                    {r.label}
+                    {tm(r.label)}
                   </button>
                 ))}
               </div>

@@ -242,7 +242,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>{tm("Kategori")} <span className="text-xs text-muted-foreground">(opsyenal)</span></Label>
+                <Label>{tm("Kategori")} <span className="text-xs text-muted-foreground">({tm('pilihan')})</span></Label>
                 <Input
                   value={editing.category || ''}
                   onChange={e => setEditing({ ...editing, category: e.target.value })}

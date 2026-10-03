@@ -75,7 +75,7 @@ export default function PaymentDetailsSection() {
           {PAYMENT_TYPES.map(t => (
             <label key={t} className="flex items-center gap-2 text-sm rounded-md border border-input p-2 cursor-pointer hover:bg-accent">
               <Checkbox checked={types.includes(t)} onCheckedChange={() => toggleType(t)} />
-              <span>{t}</span>
+              <span>{tm(t)}</span>
             </label>
           ))}
         </div>
