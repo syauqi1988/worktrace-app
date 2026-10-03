@@ -46,6 +46,7 @@ export default function JobFormPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const l = useL();
   const { checkJobLimit, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
