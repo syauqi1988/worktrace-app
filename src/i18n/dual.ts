@@ -17,7 +17,7 @@ export const MS_DICT: Record<string, string> = {
   'items': 'item', 'of': 'daripada', 'page': 'halaman', 'Description': 'Penerangan', 'Qty': 'Kuantiti',
   'Unit Price': 'Harga Seunit', 'Items': 'Item', 'Add Item': 'Tambah Item', 'Subtotal': 'Jumlah Kecil',
   'Name is required': 'Nama diperlukan', 'Saved to Contacts': 'Disimpan ke Kenalan', 'No contacts yet': 'Tiada kenalan lagi',
-  'Due Date': 'Tarikh Akhir', 'Terms': 'Terma', 'Remarks': 'Catatan', 'Attention': 'Perhatian',
+  'Due Date': 'Tarikh Akhir', 'Terms': 'Terma', 'Remarks': 'Catatan', 'Attention': 'Perhatian', 'Select': 'Pilih',
   // Statuses
   'Draft': 'Draf', 'Sent': 'Dihantar', 'Received': 'Diterima', 'Paid': 'Dibayar', 'Unpaid': 'Belum Dibayar',
   'Overdue': 'Tertunggak', 'Closed': 'Ditutup', 'Approved': 'Diluluskan', 'Pending': 'Belum Selesai',

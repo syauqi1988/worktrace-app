@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { useTx } from '@/i18n/dual';
+import { useL, useTx } from '@/i18n/dual';
 
 type Props = {
   table: 'suppliers' | 'employees';
@@ -23,6 +23,7 @@ export default function ContactFormPage({ table, label, listPath, secondaryLabel
   const { user } = useAuth();
   const navigate = useNavigate();
   const tx = useTx();
+  const l = useL();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>({
     name: '', [secondaryField]: '', phone: '', email: '', address: '', notes: '', is_active: true,
@@ -65,7 +66,7 @@ export default function ContactFormPage({ table, label, listPath, secondaryLabel
     {
       id: 'details',
       title: 'Details',
-      description: tx('Basic information for this') === 'Basic information for this' ? `Basic information for this ${label.toLowerCase()}.` : `Maklumat asas untuk ${tx(label).toLowerCase()} ini.`,
+      description: l(`Basic information for this ${label.toLowerCase()}.`, `Maklumat asas untuk ${tx(label).toLowerCase()} ini.`),
       content: (
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Name" required>
