@@ -94,10 +94,10 @@ export default function QuotationFormPage() {
   useEffect(() => {
     if (!selectedJob) return;
     const cfg = (selectedJob as any).milestone_config || {};
-    if (selectedJob.job_type === 'deposit') {
+    if (false && selectedJob.job_type === 'deposit') {
       const pct = Number(cfg.deposit_percentage) || Number((profile as any)?.default_deposit_percentage) || 30;
       setDepositPct(pct);
-    } else if (selectedJob.job_type === 'milestone') {
+    } else if (false && selectedJob.job_type === 'milestone') {
       const planned = Array.isArray(cfg.stages) ? cfg.stages as MilestoneStage[] : [];
       if (planned.length) setMilestoneStages(planned);
       // else MilestoneBuilder will init from default template
@@ -537,7 +537,7 @@ export default function QuotationFormPage() {
         </div>
       )}
 
-      {(selectedJob?.job_type === 'deposit' || selectedJob?.job_type === 'milestone') && (
+      {false && (selectedJob?.job_type === 'deposit' || selectedJob?.job_type === 'milestone') && (
         <div className="space-y-2 bg-card rounded-xl border border-border p-4">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>

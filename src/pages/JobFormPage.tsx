@@ -143,7 +143,7 @@ export default function JobFormPage() {
         const d = (data as any) || {};
         setProfileDefaults(d);
         if (!isEdit) {
-          if (d.default_job_type) setJobType(d.default_job_type as JobType);
+          
           if (d.default_deposit_percentage != null) setDepositPct(Number(d.default_deposit_percentage));
         }
       });
@@ -272,7 +272,6 @@ export default function JobFormPage() {
         if (setAsDefault && user) {
           try {
             await supabase.from('profiles').update({
-              default_job_type: jobType,
               ...(jobType === 'deposit' ? { default_deposit_percentage: depositPct } : {}),
             } as any).eq('id', user.id);
           } catch (e) { console.warn('Save default job type failed', e); }
@@ -428,6 +427,7 @@ export default function JobFormPage() {
         {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
       </div>
 
+      {false && (
       <div className="space-y-2">
         <Label>Jenis Kerja</Label>
         <JobTypeSelector value={jobType} onChange={setJobType} />
@@ -464,6 +464,7 @@ export default function JobFormPage() {
           </div>
         )}
       </div>
+      )}
 
 
       <div className="grid grid-cols-2 gap-3">

@@ -414,11 +414,8 @@ export default function JobDetailPage() {
       sections={[
         { id: 'workflow', title: l('Workflow', 'Aliran Kerja'), description: job.title, content: (
       <div className="bg-card rounded-xl border border-border p-3">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
-          {getJobType(job.job_type as JobType).icon} {getJobType(job.job_type as JobType).nameMs}
-        </p>
         <WorkflowBar
-          jobType={(job.job_type as JobType) || 'standard'}
+          jobType={'standard'}
           completed={new Set<WorkflowStepKey>([
             ...(quotation ? ['quotation' as WorkflowStepKey] : []),
             ...(report ? ['completion_report' as WorkflowStepKey] : []),
@@ -750,7 +747,7 @@ export default function JobDetailPage() {
         );
       })()}
 
-      {job.job_type === 'milestone' && invoices.some(i => i.milestone_stage_number) ? (
+      {false && invoices.some(i => i.milestone_stage_number) ? (
         <JobMilestoneTracker invoices={invoices as any} />
       ) : (
       <div className="bg-card rounded-xl border border-border p-4">

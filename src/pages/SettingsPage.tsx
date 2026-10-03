@@ -771,6 +771,7 @@ export default function SettingsPage() {
         {termsTab === "work_order" && <WorkOrderTermsSection />}
       </SettingsAccordion>
 
+      {false && (<>
       {/* 4.4 — Keutamaan Kerja */}
       <SettingsAccordion
         id="keutamaan-kerja"
@@ -841,6 +842,7 @@ export default function SettingsPage() {
           {savingJobPrefs ? t('settings.saving') : 'Simpan'}
         </Button>
       </SettingsAccordion>
+      </>)}
 
       {/* 4.4b — Preset Kerja */}
       <SettingsAccordion
