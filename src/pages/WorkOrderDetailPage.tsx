@@ -115,7 +115,7 @@ export default function WorkOrderDetailPage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'completion_reports', filter: `job_id=eq.${jobId}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, jobId]);
+  }, [user, jobId, woIdParam]);
 
   const buildPdfData = () => ({
     wo: {

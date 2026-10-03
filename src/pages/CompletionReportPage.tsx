@@ -237,7 +237,7 @@ export default function CompletionReportPage() {
     }
 
     load();
-  }, [user, jobId, profile]);
+  }, [user, jobId, profile, reportIdParam, isNewReport]);
 
   // Realtime: reflect customer accept / reject immediately
   useEffect(() => {
