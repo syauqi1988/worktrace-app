@@ -41,6 +41,7 @@ import {
   Hash,
   Link2,
   Briefcase,
+  Share2,
 } from "lucide-react";
 import { JOB_TYPES, type JobType } from "@/lib/jobTypes";
 import { MILESTONE_TEMPLATES } from "@/lib/milestoneTemplates";
