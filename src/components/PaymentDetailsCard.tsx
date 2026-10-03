@@ -1,3 +1,4 @@
+import { tm } from '@/i18n/dual';
 import { Landmark } from 'lucide-react';
 
 export interface PaymentDetails {
@@ -25,7 +26,7 @@ export default function PaymentDetailsCard({ details }: { details: PaymentDetail
     <div className="bg-card rounded-xl border border-border p-4 space-y-2">
       <div className="flex items-center gap-2 mb-1">
         <Landmark className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">Maklumat Pembayaran</h3>
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">{tm("Maklumat Pembayaran")}</h3>
       </div>
       <div className="space-y-1 text-sm">
         {details.bank_name && (
@@ -36,25 +37,25 @@ export default function PaymentDetailsCard({ details }: { details: PaymentDetail
         )}
         {details.account_number && (
           <div className="flex">
-            <span className="text-muted-foreground w-28 shrink-0">No. Akaun</span>
+            <span className="text-muted-foreground w-28 shrink-0">{tm("No. Akaun")}</span>
             <span className="font-medium text-foreground">{details.account_number}</span>
           </div>
         )}
         {details.account_holder && (
           <div className="flex">
-            <span className="text-muted-foreground w-28 shrink-0">Nama</span>
+            <span className="text-muted-foreground w-28 shrink-0">{tm("Nama")}</span>
             <span className="font-medium text-foreground">{details.account_holder}</span>
           </div>
         )}
         {Array.isArray(details.payment_types) && details.payment_types.length > 0 && (
           <div className="flex">
-            <span className="text-muted-foreground w-28 shrink-0">Jenis</span>
+            <span className="text-muted-foreground w-28 shrink-0">{tm("Jenis")}</span>
             <span className="font-medium text-foreground">{details.payment_types.join(' / ')}</span>
           </div>
         )}
         {details.note && (
           <div className="flex">
-            <span className="text-muted-foreground w-28 shrink-0">Nota</span>
+            <span className="text-muted-foreground w-28 shrink-0">{tm("Nota")}</span>
             <span className="text-foreground">{details.note}</span>
           </div>
         )}

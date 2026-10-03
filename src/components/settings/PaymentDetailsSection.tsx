@@ -1,3 +1,4 @@
+import { tm } from '@/i18n/dual';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,7 @@ export default function PaymentDetailsSection() {
     };
     await updateProfile({ payment_details: payload as any } as any);
     setSaving(false);
-    toast.success('Maklumat pembayaran disimpan');
+    toast.success(tm("Maklumat pembayaran disimpan"));
   };
 
   return (
@@ -54,45 +55,45 @@ export default function PaymentDetailsSection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label>Nama Bank</Label>
-          <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="cth. Maybank" />
+          <Label>{tm("Nama Bank")}</Label>
+          <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder={tm("cth. Maybank")} />
         </div>
         <div className="space-y-1.5">
-          <Label>No. Akaun</Label>
-          <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="cth. 1234-5678-9012" />
+          <Label>{tm("No. Akaun")}</Label>
+          <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder={tm("cth. 1234-5678-9012")} />
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nama Pemegang Akaun</Label>
-        <Input value={accountHolder} onChange={e => setAccountHolder(e.target.value)} placeholder="cth. Syarikat ABC Sdn Bhd" />
+        <Label>{tm("Nama Pemegang Akaun")}</Label>
+        <Input value={accountHolder} onChange={e => setAccountHolder(e.target.value)} placeholder={tm("cth. Syarikat ABC Sdn Bhd")} />
       </div>
 
       <div className="space-y-1.5">
-        <Label>Jenis Pembayaran Diterima</Label>
+        <Label>{tm("Jenis Pembayaran Diterima")}</Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {PAYMENT_TYPES.map(t => (
             <label key={t} className="flex items-center gap-2 text-sm rounded-md border border-input p-2 cursor-pointer hover:bg-accent">
               <Checkbox checked={types.includes(t)} onCheckedChange={() => toggleType(t)} />
-              <span>{t}</span>
+              <span>{tm(t)}</span>
             </label>
           ))}
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label>Nota Pembayaran (pilihan)</Label>
+        <Label>{tm("Nota Pembayaran (pilihan)")}</Label>
         <Textarea
           value={note}
           onChange={e => setNote(e.target.value)}
           rows={3}
-          placeholder="cth. Sila gunakan nama syarikat sebagai rujukan"
+          placeholder={tm("cth. Sila gunakan nama syarikat sebagai rujukan")}
           maxLength={300}
         />
       </div>
 
       <Button onClick={handleSave} disabled={saving} className="rounded-lg">
-        {saving ? 'Menyimpan...' : 'Simpan'}
+        {saving ? tm("Menyimpan...") : tm("Simpan")}
       </Button>
     </div>
   );
