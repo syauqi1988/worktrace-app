@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, FileText, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTx } from '@/i18n/dual';
 
 type Group = { title: string; items: string[] };
 
@@ -21,6 +22,7 @@ const GROUPS: Group[] = [
 const FAV_KEY = 'report_favourites';
 
 export default function ReportsPage() {
+  const tx = useTx();
   const [closed, setClosed] = useState<string[]>([]);
   const [favs, setFavs] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch { return []; }
@@ -37,9 +39,9 @@ export default function ReportsPage() {
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div>
-        <p className="text-sm text-muted-foreground">Reports</p>
-        <h1 className="text-xl md:text-2xl font-bold text-foreground">All Reports</h1>
-        <p className="text-sm text-muted-foreground mt-1">Empower your business decisions with financial reports.</p>
+        <p className="text-sm text-muted-foreground">{tx('Reports')}</p>
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">{tx('All Reports')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{tx('Empower your business decisions with financial reports.')}</p>
       </div>
 
       {groups.map(g => {
@@ -51,7 +53,7 @@ export default function ReportsPage() {
               className="w-full flex items-center gap-2 px-4 py-3 bg-muted/50 text-sm font-medium text-foreground"
             >
               <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-              {g.title} ({g.items.length})
+              {tx(g.title)} ({g.items.length})
             </button>
             {isOpen && (
               <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
