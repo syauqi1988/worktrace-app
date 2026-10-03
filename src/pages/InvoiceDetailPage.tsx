@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import DataFormPage from '@/components/form/DataFormPage';
+import DocActionsBar from '@/components/form/DocActionsBar';
+import { useL } from '@/i18n/dual';
+import { generateAndIncrement as genInvNo } from '@/utils/generateDocNumber';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
@@ -116,6 +120,8 @@ export default function InvoiceDetailPage() {
   const [proofRejectReason, setProofRejectReason] = useState('');
   const { checkWhatsAppShare, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   const { t } = useTranslation();
+  const l = useL();
+  const [duplicating, setDuplicating] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -733,55 +739,28 @@ export default function InvoiceDetailPage() {
   const afterDiscount = invoice.subtotal - invoice.discount - deductionsTotal;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
 
+  const duplicateInvoice = async () => {
+    if (!user) return;
+    setDuplicating(true);
+    try {
+      const { data: src } = await supabase.from('invoices').select('*').eq('id', invoice.id).single();
+      const num = await genInvNo(supabase, user.id, 'invoice');
+      const { id: _i, created_at: _c, updated_at: _u, paid_date: _p, receipt_number: _r, payment_proof_token: _t, lhdn_submitted: _l, ...rest } = (src || {}) as any;
+      const { data, error } = await supabase.from('invoices').insert({ ...rest, invoice_number: num, status: 'Created', lhdn_submitted: false } as any).select('id').single();
+      if (error) throw error;
+      toast.success(l('Invoice duplicated', 'Invois disalin'));
+      navigate(`/invoices/${data.id}/edit`);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally { setDuplicating(false); }
+  };
+
   return (
-    <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6">
-      {/* Paid Banner */}
-      {invoice.status === 'Paid' && (
-        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle className="h-5 w-5 text-[#15803D]" />
-          <div>
-            <p className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.paid')}</p>
-            {invoice.paid_date && <p className="text-xs text-[#15803D]">{t('invoiceDetail.paymentDate')}: {formatDate(invoice.paid_date)}</p>}
-          </div>
-        </div>
-      )}
-
-      {/* Receipt Section */}
-      {invoice.status === 'Paid' && invoice.receipt_number && (
-        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-[#15803D]" />
-              <span className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.receipt')}</span>
-            </div>
-            <span className="text-xs text-[#15803D] font-medium">{invoice.receipt_number}</span>
-          </div>
-          <p className="text-sm text-[#15803D]">
-            {t('invoiceDetail.receiptReceived', { amount: invoice.total.toFixed(2), date: invoice.paid_date ? formatDate(invoice.paid_date) : '-' })}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptPreview}>
-              <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.previewReceipt')}
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptDownload}>
-              <Download className="h-3.5 w-3.5" /> {t('invoiceDetail.downloadReceipt')}
-            </Button>
-            {hasPhone && (
-              <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
-                {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                {t('invoiceDetail.shareReceiptWa')}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-5 w-5" /></button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-foreground">{invoice.invoice_number}</h1>
+    <>
+    <DataFormPage
+      breadcrumb={l('Home / Invoices', 'Utama / Invois')}
+      title={invoice.invoice_number}
+      titleBadge={<div className="flex items-center gap-2 flex-wrap">
             <div className="relative inline-flex items-center">
               <select
                 value={displayStatus}
@@ -824,7 +803,71 @@ export default function InvoiceDetailPage() {
                 <Landmark className="h-3 w-3" /> e-Invois
               </span>
             )}
+      </div>}
+      headerActions={<DocActionsBar
+        transfers={[
+          { label: l('Transfer to Receipt (Mark Paid)', 'Pindah ke Resit (Tanda Dibayar)'), onClick: () => setPayOpen(true), hidden: invoice.status === 'Paid' },
+        ]}
+        onEdit={(invoice.status === 'Draft' || invoice.status === 'Created') ? () => navigate(`/invoices/${invoice.id}/edit`) : undefined}
+        actions={[
+          { label: t('invoiceDetail.reminder'), onClick: sendPaymentReminder, icon: <MessageCircle className="h-4 w-4" />, hidden: !hasPhone || invoice.status === 'Paid' },
+          { label: t('invoiceDetail.requestProofWa'), onClick: requestPaymentProof, icon: <MessageCircle className="h-4 w-4" />, hidden: !hasPhone || invoice.status === 'Paid' },
+          { label: l('Download PDF', 'Muat Turun PDF'), onClick: handlePreviewDownload, icon: <Download className="h-4 w-4" />, hidden: !pdfData },
+        ]}
+        onDelete={() => setDeleteOpen(true)}
+        onDuplicate={duplicateInvoice}
+        duplicating={duplicating}
+        onPrint={pdfData ? handlePreview : undefined}
+        onShare={shareViaWhatsApp}
+        shareDisabled={!hasPhone}
+        sharing={isSharing}
+      />}
+      onBack={() => navigate(-1)}
+      onSave={() => navigate(`/invoices/${invoice.id}/edit`)}
+      saveDisabled={!(invoice.status === 'Draft' || invoice.status === 'Created')}
+      saveLabel={t('invoiceDetail.edit')}
+      sections={[
+        ...((invoice.status === 'Paid' || showInlinePayDate) ? [{ id: 'status', title: l('Payment Status', 'Status Bayaran'), content: (<div className="space-y-4">
+      {/* Paid Banner */}
+      {invoice.status === 'Paid' && (
+        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 flex items-center gap-3">
+          <CheckCircle className="h-5 w-5 text-[#15803D]" />
+          <div>
+            <p className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.paid')}</p>
+            {invoice.paid_date && <p className="text-xs text-[#15803D]">{t('invoiceDetail.paymentDate')}: {formatDate(invoice.paid_date)}</p>}
           </div>
+        </div>
+      )}
+
+      {/* Receipt Section */}
+      {invoice.status === 'Paid' && invoice.receipt_number && (
+        <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-[#15803D]" />
+              <span className="text-sm font-bold text-[#15803D]">{t('invoiceDetail.receipt')}</span>
+            </div>
+            <span className="text-xs text-[#15803D] font-medium">{invoice.receipt_number}</span>
+          </div>
+          <p className="text-sm text-[#15803D]">
+            {t('invoiceDetail.receiptReceived', { amount: invoice.total.toFixed(2), date: invoice.paid_date ? formatDate(invoice.paid_date) : '-' })}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptPreview}>
+              <Eye className="h-3.5 w-3.5" /> {t('invoiceDetail.previewReceipt')}
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs gap-1 border-[#BBF7D0] text-[#15803D] hover:bg-[#BBF7D0]/30" onClick={handleReceiptDownload}>
+              <Download className="h-3.5 w-3.5" /> {t('invoiceDetail.downloadReceipt')}
+            </Button>
+            {hasPhone && (
+              <Button size="sm" className="text-xs gap-1 text-white" style={{ backgroundColor: '#25D366' }} onClick={shareReceiptWhatsApp} disabled={isSharingReceipt}>
+                {isSharingReceipt ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                {t('invoiceDetail.shareReceiptWa')}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
           {showInlinePayDate && (
             <div className="flex items-center gap-2 mt-2">
               <label className="text-sm text-muted-foreground">{t('invoiceDetail.paidDateLabel')}</label>
@@ -845,20 +888,8 @@ export default function InvoiceDetailPage() {
               <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowInlinePayDate(false)}>{t('invoiceDetail.cancel')}</Button>
             </div>
           )}
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {(invoice.status === 'Draft' || invoice.status === 'Created') && (
-              <DropdownMenuItem onClick={() => navigate(`/invoices/${invoice.id}/edit`)}><Edit className="h-4 w-4 mr-2" /> {t('invoiceDetail.edit')}</DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> {t('invoiceDetail.delete')}</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
+        </div>) }] : []),
+        { id: 'details', title: l('Details', 'Butiran'), content: (<div className="space-y-4">
       {/* Info */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         {customer && (
@@ -1099,9 +1130,8 @@ export default function InvoiceDetailPage() {
           </>
         )}
       </div>
-
-      {/* Payment Info Display */}
-      {selectedPMs.length > 0 && (
+        </div>) },
+        ...(selectedPMs.length > 0 ? [{ id: 'payment', title: t('invoiceDetail.paymentMethods'), content: (
         <div className="bg-card rounded-xl border border-border p-4 space-y-3">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('invoiceDetail.paymentMethods')}</p>
           {selectedPMs.filter((m: any) => m.type === 'bank_transfer').map((b: any) => (
@@ -1128,35 +1158,9 @@ export default function InvoiceDetailPage() {
             </div>
           ))}
         </div>
-      )}
-
-      {/* WhatsApp Share + PDF Preview + PDF Download */}
-      <div className="flex flex-col gap-3">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('invoiceDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('invoiceDetail.shareWa')}</>}
-                </Button>
-              </div>
-            </TooltipTrigger>
-            {!hasPhone && <TooltipContent>{t('invoiceDetail.noPhoneRecord')}</TooltipContent>}
-          </Tooltip>
-        </TooltipProvider>
-
-        {pdfData && (
-          <>
-            <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Eye className="h-4 w-4" /> {t('invoiceDetail.previewPdf')}
-            </Button>
-            <Button variant="outline" onClick={handlePreviewDownload} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Download className="h-4 w-4" /> {t('invoiceDetail.downloadPdf')}
-            </Button>
-          </>
-        )}
-      </div>
-
+        ) }] : []),
+      ]}
+    />
       {/* Mark as Paid Dialog */}
       <Dialog open={payOpen} onOpenChange={setPayOpen}>
         <DialogContent>
@@ -1285,6 +1289,6 @@ export default function InvoiceDetailPage() {
       </Dialog>
 
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
-    </div>
+    </>
   );
 }

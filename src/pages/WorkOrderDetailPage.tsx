@@ -8,6 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import DataFormPage from '@/components/form/DataFormPage';
+import DocActionsBar from '@/components/form/DocActionsBar';
+import { useL } from '@/i18n/dual';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import {
@@ -55,6 +58,7 @@ function formatPhone(phone: string): string {
 
 export default function WorkOrderDetailPage() {
   const { t } = useTranslation();
+  const l = useL();
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -309,14 +313,11 @@ export default function WorkOrderDetailPage() {
   const hasPhone = !!job?.customers?.phone;
 
   return (
-    <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6 max-w-2xl">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-foreground">{wo.wo_number}</h1>
+    <>
+    <DataFormPage
+      breadcrumb={l('Home / Work Orders', 'Utama / Work Order')}
+      title={wo.wo_number}
+      titleBadge={
             <div className="relative inline-flex items-center">
               <select
                 value={wo.status}
@@ -332,30 +333,24 @@ export default function WorkOrderDetailPage() {
               </select>
               <ChevronDown className="absolute right-2 h-3 w-3 pointer-events-none opacity-60" />
             </div>
-          </div>
-          <p className="text-sm text-muted-foreground truncate">{wo.title}</p>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handlePreview}>
-              <Eye className="h-4 w-4 mr-2" /> {t('workOrderDetail.previewPdf')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={shareViaWhatsApp} className={hasPhone ? '' : 'opacity-50 pointer-events-none'}>
-              <MessageCircle className="h-4 w-4 mr-2" /> {t('workOrderDetail.shareWa')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)}>
-              <Edit className="h-4 w-4 mr-2" /> {t('workOrderDetail.edit')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" /> {t('workOrderDetail.delete')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
+      }
+      headerActions={<DocActionsBar
+        transfers={[
+          { label: l('Transfer to Completion Report', 'Pindah ke Laporan Siap'), onClick: () => navigate(`/jobs/${jobId}/completion-report`) },
+          { label: l('Transfer to Invoice', 'Pindah ke Invois'), onClick: () => navigate(`/invoices/new?job_id=${jobId}`) },
+        ]}
+        onEdit={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)}
+        onDelete={() => setDeleteOpen(true)}
+        onPrint={handlePreview}
+        onShare={shareViaWhatsApp}
+        shareDisabled={!hasPhone}
+        sharing={sharing}
+      />}
+      onBack={() => navigate(-1)}
+      onSave={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)}
+      saveLabel={t('workOrderDetail.edit')}
+      sections={[
+        { id: 'details', title: l('Details', 'Butiran'), description: wo.title, content: (<div className="space-y-4">
       {wo.status === 'Accepted' && !report && (
         <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-xl p-4 space-y-2">
           <p className="text-sm font-medium text-[#15803D]">{t('workOrderDetail.accepted')}</p>
@@ -440,22 +435,9 @@ export default function WorkOrderDetailPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <Button variant="outline" onClick={handlePreview} className="rounded-lg gap-2"><Eye className="h-4 w-4" /> {t('workOrderDetail.previewPdf')}</Button>
-        {job?.customers?.phone && (
-          <Button onClick={shareViaWhatsApp} disabled={sharing} className="text-white rounded-lg gap-2" style={{ backgroundColor: '#25D366' }}>
-            {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-            {t('workOrderDetail.shareWa')}
-          </Button>
-        )}
-        <Button variant="outline" onClick={() => navigate(`/jobs/${jobId}/work-order/new?wo_id=${wo.id}`)} className="rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> {t('workOrderDetail.edit')}
-        </Button>
-        <Button variant="outline" onClick={() => setDeleteOpen(true)} className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2">
-          <Trash2 className="h-4 w-4" /> {t('workOrderDetail.delete')}
-        </Button>
-      </div>
-
+        </div>) },
+      ]}
+    />
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
@@ -483,6 +465,6 @@ export default function WorkOrderDetailPage() {
           a.click();
         }}
       />
-    </div>
+    </>
   );
 }

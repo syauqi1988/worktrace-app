@@ -10,6 +10,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import DataFormPage from '@/components/form/DataFormPage';
+import DocActionsBar from '@/components/form/DocActionsBar';
+import { useL } from '@/i18n/dual';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { ArrowLeft, MoreVertical, Edit, Trash2, User, Briefcase, CalendarDays, MessageCircle, FileText, Download, Loader2, Eye, AlertTriangle, X, ChevronDown, ClipboardList } from 'lucide-react';
@@ -90,6 +93,8 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const l = useL();
   const [converting, setConverting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -540,16 +545,28 @@ export default function QuotationDetailPage() {
   const afterDiscount = quotation.subtotal - quotation.discount;
   const sstAmount = quotation.tax_rate > 0 ? afterDiscount * (quotation.tax_rate / 100) : 0;
 
+  const duplicateQuotation = async () => {
+    if (!user) return;
+    setDuplicating(true);
+    try {
+      const { data: src } = await supabase.from('quotations').select('*').eq('id', quotation.id).single();
+      const num = await generateAndIncrement(supabase, user.id, 'quotation');
+      const { id: _i, created_at: _c, updated_at: _u, ...rest } = (src || {}) as any;
+      const { data, error } = await supabase.from('quotations').insert({ ...rest, quote_number: num, status: 'Created' } as any).select('id').single();
+      if (error) throw error;
+      toast.success(l('Quotation duplicated', 'Sebut harga disalin'));
+      navigate(`/quotations/${data.id}/edit`);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally { setDuplicating(false); }
+  };
+
   return (
-    <div className="p-4 md:p-6 space-y-4 pb-28 md:pb-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-foreground">{quotation.quote_number}</h1>
+    <>
+    <DataFormPage
+      breadcrumb={l('Home / Quotations', 'Utama / Sebut Harga')}
+      title={quotation.quote_number}
+      titleBadge={<div className="flex items-center gap-2 flex-wrap">
             <div className="relative inline-flex items-center">
               <select
                 value={quotation.status}
@@ -568,26 +585,28 @@ export default function QuotationDetailPage() {
             {isExpired && quotation.status !== 'Accepted' && quotation.status !== 'Rejected' && (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C]">{t('quotationDetail.expired')}</span>
             )}
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0"><MoreVertical className="h-4 w-4" /></Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {canEdit && (
-              <DropdownMenuItem onClick={() => navigate(`/quotations/${quotation.id}/edit`)}>
-                <Edit className="h-4 w-4 mr-2" /> {t('quotationDetail.editQuote')}
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" /> {t('quotationDetail.delete')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Info */}
+      </div>}
+      headerActions={<DocActionsBar
+        transfers={[
+          { label: l('Transfer to Work Order', 'Pindah ke Work Order'), onClick: () => navigate(`/jobs/${quotation.job_id}/work-order/new`), hidden: !quotation.job_id },
+          { label: l('Transfer to Invoice', 'Pindah ke Invois'), onClick: handleConvertToInvoice },
+        ]}
+        onEdit={canEdit ? () => navigate(`/quotations/${quotation.id}/edit`) : undefined}
+        actions={pdfData ? [{ label: l('Download PDF', 'Muat Turun PDF'), onClick: handlePreviewDownload, icon: <Download className="h-4 w-4" /> }] : []}
+        onDelete={() => setDeleteOpen(true)}
+        onDuplicate={duplicateQuotation}
+        duplicating={duplicating}
+        onPrint={pdfData ? handlePreview : undefined}
+        onShare={shareViaWhatsApp}
+        shareDisabled={!hasPhone}
+        sharing={isSharing}
+      />}
+      onBack={() => navigate(-1)}
+      onSave={() => navigate(`/quotations/${quotation.id}/edit`)}
+      saveDisabled={!canEdit}
+      saveLabel={t('quotationDetail.edit')}
+      sections={[
+        { id: 'info', title: l('General Info', 'Maklumat Am'), content: (<div className="space-y-4">
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         {(quotation.jobs as any)?.customers && (
           <div className="flex items-center gap-2">
@@ -621,8 +640,19 @@ export default function QuotationDetailPage() {
           </div>
         )}
       </div>
-
-      {/* Line Items */}
+        {quotation.status === 'Rejected' && rejectionReason && (
+          <div className="w-full">
+            <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
+                <p className="text-sm text-[#92400E] mt-1 whitespace-pre-wrap">{rejectionReason}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        </div>) },
+        { id: 'items', title: t('quotationDetail.items'), content: (<div className="space-y-4">
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('quotationDetail.items')}</p>
         <div className="hidden md:block">
@@ -669,62 +699,12 @@ export default function QuotationDetailPage() {
           </div>
         </div>
       </div>
-
       {hasPaymentDetails(quotation.payment_details) && (
         <PaymentDetailsCard details={quotation.payment_details} />
       )}
-
-
-      {/* Action Buttons — no longer gated on customer approval */}
-      <div className="flex flex-wrap gap-3">
-        <Button onClick={() => navigate(`/quotations/${quotation.id}/edit`)} variant="outline" className="flex-1 rounded-lg gap-2">
-          <Edit className="h-4 w-4" /> {t('quotationDetail.edit')}
-        </Button>
-        {quotation.job_id && (
-          <Button onClick={() => navigate(`/jobs/${quotation.job_id}/work-order/new`)} className="flex-1 rounded-lg gap-2">
-            <ClipboardList className="h-4 w-4" /> Buat Work Order
-          </Button>
-        )}
-        {quotation.status === 'Rejected' && rejectionReason && (
-          <div className="w-full">
-            <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-xl p-4 flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-[#B45309] shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-[#B45309]">{t('quotationDetail.rejectedNote')}</p>
-                <p className="text-sm text-[#92400E] mt-1 whitespace-pre-wrap">{rejectionReason}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* WhatsApp Share + PDF Preview + PDF Download */}
-      <div className="flex flex-col gap-3">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Button onClick={shareViaWhatsApp} disabled={isSharing || !hasPhone} className="w-full rounded-lg gap-2 text-white" style={{ backgroundColor: '#25D366' }}>
-                  {isSharing ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('quotationDetail.generating')}</> : <><MessageCircle className="h-4 w-4" /> {t('quotationDetail.shareWa')}</>}
-                </Button>
-              </div>
-            </TooltipTrigger>
-            {!hasPhone && <TooltipContent>{t('quotationDetail.noPhone')}</TooltipContent>}
-          </Tooltip>
-        </TooltipProvider>
-
-        {pdfData && (
-          <>
-            <Button variant="outline" onClick={handlePreview} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Eye className="h-4 w-4" /> {t('quotationDetail.previewPdf')}
-            </Button>
-            <Button variant="outline" onClick={handlePreviewDownload} className="w-full rounded-lg gap-2 text-primary border-primary/30">
-              <Download className="h-4 w-4" /> {t('quotationDetail.downloadPdf')}
-            </Button>
-          </>
-        )}
-      </div>
-
+        </div>) },
+      ]}
+    />
       {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
@@ -778,6 +758,6 @@ export default function QuotationDetailPage() {
         title={t('quotationDetail.previewTitle', { number: quotation.quote_number })}
       />
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
-    </div>
+    </>
   );
 }
