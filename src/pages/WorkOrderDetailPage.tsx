@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { openWhatsApp } from '@/lib/whatsapp';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDateLocale } from '@/i18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,6 +60,8 @@ export default function WorkOrderDetailPage() {
   const { t } = useTranslation();
   const l = useL();
   const { id: jobId } = useParams<{ id: string }>();
+  const [woSearch] = useSearchParams();
+  const woIdParam = woSearch.get('wo');
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -85,9 +87,11 @@ export default function WorkOrderDetailPage() {
     if (!user || !jobId) return;
     setLoading(true);
     const [woRes, jobRes, quoRes, reportRes] = await Promise.all([
-      supabase.from('work_orders').select('*')
-        .eq('job_id', jobId).eq('user_id', user.id)
-        .order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      woIdParam
+        ? supabase.from('work_orders').select('*').eq('id', woIdParam).eq('user_id', user.id).maybeSingle()
+        : supabase.from('work_orders').select('*')
+          .eq('job_id', jobId).eq('user_id', user.id)
+          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
       supabase.from('jobs').select('id, job_number, title, customers(name, phone, email, address)')
         .eq('id', jobId).single(),
       supabase.from('quotations').select('id, quote_number, status')
