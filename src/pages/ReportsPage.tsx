@@ -62,7 +62,7 @@ export default function ReportsPage() {
                     key={name}
                     role="button"
                     tabIndex={0}
-                    onClick={() => toast.info(`${name} — coming soon`)}
+                    onClick={() => toast.info(`${name} — ${tx('coming soon')}`)}
                     className="flex items-center gap-3 border border-border rounded-lg px-3 py-3 min-h-[56px] cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                   >
                     <FileText className="h-5 w-5 text-primary shrink-0" />

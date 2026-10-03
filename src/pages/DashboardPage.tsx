@@ -45,9 +45,10 @@ function Card({ title, right, children, className = '' }: { title: string; right
 }
 
 function Net({ value, label }: { value: number; label: string }) {
+  const tx = useTx();
   return (
     <p className="text-sm md:text-base font-semibold text-foreground mb-3">
-      NET {rm(value)} <span className="font-normal text-muted-foreground uppercase">{label}</span>
+      {tx('NET')} {rm(value)} <span className="font-normal text-muted-foreground uppercase">{tx(label)}</span>
     </p>
   );
 }

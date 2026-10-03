@@ -1,3 +1,4 @@
+import { useTx } from '@/i18n/dual';
 import { useEffect, useState } from 'react';
 import { Download, FileText, Loader2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,7 @@ interface Receipt {
 }
 
 export default function SubscriptionReceiptsSection() {
+  const tx = useTx();
   const [items, setItems] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function SubscriptionReceiptsSection() {
       if (error || !data?.signedUrl) throw error;
       window.open(data.signedUrl, '_blank');
     } catch (e: any) {
-      toast.error('Failed to download receipt');
+      toast.error(tx('Failed to download receipt'));
     } finally {
       setDownloadingId(null);
     }
@@ -87,7 +89,7 @@ export default function SubscriptionReceiptsSection() {
           </div>
           <Button size="sm" variant="outline" onClick={() => download(r)} disabled={!r.pdf_path || downloadingId === r.id}>
             {downloadingId === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            <span className="ml-1 hidden sm:inline">Download</span>
+            <span className="ml-1 hidden sm:inline">{tx('Download')}</span>
           </Button>
         </div>
       ))}
