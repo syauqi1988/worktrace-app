@@ -19,6 +19,7 @@ type Props = {
   onSave: () => void;
   saving?: boolean;
   saveLabel?: string;
+  saveDisabled?: boolean;
   autosaveLabel?: string;
   footerExtra?: ReactNode;
   onBack?: () => void;
@@ -41,7 +42,7 @@ export function Field({
 }
 
 export default function DataFormPage({
-  breadcrumb, title, sections, onSave, saving, saveLabel = 'Save',
+  breadcrumb, title, sections, onSave, saving, saveLabel = 'Save', saveDisabled,
   autosaveLabel, footerExtra, onBack,
 }: Props) {
   const navigate = useNavigate();
@@ -135,7 +136,7 @@ export default function DataFormPage({
       <div className="fixed bottom-16 md:bottom-0 inset-x-0 md:left-[var(--sidebar-w,0px)] z-50 safe-area-pb border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
         <div className="flex items-center justify-end gap-3">
           {footerExtra}
-          <Button onClick={onSave} disabled={saving} className="min-w-28 w-full sm:w-auto">
+          <Button onClick={onSave} disabled={saving || saveDisabled} className="min-w-28 w-full sm:w-auto">
             {saving ? tx('Saving...') : tx(saveLabel)}
           </Button>
         </div>

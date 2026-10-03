@@ -1,3 +1,5 @@
+import DataFormPage from '@/components/form/DataFormPage';
+import { useL } from '@/i18n/dual';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +46,7 @@ export default function JobFormPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const l = useL();
   const { checkJobLimit, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -304,14 +307,16 @@ export default function JobFormPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-5 max-w-xl pb-28 md:pb-6">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h1 className="text-xl font-bold text-foreground">{isEdit ? t('jobForm.edit') : t('jobForm.new')}</h1>
-      </div>
-
+    <>
+    <DataFormPage
+      breadcrumb={l('Home / Jobs', 'Utama / Kerja')}
+      title={isEdit ? t('jobForm.edit') : t('jobForm.new')}
+      onBack={() => navigate(-1)}
+      onSave={handleSubmit}
+      saving={submitting}
+      saveLabel={isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
+      sections={[
+        { id: 'customer', title: l('Customer', 'Pelanggan'), content: (<div className="space-y-4">
       <div className="space-y-1.5">
         <Label>{t('jobForm.customerLabel')}</Label>
         <div className="relative">
@@ -390,7 +395,8 @@ export default function JobFormPage() {
           </p>
         </div>
       )}
-
+        </div>) },
+        { id: 'details', title: l('Job Details', 'Butiran Kerja'), content: (<div className="space-y-4">
       <div className="space-y-1.5">
         <Label>{t('jobForm.titleLabel')}</Label>
         <Input
@@ -487,25 +493,16 @@ export default function JobFormPage() {
         <Label>{t('jobForm.description')}</Label>
         <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder={t('jobForm.descriptionPlaceholder')} />
       </div>
-
-      <div className="space-y-1.5">
-        <Label className="flex items-center gap-1.5"><Package className="h-4 w-4" /> Produk / Item Kerja</Label>
-        <p className="text-[11px] text-muted-foreground -mt-0.5">Produk yang ditambah akan auto-isi ke Sebut Harga & Invois.</p>
-        <JobProductsEditor items={products} onChange={setProducts} />
-      </div>
-
-      <div className="space-y-1.5">
-        <Label>{t('jobForm.internalNotes')}</Label>
-        <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder={t('jobForm.internalNotesPlaceholder')} />
-      </div>
-
-      <div className="flex gap-2">
-        <Button onClick={handleSubmit} disabled={submitting} className="flex-1 rounded-lg h-11">
-          {submitting ? t('forms.saving') : isEdit ? t('jobForm.saveEdit') : t('jobForm.saveNew')}
-        </Button>
-      </div>
-      <p className="text-[11px] text-muted-foreground -mt-2">Kerja ini akan disimpan automatik sebagai preset untuk guna semula.</p>
-      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
-    </div>
+        </div>) },
+        { id: 'items', title: l('Products / Job Items', 'Produk / Item Kerja'), description: l('Products added will auto-fill into Quotations & Invoices.', 'Produk yang ditambah akan auto-isi ke Sebut Harga & Invois.'), content: (
+          <JobProductsEditor items={products} onChange={setProducts} />
+        ) },
+        { id: 'notes', title: t('jobForm.internalNotes'), description: l('This job will be saved automatically as a preset for reuse.', 'Kerja ini akan disimpan automatik sebagai preset untuk guna semula.'), content: (
+          <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t('jobForm.internalNotesPlaceholder')} />
+        ) },
+      ]}
+    />
+    <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} reason={upgradeReason} />
+    </>
   );
 }
