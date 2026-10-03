@@ -1,3 +1,4 @@
+import { useTx } from '@/i18n/dual';
 import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import DataFormPage, { Field, FormSection } from '@/components/form/DataFormPage';
@@ -31,6 +32,7 @@ export default function PurchaseFormPage({
   referenceLabel = 'Reference No.',
   statuses = ['Draft', 'Pending Approval', 'Ready'],
 }: PurchaseFormProps) {
+  const tx = useTx();
   const [party, setParty] = useState('');
   const [showShipping, setShowShipping] = useState(true);
   const [shippingInfo, setShippingInfo] = useState('');
