@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { openWhatsApp, buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import DataFormPage from '@/components/form/DataFormPage';
 import { useL } from '@/i18n/dual';
-import { ChevronDown, ArrowLeftRight, Ban, Copy, Share2 } from 'lucide-react';
+import { ChevronDown, ArrowLeftRight, Ban, Copy, Share2, Plus } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub,
   DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
