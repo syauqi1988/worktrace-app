@@ -414,9 +414,6 @@ export default function JobDetailPage() {
       sections={[
         { id: 'workflow', title: l('Workflow', 'Aliran Kerja'), description: job.title, content: (
       <div className="bg-card rounded-xl border border-border p-3">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
-          {getJobType(job.job_type as JobType).icon} {getJobType(job.job_type as JobType).nameMs}
-        </p>
         <WorkflowBar
           jobType={'standard'}
           completed={new Set<WorkflowStepKey>([
