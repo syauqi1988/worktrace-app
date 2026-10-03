@@ -447,7 +447,6 @@ export default function QuotationFormPage() {
           onChange={setDeductions}
           subtotalForPreview={subtotal}
         />
-      </div>
         </div>) },
         { id: 'summary', title: l('Summary', 'Ringkasan'), content: (
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
