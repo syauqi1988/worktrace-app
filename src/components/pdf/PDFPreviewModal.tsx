@@ -4,6 +4,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { Loader2, MessageCircle, X, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useL } from '@/i18n/dual';
 
 import { Button } from '@/components/ui/button';
 
