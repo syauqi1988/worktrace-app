@@ -93,6 +93,8 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const l = useL();
   const [converting, setConverting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -552,10 +554,10 @@ export default function QuotationDetailPage() {
       const { id: _i, created_at: _c, updated_at: _u, ...rest } = (src || {}) as any;
       const { data, error } = await supabase.from('quotations').insert({ ...rest, quote_number: num, status: 'Created' } as any).select('id').single();
       if (error) throw error;
-      toast({ title: l('Quotation duplicated', 'Sebut harga disalin') });
+      toast.success(l('Quotation duplicated', 'Sebut harga disalin'));
       navigate(`/quotations/${data.id}/edit`);
     } catch (e: any) {
-      toast({ title: e.message, variant: 'destructive' });
+      toast.error(e.message);
     } finally { setDuplicating(false); }
   };
 
