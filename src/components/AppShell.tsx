@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTx } from '@/i18n/dual';
 import LanguageToggle from '@/components/LanguageToggle';
 import {
   LayoutDashboard, Briefcase, Users, FileText, Receipt, Settings,
@@ -60,12 +61,12 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
     },
     {
       group: 'contacts',
-      label: 'Contacts',
+      label: tx('Contacts'),
       icon: Users,
       children: [
         { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
-        { to: '/suppliers', label: 'Suppliers', icon: Truck },
-        { to: '/employees', label: 'Employees', icon: UserCog },
+        { to: '/suppliers', label: tx('Suppliers'), icon: Truck },
+        { to: '/employees', label: tx('Employees'), icon: UserCog },
       ],
     },
     { to: '/products', label: t('nav.products'), icon: Package },
@@ -81,38 +82,38 @@ function buildNavItems(t: (k: string) => string): NavEntry[] {
     },
     {
       group: 'purchases',
-      label: 'Purchases',
+      label: tx('Purchases'),
       icon: ShoppingBag,
       children: [
-        { to: '/purchase-orders', label: 'Purchase Orders', icon: ClipboardList },
-        { to: '/goods-received-notes', label: 'Goods Received Notes', icon: PackageCheck },
-        { to: '/bills', label: 'Bills', icon: FileText },
-        { to: '/credit-notes', label: 'Credit Notes', icon: FileMinus },
-        { to: '/purchase-payments', label: 'Payments', icon: Banknote },
-        { to: '/refunds', label: 'Refunds', icon: Undo2 },
+        { to: '/purchase-orders', label: tx('Purchase Orders'), icon: ClipboardList },
+        { to: '/goods-received-notes', label: tx('Goods Received Notes'), icon: PackageCheck },
+        { to: '/bills', label: tx('Bills'), icon: FileText },
+        { to: '/credit-notes', label: tx('Credit Notes'), icon: FileMinus },
+        { to: '/purchase-payments', label: tx('Payments'), icon: Banknote },
+        { to: '/refunds', label: tx('Refunds'), icon: Undo2 },
       ],
     },
     {
       group: 'bank',
-      label: 'Bank',
+      label: tx('Bank'),
       icon: Building2,
       children: [
-        { to: '/money-in', label: 'Money In', icon: ArrowDownToLine },
-        { to: '/money-out', label: 'Money Out', icon: ArrowUpFromLine },
-        { to: '/transfers', label: 'Transfers', icon: Repeat },
-        { to: '/bank-accounts', label: 'Accounts', icon: Wallet },
+        { to: '/money-in', label: tx('Money In'), icon: ArrowDownToLine },
+        { to: '/money-out', label: tx('Money Out'), icon: ArrowUpFromLine },
+        { to: '/transfers', label: tx('Transfers'), icon: Repeat },
+        { to: '/bank-accounts', label: tx('Accounts'), icon: Wallet },
       ],
     },
     {
       group: 'accounting',
-      label: 'Accounting',
+      label: tx('Accounting'),
       icon: BookOpen,
       children: [
-        { to: '/journal-entries', label: 'Journal Entries', icon: BookOpen },
-        { to: '/contras', label: 'Contras', icon: ArrowLeftRight },
-        { to: '/fixed-assets', label: 'Fixed Assets', icon: Landmark },
-        { to: '/deemed-payments', label: 'Deemed Payments', icon: Coins },
-        { to: '/chart-of-accounts', label: 'Chart of Accounts', icon: ListTree },
+        { to: '/journal-entries', label: tx('Journal Entries'), icon: BookOpen },
+        { to: '/contras', label: tx('Contras'), icon: ArrowLeftRight },
+        { to: '/fixed-assets', label: tx('Fixed Assets'), icon: Landmark },
+        { to: '/deemed-payments', label: tx('Deemed Payments'), icon: Coins },
+        { to: '/chart-of-accounts', label: tx('Chart of Accounts'), icon: ListTree },
       ],
     },
     { to: '/reports', label: t('nav.reports'), icon: FileBarChart },
