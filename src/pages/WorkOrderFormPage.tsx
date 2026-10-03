@@ -55,6 +55,7 @@ const DEFAULT_TERMS = `1. Kerja dilaksanakan mengikut spesifikasi dipersetujui.
 
 export default function WorkOrderFormPage() {
   const { t } = useTranslation();
+  const l = useL();
   const { id: jobId } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -395,7 +396,6 @@ export default function WorkOrderFormPage() {
 
         </div>) },
         { id: 'items', title: t('workOrderForm.items'), content: (
-      {/* Items */}
       <div className="space-y-3">
         {items.map((item, i) => (
           <div key={i} className="bg-card rounded-xl border border-border p-3 space-y-2">
