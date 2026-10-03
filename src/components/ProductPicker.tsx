@@ -1,3 +1,4 @@
+import { useL } from '@/i18n/dual';
 import { useEffect, useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ interface Product {
 const UOM_OPTIONS = ['Unit', 'Set', 'Lot', 'Meter', 'Kaki', 'Jam', 'Hari', 'Bulan'];
 
 export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }) {
+  const l = useL();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Product[]>([]);
@@ -86,7 +88,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
   const handleSubmitNew = async () => {
     if (!user) return;
     if (!newName.trim()) {
-      toast.error('Nama item diperlukan');
+      toast.error(l('Item name is required', 'Nama item diperlukan'));
       return;
     }
     const price = Number(newPrice) || 0;
@@ -102,7 +104,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
           is_active: true,
         } as any);
         if (error) throw error;
-        toast.success('Produk disimpan ke katalog');
+        toast.success(l('Product saved to catalog', 'Produk disimpan ke katalog'));
       }
       onPick({
         description: newName.trim(),
@@ -113,7 +115,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
       resetNew();
       setOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Gagal simpan produk');
+      toast.error(err.message || l('Failed to save product', 'Gagal simpan produk'));
     } finally {
       setSaving(false);
     }
@@ -124,7 +126,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
       <PopoverTrigger asChild>
         <button
           type="button"
-          title="Pilih dari Produk"
+          title={l('Pick from Products', 'Pilih dari Produk')}
           className="flex items-center justify-center h-10 w-10 rounded-md border border-input bg-background text-muted-foreground hover:text-primary hover:border-primary"
         >
           <Package className="h-4 w-4" />
@@ -140,15 +142,15 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
                   autoFocus
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Cari produk..."
+                  placeholder={l('Search products...', 'Cari produk...')}
                   className="pl-8 h-8 text-sm"
                 />
               </div>
             </div>
             <div className="max-h-64 overflow-y-auto">
-              {loading && <p className="px-3 py-2 text-sm text-muted-foreground">Memuatkan...</p>}
+              {loading && <p className="px-3 py-2 text-sm text-muted-foreground">{l('Loading...', 'Memuatkan...')}</p>}
               {!loading && filtered.length === 0 && (
-                <p className="px-3 py-3 text-sm text-muted-foreground text-center">Tiada produk dijumpai.</p>
+                <p className="px-3 py-3 text-sm text-muted-foreground text-center">{l('No products found.', 'Tiada produk dijumpai.')}</p>
               )}
               {!loading && filtered.map(p => (
                 <button
@@ -186,7 +188,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
                 className="w-full gap-1.5 text-xs"
                 onClick={() => setView('new')}
               >
-                <Plus className="h-3.5 w-3.5" /> Tambah Produk Baru
+                <Plus className="h-3.5 w-3.5" /> {l('Add New Product', 'Tambah Produk Baru')}
               </Button>
             </div>
           </>
@@ -198,13 +200,13 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
               <button type="button" onClick={() => setView('list')} className="text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <p className="text-sm font-semibold">Produk Baru</p>
+              <p className="text-sm font-semibold">{l('New Product', 'Produk Baru')}</p>
             </div>
             <div className="space-y-2">
               <Input
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                placeholder="Nama item / perkhidmatan *"
+                placeholder={l('Item / service name *', 'Nama item / perkhidmatan *')}
                 className="h-9 text-sm"
                 autoFocus
                 maxLength={120}
@@ -212,7 +214,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
               <Input
                 value={newDesc}
                 onChange={e => setNewDesc(e.target.value)}
-                placeholder="Penerangan (pilihan)"
+                placeholder={l('Description (optional)', 'Penerangan (pilihan)')}
                 className="h-9 text-sm"
                 maxLength={200}
               />
@@ -230,7 +232,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
                   step="0.01"
                   value={newPrice}
                   onChange={e => setNewPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Harga (RM) *"
+                  placeholder={l('Price (RM) *', 'Harga (RM) *')}
                   className="h-9 text-sm"
                 />
               </div>
@@ -250,7 +252,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
               disabled={saving}
               className="w-full h-9 text-sm"
             >
-              {saving ? 'Menyimpan...' : 'Tambah ke Dokumen'}
+              {saving ? l('Saving...', 'Menyimpan...') : l('Add to Document', 'Tambah ke Dokumen')}
             </Button>
           </div>
         )}

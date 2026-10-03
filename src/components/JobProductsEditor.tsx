@@ -1,3 +1,4 @@
+import { useL } from '@/i18n/dual';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2, Plus, Package } from 'lucide-react';
@@ -22,6 +23,7 @@ interface Props {
  * Visually adapted from the quotation items section.
  */
 export function JobProductsEditor({ items, onChange }: Props) {
+  const l = useL();
   const update = (i: number, field: keyof JobProductItem, value: string | number) => {
     onChange(items.map((it, idx) => (idx === i ? { ...it, [field]: value } : it)));
   };
@@ -39,7 +41,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
       {items.length === 0 && (
         <div className="bg-muted/40 border border-dashed border-border rounded-lg p-4 text-center">
           <Package className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-          <p className="text-xs text-muted-foreground">Tiada produk. Tambah dari senarai produk anda.</p>
+          <p className="text-xs text-muted-foreground">{l('No products. Add from your product list.', 'Tiada produk. Tambah dari senarai produk anda.')}</p>
         </div>
       )}
 
@@ -51,13 +53,13 @@ export function JobProductsEditor({ items, onChange }: Props) {
               <Input
                 value={it.description}
                 onChange={(e) => update(i, 'description', e.target.value)}
-                placeholder="Nama produk / item"
+                placeholder={l('Product / item name', 'Nama produk / item')}
                 className="text-sm"
               />
               <Textarea
                 value={it.description_detail || ''}
                 onChange={(e) => update(i, 'description_detail', e.target.value)}
-                placeholder="Butiran tambahan (pilihan)"
+                placeholder={l('Extra details (optional)', 'Butiran tambahan (pilihan)')}
                 rows={2}
                 className="text-xs"
               />
@@ -72,7 +74,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="text-[10px] text-muted-foreground">Kuantiti</label>
+              <label className="text-[10px] text-muted-foreground">{l('Quantity', 'Kuantiti')}</label>
               <Input
                 type="number" min={0}
                 value={it.qty || ''}
@@ -90,7 +92,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
               />
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground">Harga (RM)</label>
+              <label className="text-[10px] text-muted-foreground">{l('Price (RM)', 'Harga (RM)')}</label>
               <Input
                 type="number" min={0} step="0.01"
                 value={it.unit_price || ''}
@@ -111,7 +113,7 @@ export function JobProductsEditor({ items, onChange }: Props) {
           onClick={addBlank}
           className="flex-1 flex items-center justify-center gap-1 h-10 rounded-md border border-dashed border-border text-sm text-muted-foreground hover:text-primary hover:border-primary"
         >
-          <Plus className="h-4 w-4" /> Tambah Baris Kosong
+          <Plus className="h-4 w-4" /> {l('Add Empty Row', 'Tambah Baris Kosong')}
         </button>
       </div>
     </div>
