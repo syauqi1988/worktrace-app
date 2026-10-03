@@ -379,10 +379,8 @@ export default function JobDetailPage() {
             <DropdownMenuSubContent className="bg-popover z-50">
               <DropdownMenuItem onClick={() => navigate(`/quotations/new?job_id=${job.id}`)}>{l('Transfer to Quotation', 'Pindah ke Sebut Harga')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/work-order/new`)}>{l('Transfer to Work Order', 'Pindah ke Work Order')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>{l('Transfer to Completion Report', 'Pindah ke Laporan Siap')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/completion-report${reports.length ? '?new=1' : ''}`)}>{l('Transfer to Completion Report', 'Pindah ke Laporan Siap')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>{l('Transfer to Invoice', 'Pindah ke Invois')}</DropdownMenuItem>
-              {job.job_type !== 'milestone' && (
-              )}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuItem className="gap-2" onClick={() => navigate(`/jobs/${job.id}/edit`)}><Edit className="h-4 w-4" /> {t('jobDetail.editJob')}</DropdownMenuItem>
