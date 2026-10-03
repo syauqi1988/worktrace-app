@@ -382,7 +382,6 @@ export default function JobDetailPage() {
               <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/completion-report`)}>{l('Transfer to Completion Report', 'Pindah ke Laporan Siap')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/invoices/new?job_id=${job.id}`)}>{l('Transfer to Invoice', 'Pindah ke Invois')}</DropdownMenuItem>
               {job.job_type !== 'milestone' && (
-                <DropdownMenuItem onClick={() => navigate(`/jobs/${job.id}/vo/new`)}>{l('Transfer to Variation Order', 'Pindah ke VO')}</DropdownMenuItem>
               )}
             </DropdownMenuSubContent>
           </DropdownMenuSub>

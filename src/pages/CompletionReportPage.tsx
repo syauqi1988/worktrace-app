@@ -791,14 +791,6 @@ export default function CompletionReportPage() {
             >
               <Receipt className="h-4 w-4" /> {t('completionReport.createInvoice')}
             </Button>
-            <Button
-              onClick={() => navigate(`/jobs/${jobId}/vo/new`)}
-              size="sm"
-              variant="outline"
-              className="rounded-lg gap-2"
-            >
-              <FileText className="h-4 w-4" /> {t('completionReport.voDeduction')}
-            </Button>
             {job.customers?.phone && (
               <Button
                 onClick={handleWhatsAppShare}

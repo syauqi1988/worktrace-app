@@ -98,7 +98,7 @@ export default function InvoiceFormPage() {
   const [jobType, setJobType] = useState<string>('standard');
 
   const fetchAvailableVos = async (jobId: string) => {
-    if (!user) return;
+    if (!user || true) return;
     const { data } = await (supabase as any).from('variation_orders')
       .select('id, vo_number, type, items')
       .eq('job_id', jobId).eq('user_id', user.id).eq('status', 'Accepted');
@@ -662,9 +662,7 @@ export default function InvoiceFormPage() {
           </div>
         </div>
         {/* Deductions */}
-        <div className="pt-1">
-          <DeductionItemsSection value={deductions} onChange={setDeductions} subtotalForPreview={subtotal} />
-        </div>
+
         {deductionsAmount > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Jumlah Potongan</span>
