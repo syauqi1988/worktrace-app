@@ -120,6 +120,8 @@ export default function InvoiceDetailPage() {
   const [proofRejectReason, setProofRejectReason] = useState('');
   const { checkWhatsAppShare, upgradeOpen, setUpgradeOpen, upgradeReason } = usePlanGate();
   const { t } = useTranslation();
+  const l = useL();
+  const [duplicating, setDuplicating] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
