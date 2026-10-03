@@ -251,7 +251,7 @@ export default function QuotationDetailPage() {
         .select('id, invoice_number, status, total')
         .eq('job_id', quotation.job_id)
         .eq('user_id', user!.id)
-        .maybeSingle();
+        .order('created_at', { ascending: false }).limit(1).maybeSingle();
       if (existingInvoice) {
         setExistingInvoiceDialog({
           id: existingInvoice.id,

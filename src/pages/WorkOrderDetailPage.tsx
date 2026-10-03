@@ -93,7 +93,7 @@ export default function WorkOrderDetailPage() {
       supabase.from('quotations').select('id, quote_number, status')
         .eq('job_id', jobId).eq('user_id', user.id).maybeSingle(),
       supabase.from('completion_reports').select('id, status, report_number')
-        .eq('job_id', jobId).eq('user_id', user.id).maybeSingle(),
+        .eq('job_id', jobId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ]);
     setWo(woRes.data);
     setJob(jobRes.data);

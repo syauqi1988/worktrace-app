@@ -137,7 +137,7 @@ export default function InvoiceFormPage() {
       }
       if (user && !isEdit) {
         if (!isMilestoneJob) {
-          supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+          supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
             .then(({ data }) => {
               if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
             });
@@ -333,15 +333,15 @@ export default function InvoiceFormPage() {
       const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
       // Fire independent reads in parallel
       const [existingRes, quoteRes] = await Promise.all([
-        supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle(),
+        supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
-          .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle(),
+          .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').order('created_at', { ascending: false }).limit(1).maybeSingle(),
         fetchAvailableVos(j.id),
       ]);
       const existing = existingRes.data;
       if (existing && !isMilestoneJob) {
         setJobWarning({ message: t('invoiceForm.jobHasInvoice'), link: `/invoices/${existing.id}` });
-        setSaveDisabled(true);
+        setSaveDisabled(false);
       } else {
         setJobWarning(null);
         setSaveDisabled(false);
@@ -461,7 +461,7 @@ export default function InvoiceFormPage() {
   }
 
   // Blocked by existing invoice
-  if (!isEdit && existingInvoice && blockedJobId) {
+  if (false && !isEdit && existingInvoice && blockedJobId) {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">

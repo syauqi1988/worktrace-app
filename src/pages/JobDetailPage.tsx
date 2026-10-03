@@ -152,7 +152,7 @@ export default function JobDetailPage() {
           .select('id, quote_number, total, status, valid_until')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .maybeSingle(),
+          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('invoices')
           .select('id, invoice_number, total, status, due_date, milestone_stage_number, milestone_total_stages, milestone_stages, created_at')
           .eq('job_id', id)
@@ -163,7 +163,7 @@ export default function JobDetailPage() {
           .select('id, report_number, status, completion_date, work_description, technician_name, materials_used, customer_signature, notes, photos, accepted_at')
           .eq('job_id', id)
           .eq('user_id', user!.id)
-          .maybeSingle(),
+          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('work_orders')
           .select('id, wo_number, status, total')
           .eq('job_id', id)

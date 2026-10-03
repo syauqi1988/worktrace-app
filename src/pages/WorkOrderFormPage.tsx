@@ -104,7 +104,7 @@ export default function WorkOrderFormPage() {
           .eq('id', jobId).single(),
         supabase.from('quotations')
           .select('id, quote_number, status, items, total')
-          .eq('job_id', jobId).eq('user_id', user!.id).eq('status', 'Accepted').maybeSingle(),
+          .eq('job_id', jobId).eq('user_id', user!.id).eq('status', 'Accepted').order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('work_orders')
           .select('id, status')
           .eq('job_id', jobId).eq('user_id', user!.id)
@@ -299,7 +299,7 @@ export default function WorkOrderFormPage() {
     );
   }
 
-  if (existingWo && !editWoId) {
+  if (false && existingWo && !editWoId) {
     return (
       <div className="p-4 md:p-6 space-y-5 max-w-2xl">
         <div className="flex items-center gap-3">
