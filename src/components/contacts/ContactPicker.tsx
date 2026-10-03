@@ -13,6 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useTx } from '@/i18n/dual';
 
 export type ContactKind = 'suppliers' | 'customers' | 'employees';
 
@@ -37,6 +38,7 @@ type Props = {
  */
 export default function ContactPicker({ kind, label, value, onChange }: Props) {
   const { user } = useAuth();
+  const tx = useTx();
   const [rows, setRows] = useState<Contact[]>([]);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -50,7 +52,7 @@ export default function ContactPicker({ kind, label, value, onChange }: Props) {
   useEffect(() => { if (user) load(); /* eslint-disable-next-line */ }, [user, kind]);
 
   const handleCreate = async () => {
-    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.name.trim()) { toast.error(tx('Name is required')); return; }
     setSaving(true);
     const { data, error } = await (supabase as any)
       .from(kind)
@@ -63,7 +65,7 @@ export default function ContactPicker({ kind, label, value, onChange }: Props) {
     onChange(data.name, data as Contact);
     setForm({ name: '', phone: '', email: '', address: '' });
     setOpen(false);
-    toast.success('Saved to Contacts');
+    toast.success(tx('Saved to Contacts'));
   };
 
   return (
@@ -77,44 +79,44 @@ export default function ContactPicker({ kind, label, value, onChange }: Props) {
           }}
         >
           <SelectTrigger className="flex-1">
-            <SelectValue placeholder={`Select ${label}`} />
+            <SelectValue placeholder={`${tx('Select')} ${tx(label)}`} />
           </SelectTrigger>
           <SelectContent>
-            {rows.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">No contacts yet</div>}
+            {rows.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{tx('No contacts yet')}</div>}
             {rows.map(r => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
           </SelectContent>
         </Select>
         <Button type="button" variant="outline" className="gap-1 shrink-0" onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4" /> New
+          <Plus className="h-4 w-4" /> {tx('New')}
         </Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>New {label}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{tx('New')} {tx(label)}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Name *</Label>
+              <Label>{tx('Name')} *</Label>
               <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Phone</Label>
+                <Label>{tx('Phone')}</Label>
                 <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label>Email</Label>
+                <Label>{tx('Email')}</Label>
                 <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Address</Label>
+              <Label>{tx('Address')}</Label>
               <Textarea rows={3} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>{tx('Cancel')}</Button>
+            <Button onClick={handleCreate} disabled={saving}>{saving ? tx('Saving...') : tx('Save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import DataListPage, { ListColumn } from '@/components/list/DataListPage';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { useL, useTx } from '@/i18n/dual';
 
 type SupplierRow = {
   id: string;
@@ -21,6 +22,8 @@ type SupplierRow = {
 export default function SuppliersListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const tx = useTx();
+  const l = useL();
   const [rows, setRows] = useState<SupplierRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -48,7 +51,7 @@ export default function SuppliersListPage() {
     setConfirmOpen(false);
     if (error) { toast.error(error.message); return; }
     setRows(prev => prev.filter(r => !ids.includes(r.id)));
-    toast.success('Suppliers deleted');
+    toast.success(tx('Suppliers deleted'));
     pending.clear();
     setPending(null);
   }
@@ -58,14 +61,14 @@ export default function SuppliersListPage() {
     { key: 'company', header: 'Company', sortValue: r => r.company || '', render: r => r.company || '—' },
     { key: 'phone', header: 'Phone', render: r => r.phone || '—' },
     { key: 'email', header: 'Email', render: r => r.email || '—' },
-    { key: 'status', header: 'Status', render: r => (r.is_active ? 'Active' : 'Inactive') },
+    { key: 'status', header: 'Status', render: r => tx(r.is_active ? 'Active' : 'Inactive') },
   ];
 
   return (
     <>
       <DataListPage<SupplierRow>
         breadcrumb="Contacts"
-        title="Suppliers"
+        title={tx('Suppliers')}
         newLabel="New Supplier"
         onNew={() => navigate('/suppliers/new')}
         rows={rows}
@@ -92,9 +95,9 @@ export default function SuppliersListPage() {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Delete suppliers"
-        body={`Delete ${pending?.ids.length || 0} supplier(s)?`}
-        confirmLabel="Delete"
+        title={tx('Delete suppliers')}
+        body={l(`Delete ${pending?.ids.length || 0} supplier(s)?`, `Padam ${pending?.ids.length || 0} pembekal?`)}
+        confirmLabel={tx('Delete')}
         confirmVariant="danger"
         isLoading={deleting}
         onConfirm={handleBulkDelete}

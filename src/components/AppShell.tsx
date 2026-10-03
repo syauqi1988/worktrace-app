@@ -165,6 +165,7 @@ export default function AppShell() {
   const location = useLocation();
   const { shouldAutoStart } = useTutorial('dashboard');
   const { t } = useTranslation();
+  const tx = useTx();
   const NAV_ITEMS = buildNavItems(t, tx);
   const BOTTOM_TABS = buildBottomTabs(t);
   const QUICK_ACTIONS = buildQuickActions(t);
