@@ -1,5 +1,6 @@
 import { ReactNode, useMemo, useState } from 'react';
 import { Plus, Search, RotateCcw, ChevronLeft, ChevronRight, ChevronsUpDown } from 'lucide-react';
+import { useTx } from '@/i18n/dual';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,12 +59,20 @@ type Props<T> = {
 const PAGE_SIZES = [10, 30, 50, 100];
 
 export default function DataListPage<T>({
-  breadcrumb, title, description, newLabel = 'New', onNew, headerExtra,
-  rows, loading, emptyMessage = 'No records found.', getRowId, onRowClick,
-  columns, rowActions, searchValues, getDate, filters = [],
-  getAmount, amountHeader = 'Amount', currency = 'RM',
+  breadcrumb: rawBreadcrumb, title: rawTitle, description, newLabel: rawNewLabel = 'New', onNew, headerExtra,
+  rows, loading, emptyMessage: rawEmpty = 'No records found.', getRowId, onRowClick,
+  columns: rawColumns, rowActions, searchValues, getDate, filters: rawFilters = [],
+  getAmount, amountHeader: rawAmountHeader = 'Amount', currency = 'RM',
   selectable, bulkActions,
 }: Props<T>) {
+  const tx = useTx();
+  const breadcrumb = rawBreadcrumb ? tx(rawBreadcrumb) : rawBreadcrumb;
+  const title = tx(rawTitle);
+  const newLabel = tx(rawNewLabel);
+  const emptyMessage = tx(rawEmpty);
+  const amountHeader = tx(rawAmountHeader);
+  const columns = useMemo(() => rawColumns.map(c => ({ ...c, header: tx(c.header) })), [rawColumns, tx]);
+  const filters = rawFilters.map(f => ({ ...f, label: tx(f.label), placeholder: f.placeholder ? tx(f.placeholder) : f.placeholder, options: f.options.map(o => ({ ...o, label: tx(o.label) })) }));
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [q, setQ] = useState('');
@@ -156,7 +165,7 @@ export default function DataListPage<T>({
         <div className="flex flex-wrap items-end gap-3 [&>div]:flex-1 md:[&>div]:flex-none [&_input]:w-full md:[&_input]:w-[150px] [&_button[role=combobox]]:w-full md:[&_button[role=combobox]]:w-[170px]">
           {getDate && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Date Range</p>
+              <p className="text-xs font-medium text-muted-foreground">{tx('Date Range')}</p>
               <div className="flex items-center gap-2">
                 <Input type="date" value={start} onChange={e => { setStart(e.target.value); setPage(1); }} className="text-sm w-[150px]" />
                 <span className="text-muted-foreground">→</span>
@@ -166,10 +175,10 @@ export default function DataListPage<T>({
           )}
           {searchValues && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Search</p>
+              <p className="text-xs font-medium text-muted-foreground">{tx('Search')}</p>
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={q} onChange={e => { setQ(e.target.value); setPage(1); }} className="pl-8 text-sm w-[200px]" placeholder="Search..." />
+                <Input value={q} onChange={e => { setQ(e.target.value); setPage(1); }} className="pl-8 text-sm w-[200px]" placeholder={tx('Search...')} />
               </div>
             </div>
           )}
@@ -177,15 +186,15 @@ export default function DataListPage<T>({
             <div key={f.label} className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">{f.label}</p>
               <Select value={filterVals[i] || '__all'} onValueChange={v => { setFilterVals(p => ({ ...p, [i]: v })); setPage(1); }}>
-                <SelectTrigger className="w-[170px] text-sm"><SelectValue placeholder={f.placeholder || 'All'} /></SelectTrigger>
+                <SelectTrigger className="w-[170px] text-sm"><SelectValue placeholder={f.placeholder || tx('All')} /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="__all">All</SelectItem>
+                  <SelectItem value="__all">{tx('All')}</SelectItem>
                   {f.options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           ))}
-          <Button variant="outline" size="icon" onClick={reset} aria-label="Reset filters">
+          <Button variant="outline" size="icon" onClick={reset} aria-label={tx('Reset filters')}>
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
@@ -195,12 +204,12 @@ export default function DataListPage<T>({
           <div className="flex items-center gap-2">
             {selectable && selected.length > 0 && bulkActions?.(selectedRows, () => setSelected([]))}
             {selectable && selected.length > 0 && (
-              <span className="text-xs text-muted-foreground">{selected.length} selected</span>
+              <span className="text-xs text-muted-foreground">{selected.length} {tx('selected')}</span>
             )}
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <span className="text-sm text-muted-foreground">
-              {sorted.length === 0 ? '0 items' : `${(current - 1) * pageSize + 1}-${Math.min(current * pageSize, sorted.length)} of ${sorted.length} items`}
+              {sorted.length === 0 ? `0 ${tx('items')}` : `${(current - 1) * pageSize + 1}-${Math.min(current * pageSize, sorted.length)} ${tx('of')} ${sorted.length} ${tx('items')}`}
             </span>
             <div className="flex items-center gap-1">
               <Button variant="outline" size="icon" className="h-8 w-8" disabled={current <= 1} onClick={() => setPage(current - 1)}>
@@ -214,7 +223,7 @@ export default function DataListPage<T>({
             <Select value={String(pageSize)} onValueChange={v => { setPageSize(Number(v)); setPage(1); }}>
               <SelectTrigger className="w-[110px] h-8 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
-                {PAGE_SIZES.map(s => <SelectItem key={s} value={String(s)}>{s} / page</SelectItem>)}
+                {PAGE_SIZES.map(s => <SelectItem key={s} value={String(s)}>{s} / {tx('page')}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -222,7 +231,7 @@ export default function DataListPage<T>({
 
         {/* Mobile cards */}
         <div className="md:hidden space-y-2">
-          {loading && <p className="py-8 text-center text-muted-foreground text-sm">Loading...</p>}
+          {loading && <p className="py-8 text-center text-muted-foreground text-sm">{tx('Loading...')}</p>}
           {!loading && pageRows.length === 0 && (
             <p className="py-8 text-center text-muted-foreground text-sm">{emptyMessage}</p>
           )}
@@ -262,7 +271,7 @@ export default function DataListPage<T>({
           })}
           {getAmount && !loading && pageRows.length > 0 && (
             <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2.5 text-sm font-semibold">
-              <span className="text-muted-foreground">Total {amountHeader} ({sorted.length})</span>
+              <span className="text-muted-foreground">{tx('Total')} {amountHeader} ({sorted.length})</span>
               <span>{currency} {money(total)}</span>
             </div>
           )}
@@ -298,12 +307,12 @@ export default function DataListPage<T>({
                     </span>
                   </th>
                 ))}
-                {rowActions && <th className="px-3 py-2.5 text-right font-semibold text-foreground">Action</th>}
+                {rowActions && <th className="px-3 py-2.5 text-right font-semibold text-foreground">{tx('Action')}</th>}
               </tr>
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={colCount} className="px-3 py-10 text-center text-muted-foreground">Loading...</td></tr>
+                <tr><td colSpan={colCount} className="px-3 py-10 text-center text-muted-foreground">{tx('Loading...')}</td></tr>
               )}
               {!loading && pageRows.length === 0 && (
                 <tr><td colSpan={colCount} className="px-3 py-10 text-center text-muted-foreground">{emptyMessage}</td></tr>
