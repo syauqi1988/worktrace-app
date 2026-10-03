@@ -93,7 +93,7 @@ export default function PaymentDetailsSection() {
       </div>
 
       <Button onClick={handleSave} disabled={saving} className="rounded-lg">
-        {saving ? 'Menyimpan...' : 'Simpan'}
+        {saving ? tm("Menyimpan...") : tm("Simpan")}
       </Button>
     </div>
   );

@@ -51,10 +51,10 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
 
   const headline = (() => {
     switch (eligibility.status) {
-      case 'full': return { icon: <CheckCircle2 className="h-6 w-6 text-emerald-600" />, title: 'Anda layak bayaran balik PENUH', body: `Berdasarkan tarikh pembayaran (${fmt(eligibility.fullRefundUntil ? new Date(eligibility.fullRefundUntil.getTime() - 14*24*60*60*1000) : null)}), anda masih dalam tempoh jaminan 14 hari sehingga ${fmt(eligibility.fullRefundUntil)}.` };
-      case 'prorated': return { icon: <AlertTriangle className="h-6 w-6 text-amber-600" />, title: 'Anda layak bayaran balik PRO-RATED', body: `Untuk pelan tahunan, bayaran balik pro-rated boleh dimohon sehingga ${fmt(eligibility.proratedRefundUntil)} (30 hari dari pembayaran). Bayaran balik dikira mengikut bulan penuh yang belum digunakan.` };
-      case 'none_free': return { icon: <XCircle className="h-6 w-6 text-muted-foreground" />, title: 'Tiada bayaran untuk dikembalikan', body: 'Anda berada di pelan percuma — tiada caj telah dikenakan.' };
-      case 'none_window': return { icon: <XCircle className="h-6 w-6 text-destructive" />, title: 'Tempoh bayaran balik telah tamat', body: 'Tempoh kelayakan bayaran balik telah berlalu. Anda masih boleh hantar permohonan untuk situasi khas (caj berganda, caj tidak dibenarkan, gangguan major).' };
+      case 'full': return { icon: <CheckCircle2 className="h-6 w-6 text-emerald-600" />, title: tm("Anda layak bayaran balik PENUH"), body: `Berdasarkan tarikh pembayaran (${fmt(eligibility.fullRefundUntil ? new Date(eligibility.fullRefundUntil.getTime() - 14*24*60*60*1000) : null)}), anda masih dalam tempoh jaminan 14 hari sehingga ${fmt(eligibility.fullRefundUntil)}.` };
+      case 'prorated': return { icon: <AlertTriangle className="h-6 w-6 text-amber-600" />, title: tm("Anda layak bayaran balik PRO-RATED"), body: `Untuk pelan tahunan, bayaran balik pro-rated boleh dimohon sehingga ${fmt(eligibility.proratedRefundUntil)} (30 hari dari pembayaran). Bayaran balik dikira mengikut bulan penuh yang belum digunakan.` };
+      case 'none_free': return { icon: <XCircle className="h-6 w-6 text-muted-foreground" />, title: tm("Tiada bayaran untuk dikembalikan"), body: tm("Anda berada di pelan percuma — tiada caj telah dikenakan.") };
+      case 'none_window': return { icon: <XCircle className="h-6 w-6 text-destructive" />, title: tm("Tempoh bayaran balik telah tamat"), body: tm("Tempoh kelayakan bayaran balik telah berlalu. Anda masih boleh hantar permohonan untuk situasi khas (caj berganda, caj tidak dibenarkan, gangguan major).") };
       default: return { icon: null, title: '', body: '' };
     }
   })();
@@ -103,7 +103,7 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
       toast.success(tm("Permohonan dihantar. Kami akan balas dalam 1 hari bekerja."));
       close();
     } catch (e: any) {
-      toast.error(e?.message || 'Gagal menghantar permohonan.');
+      toast.error(e?.message || tm("Gagal menghantar permohonan."));
     } finally {
       setLoading(false);
     }

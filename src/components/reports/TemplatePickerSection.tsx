@@ -137,14 +137,14 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       setEditing(null);
       await loadTemplates();
     } catch (e: any) {
-      toast.error(e.message || 'Gagal simpan templat');
+      toast.error(e.message || tm("Gagal simpan templat"));
     } finally {
       setSaving(false);
     }
   };
 
   const deleteTemplate = async (id: string) => {
-    if (!confirm('Padam templat ini?')) return;
+    if (!confirm(tm("Padam templat ini?"))) return;
     const { error } = await supabase.from('completion_report_templates' as any).delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
     toast.success(tm("Templat dipadam"));
@@ -167,7 +167,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       <div className="flex gap-2 flex-wrap">
         <Select value={selectedId} onValueChange={apply} disabled={loading}>
           <SelectTrigger className="flex-1 min-w-[180px] bg-background">
-            <SelectValue placeholder={loading ? 'Memuat templat...' : 'Pilih templat'} />
+            <SelectValue placeholder={loading ? tm("Memuat templat...") : tm("Pilih templat")} />
           </SelectTrigger>
           <SelectContent>
             {templates.map(t => (
@@ -204,7 +204,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                   {t.category && <div className="text-[11px] text-muted-foreground">{t.category}</div>}
                 </div>
                 <div className="flex gap-1">
-                  <Button type="button" size="icon" variant="ghost" onClick={() => openEdit(t)} title={t.user_id === null ? 'Salin' : 'Edit'}>
+                  <Button type="button" size="icon" variant="ghost" onClick={() => openEdit(t)} title={t.user_id === null ? tm("Salin") : 'Edit'}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   {t.user_id !== null && (
@@ -229,7 +229,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing?.id ? 'Edit templat' : 'Templat baru'}</DialogTitle>
+            <DialogTitle>{editing?.id ? tm("Edit templat") : tm("Templat baru")}</DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-3">

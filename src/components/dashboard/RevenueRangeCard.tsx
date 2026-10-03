@@ -54,7 +54,7 @@ function getRangeForPreset(p: Preset): { start: Date; end: Date } {
 
 function formatLabel(r: DateRange): string {
   switch (r.preset) {
-    case 'week': return 'Minggu Ini';
+    case 'week': return tm("Minggu Ini");
     case 'month': return `${MONTH_SHORT[r.start.getMonth()]} ${r.start.getFullYear()}`;
     case 'lastMonth': return `${MONTH_SHORT[r.start.getMonth()]} ${r.start.getFullYear()}`;
     case '30d': return '30 Hari';
@@ -170,12 +170,12 @@ export default function RevenueRangeCard({ userId }: Props) {
         >
           <div className="flex flex-wrap gap-1.5">
             {([
-              ['week', 'Minggu Ini'],
-              ['month', 'Bulan Ini'],
-              ['lastMonth', 'Bulan Lepas'],
+              ['week', tm("Minggu Ini")],
+              ['month', tm("Bulan Ini")],
+              ['lastMonth', tm("Bulan Lepas")],
               ['30d', '30 Hari'],
               ['90d', '90 Hari'],
-              ['year', 'Tahun Ini'],
+              ['year', tm("Tahun Ini")],
             ] as [Preset, string][]).map(([p, lbl]) => (
               <button
                 key={p}
