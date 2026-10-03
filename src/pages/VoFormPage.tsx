@@ -350,11 +350,11 @@ export default function VoFormPage() {
       <div className="space-y-2">
         <Label>{t('vo.items')}</Label>
         <div className="hidden md:block">
-          <div className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
+          <div className="grid grid-cols-[36px_minmax(0,1fr)_56px_56px_88px_96px_28px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
             <span></span><span>{t('vo.description')}</span><span>{t('vo.qty')}</span><span>{t('vo.uom')}</span><span>{t('vo.price')}</span><span>{t('vo.amount')}</span><span></span>
           </div>
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[40px_minmax(240px,1fr)_60px_60px_96px_104px_32px] gap-2 mb-2 items-start">
+            <div key={i} className="grid grid-cols-[36px_minmax(0,1fr)_56px_56px_88px_96px_28px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('vo.itemName')} className="text-sm" />
