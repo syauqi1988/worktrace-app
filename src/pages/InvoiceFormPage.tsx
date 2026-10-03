@@ -144,7 +144,7 @@ export default function InvoiceFormPage() {
         }
         // Check for accepted quotation
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
-          .eq('job_id', jobId).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle()
+          .eq('job_id', jobId).eq('user_id', user.id).neq('status', 'Rejected').order('created_at', { ascending: false }).limit(1).maybeSingle()
           .then(({ data }) => {
             if (data) setAvailableQuote(data as any);
           });
@@ -152,6 +152,40 @@ export default function InvoiceFormPage() {
       }
     }
   }, [searchParams, jobs, selectedJob, user, isEdit]);
+
+  // Transfer: prefill from a specific quotation (?quote_id=) or duplicate an invoice (?duplicate=)
+  useEffect(() => {
+    if (isEdit || !user) return;
+    const quoteId = searchParams.get('quote_id');
+    const dupId = searchParams.get('duplicate');
+    if (quoteId) {
+      supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total, job_id')
+        .eq('id', quoteId).maybeSingle()
+        .then(({ data }) => { if (data) setAvailableQuote(data as any); });
+    }
+    if (dupId) {
+      supabase.from('invoices').select('*, jobs(id, job_number, title, customer_id, customers(name, phone, tin_number))')
+        .eq('id', dupId).maybeSingle()
+        .then(({ data }) => {
+          const inv = data as any;
+          if (!inv) return;
+          if (inv.jobs) setSelectedJob(inv.jobs);
+          setItems(Array.isArray(inv.items) && inv.items.length ? inv.items : [{ description: '', qty: 1, unit_price: 0 }]);
+          setNotes(inv.notes || '');
+          setTerms(inv.terms || '');
+          setLinkedQuoteId(inv.quote_id);
+          setDiscountMode('rm');
+          setDiscountValue(Number(inv.discount) || 0);
+          const tr = Number(inv.tax_rate) || 0;
+          if (tr > 0) { setSstEnabled(true); setSstRate(tr); }
+          setDeductions(Array.isArray(inv.deductions) ? inv.deductions : []);
+          if (Array.isArray(inv.selected_payment_methods) && inv.selected_payment_methods.length) setSelectedPaymentMethods(inv.selected_payment_methods);
+          setImportDismissed(true);
+          toast.success(`Disalin dari ${inv.invoice_number}`);
+        });
+    }
+    // eslint-disable-next-line
+  }, [isEdit, user]);
 
   // Populate LHDN defaults from profile
   useEffect(() => {
