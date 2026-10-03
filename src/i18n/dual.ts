@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import i18n from './index';
 
 /**
  * Dual-language helpers.
@@ -170,4 +171,96 @@ export function useTx() {
     if (en) return s;
     return MS_DICT[s] ?? s;
   };
+}
+
+export const EN_DICT: Record<string, string> = {
+  "Anda berada di pelan percuma — tiada caj telah dikenakan.": "You are on the free plan — no charges have been made.",
+  "Anda layak bayaran balik PENUH": "You are eligible for a FULL refund",
+  "Anda layak bayaran balik PRO-RATED": "You are eligible for a PRO-RATED refund",
+  "Caj berganda": "Double charge",
+  "Caj tidak dibenarkan": "Unauthorised charge",
+  "Dalam tempoh 14 hari (jaminan)": "Within 14 days (guarantee)",
+  "Gagal menghantar permohonan.": "Failed to submit request.",
+  "Lain-lain": "Others",
+  "Platform tidak boleh diakses > 7 hari": "Platform inaccessible > 7 days",
+  "Tempoh bayaran balik telah tamat": "Refund period has ended",
+  "Tempoh kelayakan bayaran balik telah berlalu. Anda masih boleh hantar permohonan untuk situasi khas (caj berganda, caj tidak dibenarkan, gangguan major).": "The refund eligibility period has passed. You can still submit a request for special cases (double charge, unauthorised charge, major outage).",
+  "Tiada bayaran untuk dikembalikan": "No payment to refund",
+  "Tidak lagi diperlukan": "No longer needed",
+  "Batal": "Cancel",
+  "Dasar Bayaran Balik WorkTrace": "WorkTrace Refund Policy",
+  "Kembali": "Back",
+  "Mohon Bayaran Balik": "Request Refund",
+  "Nota tambahan (pilihan)": "Additional notes (optional)",
+  "Rujukan transaksi BillPlz (jika ada)": "BillPlz transaction reference (if any)",
+  "Sebab": "Reason",
+  "Teruskan": "Continue",
+  "cth: BP-XXXXXX": "e.g. BP-XXXXXX",
+  "Permohonan dihantar. Kami akan balas dalam 1 hari bekerja.": "Request submitted. We will reply within 1 working day.",
+  "Baucar": "Voucher",
+  "Menyimpan...": "Saving...",
+  "Simpan": "Save",
+  "Tunai": "Cash",
+  "Jenis Pembayaran Diterima": "Accepted Payment Types",
+  "Nama Bank": "Bank Name",
+  "Nama Pemegang Akaun": "Account Holder Name",
+  "No. Akaun": "Account No.",
+  "Nota Pembayaran (pilihan)": "Payment Notes (optional)",
+  "cth. 1234-5678-9012": "e.g. 1234-5678-9012",
+  "cth. Maybank": "e.g. Maybank",
+  "cth. Sila gunakan nama syarikat sebagai rujukan": "e.g. Please use company name as reference",
+  "cth. Syarikat ABC Sdn Bhd": "e.g. ABC Sdn Bhd",
+  "Maklumat pembayaran disimpan": "Payment details saved",
+  "Jenis": "Type",
+  "Maklumat Pembayaran": "Payment Details",
+  "Nama": "Name",
+  "Nota": "Notes",
+  "Edit templat": "Edit template",
+  "Gagal simpan templat": "Failed to save template",
+  "Memuat templat...": "Loading templates...",
+  "Padam templat ini?": "Delete this template?",
+  "Pilih templat": "Choose template",
+  "Salin": "Copy",
+  "Templat baru": "New template",
+  "Bahan digunakan": "Materials used",
+  "Kategori": "Category",
+  "Lalai": "Default",
+  "Nama templat": "Template name",
+  "Penerangan kerja": "Work description",
+  "Satu item satu baris. Guna [x] siap atau [ ] belum.": "One item per line. Use [x] done or [ ] pending.",
+  "Senarai semak": "Checklist",
+  "Templat isian pantas": "Quick-fill templates",
+  "Tiada templat": "No templates",
+  "Tutup": "Close",
+  "Urus templat laporan": "Manage report templates",
+  "Cth: Penyelenggaraan": "e.g. Maintenance",
+  "Cth: Servis aircond": "e.g. Aircond service",
+  "Gagal memuat templat": "Failed to load templates",
+  "Nama templat diperlukan": "Template name is required",
+  "Templat lalai tidak boleh diedit. Buat salinan sebagai templat baru.": "Default templates cannot be edited. Make a copy as a new template.",
+  "Templat dikemaskini": "Template updated",
+  "Templat dipadam": "Template deleted",
+  "Templat disimpan": "Template saved",
+  "Potongan / Diskaun": "Deductions / Discount",
+  "Buang potongan": "Remove deduction",
+  "Nama potongan (cth. Deposit Pertama)": "Deduction name (e.g. First Deposit)",
+  "Bulan Ini": "This Month",
+  "Bulan Lepas": "Last Month",
+  "Minggu Ini": "This Week",
+  "Tahun Ini": "This Year",
+  "Dari": "From",
+  "Guna": "Apply",
+  "Hingga": "To",
+  "Tukar julat tarikh": "Change date range",
+};
+
+/** Malay-source text → English when EN is active. Use useTm() in components. */
+export function useTm() {
+  const { i18n } = useTranslation();
+  const en = i18n.language?.startsWith('en');
+  return (s?: string | null): string => (s ? (en ? EN_DICT[s.trim()] ?? s : s) : s ?? '');
+}
+/** Non-hook variant for toasts/handlers. */
+export function tm(s: string): string {
+  return i18n.language?.startsWith('en') ? EN_DICT[s.trim()] ?? s : s;
 }

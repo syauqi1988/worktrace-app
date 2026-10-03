@@ -1,3 +1,4 @@
+import { tm } from '@/i18n/dual';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,7 +62,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       .order('user_id', { ascending: true, nullsFirst: true })
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true });
-    if (error) { console.error(error); toast.error('Gagal memuat templat'); }
+    if (error) { console.error(error); toast.error(tm("Gagal memuat templat")); }
     setTemplates(((data as any[]) || []).map(r => ({
       ...r,
       checklist: Array.isArray(r.checklist) ? r.checklist : [],
@@ -95,7 +96,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
 
   const openEdit = (tpl: TemplateRecord) => {
     if (tpl.user_id === null) {
-      toast.info('Templat lalai tidak boleh diedit. Buat salinan sebagai templat baru.');
+      toast.info(tm("Templat lalai tidak boleh diedit. Buat salinan sebagai templat baru."));
       setEditing({
         name: `${tpl.name} (salinan)`,
         category: tpl.category || '',
@@ -110,7 +111,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
 
   const saveTemplate = async () => {
     if (!editing || !user) return;
-    if (!editing.name?.trim()) { toast.error('Nama templat diperlukan'); return; }
+    if (!editing.name?.trim()) { toast.error(tm("Nama templat diperlukan")); return; }
     setSaving(true);
     try {
       const checklistArr = Array.isArray(editing.checklist)
@@ -127,11 +128,11 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       if (editing.id) {
         const { error } = await supabase.from('completion_report_templates' as any).update(payload).eq('id', editing.id);
         if (error) throw error;
-        toast.success('Templat dikemaskini');
+        toast.success(tm("Templat dikemaskini"));
       } else {
         const { error } = await supabase.from('completion_report_templates' as any).insert(payload);
         if (error) throw error;
-        toast.success('Templat disimpan');
+        toast.success(tm("Templat disimpan"));
       }
       setEditing(null);
       await loadTemplates();
@@ -146,7 +147,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
     if (!confirm('Padam templat ini?')) return;
     const { error } = await supabase.from('completion_report_templates' as any).delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
-    toast.success('Templat dipadam');
+    toast.success(tm("Templat dipadam"));
     await loadTemplates();
   };
 
@@ -158,7 +159,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
     <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Sparkles className="h-4 w-4 text-primary" />
-        <span className="text-sm font-medium text-foreground">Templat isian pantas</span>
+        <span className="text-sm font-medium text-foreground">{tm("Templat isian pantas")}</span>
       </div>
       <p className="text-xs text-muted-foreground">
         Pilih templat untuk mengisi penerangan, bahan dan senarai semak sekaligus.
@@ -175,7 +176,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
               </SelectItem>
             ))}
             {templates.length === 0 && !loading && (
-              <div className="px-3 py-2 text-xs text-muted-foreground">Tiada templat</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground">{tm("Tiada templat")}</div>
             )}
           </SelectContent>
         </Select>
@@ -188,7 +189,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
       <Dialog open={manageOpen} onOpenChange={setManageOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Urus templat laporan</DialogTitle>
+            <DialogTitle>{tm("Urus templat laporan")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 max-h-[55vh] overflow-y-auto">
             {templates.map(t => (
@@ -197,7 +198,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                   <div className="text-sm font-medium text-foreground truncate">
                     {t.name}
                     {t.user_id === null && (
-                      <span className="ml-2 text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded">Lalai</span>
+                      <span className="ml-2 text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded">{tm("Lalai")}</span>
                     )}
                   </div>
                   {t.category && <div className="text-[11px] text-muted-foreground">{t.category}</div>}
@@ -217,9 +218,9 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={openNew} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Templat baru
+              <Plus className="h-4 w-4" /> {tm("Templat baru")}
             </Button>
-            <Button type="button" onClick={() => setManageOpen(false)}>Tutup</Button>
+            <Button type="button" onClick={() => setManageOpen(false)}>{tm("Tutup")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -233,23 +234,23 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
           {editing && (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>Nama templat</Label>
+                <Label>{tm("Nama templat")}</Label>
                 <Input
                   value={editing.name || ''}
                   onChange={e => setEditing({ ...editing, name: e.target.value })}
-                  placeholder="Cth: Servis aircond"
+                  placeholder={tm("Cth: Servis aircond")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Kategori <span className="text-xs text-muted-foreground">(opsyenal)</span></Label>
+                <Label>{tm("Kategori")} <span className="text-xs text-muted-foreground">(opsyenal)</span></Label>
                 <Input
                   value={editing.category || ''}
                   onChange={e => setEditing({ ...editing, category: e.target.value })}
-                  placeholder="Cth: Penyelenggaraan"
+                  placeholder={tm("Cth: Penyelenggaraan")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Penerangan kerja</Label>
+                <Label>{tm("Penerangan kerja")}</Label>
                 <Textarea
                   rows={3}
                   value={editing.work_description || ''}
@@ -257,7 +258,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Bahan digunakan</Label>
+                <Label>{tm("Bahan digunakan")}</Label>
                 <Textarea
                   rows={2}
                   value={editing.materials_used || ''}
@@ -265,7 +266,7 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Senarai semak</Label>
+                <Label>{tm("Senarai semak")}</Label>
                 <Textarea
                   rows={4}
                   className="font-mono text-sm"
@@ -273,12 +274,12 @@ export default function TemplatePickerSection({ onApply, current }: Props) {
                   onChange={e => setEditing({ ...editing, checklist: parseChecklist(e.target.value) })}
                   placeholder={'[x] Item siap\n[ ] Item belum'}
                 />
-                <p className="text-[11px] text-muted-foreground">Satu item satu baris. Guna [x] siap atau [ ] belum.</p>
+                <p className="text-[11px] text-muted-foreground">{tm("Satu item satu baris. Guna [x] siap atau [ ] belum.")}</p>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEditing(null)}>Batal</Button>
+            <Button type="button" variant="outline" onClick={() => setEditing(null)}>{tm("Batal")}</Button>
             <Button type="button" onClick={saveTemplate} disabled={saving} className="gap-1.5">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Simpan

@@ -1,3 +1,4 @@
+import { tm } from '@/i18n/dual';
 import { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -99,7 +100,7 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
       const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = mailto;
 
-      toast.success('Permohonan dihantar. Kami akan balas dalam 1 hari bekerja.');
+      toast.success(tm("Permohonan dihantar. Kami akan balas dalam 1 hari bekerja."));
       close();
     } catch (e: any) {
       toast.error(e?.message || 'Gagal menghantar permohonan.');
@@ -112,9 +113,9 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
     <Dialog open={open} onOpenChange={v => !v && close()}>
       <DialogContent className="max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>Mohon Bayaran Balik</DialogTitle>
+          <DialogTitle>{tm("Mohon Bayaran Balik")}</DialogTitle>
           <DialogDescription>
-            Mengikut <Link to="/refund-policy" className="underline">Dasar Bayaran Balik WorkTrace</Link>.
+            Mengikut <Link to="/refund-policy" className="underline">{tm("Dasar Bayaran Balik WorkTrace")}</Link>.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,8 +129,8 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={close}>Batal</Button>
-              <Button onClick={() => setStep(2)}>Teruskan</Button>
+              <Button variant="ghost" onClick={close}>{tm("Batal")}</Button>
+              <Button onClick={() => setStep(2)}>{tm("Teruskan")}</Button>
             </div>
           </div>
         )}
@@ -137,7 +138,7 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Sebab</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{tm("Sebab")}</label>
               <div className="space-y-1.5">
                 {REASON_OPTIONS.map(r => (
                   <button
@@ -154,15 +155,15 @@ export default function RefundRequestDialog({ open, onClose }: Props) {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Rujukan transaksi BillPlz (jika ada)</label>
-              <Input value={txnRef} onChange={e => setTxnRef(e.target.value)} placeholder="cth: BP-XXXXXX" />
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{tm("Rujukan transaksi BillPlz (jika ada)")}</label>
+              <Input value={txnRef} onChange={e => setTxnRef(e.target.value)} placeholder={tm("cth: BP-XXXXXX")} />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Nota tambahan (pilihan)</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{tm("Nota tambahan (pilihan)")}</label>
               <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setStep(1)}>Kembali</Button>
+              <Button variant="ghost" onClick={() => setStep(1)}>{tm("Kembali")}</Button>
               <Button onClick={submit} disabled={!reasonKey || loading}>
                 {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 Hantar Permohonan

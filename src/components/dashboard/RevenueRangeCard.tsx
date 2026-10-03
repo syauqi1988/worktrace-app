@@ -1,3 +1,4 @@
+import { tm } from '@/i18n/dual';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DollarSign, CalendarDays } from 'lucide-react';
@@ -141,7 +142,7 @@ export default function RevenueRangeCard({ userId }: Props) {
           type="button"
           onClick={() => setOpen(o => !o)}
           className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
-          aria-label="Tukar julat tarikh"
+          aria-label={tm("Tukar julat tarikh")}
         >
           <CalendarDays className="h-4 w-4" />
         </button>
@@ -193,7 +194,7 @@ export default function RevenueRangeCard({ userId }: Props) {
           <div className="border-t border-border pt-3 space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-muted-foreground block mb-1">Dari</label>
+                <label className="text-[10px] text-muted-foreground block mb-1">{tm("Dari")}</label>
                 <input
                   type="date"
                   value={customStart}
@@ -202,7 +203,7 @@ export default function RevenueRangeCard({ userId }: Props) {
                 />
               </div>
               <div>
-                <label className="text-[10px] text-muted-foreground block mb-1">Hingga</label>
+                <label className="text-[10px] text-muted-foreground block mb-1">{tm("Hingga")}</label>
                 <input
                   type="date"
                   value={customEnd}
@@ -211,7 +212,7 @@ export default function RevenueRangeCard({ userId }: Props) {
                 />
               </div>
             </div>
-            <Button size="sm" onClick={applyCustom} className="w-full h-8 rounded-lg text-xs">Guna</Button>
+            <Button size="sm" onClick={applyCustom} className="w-full h-8 rounded-lg text-xs">{tm("Guna")}</Button>
           </div>
         </div>
       )}
