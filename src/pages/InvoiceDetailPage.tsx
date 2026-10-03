@@ -739,21 +739,8 @@ export default function InvoiceDetailPage() {
   const afterDiscount = invoice.subtotal - invoice.discount - deductionsTotal;
   const sstAmount = invoice.tax_rate > 0 ? afterDiscount * (invoice.tax_rate / 100) : 0;
 
-  const duplicateInvoice = async () => {
-    if (!user) return;
-    setDuplicating(true);
-    try {
-      const { data: src } = await supabase.from('invoices').select('*').eq('id', invoice.id).single();
-      const num = await genInvNo(supabase, user.id, 'invoice');
-      const { id: _i, created_at: _c, updated_at: _u, paid_date: _p, receipt_number: _r, payment_proof_token: _t, lhdn_submitted: _l, ...rest } = (src || {}) as any;
-      const { data, error } = await supabase.from('invoices').insert({ ...rest, invoice_number: num, status: 'Created', lhdn_submitted: false } as any).select('id').single();
-      if (error) throw error;
-      toast.success(l('Invoice duplicated', 'Invois disalin'));
-      navigate(`/invoices/${data.id}/edit`);
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally { setDuplicating(false); }
-  };
+  const duplicateInvoice = () => navigate(`/invoices/new?duplicate=${invoice.id}`);
+
 
   return (
     <>

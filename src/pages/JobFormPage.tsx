@@ -177,6 +177,26 @@ export default function JobFormPage() {
     fetchJob();
   }, [isEdit, user, id]);
 
+  // Duplicate: prefill from another job (?duplicate=)
+  useEffect(() => {
+    const dupId = searchParams.get('duplicate');
+    if (isEdit || !user || !dupId) return;
+    supabase.from('jobs').select('*, customers(id, name, phone)').eq('id', dupId).maybeSingle().then(({ data }) => {
+      const job = data as any;
+      if (!job) return;
+      setCustomerId(job.customer_id || '');
+      setCustomerName(job.customers?.name || '');
+      setTitle(job.title);
+      setCategory(job.category);
+      setDescription(job.description || '');
+      setNotes(job.notes || '');
+      setProducts(Array.isArray(job.products) ? job.products : []);
+      if (job.job_type) setJobType(job.job_type as JobType);
+      if (job.milestone_config?.deposit_percentage != null) setDepositPct(Number(job.milestone_config.deposit_percentage));
+    });
+    // eslint-disable-next-line
+  }, [isEdit, user]);
+
   const filteredCustomers = customerSearch.trim()
     ? customers.filter(c =>
         c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||

@@ -184,6 +184,27 @@ export default function QuotationFormPage() {
     fetchQuotation();
   }, [isEdit, user, id, navigate]);
 
+  // Duplicate: prefill from another quotation (?duplicate=). Job is left for the user to choose.
+  useEffect(() => {
+    const dupId = searchParams.get('duplicate');
+    if (isEdit || !user || !dupId) return;
+    supabase.from('quotations').select('*').eq('id', dupId).maybeSingle().then(({ data }) => {
+      const q = data as any;
+      if (!q) return;
+      setItems(Array.isArray(q.items) && q.items.length ? q.items : [{ description: '', qty: 1, unit_price: 0 }]);
+      setNotes(q.notes || '');
+      setValidUntil(q.valid_until || '');
+      setTerms(q.terms || '');
+      setDeductions(Array.isArray(q.deductions) ? q.deductions : []);
+      setDiscountMode('rm');
+      setDiscountValue(Number(q.discount) || 0);
+      const tr = Number(q.tax_rate) || 0;
+      if (tr > 0) { setSstEnabled(true); setSstRate(tr); }
+      toast.success(`Disalin dari ${q.quote_number}`);
+    });
+    // eslint-disable-next-line
+  }, [isEdit, user]);
+
   useEffect(() => {
     if (!isEdit && profile?.quotation_terms && !terms) {
       setTerms(profile.quotation_terms);
