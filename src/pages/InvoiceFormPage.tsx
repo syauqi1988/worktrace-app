@@ -137,7 +137,7 @@ export default function InvoiceFormPage() {
       }
       if (user && !isEdit) {
         if (!isMilestoneJob) {
-          supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+          supabase.from('invoices').select('id').eq('job_id', jobId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
             .then(({ data }) => {
               if (data) { setExistingInvoice(data); setBlockedJobId(jobId); }
             });
@@ -333,9 +333,9 @@ export default function InvoiceFormPage() {
       const isMilestoneJob = jt === 'deposit' || jt === 'milestone';
       // Fire independent reads in parallel
       const [existingRes, quoteRes] = await Promise.all([
-        supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle(),
+        supabase.from('invoices').select('id').eq('job_id', j.id).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
-          .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').maybeSingle(),
+          .eq('job_id', j.id).eq('user_id', user.id).eq('status', 'Accepted').order('created_at', { ascending: false }).limit(1).maybeSingle(),
         fetchAvailableVos(j.id),
       ]);
       const existing = existingRes.data;

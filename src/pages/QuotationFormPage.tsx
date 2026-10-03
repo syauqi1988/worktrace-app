@@ -142,7 +142,7 @@ export default function QuotationFormPage() {
         if (!isEdit) tryAutoFillFromJob(found);
       }
       if (user && !isEdit) {
-        supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).maybeSingle()
+        supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
           .then(({ data }) => {
             if (data) { setExistingQuotation(data); setBlockedJobId(jobId); }
           });
@@ -376,7 +376,7 @@ export default function QuotationFormPage() {
                       setSelectedJob(j); setJobDropdownOpen(false); setJobSearch(''); setErrors(p => ({ ...p, job: '' }));
                       if (!isEdit) tryAutoFillFromJob(j);
                       if (!isEdit && user) {
-                        const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).maybeSingle();
+                        const { data: existing } = await supabase.from('quotations').select('id').eq('job_id', j.id).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
                         if (existing) {
                           setJobWarning({ message: t('quotationForm.jobHasQuote'), link: `/quotations/${existing.id}` });
                           setSaveDisabled(false);

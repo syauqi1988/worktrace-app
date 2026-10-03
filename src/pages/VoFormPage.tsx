@@ -73,7 +73,7 @@ export default function VoFormPage() {
     (async () => {
       const [jobRes, quoRes] = await Promise.all([
         supabase.from('jobs').select('*, customers(id, name, phone, email, address)').eq('id', jobId).single(),
-        supabase.from('quotations').select('id, quote_number, total').eq('job_id', jobId).eq('user_id', user.id).maybeSingle(),
+        supabase.from('quotations').select('id, quote_number, total').eq('job_id', jobId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ]);
       setJob(jobRes.data);
       setQuotation(quoRes.data);

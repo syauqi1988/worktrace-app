@@ -180,7 +180,7 @@ export default function CompletionReportPage() {
           .select('*')
           .eq('job_id', jobId)
           .eq('user_id', user!.id)
-          .maybeSingle(),
+          .order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase
           .from('profiles')
           .select('doc_number_settings')

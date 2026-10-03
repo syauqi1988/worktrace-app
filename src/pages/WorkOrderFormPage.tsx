@@ -104,7 +104,7 @@ export default function WorkOrderFormPage() {
           .eq('id', jobId).single(),
         supabase.from('quotations')
           .select('id, quote_number, status, items, total')
-          .eq('job_id', jobId).eq('user_id', user!.id).eq('status', 'Accepted').maybeSingle(),
+          .eq('job_id', jobId).eq('user_id', user!.id).eq('status', 'Accepted').order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('work_orders')
           .select('id, status')
           .eq('job_id', jobId).eq('user_id', user!.id)
