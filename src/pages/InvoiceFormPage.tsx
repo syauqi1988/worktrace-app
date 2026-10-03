@@ -598,16 +598,16 @@ export default function InvoiceFormPage() {
       <div className="space-y-3">
         {errors.items && <p className="text-xs text-destructive">{errors.items}</p>}
         {/* Desktop table */}
-        <div className="hidden md:block">
-          <div className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-[40px_minmax(0,1fr)_64px_64px_100px_100px_36px] gap-2 text-xs font-medium text-muted-foreground mb-1 px-1">
             <span></span><span>{t('forms.itemDescription')}</span><span>{t('forms.itemQty')}</span><span>UOM</span><span>{t('forms.itemUnitPrice')}</span><span>{t('forms.itemTotal')}</span><span></span>
           </div>
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[40px_1fr_70px_70px_110px_110px_36px] gap-2 mb-2 items-start">
+            <div key={i} className="grid grid-cols-[40px_minmax(0,1fr)_64px_64px_100px_100px_36px] gap-2 mb-2 items-start">
               <ProductPicker onPick={(p) => applyProduct(i, p)} />
               <div className="space-y-1">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemDescPlaceholder')} className="text-sm" />
-                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={4} className="text-sm min-h-[96px] resize-y" />
               </div>
               <Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" />
               <Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" />
@@ -618,7 +618,7 @@ export default function InvoiceFormPage() {
           ))}
         </div>
         {/* Mobile cards */}
-        <div className="md:hidden space-y-3">
+        <div className="lg:hidden space-y-3">
           {items.map((item, i) => (
             <div key={i} className="bg-card rounded-xl border border-border p-3 space-y-2 relative">
               {items.length > 1 && (
@@ -628,7 +628,7 @@ export default function InvoiceFormPage() {
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemPlaceholder')} className="text-sm" />
                 <ProductPicker onPick={(p) => applyProduct(i, p)} />
               </div>
-              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+              <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail' as any, e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={4} className="text-sm min-h-[96px] resize-y" />
               <div className="grid grid-cols-3 gap-2">
                 <div><p className="text-xs text-muted-foreground mb-1">{t('forms.itemQty')}</p><Input type="number" min={0} value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value === '' ? 0 : Number(e.target.value))} placeholder="0" className="text-sm" /></div>
                 <div><p className="text-xs text-muted-foreground mb-1">UOM</p><Input value={item.uom || ''} onChange={e => updateItem(i, 'uom' as any, e.target.value)} placeholder="unit" className="text-sm" /></div>

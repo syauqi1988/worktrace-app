@@ -403,7 +403,7 @@ export default function WorkOrderFormPage() {
               <ProductPicker onPick={p => applyProduct(i, p)} />
               <div className="flex-1 space-y-1.5">
                 <Input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={t('forms.itemPlaceholder')} className="text-sm" />
-                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail', e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={2} className="text-xs" />
+                <Textarea value={item.description_detail || ''} onChange={e => updateItem(i, 'description_detail', e.target.value)} placeholder="Butiran tambahan (pilihan)" rows={4} className="text-sm min-h-[96px] resize-y" />
               </div>
               {items.length > 1 && (
                 <button onClick={() => removeItem(i)} className="text-muted-foreground hover:text-destructive p-2"><Trash2 className="h-4 w-4" /></button>
