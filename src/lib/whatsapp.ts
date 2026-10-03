@@ -1,4 +1,6 @@
 // Centralised WhatsApp link helpers.
+import { toast } from 'sonner';
+import i18n from '@/i18n';
 // Goal: open WhatsApp reliably on all platforms (mobile and desktop)
 
 /**
@@ -36,8 +38,24 @@ export function openWhatsApp(
     if (pendingWindow && !pendingWindow.closed) { try { pendingWindow.close(); } catch { /* ignore */ } }
     nav.share({ text }).catch((err: any) => {
       if (err?.name === 'AbortError') return; // user closed the sheet
-      const url = buildWhatsAppUrl(phone, text);
-      window.open(url, '_blank');
+      if (err?.name === 'NotAllowedError') {
+        // Browser blocked the sheet because link preparation took too long
+        // after the tap. Offer a one-tap button (fresh gesture) to open it.
+        const en = i18n.language === 'en';
+        toast(en ? 'Link ready to share' : 'Pautan sedia untuk dikongsi', {
+          duration: 20000,
+          action: {
+            label: en ? 'Share' : 'Kongsi',
+            onClick: () => {
+              nav.share({ text }).catch((e: any) => {
+                if (e?.name !== 'AbortError') window.open(buildWhatsAppUrl(phone, text), '_blank');
+              });
+            },
+          },
+        });
+        return;
+      }
+      window.open(buildWhatsAppUrl(phone, text), '_blank');
     });
     return;
   }
