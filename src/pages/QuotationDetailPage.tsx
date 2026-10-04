@@ -642,20 +642,20 @@ export default function QuotationDetailPage() {
         { id: 'items', title: t('quotationDetail.items'), content: (<div className="space-y-4">
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('quotationDetail.items')}</p>
-        <div className="hidden md:block">
-          <div className="grid grid-cols-[1fr_60px_100px_100px] gap-2 text-xs font-medium text-muted-foreground mb-1">
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-[minmax(0,1fr)_48px_96px_104px] gap-2 text-xs font-medium text-muted-foreground mb-1">
             <span>{t('quotationDetail.description')}</span><span>{t('quotationDetail.qty')}</span><span>{t('quotationDetail.price')}</span><span className="text-right">{t('quotationDetail.amount')}</span>
           </div>
           {quotation.items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[1fr_60px_100px_100px] gap-2 py-1.5 border-b border-border last:border-0 text-sm">
-              <span className="text-foreground">{item.description}</span>
+            <div key={i} className="grid grid-cols-[minmax(0,1fr)_48px_96px_104px] gap-2 py-1.5 border-b border-border last:border-0 text-sm">
+              <span className="text-foreground break-words min-w-0">{item.description}</span>
               <span className="text-foreground">{item.qty}</span>
               <span className="text-foreground">RM {(Number(item.unit_price) || 0).toFixed(2)}</span>
               <span className="text-right font-medium text-foreground">RM {((item.qty || 0) * (Number(item.unit_price) || 0)).toFixed(2)}</span>
             </div>
           ))}
         </div>
-        <div className="md:hidden space-y-2">
+        <div className="lg:hidden space-y-2">
           {quotation.items.map((item, i) => (
             <div key={i} className="border border-border rounded-lg p-3 space-y-1">
               <p className="text-sm font-medium text-foreground">{item.description}</p>
