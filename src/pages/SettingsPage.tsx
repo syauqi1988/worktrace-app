@@ -509,7 +509,7 @@ export default function SettingsPage() {
               <Input
                 value={tinNumber}
                 onChange={(e) => setTinNumber(e.target.value)}
-                placeholder="e.g. C12345678900"
+                placeholder={l("e.g. C12345678900", "cth. C12345678900")}
                 className="h-11 rounded-lg"
               />
             </div>
@@ -518,7 +518,7 @@ export default function SettingsPage() {
               <Input
                 value={msicCode}
                 onChange={(e) => setMsicCode(e.target.value)}
-                placeholder="e.g. 43211"
+                placeholder={l("e.g. 43211", "cth. 43211")}
                 className="h-11 rounded-lg"
               />
             </div>
@@ -532,7 +532,7 @@ export default function SettingsPage() {
                 <Input
                   value={sstNumber}
                   onChange={(e) => setSstNumber(e.target.value)}
-                  placeholder="e.g. W10-1234-12345678"
+                  placeholder={l("e.g. W10-1234-12345678", "cth. W10-1234-12345678")}
                   className="h-11 rounded-lg"
                 />
               </div>
