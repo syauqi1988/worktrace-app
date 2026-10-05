@@ -387,12 +387,12 @@ export default function SettingsPage() {
   };
 
   const shareWhatsApp = () => {
-    const msg = `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! 🔧\n\n✅ Jejak kerja & pelanggan\n✅ Sebut harga & invois profesional\n✅ WhatsApp follow-up automatik\n✅ LHDN e-Invois ready\n\nDaftar guna link saya:\n👉 ${referralUrl}\n\n*WorkTrace — Jejak Kerja. Senang Collect.*`;
+    const msg = l(`Try WorkTrace — the job management app for Malaysian contractors! 🔧\n\n✅ Track jobs & customers\n✅ Professional quotations & invoices\n✅ Automatic WhatsApp follow-ups\n✅ LHDN e-Invoice ready\n\nSign up with my link:\n👉 ${referralUrl}\n\n*WorkTrace — Track Work. Collect Easily.*`, `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! 🔧\n\n✅ Jejak kerja & pelanggan\n✅ Sebut harga & invois profesional\n✅ WhatsApp follow-up automatik\n✅ LHDN e-Invois ready\n\nDaftar guna link saya:\n👉 ${referralUrl}\n\n*WorkTrace — Jejak Kerja. Senang Collect.*`);
     openWhatsApp(undefined, msg);
   };
 
   const shareTelegram = () => {
-    const msg = `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! Daftar guna link saya: ${referralUrl}`;
+    const msg = l(`Try WorkTrace — the job management app for Malaysian contractors! Sign up with my link: ${referralUrl}`, `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! Daftar guna link saya: ${referralUrl}`);
     window.open(
       `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(msg)}`,
       "_blank",
@@ -1037,8 +1037,8 @@ export default function SettingsPage() {
                 const until = elig.status === 'full' ? elig.fullRefundUntil : elig.proratedRefundUntil;
                 const tone = elig.status === 'full' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800';
                 const label = elig.status === 'full'
-                  ? `Anda layak bayaran balik penuh sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`
-                  : `Anda layak bayaran balik pro-rated sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                  ? l(`You are eligible for a full refund until ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`, `Anda layak bayaran balik penuh sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`)
+                  : l(`You are eligible for a pro-rated refund until ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`, `Anda layak bayaran balik pro-rated sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`);
                 return <div className={`text-xs rounded-lg border p-2.5 ${tone}`}>{label}</div>;
               }
               return null;

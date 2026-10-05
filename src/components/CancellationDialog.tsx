@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useL } from '@/i18n/dual';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,7 +123,7 @@ export default function CancellationDialog({ open, onClose, onCancelled }: Props
                 <Trans i18nKey="dialog.stillActive" values={{ date: endDateStr }} components={[<strong key="0" />]} />
               </p>
               <p className="text-xs text-blue-700 mt-1.5">
-                Layak bayaran balik? Lihat <a href="/refund-policy" className="underline">Dasar Bayaran Balik</a>.
+                {l('Eligible for a refund? See', 'Layak bayaran balik? Lihat')} <a href="/refund-policy" className="underline">{l('Refund Policy', 'Dasar Bayaran Balik')}</a>.
               </p>
             </div>
             <Button onClick={resetAndClose} className="w-full rounded-lg">{t('dialog.stayPro')}</Button>

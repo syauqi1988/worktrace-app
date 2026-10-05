@@ -1,3 +1,4 @@
+import { useL } from '@/i18n/dual';
 import { useState } from 'react';
 import { Check, X as XIcon, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -172,7 +173,7 @@ export default function PlanCards({ currentPlan, onSelect, showToggle = true, co
                 <Button
                   variant="outline"
                   className="w-full rounded-lg gap-2"
-                  onClick={() => openWhatsApp('60123456789', `Saya berminat dengan pelan ${plan.name} WorkTrace`)}
+                  onClick={() => openWhatsApp('60123456789', l(`I'm interested in the WorkTrace ${plan.name} plan`, `Saya berminat dengan pelan ${plan.name} WorkTrace`))}
                 >
                   <Clock className="h-4 w-4" />
                   Beritahu saya bila siap
@@ -198,7 +199,7 @@ export default function PlanCards({ currentPlan, onSelect, showToggle = true, co
                     }
                   }}
                 >
-                  {isLoading ? 'Memproses...' : `Upgrade ke ${plan.name}`}
+                  {isLoading ? l('Processing...', 'Memproses...') : l(`Upgrade to ${plan.name}`, `Upgrade ke ${plan.name}`)}
                 </Button>
               )}
             </div>
