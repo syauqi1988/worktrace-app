@@ -19,6 +19,7 @@ import {
   TemplateEditable,
   TemplatesState,
   getTemplate,
+  withTemplateEdit,
 } from "@/lib/whatsappTemplates";
 
 function fillPreview(text: string, vars: Record<string, string>): string {
@@ -71,7 +72,7 @@ export default function WhatsAppTemplatesSection() {
       return;
     }
     setSaving(true);
-    const next: TemplatesState = { ...templates, [activeKey]: { ...draft } };
+    const next: TemplatesState = withTemplateEdit(templates, activeKey, draft);
     await updateProfile({ whatsapp_templates: next as any });
     setSaving(false);
     toast.success(t('settingsExtra.tplSaved', { label: tplLabel(meta) }));
