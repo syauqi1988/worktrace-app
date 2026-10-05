@@ -22,6 +22,7 @@ const LOSE_KEYS = ['unlimitedJobs', 'unlimitedCustomers', 'shareWa', 'logoPdf', 
 export default function CancellationDialog({ open, onClose, onCancelled }: Props) {
   const { user, profile, refreshProfile } = useAuth();
   const { t } = useTranslation();
+  const l = useL();
   const [step, setStep] = useState(1);
   const [reasonKey, setReasonKey] = useState<string>('');
   const [otherReason, setOtherReason] = useState('');

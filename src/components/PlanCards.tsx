@@ -36,6 +36,7 @@ function isComingSoon(plan: PricingPlan) {
 }
 
 export default function PlanCards({ currentPlan, onSelect, showToggle = true, compact = false }: PlanCardsProps) {
+  const l = useL();
   const [yearly, setYearly] = useState(false);
   const { initiatePayment, isLoading } = useBillPlz();
   const { plans, isLoading: plansLoading } = usePricingPlans();
