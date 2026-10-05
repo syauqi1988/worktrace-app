@@ -1,3 +1,5 @@
+import i18nGlobal from '@/i18n';
+import { pickTerms } from '@/lib/termsI18n';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +54,9 @@ function formatDate(d: string | null) {
 const DEFAULT_TERMS = `1. Kerja dilaksanakan mengikut spesifikasi dipersetujui.
 2. Perubahan skop memerlukan kelulusan bertulis.
 3. Pembayaran dalam 14 hari dari tarikh invois.`;
+const DEFAULT_TERMS_EN = `1. Work is carried out according to the agreed specifications.
+2. Scope changes require written approval.
+3. Payment within 14 days from the invoice date.`;
 
 export default function WorkOrderFormPage() {
   const { t } = useTranslation();
@@ -152,7 +157,7 @@ export default function WorkOrderFormPage() {
       setTitle(j?.title || '');
       setLocation(j?.customers?.address || '');
       setTechnician(profile?.company_name || '');
-      setTerms((profile as any)?.wo_terms || DEFAULT_TERMS);
+      setTerms(pickTerms(profile, 'wo_terms') || (i18nGlobal.language?.startsWith('en') ? DEFAULT_TERMS_EN : DEFAULT_TERMS));
 
       if (q && Array.isArray(q.items) && q.items.length) {
         setItems(q.items as LineItem[]);

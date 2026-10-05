@@ -50,7 +50,7 @@ export default function PaymentDetailsSection() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Akan dipaparkan dalam Sebut Harga supaya pelanggan tahu cara membayar.
+        {tm("Akan dipaparkan dalam Sebut Harga supaya pelanggan tahu cara membayar.")}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

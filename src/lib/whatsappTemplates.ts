@@ -195,11 +195,21 @@ export const TEMPLATE_MAP: Record<TemplateKey, TemplateMeta> = TEMPLATES.reduce(
   {} as Record<TemplateKey, TemplateMeta>,
 );
 
-export type TemplatesState = Partial<Record<TemplateKey, Partial<TemplateEditable>>>;
+type TemplatesBucket = Partial<Record<TemplateKey, Partial<TemplateEditable>>>;
+/** Malay edits live at the top level; English edits live under `en`. */
+export type TemplatesState = TemplatesBucket & { en?: TemplatesBucket };
+
+/** Return a new state with `edit` saved for the current language. */
+export function withTemplateEdit(state: TemplatesState | null | undefined, key: TemplateKey, edit: TemplateEditable): TemplatesState {
+  const base: TemplatesState = { ...(state || {}) };
+  if (isEn()) base.en = { ...(base.en || {}), [key]: { ...edit } };
+  else (base as any)[key] = { ...edit };
+  return base;
+}
 
 export function getTemplate(state: TemplatesState | null | undefined, key: TemplateKey): TemplateEditable {
   const meta = TEMPLATE_MAP[key];
-  const saved = state?.[key] ?? {};
+  const saved = (isEn() ? state?.en?.[key] : state?.[key]) ?? {};
   const d = tplDefaults(meta);
   return {
     greeting: saved.greeting ?? d.greeting,

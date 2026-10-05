@@ -1,3 +1,4 @@
+import { pickTerms } from '@/lib/termsI18n';
 import DataFormPage from '@/components/form/DataFormPage';
 import { useL } from '@/i18n/dual';
 import { useState, useEffect, useMemo } from 'react';
@@ -206,8 +207,8 @@ export default function QuotationFormPage() {
   }, [isEdit, user]);
 
   useEffect(() => {
-    if (!isEdit && profile?.quotation_terms && !terms) {
-      setTerms(profile.quotation_terms);
+    if (!isEdit && pickTerms(profile, 'quotation_terms') && !terms) {
+      setTerms(pickTerms(profile, 'quotation_terms')!);
     }
   }, [isEdit, profile]);
 
