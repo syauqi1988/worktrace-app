@@ -1,3 +1,4 @@
+import { pickTerms } from '@/lib/termsI18n';
 import DataFormPage from '@/components/form/DataFormPage';
 import { useL } from '@/i18n/dual';
 import { useState, useEffect, useMemo } from 'react';
@@ -190,7 +191,7 @@ export default function InvoiceFormPage() {
   // Populate LHDN defaults from profile
   useEffect(() => {
     if (profile?.msic_code) setMsicCode(profile.msic_code);
-    if (!isEdit && profile?.invoice_terms && !terms) setTerms(profile.invoice_terms);
+    if (!isEdit && pickTerms(profile, 'invoice_terms') && !terms) setTerms(pickTerms(profile, 'invoice_terms')!);
     if (!isEdit && profile?.payment_methods) {
       const methods = Array.isArray(profile.payment_methods) ? profile.payment_methods : [];
       setSelectedPaymentMethods(methods.map((m: any) => m.id));

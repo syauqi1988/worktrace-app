@@ -1,3 +1,4 @@
+import { pickTerms } from '@/lib/termsI18n';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -152,7 +153,7 @@ export default function WorkOrderFormPage() {
       setTitle(j?.title || '');
       setLocation(j?.customers?.address || '');
       setTechnician(profile?.company_name || '');
-      setTerms((profile as any)?.wo_terms || DEFAULT_TERMS);
+      setTerms(pickTerms(profile, 'wo_terms') || DEFAULT_TERMS);
 
       if (q && Array.isArray(q.items) && q.items.length) {
         setItems(q.items as LineItem[]);

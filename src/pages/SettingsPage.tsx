@@ -52,6 +52,7 @@ import RefundRequestDialog from "@/components/RefundRequestDialog";
 import { getRefundEligibility } from "@/lib/refundEligibility";
 import { Link } from "react-router-dom";
 import { useL } from "@/i18n/dual";
+import { ownTerms, termsField } from "@/lib/termsI18n";
 import { useBillPlz } from "@/hooks/useBillPlz";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 
@@ -122,6 +123,12 @@ export default function SettingsPage() {
   const [termsTab, setTermsTab] = useState<TermsTab>("quotation");
   const [quotationTerms, setQuotationTerms] = useState("");
   const [invoiceTerms, setInvoiceTerms] = useState("");
+  const { i18n: i18nInst } = useTranslation();
+  const termsLang = i18nInst.language;
+  useEffect(() => {
+    setQuotationTerms(ownTerms(profile, "quotation_terms") || "");
+    setInvoiceTerms(ownTerms(profile, "invoice_terms") || "");
+  }, [profile, termsLang]);
   const [savingTerms, setSavingTerms] = useState(false);
 
   // Payment methods
@@ -165,8 +172,6 @@ export default function SettingsPage() {
       setTinNumber(profile.tin_number || "");
       setMsicCode(profile.msic_code || "");
       setSstRegistered(profile.sst_registered);
-      setQuotationTerms(profile.quotation_terms || "");
-      setInvoiceTerms(profile.invoice_terms || "");
       setPaymentMethods(Array.isArray(profile.payment_methods) ? profile.payment_methods : []);
     }
   }, [profile]);
@@ -245,9 +250,9 @@ export default function SettingsPage() {
   const handleSaveTerms = async () => {
     setSavingTerms(true);
     await updateProfile({
-      quotation_terms: quotationTerms || null,
-      invoice_terms: invoiceTerms || null,
-    });
+      [termsField("quotation_terms")]: quotationTerms || null,
+      [termsField("invoice_terms")]: invoiceTerms || null,
+    } as any);
     setSavingTerms(false);
     toast.success(t("settings.terms.saved"));
   };

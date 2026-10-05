@@ -255,6 +255,7 @@ export const EN_DICT: Record<string, string> = {
   "Guna": "Apply",
   "Hingga": "To",
   "Tukar julat tarikh": "Change date range",
+  "Akan dipaparkan dalam Sebut Harga supaya pelanggan tahu cara membayar.": "Shown on Quotations so customers know how to pay.",
 };
 
 /** Malay-source text → English when EN is active. Use useTm() in components. */
