@@ -51,6 +51,7 @@ import ReactivateDialog from "@/components/ReactivateDialog";
 import RefundRequestDialog from "@/components/RefundRequestDialog";
 import { getRefundEligibility } from "@/lib/refundEligibility";
 import { Link } from "react-router-dom";
+import { useL } from "@/i18n/dual";
 import { useBillPlz } from "@/hooks/useBillPlz";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 
@@ -86,6 +87,7 @@ type TermsTab = "quotation" | "invoice" | "work_order";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
+  const l = useL();
   const TERMS_TABS: { key: TermsTab; label: string }[] = [
     { key: "quotation", label: t("settings.terms.tabQuotation") },
     { key: "invoice", label: t("settings.terms.tabInvoice") },
@@ -193,7 +195,7 @@ export default function SettingsPage() {
       default_deposit_percentage: defaultDepositPct,
     } as any);
     setSavingJobPrefs(false);
-    toast.success(t('settings.saved') || 'Disimpan');
+    toast.success(t('settings.saved') || l('Saved', 'Disimpan'));
   };
 
 
@@ -385,12 +387,12 @@ export default function SettingsPage() {
   };
 
   const shareWhatsApp = () => {
-    const msg = `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! 🔧\n\n✅ Jejak kerja & pelanggan\n✅ Sebut harga & invois profesional\n✅ WhatsApp follow-up automatik\n✅ LHDN e-Invois ready\n\nDaftar guna link saya:\n👉 ${referralUrl}\n\n*WorkTrace — Jejak Kerja. Senang Collect.*`;
+    const msg = l(`Try WorkTrace — the job management app for Malaysian contractors! 🔧\n\n✅ Track jobs & customers\n✅ Professional quotations & invoices\n✅ Automatic WhatsApp follow-ups\n✅ LHDN e-Invoice ready\n\nSign up with my link:\n👉 ${referralUrl}\n\n*WorkTrace — Track Work. Collect Easily.*`, `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! 🔧\n\n✅ Jejak kerja & pelanggan\n✅ Sebut harga & invois profesional\n✅ WhatsApp follow-up automatik\n✅ LHDN e-Invois ready\n\nDaftar guna link saya:\n👉 ${referralUrl}\n\n*WorkTrace — Jejak Kerja. Senang Collect.*`);
     openWhatsApp(undefined, msg);
   };
 
   const shareTelegram = () => {
-    const msg = `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! Daftar guna link saya: ${referralUrl}`;
+    const msg = l(`Try WorkTrace — the job management app for Malaysian contractors! Sign up with my link: ${referralUrl}`, `Jom cuba WorkTrace — app pengurusan kerja untuk kontraktor Malaysia! Daftar guna link saya: ${referralUrl}`);
     window.open(
       `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(msg)}`,
       "_blank",
@@ -507,7 +509,7 @@ export default function SettingsPage() {
               <Input
                 value={tinNumber}
                 onChange={(e) => setTinNumber(e.target.value)}
-                placeholder="e.g. C12345678900"
+                placeholder={l("e.g. C12345678900", "cth. C12345678900")}
                 className="h-11 rounded-lg"
               />
             </div>
@@ -516,7 +518,7 @@ export default function SettingsPage() {
               <Input
                 value={msicCode}
                 onChange={(e) => setMsicCode(e.target.value)}
-                placeholder="e.g. 43211"
+                placeholder={l("e.g. 43211", "cth. 43211")}
                 className="h-11 rounded-lg"
               />
             </div>
@@ -530,7 +532,7 @@ export default function SettingsPage() {
                 <Input
                   value={sstNumber}
                   onChange={(e) => setSstNumber(e.target.value)}
-                  placeholder="e.g. W10-1234-12345678"
+                  placeholder={l("e.g. W10-1234-12345678", "cth. W10-1234-12345678")}
                   className="h-11 rounded-lg"
                 />
               </div>
@@ -617,7 +619,7 @@ export default function SettingsPage() {
               >
                 {BANK_OPTIONS.map((b) => (
                   <option key={b} value={b}>
-                    {b}
+                    {b === "Other" ? l("Other", "Lain-lain") : b}
                   </option>
                 ))}
               </select>
@@ -666,7 +668,7 @@ export default function SettingsPage() {
               >
                 {QR_PROVIDERS.map((p) => (
                   <option key={p} value={p}>
-                    {p}
+                    {p === "Other" ? l("Other", "Lain-lain") : p}
                   </option>
                 ))}
               </select>
@@ -715,8 +717,8 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="maklumat-pembayaran-quote"
         icon={<Landmark className="h-5 w-5" />}
-        title="Maklumat Pembayaran (Sebut Harga)"
-        description="Bank, no. akaun, jenis pembayaran yang dipaparkan dalam Sebut Harga"
+        title={l("Payment Details (Quotation)", "Maklumat Pembayaran (Sebut Harga)")}
+        description={l("Bank, account no. and payment types shown on Quotations", "Bank, no. akaun, jenis pembayaran yang dipaparkan dalam Sebut Harga")}
       >
         <PaymentDetailsSection />
       </SettingsAccordion>
@@ -776,12 +778,12 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="keutamaan-kerja"
         icon={<Briefcase className="h-5 w-5" />}
-        title="Keutamaan Kerja"
-        description="Tetapan lalai untuk jenis kerja & pembayaran berperingkat"
+        title={l("Job Preferences", "Keutamaan Kerja")}
+        description={l("Defaults for job type & progress payments", "Tetapan lalai untuk jenis kerja & pembayaran berperingkat")}
       >
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Jenis Kerja Lalai</label>
-          <p className="text-xs text-muted-foreground mb-2">Setiap kerja baru akan bermula dengan jenis ini.</p>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{l("Default Job Type", "Jenis Kerja Lalai")}</label>
+          <p className="text-xs text-muted-foreground mb-2">{l("Every new job will start with this type.", "Setiap kerja baru akan bermula dengan jenis ini.")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {JOB_TYPES.map((jt) => (
               <button
@@ -796,16 +798,16 @@ export default function SettingsPage() {
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{jt.icon}</span>
-                  <span className="text-sm font-semibold text-foreground">{jt.nameMs}</span>
+                  <span className="text-sm font-semibold text-foreground">{l(jt.nameEn, jt.nameMs)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">{jt.taglineMs}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{l(jt.taglineEn, jt.taglineMs)}</p>
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Templat Milestone Lalai</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{l("Default Milestone Template", "Templat Milestone Lalai")}</label>
           <div className="flex flex-wrap gap-1.5">
             {MILESTONE_TEMPLATES.map((tpl) => (
               <button
@@ -818,14 +820,14 @@ export default function SettingsPage() {
                     : 'bg-background border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
-                {tpl.label}
+                {tpl.key.endsWith("x") ? l(`${tpl.key.slice(0, -1)} Stages`, tpl.label) : tpl.label}
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Peratus Deposit Lalai (%)</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">{l("Default Deposit Percentage (%)", "Peratus Deposit Lalai (%)")}</label>
           <Input
             type="number"
             min={1}
@@ -835,11 +837,11 @@ export default function SettingsPage() {
             onChange={(e) => setDefaultDepositPct(Math.max(1, Math.min(100, Number(e.target.value) || 0)))}
             className="h-11 rounded-lg w-32"
           />
-          <p className="text-xs text-muted-foreground mt-1">Digunakan untuk Kerja Deposit.</p>
+          <p className="text-xs text-muted-foreground mt-1">{l("Used for Deposit Jobs.", "Digunakan untuk Kerja Deposit.")}</p>
         </div>
 
         <Button onClick={handleSaveJobPrefs} disabled={savingJobPrefs} className="rounded-lg">
-          {savingJobPrefs ? t('settings.saving') : 'Simpan'}
+          {savingJobPrefs ? t('settings.saving') : l('Save', 'Simpan')}
         </Button>
       </SettingsAccordion>
       </>)}
@@ -1035,8 +1037,8 @@ export default function SettingsPage() {
                 const until = elig.status === 'full' ? elig.fullRefundUntil : elig.proratedRefundUntil;
                 const tone = elig.status === 'full' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800';
                 const label = elig.status === 'full'
-                  ? `Anda layak bayaran balik penuh sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`
-                  : `Anda layak bayaran balik pro-rated sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                  ? l(`You are eligible for a full refund until ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`, `Anda layak bayaran balik penuh sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`)
+                  : l(`You are eligible for a pro-rated refund until ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`, `Anda layak bayaran balik pro-rated sehingga ${until?.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}`);
                 return <div className={`text-xs rounded-lg border p-2.5 ${tone}`}>{label}</div>;
               }
               return null;
@@ -1065,8 +1067,8 @@ export default function SettingsPage() {
 
         <div className="mt-6 pt-4 border-t border-border space-y-3">
           <div>
-            <h4 className="text-sm font-semibold text-foreground">Official Receipts</h4>
-            <p className="text-xs text-muted-foreground">Issued by HS Partnership PLT for each successful payment. Auto-emailed to you.</p>
+            <h4 className="text-sm font-semibold text-foreground">{l("Official Receipts", "Resit Rasmi")}</h4>
+            <p className="text-xs text-muted-foreground">{l("Issued by HS Partnership PLT for each successful payment. Auto-emailed to you.", "Dikeluarkan oleh HS Partnership PLT bagi setiap pembayaran berjaya. Dihantar automatik ke emel anda.")}</p>
           </div>
           <SubscriptionReceiptsSection />
         </div>

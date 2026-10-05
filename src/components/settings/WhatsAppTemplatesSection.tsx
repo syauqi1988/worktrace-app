@@ -10,7 +10,11 @@ import UpgradeModal from "@/components/UpgradeModal";
 import {
   TEMPLATES,
   TEMPLATE_MAP,
-  TEMPLATE_PLACEHOLDERS,
+  tplLabel,
+  tplDescription,
+  tplDetailsPreview,
+  tplDefaults,
+  tplPlaceholderLabel,
   TemplateKey,
   TemplateEditable,
   TemplatesState,
@@ -22,7 +26,8 @@ function fillPreview(text: string, vars: Record<string, string>): string {
 }
 
 export default function WhatsAppTemplatesSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
   const { profile, updateProfile } = useAuth();
   const { isTeam, upgradeOpen, setUpgradeOpen, upgradeReason, checkTeamFeature } = usePlanGate();
   const [activeKey, setActiveKey] = useState<TemplateKey>("quotation");
@@ -36,7 +41,7 @@ export default function WhatsAppTemplatesSection() {
   useEffect(() => {
     setDraft(getTemplate(templates, activeKey));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeKey, profile]);
+  }, [activeKey, profile, isEn]);
 
   const previewVars = useMemo(
     () => ({
@@ -53,12 +58,12 @@ export default function WhatsAppTemplatesSection() {
       "",
       fillPreview(draft.intro, previewVars),
     ];
-    if (meta.detailsPreview) {
-      parts.push("", meta.detailsPreview);
+    if (tplDetailsPreview(meta)) {
+      parts.push("", tplDetailsPreview(meta));
     }
     parts.push("", fillPreview(draft.closing, previewVars));
     return parts.join("\n");
-  }, [draft, meta, previewVars]);
+  }, [draft, meta, previewVars, isEn]);
 
   const handleSave = async () => {
     if (isWorkOrderLocked) {
@@ -69,7 +74,7 @@ export default function WhatsAppTemplatesSection() {
     const next: TemplatesState = { ...templates, [activeKey]: { ...draft } };
     await updateProfile({ whatsapp_templates: next as any });
     setSaving(false);
-    toast.success(t('settingsExtra.tplSaved', { label: meta.label }));
+    toast.success(t('settingsExtra.tplSaved', { label: tplLabel(meta) }));
   };
 
   const handleReset = () => {
@@ -77,7 +82,7 @@ export default function WhatsAppTemplatesSection() {
       checkTeamFeature(t('settingsExtra.lockedFeature'));
       return;
     }
-    setDraft({ ...meta.defaults });
+    setDraft({ ...tplDefaults(meta) });
     toast.info(t('settingsExtra.tplReset'));
   };
 
@@ -105,11 +110,11 @@ export default function WhatsAppTemplatesSection() {
         >
           {TEMPLATES.map((tpl) => (
             <option key={tpl.key} value={tpl.key}>
-              {tpl.label}{tpl.key === "work_order" && !isTeam ? " 🔒 (Team)" : ""}
+              {tplLabel(tpl)}{tpl.key === "work_order" && !isTeam ? " 🔒 (Team)" : ""}
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted-foreground mt-1">{meta.description}</p>
+        <p className="text-xs text-muted-foreground mt-1">{tplDescription(meta)}</p>
       </div>
 
       <div className="rounded-lg bg-muted/40 border border-border p-3">
@@ -119,7 +124,7 @@ export default function WhatsAppTemplatesSection() {
             <code
               key={p}
               className="text-[11px] bg-background border border-border rounded px-1.5 py-0.5 font-mono text-foreground"
-              title={TEMPLATE_PLACEHOLDERS[p] || p}
+              title={tplPlaceholderLabel(p)}
             >
               {`{${p}}`}
             </code>
@@ -143,7 +148,7 @@ export default function WhatsAppTemplatesSection() {
             value={draft.greeting}
             onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
             rows={2}
-            placeholder="cth: Assalamualaikum {customer_name},"
+            placeholder={isEn ? "e.g. Hello {customer_name}," : "cth: Assalamualaikum {customer_name},"}
             disabled={isWorkOrderLocked}
           />
         </div>
@@ -164,7 +169,7 @@ export default function WhatsAppTemplatesSection() {
           </label>
           <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
             <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
-              {meta.detailsPreview}
+              {tplDetailsPreview(meta)}
             </pre>
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -199,7 +204,7 @@ export default function WhatsAppTemplatesSection() {
           className="rounded-lg gap-1.5"
         >
           {isWorkOrderLocked && <Lock className="h-3.5 w-3.5" />}
-          {saving ? t('settingsExtra.uploading') : t('settingsExtra.saveTpl', { label: meta.label })}
+          {saving ? t('settingsExtra.uploading') : t('settingsExtra.saveTpl', { label: tplLabel(meta) })}
         </Button>
         <Button
           variant="outline"
