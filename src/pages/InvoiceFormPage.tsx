@@ -1,6 +1,7 @@
 import { pickTerms } from '@/lib/termsI18n';
 import DataFormPage from '@/components/form/DataFormPage';
 import { useL } from '@/i18n/dual';
+import QuickJobDialog from '@/components/QuickJobDialog';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -51,6 +52,7 @@ export default function InvoiceFormPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobSearch, setJobSearch] = useState('');
   const [jobDropdownOpen, setJobDropdownOpen] = useState(false);
+  const [quickJobOpen, setQuickJobOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
