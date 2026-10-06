@@ -11,8 +11,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { JobProductsEditor, type JobProductItem } from '@/components/JobProductsEditor';
 
-const CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
+const DEFAULT_CATEGORIES = ['Renovation', 'Aircond', 'Electrical', 'Plumbing', 'Maintenance', 'Welding', 'Other'];
+const CUSTOM_CATS_KEY = 'wt:jobCustomCategories';
+const STATUSES = ['Lead', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'];
+const loadCats = (): string[] => { try { return JSON.parse(localStorage.getItem(CUSTOM_CATS_KEY) || '[]'); } catch { return []; } };
 
 interface Props {
   open: boolean;
@@ -32,11 +36,16 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Other');
   const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('Lead');
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [notes, setNotes] = useState('');
+  const [products, setProducts] = useState<JobProductItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const categories = Array.from(new Set([...DEFAULT_CATEGORIES, ...loadCats()]));
 
   useEffect(() => {
     if (!open || !user) return;
-    setCustomerId(''); setTitle(''); setCategory('Other'); setDescription('');
+    setCustomerId(''); setTitle(''); setCategory('Other'); setDescription(''); setStatus('Lead'); setScheduledDate(''); setNotes(''); setProducts([]);
     supabase.from('customers').select('id, name').order('name').then(({ data }) => setCustomers((data as any) || []));
   }, [open, user]);
 
@@ -53,8 +62,10 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
       const jobNumber = `JOB-${String((count ?? 0) + 1).padStart(4, '0')}`;
       const { data, error } = await supabase.from('jobs').insert({
         user_id: user.id, customer_id: customerId, job_number: jobNumber,
-        title: title.trim(), category, status: 'Lead',
-        description: description.trim() || null, products: [] as any, job_type: 'standard',
+        title: title.trim(), category, status,
+        scheduled_date: scheduledDate || null, notes: notes.trim() || null,
+        completed_date: status === 'Completed' ? new Date().toISOString().slice(0, 10) : null,
+        description: description.trim() || null, products: products.filter(p => p.description.trim()) as any, job_type: 'standard',
       } as any).select(selectColumns).single();
       if (error) throw error;
       toast({ title: l('Job created', 'Kerja dicipta') });
@@ -70,7 +81,7 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{l('Add New Job', 'Tambah Kerja Baru')}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -89,16 +100,38 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
               <Label>{l('Job Title', 'Tajuk Kerja')} *</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={l('e.g. Aircond servicing', 'cth. Servis aircond')} />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>{l('Category', 'Kategori')}</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{l('Status', 'Status')}</Label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{STATUSES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="space-y-1.5">
-              <Label>{l('Category', 'Kategori')}</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
+              <Label>{l('Scheduled Date', 'Tarikh Dijadualkan')}</Label>
+              <Input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label>{l('Description', 'Penerangan')}</Label>
               <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{l('Products / Job Items', 'Produk / Item Kerja')}</Label>
+              <p className="text-xs text-muted-foreground">{l('Products added will auto-fill into Quotations & Invoices.', 'Produk yang ditambah akan auto-isi ke Sebut Harga & Invois.')}</p>
+              <JobProductsEditor items={products} onChange={setProducts} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{l('Internal Notes', 'Nota Dalaman')}</Label>
+              <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter className="gap-2">
