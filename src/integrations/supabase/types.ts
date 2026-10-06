@@ -1360,6 +1360,7 @@ export type Database = {
           free_months_used: number | null
           id: string
           invoice_terms: string | null
+          invoice_terms_en: string | null
           last_support_visit: string | null
           lhdn_enabled: boolean
           logo_url: string | null
@@ -1371,6 +1372,7 @@ export type Database = {
           phone: string | null
           plan: string
           quotation_terms: string | null
+          quotation_terms_en: string | null
           receipt_count: number | null
           referral_code: string | null
           referral_count: number | null
@@ -1391,6 +1393,7 @@ export type Database = {
           updated_at: string
           whatsapp_templates: Json
           wo_terms: string | null
+          wo_terms_en: string | null
         }
         Insert: {
           account_status?: string | null
@@ -1414,6 +1417,7 @@ export type Database = {
           free_months_used?: number | null
           id: string
           invoice_terms?: string | null
+          invoice_terms_en?: string | null
           last_support_visit?: string | null
           lhdn_enabled?: boolean
           logo_url?: string | null
@@ -1425,6 +1429,7 @@ export type Database = {
           phone?: string | null
           plan?: string
           quotation_terms?: string | null
+          quotation_terms_en?: string | null
           receipt_count?: number | null
           referral_code?: string | null
           referral_count?: number | null
@@ -1445,6 +1450,7 @@ export type Database = {
           updated_at?: string
           whatsapp_templates?: Json
           wo_terms?: string | null
+          wo_terms_en?: string | null
         }
         Update: {
           account_status?: string | null
@@ -1468,6 +1474,7 @@ export type Database = {
           free_months_used?: number | null
           id?: string
           invoice_terms?: string | null
+          invoice_terms_en?: string | null
           last_support_visit?: string | null
           lhdn_enabled?: boolean
           logo_url?: string | null
@@ -1479,6 +1486,7 @@ export type Database = {
           phone?: string | null
           plan?: string
           quotation_terms?: string | null
+          quotation_terms_en?: string | null
           receipt_count?: number | null
           referral_code?: string | null
           referral_count?: number | null
@@ -1499,6 +1507,7 @@ export type Database = {
           updated_at?: string
           whatsapp_templates?: Json
           wo_terms?: string | null
+          wo_terms_en?: string | null
         }
         Relationships: []
       }
