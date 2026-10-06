@@ -529,10 +529,17 @@ export default function InvoiceFormPage() {
                   ))}
                   {filteredJobs.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">{t('forms.noJobsFound')}</p>}
                 </div>
+                <button type="button" onClick={() => { setJobDropdownOpen(false); setQuickJobOpen(true); }}
+                  className="border-t border-border px-3 py-2.5 text-sm font-medium text-primary hover:bg-accent flex items-center gap-1.5">
+                  <Plus className="h-3.5 w-3.5" /> {l('Add new job', 'Tambah kerja baru')}
+                </button>
               </div>
             </>
           )}
         </div>
+        <QuickJobDialog open={quickJobOpen} onOpenChange={setQuickJobOpen}
+          selectColumns="id, job_number, title, customer_id, job_type, customers(name, phone, tin_number)"
+          onCreated={(j) => { setJobs(prev => [j, ...prev]); handleSelectJob(j); }} />
         {errors.job && <p className="text-xs text-destructive">{errors.job}</p>}
         {jobWarning && (
           <div className="flex items-start gap-2 bg-[#FEF3C7] border border-[#FDE68A] rounded-lg p-3 mt-1.5">
