@@ -52,7 +52,7 @@ import RefundRequestDialog from "@/components/RefundRequestDialog";
 import { getRefundEligibility } from "@/lib/refundEligibility";
 import { Link } from "react-router-dom";
 import { useL } from "@/i18n/dual";
-import { ownTerms, termsField } from "@/lib/termsI18n";
+import { pickTerms, termsField } from "@/lib/termsI18n";
 import { useBillPlz } from "@/hooks/useBillPlz";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 
@@ -126,8 +126,8 @@ export default function SettingsPage() {
   const { i18n: i18nInst } = useTranslation();
   const termsLang = i18nInst.language;
   useEffect(() => {
-    setQuotationTerms(ownTerms(profile, "quotation_terms") || "");
-    setInvoiceTerms(ownTerms(profile, "invoice_terms") || "");
+    setQuotationTerms(pickTerms(profile, "quotation_terms") || "");
+    setInvoiceTerms(pickTerms(profile, "invoice_terms") || "");
   }, [profile, termsLang]);
   const [savingTerms, setSavingTerms] = useState(false);
 
