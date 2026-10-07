@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useL } from '@/i18n/dual';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
+import QuickCustomerDialog from '@/components/QuickCustomerDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,7 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
   const [notes, setNotes] = useState('');
   const [products, setProducts] = useState<JobProductItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const [custOpen, setCustOpen] = useState(false);
   const categories = Array.from(new Set([...DEFAULT_CATEGORIES, ...loadCats()]));
 
   useEffect(() => {
@@ -86,15 +88,15 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>{l('Customer', 'Pelanggan')} *</Label>
-              <Select value={customerId} onValueChange={setCustomerId}>
+              <Select value={customerId} onValueChange={(v) => { if (v === '__new__') setCustOpen(true); else setCustomerId(v); }}>
                 <SelectTrigger><SelectValue placeholder={l('Select customer', 'Pilih pelanggan')} /></SelectTrigger>
                 <SelectContent>
                   {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  <SelectItem value="__new__" className="text-primary font-medium">+ {l('Add new customer', 'Tambah pelanggan baru')}</SelectItem>
                 </SelectContent>
               </Select>
-              {customers.length === 0 && (
-                <p className="text-xs text-muted-foreground">{l('No customers yet — add one in Customers first.', 'Tiada pelanggan lagi — tambah di Pelanggan dahulu.')}</p>
-              )}
+              <QuickCustomerDialog open={custOpen} onOpenChange={setCustOpen}
+                onCreated={(c) => { setCustomers(prev => [...prev, c].sort((a, b) => a.name.localeCompare(b.name))); setCustomerId(c.id); }} />
             </div>
             <div className="space-y-1.5">
               <Label>{l('Job Title', 'Tajuk Kerja')} *</Label>
