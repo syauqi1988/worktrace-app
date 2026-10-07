@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useL } from '@/i18n/dual';
 import { usePlanGate } from '@/hooks/usePlanGate';
 import UpgradeModal from '@/components/UpgradeModal';
+import QuickCustomerDialog from '@/components/QuickCustomerDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,7 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
   const [notes, setNotes] = useState('');
   const [products, setProducts] = useState<JobProductItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const [custOpen, setCustOpen] = useState(false);
   const categories = Array.from(new Set([...DEFAULT_CATEGORIES, ...loadCats()]));
 
   useEffect(() => {
