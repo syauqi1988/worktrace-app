@@ -60,17 +60,6 @@ function buildNavItems(t: (k: string) => string, tx: (k: string) => string = (k)
       ],
     },
     {
-      group: 'contacts',
-      label: tx('Contacts'),
-      icon: Users,
-      children: [
-        { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
-        { to: '/suppliers', label: tx('Suppliers'), icon: Truck },
-        { to: '/employees', label: tx('Employees'), icon: UserCog },
-      ],
-    },
-    { to: '/products', label: t('nav.products'), icon: Package },
-    {
       group: 'sales',
       label: t('nav.sales'),
       icon: ShoppingCart,
@@ -93,6 +82,17 @@ function buildNavItems(t: (k: string) => string, tx: (k: string) => string = (k)
         { to: '/refunds', label: tx('Refunds'), icon: Undo2 },
       ],
     },
+    {
+      group: 'contacts',
+      label: tx('Contacts'),
+      icon: Users,
+      children: [
+        { to: '/customers', label: t('nav.customers'), icon: Users, tutorialId: 'customers-nav' },
+        { to: '/suppliers', label: tx('Suppliers'), icon: Truck },
+        { to: '/employees', label: tx('Employees'), icon: UserCog },
+      ],
+    },
+    { to: '/products', label: t('nav.products'), icon: Package },
     {
       group: 'bank',
       label: tx('Bank'),
