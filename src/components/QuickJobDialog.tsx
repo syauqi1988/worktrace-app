@@ -86,15 +86,15 @@ export default function QuickJobDialog({ open, onOpenChange, selectColumns, onCr
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>{l('Customer', 'Pelanggan')} *</Label>
-              <Select value={customerId} onValueChange={setCustomerId}>
+              <Select value={customerId} onValueChange={(v) => { if (v === '__new__') setCustOpen(true); else setCustomerId(v); }}>
                 <SelectTrigger><SelectValue placeholder={l('Select customer', 'Pilih pelanggan')} /></SelectTrigger>
                 <SelectContent>
                   {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  <SelectItem value="__new__" className="text-primary font-medium">+ {l('Add new customer', 'Tambah pelanggan baru')}</SelectItem>
                 </SelectContent>
               </Select>
-              {customers.length === 0 && (
-                <p className="text-xs text-muted-foreground">{l('No customers yet — add one in Customers first.', 'Tiada pelanggan lagi — tambah di Pelanggan dahulu.')}</p>
-              )}
+              <QuickCustomerDialog open={custOpen} onOpenChange={setCustOpen}
+                onCreated={(c) => { setCustomers(prev => [...prev, c].sort((a, b) => a.name.localeCompare(b.name))); setCustomerId(c.id); }} />
             </div>
             <div className="space-y-1.5">
               <Label>{l('Job Title', 'Tajuk Kerja')} *</Label>
