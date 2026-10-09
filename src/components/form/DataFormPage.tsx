@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTx } from '@/i18n/dual';
+import { useReadOnly } from '@/components/PaidFeatureLock';
 import { Label } from '@/components/ui/label';
 
 export type FormSection = {
@@ -33,6 +34,7 @@ export function Field({
   label, required, hint, children, className,
 }: { label: string; required?: boolean; hint?: string; children: ReactNode; className?: string }) {
   const tx = useTx();
+  const { readOnly, requestUpgrade } = useReadOnly();
   return (
     <div className={`space-y-1.5 ${className || ''}`}>
       <Label className="text-sm">
@@ -147,7 +149,7 @@ export default function DataFormPage({
       <div className="fixed bottom-16 md:bottom-0 inset-x-0 md:left-[var(--sidebar-w,0px)] z-50 safe-area-pb border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
         <div className="flex items-center justify-end gap-3">
           {footerExtra}
-          <Button onClick={onSave} disabled={saving || saveDisabled} className="min-w-28 w-full sm:w-auto">
+          <Button onClick={readOnly ? requestUpgrade : onSave} disabled={!readOnly && (saving || saveDisabled)} className="min-w-28 w-full sm:w-auto">
             {saving ? tx('Saving...') : tx(saveLabel)}
           </Button>
         </div>

@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import PlanCards from "@/components/PlanCards";
 import DocNumberSettings from "@/components/DocNumberSettings";
+import DataBackupSection from "@/components/settings/DataBackupSection";
 import AccountDeletionDialog from "@/components/AccountDeletionDialog";
 import SettingsAccordion from "@/components/settings/SettingsAccordion";
 import WorkOrderTermsSection from "@/components/settings/WorkOrderTermsSection";
@@ -41,6 +42,7 @@ import {
   Link2,
   Briefcase,
   Share2,
+  DatabaseBackup,
 } from "lucide-react";
 import { JOB_TYPES, type JobType } from "@/lib/jobTypes";
 import { MILESTONE_TEMPLATES } from "@/lib/milestoneTemplates";
@@ -1224,6 +1226,15 @@ export default function SettingsPage() {
         )}
       </SettingsAccordion>
 
+
+      <SettingsAccordion
+        id="data-backup"
+        icon={<DatabaseBackup className="h-5 w-5" />}
+        title={L("Data Backup", "Sandaran Data")}
+        description={L("Export your data to keep or migrate", "Eksport data untuk simpanan atau pindah")}
+      >
+        <DataBackupSection />
+      </SettingsAccordion>
 
       {/* 10 — Zon Bahaya */}
       <SettingsAccordion
