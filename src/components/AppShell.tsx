@@ -26,6 +26,7 @@ import AnnouncementModal from '@/components/AnnouncementModal';
 import PasskeyEnrollPrompt from '@/components/PasskeyEnrollPrompt';
 import { useTutorial } from '@/hooks/useTutorial';
 import HelpMenu from '@/components/HelpMenu';
+import { FloatingAiHelp } from '@/components/settings/AiHelpButton';
 
 type NavItem = {
   to: string;
@@ -439,6 +440,8 @@ export default function AppShell() {
           );
         })}
       </nav>
+
+      <FloatingAiHelp />
 
       {/* Tutorial Controller */}
       <TutorialController
