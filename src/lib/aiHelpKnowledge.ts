@@ -23,7 +23,39 @@ export function searchKB(q: string, ms: boolean, n = 3) {
   const s = q.toLowerCase();
   return KB.map(e => ({ e, score: e.k.reduce((a, k) => a + (s.includes(k) ? k.length : 0), 0) }))
     .filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, n)
-    .map(x => (ms ? x.e.ms : x.e.en));
+    .map(x => (ms ? x.e.ms : x.e.en))
+    .concat(extra.filter(l => s.split(/\s+/).some(w => w.length > 3 && l.toLowerCase().includes(w))).slice(0, 2));
 }
 
-export const fullKB = (ms: boolean) => KB.map(e => '- ' + (ms ? e.ms : e.en)).join('\n');
+export const fullKB = (ms: boolean) => [...KB.map(e => '- ' + (ms ? e.ms : e.en)), ...extra.slice(0, 25).map(l => '- ' + l)].join('\n');
+
+/** FAQ questions, same order as KB. */
+const Q: [string, string][] = [
+  ['How do I create a job?', 'Bagaimana cara buat kerja?'],
+  ['How do I create and share a quotation?', 'Bagaimana buat dan kongsi sebut harga?'],
+  ['How do I create an invoice?', 'Bagaimana buat invois?'],
+  ['How do deposit and milestone payments work?', 'Bagaimana bayaran deposit dan berperingkat berfungsi?'],
+  ['How do I create a work order?', 'Bagaimana buat arahan kerja?'],
+  ['How do I make a completion report?', 'Bagaimana buat laporan siap kerja?'],
+  ['How do I create a variation order?', 'Bagaimana buat perintah variasi?'],
+  ['How do I share documents on WhatsApp?', 'Bagaimana kongsi dokumen di WhatsApp?'],
+  ['Where do I set terms & conditions?', 'Di mana tetapkan terma & syarat?'],
+  ['How do payment details and payment proof work?', 'Bagaimana maklumat dan bukti bayaran berfungsi?'],
+  ['How do I manage products?', 'Bagaimana urus produk?'],
+  ['How do I manage contacts?', 'Bagaimana urus kenalan?'],
+  ['How do I change or cancel my plan?', 'Bagaimana tukar atau batal pelan?'],
+  ['How do I change the language?', 'Bagaimana tukar bahasa?'],
+  ['How do I change document numbering?', 'Bagaimana tukar penomboran dokumen?'],
+  ['Where do I update company info?', 'Di mana kemas kini maklumat syarikat?'],
+  ['What if the app has a problem?', 'Bagaimana jika aplikasi bermasalah?'],
+];
+
+export const kbFaqs = () => KB.map((e, i) => ({
+  id: `kb-${i}`, question_en: Q[i]?.[0] ?? e.k[0], question_ms: Q[i]?.[1] ?? e.k[0],
+  answer_en: e.en, answer_ms: e.ms, category: 'WorkTrace', sort_order: 1000 + i,
+}));
+
+/** Extra facts learned at runtime (published FAQs from the database). */
+let extra: string[] = [];
+export const setExtraKB = (lines: string[]) => { extra = lines; };
+export const extraKB = () => extra;
