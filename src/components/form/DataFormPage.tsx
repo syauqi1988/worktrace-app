@@ -143,7 +143,7 @@ export default function DataFormPage({
             </div>
           </section>
         ))}
-      </div>
+      </fieldset>
 
       {/* Floating save bar */}
       <div className="fixed bottom-16 md:bottom-0 inset-x-0 md:left-[var(--sidebar-w,0px)] z-50 safe-area-pb border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
