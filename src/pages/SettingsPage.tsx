@@ -16,7 +16,6 @@ import AccountDeletionDialog from "@/components/AccountDeletionDialog";
 import SettingsAccordion from "@/components/settings/SettingsAccordion";
 import WorkOrderTermsSection from "@/components/settings/WorkOrderTermsSection";
 import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
-import AiHelpButton from "@/components/settings/AiHelpButton";
 import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
 import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
 import SecuritySection from "@/components/settings/SecuritySection";
@@ -1225,43 +1224,6 @@ export default function SettingsPage() {
         )}
       </SettingsAccordion>
 
-      {/* 9 — Bantuan + AI */}
-      <SettingsAccordion
-        id="tutorial-bantuan"
-        icon={<BookOpen className="h-5 w-5" />}
-        title={t("settings.help.title")}
-        description={t("settings.help.description")}
-      >
-        <div>
-          <AiHelpButton />
-        </div>
-
-        <div className="border-t border-border pt-4 space-y-2">
-          <button
-            onClick={() => navigate("/faq")}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
-          >
-            <BookOpen className="h-4 w-4" /> {i18n.language?.startsWith("ms") ? "Lihat Soalan Lazim (FAQ)" : "View FAQ"}
-          </button>
-          <button
-            onClick={() => window.__startWorkTraceTutorial?.()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
-          >
-            <Play className="h-4 w-4" /> {i18n.language?.startsWith("ms") ? "Main Semula Tutorial" : "Replay Tutorial"}
-          </button>
-        </div>
-
-        <div className="border-t border-border pt-4 space-y-2">
-          <p className="text-sm text-muted-foreground">{t("settings.help.needHuman")}</p>
-          <button
-            onClick={() => navigate("/support/new")}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors"
-          >
-            {t("settings.help.sendTicket")}
-          </button>
-          <p className="text-xs text-muted-foreground">{t("settings.help.responseTime")}</p>
-        </div>
-      </SettingsAccordion>
 
       {/* 10 — Zon Bahaya */}
       <SettingsAccordion

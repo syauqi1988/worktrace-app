@@ -5,7 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, PartyPopper } from 'lucide-react';
+import { Plus, PartyPopper, BookOpen, Play } from 'lucide-react';
+import AiHelpButton from '@/components/settings/AiHelpButton';
+import { useL } from '@/i18n/dual';
 import { getDateLocale } from '@/i18n';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -64,6 +66,7 @@ export default function SupportPage() {
       });
   }, [user]);
 
+  const L = useL();
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
@@ -72,6 +75,19 @@ export default function SupportPage() {
           <Plus className="h-4 w-4" /> {tr('support.newTicket')}
         </Button>
       </div>
+
+      <div className="bg-card rounded-xl border border-border p-4 space-y-4">
+        <AiHelpButton />
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => navigate('/faq')} className="flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors">
+            <BookOpen className="h-4 w-4" /> {L('View FAQ', 'Soalan Lazim')}
+          </button>
+          <button onClick={() => window.__startWorkTraceTutorial?.()} className="flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-border text-sm text-foreground hover:bg-accent transition-colors">
+            <Play className="h-4 w-4" /> {L('Replay Tutorial', 'Main Semula Tutorial')}
+          </button>
+        </div>
+      </div>
+
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground text-sm">{tr('common.loading')}</div>
