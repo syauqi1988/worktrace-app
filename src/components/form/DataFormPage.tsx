@@ -126,7 +126,7 @@ export default function DataFormPage({
       </div>
 
       {/* Sections */}
-      <div className="p-4 md:p-6 space-y-4">
+      <fieldset disabled={readOnly} className="p-4 md:p-6 space-y-4 min-w-0">
         {sections.map(s => (
           <section
             key={s.id}

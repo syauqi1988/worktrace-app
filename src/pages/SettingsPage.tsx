@@ -1230,8 +1230,8 @@ export default function SettingsPage() {
       <SettingsAccordion
         id="data-backup"
         icon={<DatabaseBackup className="h-5 w-5" />}
-        title={L("Data Backup", "Sandaran Data")}
-        description={L("Export your data to keep or migrate", "Eksport data untuk simpanan atau pindah")}
+        title={l("Data Backup", "Sandaran Data")}
+        description={l("Export your data to keep or migrate", "Eksport data untuk simpanan atau pindah")}
       >
         <DataBackupSection />
       </SettingsAccordion>
