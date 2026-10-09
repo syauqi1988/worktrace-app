@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useState } from 'react';
 import { Plus, Search, RotateCcw, ChevronLeft, ChevronRight, ChevronsUpDown } from 'lucide-react';
 import { useTx } from '@/i18n/dual';
+import { useReadOnly } from '@/components/PaidFeatureLock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -66,6 +67,8 @@ export default function DataListPage<T>({
   selectable, bulkActions,
 }: Props<T>) {
   const tx = useTx();
+  const { readOnly, requestUpgrade } = useReadOnly();
+  if (readOnly) { selectable = false; rowActions = undefined; }
   const breadcrumb = rawBreadcrumb ? tx(rawBreadcrumb) : rawBreadcrumb;
   const title = tx(rawTitle);
   const newLabel = tx(rawNewLabel);
@@ -153,7 +156,7 @@ export default function DataListPage<T>({
         <div className="flex items-center gap-2">
           {headerExtra}
           {onNew && (
-            <Button onClick={onNew} className="gap-1">
+            <Button onClick={readOnly ? requestUpgrade : onNew} className="gap-1">
               <Plus className="h-4 w-4" /> {newLabel}
             </Button>
           )}

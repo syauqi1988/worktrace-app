@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTx } from '@/i18n/dual';
+import { useReadOnly } from '@/components/PaidFeatureLock';
 import { Label } from '@/components/ui/label';
 
 export type FormSection = {
@@ -51,6 +52,7 @@ export default function DataFormPage({
 }: Props) {
   const navigate = useNavigate();
   const tx = useTx();
+  const { readOnly, requestUpgrade } = useReadOnly();
   const [active, setActive] = useState(sections[0]?.id);
   const refs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -124,7 +126,7 @@ export default function DataFormPage({
       </div>
 
       {/* Sections */}
-      <div className="p-4 md:p-6 space-y-4">
+      <fieldset disabled={readOnly} className="p-4 md:p-6 space-y-4 min-w-0">
         {sections.map(s => (
           <section
             key={s.id}
@@ -141,13 +143,13 @@ export default function DataFormPage({
             </div>
           </section>
         ))}
-      </div>
+      </fieldset>
 
       {/* Floating save bar */}
       <div className="fixed bottom-16 md:bottom-0 inset-x-0 md:left-[var(--sidebar-w,0px)] z-50 safe-area-pb border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
         <div className="flex items-center justify-end gap-3">
           {footerExtra}
-          <Button onClick={onSave} disabled={saving || saveDisabled} className="min-w-28 w-full sm:w-auto">
+          <Button onClick={readOnly ? requestUpgrade : onSave} disabled={!readOnly && (saving || saveDisabled)} className="min-w-28 w-full sm:w-auto">
             {saving ? tx('Saving...') : tx(saveLabel)}
           </Button>
         </div>

@@ -247,6 +247,7 @@ export default function AppShell() {
       >
         <item.icon className="h-4 w-4" />
         <span className={isTeamOnlyLocked ? 'opacity-70' : ''}>{item.label}</span>
+        {item.to === '/reports' && profile?.plan === 'free' && <Lock className="h-3 w-3 opacity-60" />}
         {isTeamOnlyLocked && (
           <span className="ml-auto inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
             <Lock className="h-2.5 w-2.5" /> Team
@@ -277,6 +278,7 @@ export default function AppShell() {
         >
           <entry.icon className="h-4 w-4" />
           <span>{entry.label}</span>
+          {profile?.plan === 'free' && ['purchases','bank','accounting'].includes(entry.group) && <Lock className="h-3 w-3 ml-1 opacity-60" />}
           <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
         {open && (
