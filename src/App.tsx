@@ -1,3 +1,4 @@
+import PaidFeatureLock from "@/components/PaidFeatureLock";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
@@ -155,28 +156,30 @@ const App = () => (
                 <Route path="invoices/:id" element={<InvoiceDetailPage />} />
                 <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
                 <Route path="receipts" element={<ReceiptsListPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
-                <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
-                <Route path="goods-received-notes" element={<GoodsReceivedNotesPage />} />
-                <Route path="goods-received-notes/new" element={<GoodsReceivedNoteFormPage />} />
-                <Route path="bills" element={<BillsPage />} />
-                <Route path="bills/new" element={<BillFormPage />} />
-                <Route path="credit-notes" element={<CreditNotesPage />} />
-                <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
-                <Route path="purchase-payments" element={<PurchasePaymentsPage />} />
-                <Route path="purchase-payments/new" element={<PurchasePaymentFormPage />} />
-                <Route path="refunds" element={<RefundsPage />} />
-                <Route path="refunds/new" element={<RefundFormPage />} />
-                <Route path="money-in" element={<PlaceholderPage title="Money In" />} />
-                <Route path="money-out" element={<PlaceholderPage title="Money Out" />} />
-                <Route path="transfers" element={<PlaceholderPage title="Transfers" />} />
-                <Route path="bank-accounts" element={<PlaceholderPage title="Accounts" />} />
-                <Route path="journal-entries" element={<PlaceholderPage title="Journal Entries" />} />
-                <Route path="contras" element={<PlaceholderPage title="Contras" />} />
-                <Route path="fixed-assets" element={<PlaceholderPage title="Fixed Assets" />} />
-                <Route path="deemed-payments" element={<PlaceholderPage title="Deemed Payments" />} />
-                <Route path="chart-of-accounts" element={<PlaceholderPage title="Chart of Accounts" />} />
+                <Route element={<PaidFeatureLock />}>
+                  <Route path="reports" element={<ReportsPage />} />
+                  <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                  <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
+                  <Route path="goods-received-notes" element={<GoodsReceivedNotesPage />} />
+                  <Route path="goods-received-notes/new" element={<GoodsReceivedNoteFormPage />} />
+                  <Route path="bills" element={<BillsPage />} />
+                  <Route path="bills/new" element={<BillFormPage />} />
+                  <Route path="credit-notes" element={<CreditNotesPage />} />
+                  <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
+                  <Route path="purchase-payments" element={<PurchasePaymentsPage />} />
+                  <Route path="purchase-payments/new" element={<PurchasePaymentFormPage />} />
+                  <Route path="refunds" element={<RefundsPage />} />
+                  <Route path="refunds/new" element={<RefundFormPage />} />
+                  <Route path="money-in" element={<PlaceholderPage title="Money In" />} />
+                  <Route path="money-out" element={<PlaceholderPage title="Money Out" />} />
+                  <Route path="transfers" element={<PlaceholderPage title="Transfers" />} />
+                  <Route path="bank-accounts" element={<PlaceholderPage title="Accounts" />} />
+                  <Route path="journal-entries" element={<PlaceholderPage title="Journal Entries" />} />
+                  <Route path="contras" element={<PlaceholderPage title="Contras" />} />
+                  <Route path="fixed-assets" element={<PlaceholderPage title="Fixed Assets" />} />
+                  <Route path="deemed-payments" element={<PlaceholderPage title="Deemed Payments" />} />
+                  <Route path="chart-of-accounts" element={<PlaceholderPage title="Chart of Accounts" />} />
+                </Route>
                 <Route path="support" element={<SupportPage />} />
                 <Route path="support/new" element={<SupportNewPage />} />
                 <Route path="support/:id" element={<SupportDetailPage />} />
