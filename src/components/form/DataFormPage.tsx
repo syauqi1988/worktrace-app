@@ -34,7 +34,6 @@ export function Field({
   label, required, hint, children, className,
 }: { label: string; required?: boolean; hint?: string; children: ReactNode; className?: string }) {
   const tx = useTx();
-  const { readOnly, requestUpgrade } = useReadOnly();
   return (
     <div className={`space-y-1.5 ${className || ''}`}>
       <Label className="text-sm">
@@ -53,6 +52,7 @@ export default function DataFormPage({
 }: Props) {
   const navigate = useNavigate();
   const tx = useTx();
+  const { readOnly, requestUpgrade } = useReadOnly();
   const [active, setActive] = useState(sections[0]?.id);
   const refs = useRef<Record<string, HTMLElement | null>>({});
 
