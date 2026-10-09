@@ -1,28 +1,35 @@
-import { useRef, useState } from "react";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Sparkles, Send, Loader2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useL } from "@/i18n/dual";
-import { fullKB, searchKB } from "@/lib/aiHelpKnowledge";
+import { fullKB, searchKB, setExtraKB, extraKB } from "@/lib/aiHelpKnowledge";
+import { supabase } from "@/integrations/supabase/client";
 
 // Small free model running fully on the device (WebGPU). No cloud, no tokens.
 const MODEL = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 type Msg = { role: "user" | "assistant"; content: string };
 let enginePromise: Promise<any> | null = null;
 
-export default function AiHelpButton() {
+export function AiHelpChat({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
   const { t, i18n } = useTranslation();
   const L = useL();
   const ms = !i18n.language?.startsWith("en");
-  const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [mode, setMode] = useState<"ai" | "basic" | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+
+  // Learn from published FAQs so new answers added by the team are known automatically.
+  useEffect(() => {
+    if (!open || extraKB().length) return;
+    supabase.from("faqs").select("question_en,question_ms,answer_en,answer_ms").eq("is_published", true).limit(60)
+      .then(({ data }) => data && setExtraKB(data.map((f: any) => ms ? `${f.question_ms} ${f.answer_ms}` : `${f.question_en} ${f.answer_en}`)));
+  }, [open, ms]);
 
   const loadEngine = async () => {
     if (!(navigator as any).gpu) { setMode("basic"); return null; }
@@ -77,16 +84,7 @@ export default function AiHelpButton() {
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-primary" />
-        <h3 className="text-sm font-bold text-foreground">{t("settingsExtra.aiHelpTitle")}</h3>
-      </div>
-      <p className="text-sm text-muted-foreground">{t("settingsExtra.aiHelpBody")}</p>
-      <Button type="button" onClick={() => setOpen(true)} className="w-full h-11 gap-2">
-        <Sparkles className="h-4 w-4" /> {t("settingsExtra.openAiHelp")}
-      </Button>
-
+    <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg h-[85vh] flex flex-col p-4">
           <DialogHeader>
@@ -114,6 +112,63 @@ export default function AiHelpButton() {
           </form>
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+const OPEN_EVT = "wt-ai-open", VIS_EVT = "wt-ai-visibility", HIDE_KEY = "wt_ai_fab_hidden";
+export const openAiHelp = () => window.dispatchEvent(new Event(OPEN_EVT));
+export const isAiFabHidden = () => localStorage.getItem(HIDE_KEY) === "1";
+export const setAiFabHidden = (h: boolean) => { localStorage.setItem(HIDE_KEY, h ? "1" : "0"); window.dispatchEvent(new Event(VIS_EVT)); };
+
+/** Floating AI Help button (bottom-right) shown on all app pages; can be hidden/unhidden. */
+export function FloatingAiHelp() {
+  const L = useL();
+  const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(isAiFabHidden());
+  useEffect(() => {
+    const o = () => setOpen(true), v = () => setHidden(isAiFabHidden());
+    window.addEventListener(OPEN_EVT, o); window.addEventListener(VIS_EVT, v);
+    return () => { window.removeEventListener(OPEN_EVT, o); window.removeEventListener(VIS_EVT, v); };
+  }, []);
+  return (
+    <>
+      {!hidden && (
+        <div className="fixed right-4 bottom-20 md:bottom-6 z-40 group">
+          <button onClick={() => setOpen(true)} aria-label={L("Open AI Help", "Buka AI Bantuan")}
+            className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
+            <Sparkles className="h-6 w-6" />
+          </button>
+          <button onClick={() => setAiFabHidden(true)} aria-label={L("Hide AI Help icon", "Sembunyi ikon AI Bantuan")}
+            title={L("Hide (show again from the Help menu)", "Sembunyi (papar semula dari menu Bantuan)")}
+            className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-card border border-border text-muted-foreground flex items-center justify-center shadow">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+      <AiHelpChat open={open} setOpen={setOpen} />
+    </>
+  );
+}
+
+export default function AiHelpButton() {
+  const { t } = useTranslation();
+  const L = useL();
+  const [hidden, setHidden] = useState(isAiFabHidden());
+  useEffect(() => { const v = () => setHidden(isAiFabHidden()); window.addEventListener(VIS_EVT, v); return () => window.removeEventListener(VIS_EVT, v); }, []);
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h3 className="text-sm font-bold text-foreground">{t("settingsExtra.aiHelpTitle")}</h3>
+      </div>
+      <p className="text-sm text-muted-foreground">{t("settingsExtra.aiHelpBody")}</p>
+      <Button type="button" onClick={openAiHelp} className="w-full h-11 gap-2">
+        <Sparkles className="h-4 w-4" /> {t("settingsExtra.openAiHelp")}
+      </Button>
+      <Button type="button" variant="outline" onClick={() => setAiFabHidden(!hidden)} className="w-full">
+        {hidden ? L("Show floating AI icon", "Papar ikon AI terapung") : L("Hide floating AI icon", "Sembunyi ikon AI terapung")}
+      </Button>
     </div>
   );
 }

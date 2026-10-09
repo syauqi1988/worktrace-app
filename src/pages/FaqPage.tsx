@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, Search, ArrowLeft, HelpCircle, Image, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { kbFaqs } from '@/lib/aiHelpKnowledge';
 
 interface Faq {
   id: string;
@@ -163,7 +164,9 @@ export default function FaqPage() {
         .eq('is_published', true)
         .order('category', { ascending: true })
         .order('sort_order', { ascending: true });
-      setFaqs(data || []);
+      const db = (data || []) as Faq[];
+      const seen = new Set(db.map(f => f.question_en.toLowerCase()));
+      setFaqs([...db, ...kbFaqs().filter(f => !seen.has(f.question_en.toLowerCase()))]);
       setLoading(false);
     })();
   }, []);
