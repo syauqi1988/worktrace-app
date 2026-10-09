@@ -5,7 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, PartyPopper } from 'lucide-react';
+import { Plus, PartyPopper, BookOpen, Play } from 'lucide-react';
+import AiHelpButton from '@/components/settings/AiHelpButton';
+import { useL } from '@/i18n/dual';
 import { getDateLocale } from '@/i18n';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -64,6 +66,7 @@ export default function SupportPage() {
       });
   }, [user]);
 
+  const L = useL();
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">

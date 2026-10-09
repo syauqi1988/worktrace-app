@@ -16,7 +16,6 @@ import AccountDeletionDialog from "@/components/AccountDeletionDialog";
 import SettingsAccordion from "@/components/settings/SettingsAccordion";
 import WorkOrderTermsSection from "@/components/settings/WorkOrderTermsSection";
 import CompanyLogoUpload from "@/components/settings/CompanyLogoUpload";
-import AiHelpButton from "@/components/settings/AiHelpButton";
 import WhatsAppTemplatesSection from "@/components/settings/WhatsAppTemplatesSection";
 import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
 import SecuritySection from "@/components/settings/SecuritySection";
