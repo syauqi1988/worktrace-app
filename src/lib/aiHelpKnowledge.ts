@@ -17,6 +17,8 @@ export const KB: { k: string[]; en: string; ms: string }[] = [
   { k: ['number', 'nombor', 'prefix', 'format'], en: 'Document numbering: Settings > Document Numbers to change prefix and next number.', ms: 'Penomboran dokumen: Tetapan > Nombor Dokumen untuk tukar awalan dan nombor seterusnya.' },
   { k: ['logo', 'company', 'syarikat', 'ssm', 'tin', 'sst'], en: 'Company info: Settings > Company for name, logo, SSM, TIN, SST.', ms: 'Maklumat syarikat: Tetapan > Syarikat untuk nama, logo, SSM, TIN, SST.' },
   { k: ['error', 'ralat', 'bug', 'issue', 'masalah', 'fail', 'gagal', 'slow'], en: 'Issues: refresh the page, check internet, log out/in. If it persists, send a support ticket (Support menu) with a screenshot.', ms: 'Masalah: muat semula halaman, semak internet, log keluar/masuk. Jika berterusan, hantar tiket sokongan (menu Sokongan) dengan tangkapan skrin.' },
+  { k: ['purchase', 'pembelian', 'bank', 'accounting', 'perakaunan', 'report', 'free', 'percuma', 'lock', 'kunci'], en: 'Purchases, Bank, Accounting and Reports are view-only on the Free plan: you can see them and your old data, but adding, editing or deleting needs a paid plan.', ms: 'Pembelian, Bank, Perakaunan dan Laporan adalah lihat sahaja untuk pelan Percuma: anda boleh lihat dan data lama, tetapi tambah, sunting atau padam memerlukan pelan berbayar.' },
+  { k: ['backup', 'sandaran', 'export', 'eksport', 'migrate', 'pindah', 'download'], en: 'Data backup: Settings > Data Backup. Download everything as JSON or CSV spreadsheets. Paid plans only.', ms: 'Sandaran data: Tetapan > Sandaran Data. Muat turun semua sebagai JSON atau hamparan CSV. Pelan berbayar sahaja.' },
 ];
 
 export function searchKB(q: string, ms: boolean, n = 3) {
@@ -48,6 +50,8 @@ const Q: [string, string][] = [
   ['How do I change document numbering?', 'Bagaimana tukar penomboran dokumen?'],
   ['Where do I update company info?', 'Di mana kemas kini maklumat syarikat?'],
   ['What if the app has a problem?', 'Bagaimana jika aplikasi bermasalah?'],
+  ['What can Free users do in Purchases, Bank, Accounting and Reports?', 'Apa pengguna Percuma boleh buat dalam Pembelian, Bank, Perakaunan dan Laporan?'],
+  ['How do I back up or export my data?', 'Bagaimana sandar atau eksport data saya?'],
 ];
 
 export const kbFaqs = () => KB.map((e, i) => ({
