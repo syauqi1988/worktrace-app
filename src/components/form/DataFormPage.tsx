@@ -134,7 +134,7 @@ export default function DataFormPage({
             ref={el => { refs.current[s.id] = el; }}
             className="scroll-mt-32 bg-card border border-border rounded-xl p-4 md:p-6"
           >
-            <div className="grid md:grid-cols-[260px_1fr] gap-4 md:gap-8">
+            <div className="grid xl:grid-cols-[240px_minmax(0,1fr)] gap-4 xl:gap-8">
               <div>
                 <h2 className="text-base font-semibold text-foreground">{tx(s.title)}</h2>
                 {s.description && <p className="text-sm text-muted-foreground mt-1">{tx(s.description)}</p>}
@@ -146,7 +146,7 @@ export default function DataFormPage({
       </fieldset>
 
       {/* Floating save bar */}
-      <div className="fixed bottom-16 md:bottom-0 inset-x-0 md:left-[var(--sidebar-w,0px)] z-50 safe-area-pb border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
+      <div className="fixed bottom-16 md:bottom-0 inset-x-0 md:left-[220px] z-50 safe-area-pb border-t border-border bg-background/95 backdrop-blur px-4 md:px-6 py-3">
         <div className="flex items-center justify-end gap-3">
           {footerExtra}
           <Button onClick={readOnly ? requestUpgrade : onSave} disabled={!readOnly && (saving || saveDisabled)} className="min-w-28 w-full sm:w-auto">

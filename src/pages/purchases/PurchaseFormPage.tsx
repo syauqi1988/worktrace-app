@@ -78,7 +78,7 @@ export default function PurchaseFormPage({
       title: 'Billing & Shipping',
       description: 'Billing & shipping parties for the transaction.',
       content: (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4 [&>*]:min-w-0">
           <Field label={partyLabel} required>
             <ContactPicker
               kind="suppliers"
@@ -127,7 +127,7 @@ export default function PurchaseFormPage({
       title: 'General Info',
       description: 'General information such as number, date and more for the transaction.',
       content: (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4 [&>*]:min-w-0">
           <Field label="No." required>
             <Input value={docNumber} onChange={e => setDocNumber(e.target.value)} placeholder={numberPlaceholder} />
           </Field>
@@ -137,7 +137,7 @@ export default function PurchaseFormPage({
           <Field label="Date" required>
             <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-3 min-w-0">
             <Field label="Currency">
               <Input value="MYR - Malaysian Ringgit" disabled />
             </Field>
