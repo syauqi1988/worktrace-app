@@ -126,6 +126,28 @@ export function FloatingAiHelp() {
   const L = useL();
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(isAiFabHidden());
+  const fabRef = useRef<HTMLDivElement>(null);
+  const [lift, setLift] = useState<number | null>(null);
+  // Move up above any other floating bars/buttons at the bottom-right.
+  useEffect(() => {
+    const calc = () => {
+      const me = fabRef.current; if (!me) return;
+      const vh = window.innerHeight, vw = window.innerWidth;
+      let top = vh;
+      document.querySelectorAll<HTMLElement>('.fixed, .sticky').forEach(el => {
+        if (me.contains(el) || el.contains(me)) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height || r.height > vh * 0.5) return;
+        if (r.bottom < vh - 4 || r.right < vw - 90) return; // must touch the bottom-right corner
+        top = Math.min(top, r.top);
+      });
+      setLift(top < vh ? vh - top + 12 : null);
+    };
+    calc();
+    const iv = setInterval(calc, 500);
+    window.addEventListener('resize', calc);
+    return () => { clearInterval(iv); window.removeEventListener('resize', calc); };
+  }, [hidden]);
   useEffect(() => {
     const o = () => setOpen(true), v = () => setHidden(isAiFabHidden());
     window.addEventListener(OPEN_EVT, o); window.addEventListener(VIS_EVT, v);
@@ -134,7 +156,7 @@ export function FloatingAiHelp() {
   return (
     <>
       {!hidden && (
-        <div className="fixed right-4 bottom-20 md:bottom-6 z-40 group">
+        <div ref={fabRef} style={lift != null ? { bottom: lift } : undefined} className="fixed right-4 bottom-20 md:bottom-6 z-40 group transition-[bottom] duration-200">
           <button onClick={() => setOpen(true)} aria-label={L("Open AI Help", "Buka AI Bantuan")}
             className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
             <Sparkles className="h-6 w-6" />
