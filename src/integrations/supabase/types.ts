@@ -444,12 +444,24 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          addresses: Json
+          contact_code: string | null
+          contact_persons: Json
           created_at: string
           email: string | null
+          emails: Json
+          entity_type: string | null
           id: string
           name: string
           notes: string | null
+          old_reg_no: string | null
+          other_name: string | null
+          payment_term: string | null
           phone: string | null
+          phones: Json
+          reg_no: string | null
+          reg_type: string | null
+          sst_no: string | null
           tags: string[] | null
           tags_v2: Json | null
           tin_number: string | null
@@ -458,12 +470,24 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          addresses?: Json
+          contact_code?: string | null
+          contact_persons?: Json
           created_at?: string
           email?: string | null
+          emails?: Json
+          entity_type?: string | null
           id?: string
           name: string
           notes?: string | null
+          old_reg_no?: string | null
+          other_name?: string | null
+          payment_term?: string | null
           phone?: string | null
+          phones?: Json
+          reg_no?: string | null
+          reg_type?: string | null
+          sst_no?: string | null
           tags?: string[] | null
           tags_v2?: Json | null
           tin_number?: string | null
@@ -472,12 +496,24 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          addresses?: Json
+          contact_code?: string | null
+          contact_persons?: Json
           created_at?: string
           email?: string | null
+          emails?: Json
+          entity_type?: string | null
           id?: string
           name?: string
           notes?: string | null
+          old_reg_no?: string | null
+          other_name?: string | null
+          payment_term?: string | null
           phone?: string | null
+          phones?: Json
+          reg_no?: string | null
+          reg_type?: string | null
+          sst_no?: string | null
           tags?: string[] | null
           tags_v2?: Json | null
           tin_number?: string | null
@@ -564,40 +600,79 @@ export type Database = {
       employees: {
         Row: {
           address: string | null
+          addresses: Json
+          contact_code: string | null
+          contact_persons: Json
           created_at: string
           email: string | null
+          emails: Json
+          entity_type: string | null
           id: string
           is_active: boolean
           name: string
           notes: string | null
+          old_reg_no: string | null
+          other_name: string | null
+          payment_term: string | null
           phone: string | null
+          phones: Json
           position: string | null
+          reg_no: string | null
+          reg_type: string | null
+          sst_no: string | null
+          tin_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           address?: string | null
+          addresses?: Json
+          contact_code?: string | null
+          contact_persons?: Json
           created_at?: string
           email?: string | null
+          emails?: Json
+          entity_type?: string | null
           id?: string
           is_active?: boolean
           name: string
           notes?: string | null
+          old_reg_no?: string | null
+          other_name?: string | null
+          payment_term?: string | null
           phone?: string | null
+          phones?: Json
           position?: string | null
+          reg_no?: string | null
+          reg_type?: string | null
+          sst_no?: string | null
+          tin_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           address?: string | null
+          addresses?: Json
+          contact_code?: string | null
+          contact_persons?: Json
           created_at?: string
           email?: string | null
+          emails?: Json
+          entity_type?: string | null
           id?: string
           is_active?: boolean
           name?: string
           notes?: string | null
+          old_reg_no?: string | null
+          other_name?: string | null
+          payment_term?: string | null
           phone?: string | null
+          phones?: Json
           position?: string | null
+          reg_no?: string | null
+          reg_type?: string | null
+          sst_no?: string | null
+          tin_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1888,43 +1963,82 @@ export type Database = {
       suppliers: {
         Row: {
           address: string | null
+          addresses: Json
           attention: string | null
           company: string | null
+          contact_code: string | null
+          contact_persons: Json
           created_at: string
           email: string | null
+          emails: Json
+          entity_type: string | null
           id: string
           is_active: boolean
           name: string
           notes: string | null
+          old_reg_no: string | null
+          other_name: string | null
+          payment_term: string | null
           phone: string | null
+          phones: Json
+          reg_no: string | null
+          reg_type: string | null
+          sst_no: string | null
+          tin_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           address?: string | null
+          addresses?: Json
           attention?: string | null
           company?: string | null
+          contact_code?: string | null
+          contact_persons?: Json
           created_at?: string
           email?: string | null
+          emails?: Json
+          entity_type?: string | null
           id?: string
           is_active?: boolean
           name: string
           notes?: string | null
+          old_reg_no?: string | null
+          other_name?: string | null
+          payment_term?: string | null
           phone?: string | null
+          phones?: Json
+          reg_no?: string | null
+          reg_type?: string | null
+          sst_no?: string | null
+          tin_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           address?: string | null
+          addresses?: Json
           attention?: string | null
           company?: string | null
+          contact_code?: string | null
+          contact_persons?: Json
           created_at?: string
           email?: string | null
+          emails?: Json
+          entity_type?: string | null
           id?: string
           is_active?: boolean
           name?: string
           notes?: string | null
+          old_reg_no?: string | null
+          other_name?: string | null
+          payment_term?: string | null
           phone?: string | null
+          phones?: Json
+          reg_no?: string | null
+          reg_type?: string | null
+          sst_no?: string | null
+          tin_number?: string | null
           updated_at?: string
           user_id?: string
         }
