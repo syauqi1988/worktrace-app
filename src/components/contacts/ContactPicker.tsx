@@ -23,20 +23,28 @@ export type Contact = {
   phone?: string | null;
   email?: string | null;
   address?: string | null;
+  contact_persons?: { id: string; name: string; position?: string; phone?: string; email?: string; is_default?: boolean }[];
+  addresses?: { id: string; label?: string; attention?: string; address: string; is_billing?: boolean; is_shipping?: boolean }[];
 };
+export type PickedAddress = NonNullable<Contact['addresses']>[number];
+export type PickedPerson = NonNullable<Contact['contact_persons']>[number];
 
 type Props = {
   kind: ContactKind;
   label: string;
   value: string;
   onChange: (name: string, contact?: Contact) => void;
+  /** Called when the user picks a contact person / billing / shipping address of the chosen contact. */
+  onPerson?: (p: PickedPerson) => void;
+  onBilling?: (a: PickedAddress) => void;
+  onShipping?: (a: PickedAddress) => void;
 };
 
 /**
  * Select a contact (supplier / customer / employee) or add a new one,
  * which is saved straight into Contacts.
  */
-export default function ContactPicker({ kind, label, value, onChange }: Props) {
+export default function ContactPicker({ kind, label, value, onChange, onPerson, onBilling, onShipping }: Props) {
   const { user } = useAuth();
   const tx = useTx();
   const [rows, setRows] = useState<Contact[]>([]);
@@ -45,7 +53,7 @@ export default function ContactPicker({ kind, label, value, onChange }: Props) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', address: '' });
 
   const load = async () => {
-    const { data } = await (supabase as any).from(kind).select('id, name, phone, email, address').order('name');
+    const { data } = await (supabase as any).from(kind).select('*').order('name');
     setRows((data as Contact[]) || []);
   };
 
@@ -76,6 +84,11 @@ export default function ContactPicker({ kind, label, value, onChange }: Props) {
           onValueChange={v => {
             const c = rows.find(r => r.name === v);
             onChange(v, c);
+            const ps = c?.contact_persons || [], as = c?.addresses || [];
+            const dp = ps.find(p => p.is_default) || ps[0];
+            if (dp) onPerson?.(dp);
+            const b = as.find(a => a.is_billing) || as[0]; if (b) onBilling?.(b);
+            const sh = as.find(a => a.is_shipping) || as[0]; if (sh) onShipping?.(sh);
           }}
         >
           <SelectTrigger className="flex-1">
@@ -90,6 +103,29 @@ export default function ContactPicker({ kind, label, value, onChange }: Props) {
           <Plus className="h-4 w-4" /> {tx('New')}
         </Button>
       </div>
+
+      {(() => {
+        const c = rows.find(r => r.name === value);
+        const ps = c?.contact_persons || [], as = c?.addresses || [];
+        if (!c || (!ps.length && as.length < 2)) return null;
+        const sel = (lbl: string, items: { id: string; text: string }[], pick: (id: string) => void) => (
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">{lbl}</p>
+            <Select onValueChange={pick}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={tx('Select')} /></SelectTrigger>
+              <SelectContent>{items.map(i => <SelectItem key={i.id} value={i.id}>{i.text}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        );
+        const at = (a: PickedAddress) => `${a.label ? a.label + ' — ' : ''}${a.address.split('\n')[0]}`;
+        return (
+          <div className="grid gap-2 mt-2">
+            {ps.length > 0 && onPerson && sel(tx('Contact Person'), ps.map(p => ({ id: p.id, text: `${p.name}${p.position ? ` (${p.position})` : ''}` })), id => { const p = ps.find(x => x.id === id); if (p) onPerson(p); })}
+            {as.length > 1 && onBilling && sel(tx('Billing Address'), as.map(a => ({ id: a.id, text: at(a) })), id => { const a = as.find(x => x.id === id); if (a) onBilling(a); })}
+            {as.length > 1 && onShipping && sel(tx('Shipping Address'), as.map(a => ({ id: a.id, text: at(a) })), id => { const a = as.find(x => x.id === id); if (a) onShipping(a); })}
+          </div>
+        );
+      })()}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
