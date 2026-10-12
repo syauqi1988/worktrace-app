@@ -69,9 +69,10 @@ const RefundFormPage = lazy(() => import("@/pages/purchases/RefundFormPage"));
 
 const SuppliersListPage = lazy(() => import("@/pages/contacts/SuppliersListPage"));
 const EmployeesListPage = lazy(() => import("@/pages/contacts/EmployeesListPage"));
-const ContactFormPage = lazy(() => import("@/pages/contacts/ContactFormPage"));
-const supplierForm = <ContactFormPage table="suppliers" label="Supplier" listPath="/suppliers" secondaryLabel="Company" secondaryField="company" />;
-const employeeForm = <ContactFormPage table="employees" label="Employee" listPath="/employees" secondaryLabel="Position" secondaryField="position" />;
+const ContactFullForm = lazy(() => import("@/components/contacts/ContactFullForm"));
+const supplierForm = <ContactFullForm key="suppliers" table="suppliers" />;
+const customerForm = <ContactFullForm key="customers" table="customers" />;
+const employeeForm = <ContactFullForm key="employees" table="employees" />;
 
 const PlaceholderPage = lazy(() => import("@/pages/PlaceholderPage"));
 
@@ -137,9 +138,9 @@ const App = () => (
                 <Route path="work-orders" element={<WorkOrdersListPage />} />
                 <Route path="completion-reports" element={<CompletionReportsListPage />} />
                 <Route path="customers" element={<CustomersListPage />} />
-                <Route path="customers/new" element={<CustomerFormPage />} />
+                <Route path="customers/new" element={customerForm} />
                 <Route path="customers/:id" element={<CustomerDetailPage />} />
-                <Route path="customers/:id/edit" element={<CustomerFormPage />} />
+                <Route path="customers/:id/edit" element={customerForm} />
                 <Route path="suppliers" element={<SuppliersListPage />} />
                 <Route path="suppliers/new" element={supplierForm} />
                 <Route path="suppliers/:id/edit" element={supplierForm} />

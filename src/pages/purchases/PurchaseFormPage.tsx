@@ -133,6 +133,9 @@ export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
               kind="suppliers"
               label={partyLabel}
               value={party}
+              onPerson={p => { setBillingAttention(p.name); setShippingAttention(p.name); }}
+              onBilling={a => { setBillingAddress(a.address); if (a.attention) setBillingAttention(a.attention); }}
+              onShipping={a => { setShippingAddress(a.address); if (a.attention) setShippingAttention(a.attention); }}
               onChange={(name, c) => {
                 setParty(name);
                 if (c) {
