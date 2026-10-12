@@ -1,38 +1,35 @@
-import { useTx } from '@/i18n/dual';
-import { useMemo, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { useTx, useL } from '@/i18n/dual';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Plus, Trash2, Eye } from 'lucide-react';
 import DataFormPage, { Field, FormSection } from '@/components/form/DataFormPage';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import ContactPicker from '@/components/contacts/ContactPicker';
+import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { PURCHASE_CONFIG, PurchaseType, PurchaseData, Line, Term, calcTotals } from './shared';
+import { buildPurchasePdfBlob, saveBlob } from './purchasePdf';
 
-export type PurchaseFormProps = {
-  breadcrumb?: string;
-  title: string;
-  partyLabel?: string;
-  numberPlaceholder: string;
-  referenceLabel?: string;
-  statuses?: string[];
-};
-
-type Line = { id: string; item: string; account: string; qty: number; price: number; discount: number; tax: number };
-type Term = { id: string; term: string; dueOn: string; amount: number; description: string };
-
+const db = supabase as any;
 const money = (n: number) => n.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-export default function PurchaseFormPage({
-  breadcrumb = 'Purchases',
-  title,
-  partyLabel = 'Supplier',
-  numberPlaceholder,
-  referenceLabel = 'Reference No.',
-  statuses = ['Draft', 'Pending Approval', 'Ready'],
-}: PurchaseFormProps) {
+export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
+  const cfg = PURCHASE_CONFIG[type];
+  const { breadcrumb, partyLabel, numberPlaceholder, referenceLabel, statuses } = {
+    breadcrumb: 'Purchases', partyLabel: 'Supplier', numberPlaceholder: `${cfg.prefix}-00001`,
+    referenceLabel: cfg.referenceLabel, statuses: cfg.statuses,
+  };
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const tx = useTx();
+  const l = useL();
   const [party, setParty] = useState('');
   const [showShipping, setShowShipping] = useState(true);
   const [shippingInfo, setShippingInfo] = useState('');
@@ -55,21 +52,73 @@ export default function PurchaseFormPage({
   const [remarks, setRemarks] = useState('');
   const [status, setStatus] = useState(statuses[0]);
   const [saving, setSaving] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
-  const setLine = (id: string, patch: Partial<Line>) =>
-    setLines(prev => prev.map(l => (l.id === id ? { ...l, ...patch } : l)));
+  // Load existing record, or suggest the next number for a new one.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      if (id) {
+        const { data: r } = await db.from('purchase_documents').select('*').eq('id', id).eq('user_id', user.id).maybeSingle();
+        if (!r) { toast.error(l('Record not found', 'Rekod tidak dijumpai')); navigate(cfg.path); return; }
+        const d: Partial<PurchaseData> = r.data || {};
+        setParty(r.party); setDocNumber(r.doc_number); setReference(r.reference || ''); setDate(r.doc_date); setStatus(r.status);
+        setShowShipping(d.showShipping ?? true); setShippingInfo(d.shippingInfo || '');
+        setBillingAttention(d.billingAttention || ''); setShippingAttention(d.shippingAttention || '');
+        setBillingAddress(d.billingAddress || ''); setShippingAddress(d.shippingAddress || '');
+        setDescription(d.description || ''); setInternalNote(d.internalNote || ''); setDocTitle(d.title || '');
+        setTaxMode(d.taxMode || 'exclusive'); setLines(d.lines || []); setRounding(!!d.rounding);
+        setTerms(d.terms || []); setRemarks(d.remarks || '');
+      } else {
+        const { count } = await db.from('purchase_documents').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('doc_type', type);
+        setDocNumber(prev => prev || `${cfg.prefix}-${String((count || 0) + 1).padStart(5, '0')}`);
+      }
+    })();
+  }, [user, id, type]);
 
-  const subTotal = useMemo(() => lines.reduce((s, l) => s + l.qty * l.price, 0), [lines]);
-  const discountGiven = useMemo(() => lines.reduce((s, l) => s + (l.discount || 0), 0), [lines]);
-  const total = Math.max(0, subTotal - discountGiven);
+  const setLine = (lid: string, patch: Partial<Line>) =>
+    setLines(prev => prev.map(x => (x.id === lid ? { ...x, ...patch } : x)));
 
-  const handleSave = () => {
-    if (!party.trim()) { toast({ title: `${tx(partyLabel)} ${tx('is required')}`, variant: 'destructive' }); return; }
+  const totals = useMemo(() => calcTotals({ lines, taxMode, rounding }), [lines, taxMode, rounding]);
+  const subTotal = totals.subTotal, discountGiven = totals.discount, total = totals.total;
+
+  const buildData = (): PurchaseData => ({
+    showShipping, shippingInfo, billingAttention, shippingAttention, billingAddress, shippingAddress,
+    description, internalNote, title: docTitle, taxMode, lines, rounding, terms, remarks,
+  });
+
+  const handleSave = async () => {
+    if (!party.trim()) { toast.error(`${tx(partyLabel)} ${tx('is required')}`); return; }
+    if (!docNumber.trim()) { toast.error(l('Number is required', 'Nombor diperlukan')); return; }
+    if (!user) return;
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      toast({ title: `${title.replace('New ', '')} saved` });
-    }, 300);
+    const payload = {
+      user_id: user.id, doc_type: type, doc_number: docNumber.trim(), party: party.trim(),
+      reference: reference.trim() || null, doc_date: date, status, total, data: buildData(),
+    };
+    const { error } = id
+      ? await db.from('purchase_documents').update(payload).eq('id', id)
+      : await db.from('purchase_documents').insert(payload);
+    setSaving(false);
+    if (error) { toast.error(error.message || l('Save failed', 'Gagal menyimpan')); return; }
+    toast.success(l('Saved', 'Disimpan'));
+    navigate(cfg.path);
+  };
+
+  const handlePreview = async () => {
+    setPreviewOpen(true); setPreviewLoading(true);
+    try {
+      const blob = await buildPurchasePdfBlob({
+        doc_type: type, doc_number: docNumber || numberPlaceholder, party, reference: reference || null,
+        doc_date: date, status, data: buildData(),
+      }, profile);
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch {
+      toast.error(l('Could not create PDF', 'Gagal mencipta PDF')); setPreviewOpen(false);
+    } finally { setPreviewLoading(false); }
   };
 
   const sections: FormSection[] = [
@@ -98,7 +147,7 @@ export default function PurchaseFormPage({
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 text-sm font-medium">
               <Checkbox checked={showShipping} onCheckedChange={c => setShowShipping(!!c)} />
-              Show Shipping Info
+              {tx('Show Shipping Info')}
             </label>
             <Input
               value={shippingInfo}
@@ -225,6 +274,7 @@ export default function PurchaseFormPage({
               {[
                 [tx('Sub Total'), money(subTotal)],
                 [tx('Discount Given'), money(discountGiven)],
+                [tx('Tax'), money(totals.tax)],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between px-3 py-2.5 text-sm">
                   <span>{k}</span><span>RM {v}</span>
@@ -232,10 +282,10 @@ export default function PurchaseFormPage({
               ))}
               <label className="flex items-center justify-between px-3 py-2.5 text-sm">
                 <span className="flex items-center gap-2">
-                  Rounding Adjustment
+                  {tx('Rounding Adjustment')}
                   <Checkbox checked={rounding} onCheckedChange={c => setRounding(!!c)} />
                 </span>
-                <span className="text-muted-foreground">RM 0.00</span>
+                <span className="text-muted-foreground">RM {money(totals.rounding)}</span>
               </label>
               <div className="flex items-center justify-between px-3 py-3 text-sm font-bold">
                 <span>{tx('TOTAL')}</span><span>RM {money(total)}</span>
@@ -311,8 +361,8 @@ export default function PurchaseFormPage({
         <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-border rounded-lg py-10 cursor-pointer hover:bg-muted/40 transition-colors">
           <Plus className="h-6 w-6 text-primary" />
           <span className="text-sm font-medium">{tx('Drop files to upload')}</span>
-          <span className="text-xs text-muted-foreground">or tap to select files</span>
-          <input type="file" multiple className="hidden" />
+          <span className="text-xs text-muted-foreground">{l("Coming soon", "Akan datang")}</span>
+          <input type="file" multiple className="hidden" disabled />
         </label>
       ),
     },
@@ -339,13 +389,28 @@ export default function PurchaseFormPage({
   ];
 
   return (
-    <DataFormPage
-      breadcrumb={`Home / ${breadcrumb}`}
-      title={title}
-      sections={sections}
-      onSave={handleSave}
-      saving={saving}
-      autosaveLabel="Autosave On"
-    />
+    <>
+      <DataFormPage
+        breadcrumb={`${l('Home', 'Utama')} / ${tx(breadcrumb)}`}
+        title={`${tx(id ? cfg.editTitle : cfg.formTitle)}${docNumber ? ` · ${docNumber}` : ''}`}
+        sections={sections}
+        onSave={handleSave}
+        saving={saving}
+        onBack={() => navigate(cfg.path)}
+        footerExtra={
+          <Button variant="outline" onClick={handlePreview} className="gap-2">
+            <Eye className="h-4 w-4" /> {l('Preview PDF', 'Pratonton PDF')}
+          </Button>
+        }
+      />
+      <PDFPreviewModal
+        open={previewOpen}
+        title={docNumber}
+        loading={previewLoading}
+        fileUrl={previewUrl}
+        onClose={() => { setPreviewOpen(false); if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }}
+        onDownload={() => { if (!previewUrl) return; fetch(previewUrl).then(r => r.blob()).then(b => saveBlob(b, `${docNumber}.pdf`)); }}
+      />
+    </>
   );
 }

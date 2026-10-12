@@ -160,16 +160,22 @@ const App = () => (
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
                   <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
+                  <Route path="purchase-orders/:id/edit" element={<PurchaseOrderFormPage />} />
                   <Route path="goods-received-notes" element={<GoodsReceivedNotesPage />} />
                   <Route path="goods-received-notes/new" element={<GoodsReceivedNoteFormPage />} />
+                  <Route path="goods-received-notes/:id/edit" element={<GoodsReceivedNoteFormPage />} />
                   <Route path="bills" element={<BillsPage />} />
                   <Route path="bills/new" element={<BillFormPage />} />
+                  <Route path="bills/:id/edit" element={<BillFormPage />} />
                   <Route path="credit-notes" element={<CreditNotesPage />} />
                   <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
+                  <Route path="credit-notes/:id/edit" element={<CreditNoteFormPage />} />
                   <Route path="purchase-payments" element={<PurchasePaymentsPage />} />
                   <Route path="purchase-payments/new" element={<PurchasePaymentFormPage />} />
+                  <Route path="purchase-payments/:id/edit" element={<PurchasePaymentFormPage />} />
                   <Route path="refunds" element={<RefundsPage />} />
                   <Route path="refunds/new" element={<RefundFormPage />} />
+                  <Route path="refunds/:id/edit" element={<RefundFormPage />} />
                   <Route path="money-in" element={<PlaceholderPage title="Money In" />} />
                   <Route path="money-out" element={<PlaceholderPage title="Money Out" />} />
                   <Route path="transfers" element={<PlaceholderPage title="Transfers" />} />

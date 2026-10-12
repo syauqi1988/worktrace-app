@@ -7,6 +7,16 @@ import i18n from './index';
  *  - useTx(): tx('English') — looks up MS_DICT; used by shared list/form/menu screens.
  */
 export const MS_DICT: Record<string, string> = {
+  'Edit Purchase Order': 'Sunting Pesanan Belian',
+  'Edit Goods Received Note': 'Sunting Nota Penerimaan Barang',
+  'Edit Bill': 'Sunting Bil',
+  'Edit Credit Note': 'Sunting Nota Kredit',
+  'Edit Payment': 'Sunting Bayaran',
+  'Edit Refund': 'Sunting Bayaran Balik',
+  'Rounding Adjustment': 'Pelarasan Pembundaran',
+  'Show Shipping Info': 'Papar Maklumat Penghantaran',
+  'PO Reference': 'Rujukan PO',
+  'Bill Reference': 'Rujukan Bil',
   // Common
   'New': 'Baru', 'Save': 'Simpan', 'Saving...': 'Menyimpan...', 'Cancel': 'Batal', 'Delete': 'Padam',
   'Edit': 'Edit', 'Back': 'Kembali', 'Loading...': 'Memuatkan...', 'Search': 'Cari', 'Search...': 'Cari...',
