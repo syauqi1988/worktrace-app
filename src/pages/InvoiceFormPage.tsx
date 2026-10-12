@@ -110,7 +110,7 @@ export default function InvoiceFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, job_type, customers(name, phone, tin_number)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, description, products, customer_id, job_type, customers(name, phone, tin_number)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
@@ -149,7 +149,13 @@ export default function InvoiceFormPage() {
         supabase.from('quotations').select('id, quote_number, items, subtotal, discount, tax_rate, total')
           .eq('job_id', jobId).eq('user_id', user.id).neq('status', 'Rejected').order('created_at', { ascending: false }).limit(1).maybeSingle()
           .then(({ data }) => {
-            if (data) setAvailableQuote(data as any);
+            if (data) { setAvailableQuote(data as any); return; }
+            // No quotation: copy the job's items and description instead
+            const jp = Array.isArray((found as any)?.products) ? (found as any).products : [];
+            if (jp.length) setItems(prev => (prev.length === 1 && !prev[0].description.trim() && !prev[0].unit_price)
+              ? jp.map((p: any) => ({ description: p.description || '', description_detail: p.description_detail || '', qty: Number(p.qty) || 1, uom: p.uom || '', unit_price: Number(p.unit_price) || 0 }))
+              : prev);
+            if ((found as any)?.description) setNotes(n => n || (found as any).description);
           });
         fetchAvailableVos(jobId);
       }

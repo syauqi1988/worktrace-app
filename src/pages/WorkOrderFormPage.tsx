@@ -105,7 +105,7 @@ export default function WorkOrderFormPage() {
       // Fetch job + quotation
       const [jobRes, quoRes, woRes] = await Promise.all([
         supabase.from('jobs')
-          .select('id, job_number, title, customer_id, customers(name, phone, email, address)')
+          .select('id, job_number, title, description, products, customer_id, customers(name, phone, email, address)')
           .eq('id', jobId).single(),
         supabase.from('quotations')
           .select('id, quote_number, status, items, total')
@@ -166,6 +166,11 @@ export default function WorkOrderFormPage() {
           .map((it, i) => `${i + 1}. ${it.description} (Qty: ${it.qty})`)
           .join('\n');
         setScope(scopeText);
+      } else {
+        const jp: any[] = Array.isArray((j as any)?.products) ? (j as any).products : [];
+        if (jp.length) setItems(jp.map(p => ({ description: p.description || '', description_detail: p.description_detail || '', uom: p.uom || '', qty: Number(p.qty) || 1, unit_price: Number(p.unit_price) || 0 })));
+        const lines = jp.map((p, i) => `${i + 1}. ${p.description} (Qty: ${Number(p.qty) || 1})`).join('\n');
+        setScope([(j as any)?.description, lines].filter(Boolean).join('\n\n'));
       }
 
       // Generate WO number

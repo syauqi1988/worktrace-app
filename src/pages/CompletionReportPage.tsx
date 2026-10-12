@@ -174,7 +174,7 @@ export default function CompletionReportPage() {
       const [jobRes, reportRes, profileRes] = await Promise.all([
         supabase
           .from('jobs')
-          .select('id, job_number, title, category, customer_id, customers(name, phone, email, address)')
+          .select('id, job_number, title, description, products, category, customer_id, customers(name, phone, email, address)')
           .eq('id', jobId)
           .single(),
         isNewReport
@@ -230,6 +230,15 @@ export default function CompletionReportPage() {
         const merged = { ...DEFAULT_DOC_SETTINGS.completion_report, ...(settings || {}) };
         setReportNumber(generateDocNumber(merged));
         if (profile?.company_name) setTechnicianName(profile.company_name);
+        // Copy job details so the user only needs to complete the rest
+        const jd: any = jobRes.data;
+        if (jd) {
+          setWorkDescription(w => w || jd.description || jd.title || '');
+          const jp: any[] = Array.isArray(jd.products) ? jd.products : [];
+          if (jp.length) setMaterialsUsed(m => m || jp.map(p => `- ${p.description}${p.qty ? ` x${p.qty}${p.uom ? ' ' + p.uom : ''}` : ''}`).join('\n'));
+          if (jd.customers?.address) setLocationLabel(x => x || jd.customers.address);
+          setProjectRef(x => x || jd.job_number || '');
+        }
       }
 
 
