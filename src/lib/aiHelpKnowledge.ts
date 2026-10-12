@@ -19,6 +19,7 @@ export const KB: { k: string[]; en: string; ms: string }[] = [
   { k: ['error', 'ralat', 'bug', 'issue', 'masalah', 'fail', 'gagal', 'slow'], en: 'Issues: refresh the page, check internet, log out/in. If it persists, send a support ticket (Support menu) with a screenshot.', ms: 'Masalah: muat semula halaman, semak internet, log keluar/masuk. Jika berterusan, hantar tiket sokongan (menu Sokongan) dengan tangkapan skrin.' },
   { k: ['purchase', 'pembelian', 'bank', 'accounting', 'perakaunan', 'report', 'free', 'percuma', 'lock', 'kunci'], en: 'Purchases, Bank, Accounting and Reports are view-only on the Free plan: you can see them and your old data, but adding, editing or deleting needs a paid plan.', ms: 'Pembelian, Bank, Perakaunan dan Laporan adalah lihat sahaja untuk pelan Percuma: anda boleh lihat dan data lama, tetapi tambah, sunting atau padam memerlukan pelan berbayar.' },
   { k: ['backup', 'sandaran', 'export', 'eksport', 'migrate', 'pindah', 'download'], en: 'Data backup: Settings > Data Backup. Download everything as JSON or CSV spreadsheets. Paid plans only.', ms: 'Sandaran data: Tetapan > Sandaran Data. Muat turun semua sebagai JSON atau hamparan CSV. Pelan berbayar sahaja.' },
+  { k: ['autosave', 'draft', 'draf', 'restore', 'pulih', 'unsaved', 'hilang'], en: 'Autosave: anything typed in a "new" form is kept on your device. When you press the add new button again, choose Restore to continue the unsaved form or Start new to begin fresh. The draft is cleared once saved.', ms: 'Autosimpan: apa yang ditaip dalam borang "baharu" disimpan dalam peranti anda. Bila tekan butang tambah baharu semula, pilih Pulihkan untuk sambung borang belum disimpan atau Mula baharu. Draf dipadam selepas disimpan.' },
 ];
 
 export function searchKB(q: string, ms: boolean, n = 3) {
@@ -52,6 +53,7 @@ const Q: [string, string][] = [
   ['What if the app has a problem?', 'Bagaimana jika aplikasi bermasalah?'],
   ['What can Free users do in Purchases, Bank, Accounting and Reports?', 'Apa pengguna Percuma boleh buat dalam Pembelian, Bank, Perakaunan dan Laporan?'],
   ['How do I back up or export my data?', 'Bagaimana sandar atau eksport data saya?'],
+  ['How do I continue an unsaved form?', 'Bagaimana sambung borang yang belum disimpan?'],
 ];
 
 export const kbFaqs = () => KB.map((e, i) => ({
