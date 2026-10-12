@@ -1511,6 +1511,51 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_documents: {
+        Row: {
+          created_at: string
+          data: Json
+          doc_date: string
+          doc_number: string
+          doc_type: string
+          id: string
+          party: string
+          reference: string | null
+          status: string
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          doc_date?: string
+          doc_number: string
+          doc_type: string
+          id?: string
+          party: string
+          reference?: string | null
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          doc_date?: string
+          doc_number?: string
+          doc_type?: string
+          id?: string
+          party?: string
+          reference?: string | null
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
