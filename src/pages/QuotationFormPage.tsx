@@ -85,7 +85,7 @@ export default function QuotationFormPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('jobs').select('id, job_number, title, customer_id, products, job_type, milestone_config, customers(name, phone)').order('created_at', { ascending: false })
+    supabase.from('jobs').select('id, job_number, title, description, customer_id, products, job_type, milestone_config, customers(name, phone)').order('created_at', { ascending: false })
       .then(({ data }) => setJobs((data as unknown as Job[]) || []));
   }, [user]);
 
@@ -142,7 +142,7 @@ export default function QuotationFormPage() {
       const found = jobs.find(j => j.id === jobId);
       if (found) {
         setSelectedJob(found);
-        if (!isEdit) tryAutoFillFromJob(found);
+        if (!isEdit) { tryAutoFillFromJob(found); if ((found as any).description) setNotes(n => n || (found as any).description); }
       }
       if (user && !isEdit) {
         supabase.from('quotations').select('id').eq('job_id', jobId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
