@@ -25,7 +25,7 @@ interface Product {
   uom: string | null;
 }
 
-export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }) {
+export function ProductPicker({ onPick, alwaysSaveToCatalog = false }: { onPick: (p: PickedProduct) => void; alwaysSaveToCatalog?: boolean }) {
   const l = useL();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -58,13 +58,16 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button
+          <Button
             type="button"
             title={l('Pick from Products', 'Pilih dari Produk')}
+             aria-label={l('Pick from Products', 'Pilih dari Produk')}
+             variant="outline"
+             size="icon"
             className="flex items-center justify-center h-10 w-10 rounded-md border border-input bg-background text-muted-foreground hover:text-primary hover:border-primary"
           >
             <Package className="h-4 w-4" />
-          </button>
+          </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-80 p-0">
           <div className="p-2 border-b border-border">
@@ -106,7 +109,7 @@ export function ProductPicker({ onPick }: { onPick: (p: PickedProduct) => void }
           </div>
         </PopoverContent>
       </Popover>
-      <QuickProductDialog open={newOpen} onOpenChange={setNewOpen} onCreated={onPick} />
+      <QuickProductDialog open={newOpen} onOpenChange={setNewOpen} onCreated={onPick} alwaysSaveToCatalog={alwaysSaveToCatalog} />
     </>
   );
 }

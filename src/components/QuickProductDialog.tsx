@@ -22,10 +22,11 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onCreated: (p: NewProductResult) => void;
+  alwaysSaveToCatalog?: boolean;
 }
 
 /** Reusable "add new product" popup used from every item row (via ProductPicker). */
-export default function QuickProductDialog({ open, onOpenChange, onCreated }: Props) {
+export default function QuickProductDialog({ open, onOpenChange, onCreated, alwaysSaveToCatalog = false }: Props) {
   const { user } = useAuth();
   const l = useL();
   const [code, setCode] = useState('');
@@ -49,7 +50,7 @@ export default function QuickProductDialog({ open, onOpenChange, onCreated }: Pr
     const unitPrice = Number(price) || 0;
     setSaving(true);
     try {
-      if (saveToCatalog) {
+      if (alwaysSaveToCatalog || saveToCatalog) {
         const { error } = await supabase.from('products' as any).insert({
           user_id: user.id, code: code.trim() || null, name: name.trim(),
           description: desc.trim() || null, category: category.trim() || null,
@@ -104,10 +105,10 @@ export default function QuickProductDialog({ open, onOpenChange, onCreated }: Pr
                 onChange={e => setPrice(e.target.value === '' ? '' : Number(e.target.value))} />
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+          {!alwaysSaveToCatalog && <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <input type="checkbox" checked={saveToCatalog} onChange={e => setSaveToCatalog(e.target.checked)} className="h-4 w-4 rounded border-input" />
             {l('Save to product catalog', 'Simpan ke katalog produk')}
-          </label>
+          </label>}
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{l('Cancel', 'Batal')}</Button>
