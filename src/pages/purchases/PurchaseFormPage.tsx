@@ -12,7 +12,9 @@ import ContactPicker from '@/components/contacts/ContactPicker';
 import PDFPreviewModal from '@/components/pdf/PDFPreviewModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { PURCHASE_CONFIG, PurchaseType, PurchaseData, Line, Term, calcTotals } from './shared';
+import { ProductPicker, type PickedProduct } from '@/components/ProductPicker';
+import QuickProductDialog from '@/components/QuickProductDialog';
+import { PURCHASE_CONFIG, PurchaseType, PurchaseData, Line, Term, calcTotals, purchaseProductFields } from './shared';
 import { buildPurchasePdfBlob, saveBlob } from './purchasePdf';
 
 const db = supabase as any;
@@ -52,6 +54,7 @@ export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
   const [remarks, setRemarks] = useState('');
   const [status, setStatus] = useState(statuses[0]);
   const [saving, setSaving] = useState(false);
+  const [newProductOpen, setNewProductOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -81,6 +84,9 @@ export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
 
   const setLine = (lid: string, patch: Partial<Line>) =>
     setLines(prev => prev.map(x => (x.id === lid ? { ...x, ...patch } : x)));
+
+  const addProduct = (product: PickedProduct) =>
+    setLines(prev => [...prev, { id: uid(), account: '', qty: 1, discount: 0, tax: 0, ...purchaseProductFields(product) }]);
 
   const totals = useMemo(() => calcTotals({ lines, taxMode, rounding }), [lines, taxMode, rounding]);
   const subTotal = totals.subTotal, discountGiven = totals.discount, total = totals.total;
@@ -248,9 +254,20 @@ export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
                 )}
                 {lines.map(l => (
                   <tr key={l.id} className="border-b border-border">
-                    <td className="px-2 py-2"><Input value={l.item} onChange={e => setLine(l.id, { item: e.target.value })} placeholder={tx('Item')} /></td>
+                    <td className="px-2 py-2 min-w-[240px]">
+                      <div className="flex items-start gap-2">
+                        <ProductPicker alwaysSaveToCatalog onPick={p => setLine(l.id, purchaseProductFields(p))} />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <Input value={l.item} onChange={e => setLine(l.id, { item: e.target.value })} placeholder={tx('Item')} />
+                          <Textarea value={l.description_detail || ''} onChange={e => setLine(l.id, { description_detail: e.target.value })} placeholder={tx('Description')} rows={2} className="text-xs" />
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-2 py-2"><Input value={l.account} onChange={e => setLine(l.id, { account: e.target.value })} placeholder={tx('Account')} /></td>
-                    <td className="px-2 py-2"><Input type="number" className="text-right" value={l.qty} onChange={e => setLine(l.id, { qty: Number(e.target.value) })} /></td>
+                    <td className="px-2 py-2">
+                      <Input type="number" className="text-right" value={l.qty} onChange={e => setLine(l.id, { qty: Number(e.target.value) })} />
+                      <Input className="mt-1.5" value={l.uom || ''} onChange={e => setLine(l.id, { uom: e.target.value })} placeholder="UOM" aria-label="UOM" />
+                    </td>
                     <td className="px-2 py-2"><Input type="number" className="text-right" value={l.price} onChange={e => setLine(l.id, { price: Number(e.target.value) })} /></td>
                     <td className="px-2 py-2 text-right whitespace-nowrap">{money(l.qty * l.price)}</td>
                     <td className="px-2 py-2"><Input type="number" className="text-right" value={l.discount} onChange={e => setLine(l.id, { discount: Number(e.target.value) })} /></td>
@@ -267,12 +284,18 @@ export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-4 lg:items-start justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+            <ProductPicker alwaysSaveToCatalog onPick={addProduct} />
+            <Button type="button" variant="outline" onClick={() => setNewProductOpen(true)} className="gap-1">
+              <Plus className="h-4 w-4" /> {l('Add New Product', 'Tambah Produk Baru')}
+            </Button>
             <Button
               onClick={() => setLines(prev => [...prev, { id: uid(), item: '', account: '', qty: 1, price: 0, discount: 0, tax: 0 }])}
               className="gap-1 self-start"
             >
-              <Plus className="h-4 w-4" /> Item
+              <Plus className="h-4 w-4" /> {l('Add Empty Row', 'Tambah Baris Kosong')}
             </Button>
+            </div>
             <div className="w-full lg:w-[380px] border border-border rounded-lg divide-y divide-border">
               {[
                 [tx('Sub Total'), money(subTotal)],
@@ -393,6 +416,7 @@ export default function PurchaseFormPage({ type }: { type: PurchaseType }) {
 
   return (
     <>
+      <QuickProductDialog open={newProductOpen} onOpenChange={setNewProductOpen} onCreated={addProduct} alwaysSaveToCatalog />
       <DataFormPage
         breadcrumb={`${l('Home', 'Utama')} / ${tx(breadcrumb)}`}
         title={`${tx(id ? cfg.editTitle : cfg.formTitle)}${docNumber ? ` · ${docNumber}` : ''}`}

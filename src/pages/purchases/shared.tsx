@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useTx } from '@/i18n/dual';
+import type { PickedProduct } from '@/components/ProductPicker';
 
 function StatusLabel({ s }: { s: string }) { const tx = useTx(); return <>{tx(s)}</>; }
 
@@ -70,7 +71,12 @@ export const PURCHASE_CONFIG: Record<PurchaseType, PurchaseConfig> = {
   },
 };
 
-export type Line = { id: string; item: string; account: string; qty: number; price: number; discount: number; tax: number };
+export type Line = { id: string; item: string; description_detail?: string; uom?: string; account: string; qty: number; price: number; discount: number; tax: number };
+
+/** Catalog fields only: preserve the purchase line's quantity, account, discount and tax. */
+export function purchaseProductFields(product: PickedProduct): Pick<Line, 'item' | 'description_detail' | 'uom' | 'price'> {
+  return { item: product.description, description_detail: product.description_detail, uom: product.uom, price: product.unit_price };
+}
 export type Term = { id: string; term: string; dueOn: string; amount: number; description: string };
 
 export type PurchaseData = {

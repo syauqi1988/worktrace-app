@@ -84,9 +84,10 @@ export default function PurchasePDF({ en, docTitle, number, date, reference, ref
             <Text style={[s.tableText, s.colNo]}>{i + 1}</Text>
             <View style={s.colDesc}>
               <Text style={s.itemDescMain}>{l.item || '-'}</Text>
+              {l.description_detail ? <Text style={s.itemDescDetail}>{l.description_detail}</Text> : null}
               {l.account ? <Text style={s.itemDescDetail}>{l.account}</Text> : null}
             </View>
-            <Text style={[s.tableText, s.colQty]}>{l.qty}</Text>
+            <Text style={[s.tableText, s.colQty]}>{l.qty}{l.uom ? ` ${l.uom}` : ''}</Text>
             <Text style={[s.tableText, s.colUnit]}>{fmtRM(l.price)}</Text>
             <Text style={[s.tableText, s.colUnit]}>{l.discount ? fmtRM(l.discount) : '-'}</Text>
             <Text style={[s.tableText, s.colQty]}>{l.tax || 0}</Text>
