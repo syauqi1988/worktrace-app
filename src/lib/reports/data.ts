@@ -4,7 +4,7 @@ import type { ReportDefinition } from './catalog';
 import type { ReportRecord, ReportItem } from './engine';
 import { PURCHASE_CONFIG, type PurchaseType } from '@/pages/purchases/shared';
 type Raw = Record<string, any>;
-async function allRows(table: string, userId: string, fields: string): Promise<Raw[]> {
+export async function allRows(table: string, userId: string, fields: string): Promise<Raw[]> {
   const db = supabase as any;
   const rows: Raw[] = [];
   for (let start = 0; ; start += 1000) {
