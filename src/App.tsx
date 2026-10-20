@@ -66,6 +66,9 @@ const BillFormPage = lazy(() => import("@/pages/purchases/BillFormPage"));
 const CreditNoteFormPage = lazy(() => import("@/pages/purchases/CreditNoteFormPage"));
 const PurchasePaymentFormPage = lazy(() => import("@/pages/purchases/PurchasePaymentFormPage"));
 const RefundFormPage = lazy(() => import("@/pages/purchases/RefundFormPage"));
+const BankListPage = lazy(() => import("@/pages/bank/BankListPage"));
+const BankFormPage = lazy(() => import("@/pages/bank/BankFormPage"));
+const BankLedgerPage = lazy(() => import("@/pages/bank/BankLedgerPage"));
 
 const SuppliersListPage = lazy(() => import("@/pages/contacts/SuppliersListPage"));
 const EmployeesListPage = lazy(() => import("@/pages/contacts/EmployeesListPage"));
@@ -177,10 +180,19 @@ const App = () => (
                   <Route path="refunds" element={<RefundsPage />} />
                   <Route path="refunds/new" element={<RefundFormPage />} />
                   <Route path="refunds/:id/edit" element={<RefundFormPage />} />
-                  <Route path="money-in" element={<PlaceholderPage title="Money In" />} />
-                  <Route path="money-out" element={<PlaceholderPage title="Money Out" />} />
-                  <Route path="transfers" element={<PlaceholderPage title="Transfers" />} />
-                  <Route path="bank-accounts" element={<PlaceholderPage title="Accounts" />} />
+                  <Route path="money-in" element={<BankListPage kind="money_in" />} />
+                  <Route path="money-in/new" element={<BankFormPage kind="money_in" />} />
+                  <Route path="money-in/:id/edit" element={<BankFormPage kind="money_in" />} />
+                  <Route path="money-out" element={<BankListPage kind="money_out" />} />
+                  <Route path="money-out/new" element={<BankFormPage kind="money_out" />} />
+                  <Route path="money-out/:id/edit" element={<BankFormPage kind="money_out" />} />
+                  <Route path="transfers" element={<BankListPage kind="transfer" />} />
+                  <Route path="transfers/new" element={<BankFormPage kind="transfer" />} />
+                  <Route path="transfers/:id/edit" element={<BankFormPage kind="transfer" />} />
+                  <Route path="bank-accounts" element={<BankListPage kind="account" />} />
+                  <Route path="bank-accounts/new" element={<BankFormPage kind="account" />} />
+                  <Route path="bank-accounts/:id/edit" element={<BankFormPage kind="account" />} />
+                  <Route path="bank-accounts/:id" element={<BankLedgerPage />} />
                   <Route path="journal-entries" element={<PlaceholderPage title="Journal Entries" />} />
                   <Route path="contras" element={<PlaceholderPage title="Contras" />} />
                   <Route path="fixed-assets" element={<PlaceholderPage title="Fixed Assets" />} />
