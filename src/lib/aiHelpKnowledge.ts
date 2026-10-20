@@ -40,6 +40,7 @@ export const fullKB = (ms: boolean) => [...KB.map(e => '- ' + (ms ? e.ms : e.en)
 
 /** FAQ questions, same order as KB. */
 const Q: [string, string][] = [
+  ['How do I use the chart of accounts and journal entries?', 'Bagaimana guna carta akaun dan catatan jurnal?'],
   ['How do I view and download reports?', 'Bagaimana melihat dan memuat turun laporan?'],
   ['How do I create a job?', 'Bagaimana cara buat kerja?'],
   ['How do I create and share a quotation?', 'Bagaimana buat dan kongsi sebut harga?'],
