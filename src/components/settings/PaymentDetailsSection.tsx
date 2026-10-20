@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { PaymentDetails } from '@/components/PaymentDetailsCard';
+import { MALAYSIAN_BANKS } from '@/lib/banks';
 
 const PAYMENT_TYPES = ['Bank Transfer', 'DuitNow', 'TNG eWallet', 'Baucar', 'Tunai'];
 
