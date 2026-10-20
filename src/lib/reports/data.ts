@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { loadBank } from '@/pages/bank/api';
+import type { BankAccount, BankTransaction } from '@/pages/bank/shared';
 import type { ReportDefinition } from './catalog';
 import type { ReportRecord, ReportItem } from './engine';
 import { PURCHASE_CONFIG, type PurchaseType } from '@/pages/purchases/shared';
@@ -21,9 +21,9 @@ function items(raw: unknown, purchase = false): ReportItem[] {
 }
 export async function loadReport(def: ReportDefinition, userId: string): Promise<ReportRecord[]> {
   if (def.source === 'bank') {
-    const data = await loadBank(userId);
-    const names = new Map(data.accounts.map(a=>[a.id,a.name]));
-    return data.transactions.map(t=>({ id:t.id, number:t.reference || t.id.slice(0,8), date:t.transaction_date, due:'', paidDate:'', party:names.get(t.account_id)||'—', status:t.kind === 'transfer' ? 'Transfers' : t.kind === 'money_in' ? 'Money In' : 'Money Out', amount:Number(t.amount), tags:[],items:[],kind:t.kind,to:t.to_account_id ? names.get(t.to_account_id) : undefined, path:`/${t.kind === 'transfer' ? 'transfers' : t.kind === 'money_in' ? 'money-in' : 'money-out'}/${t.id}/edit` }));
+    const [accounts,transactions] = await Promise.all([allRows('bank_accounts',userId,'id,name'),allRows('bank_transactions',userId,'id,reference,transaction_date,account_id,to_account_id,kind,amount')]);
+    const names = new Map((accounts as BankAccount[]).map(a=>[a.id,a.name]));
+    return (transactions as BankTransaction[]).map(t=>({ id:t.id, number:t.reference || t.id.slice(0,8), date:t.transaction_date, due:'', paidDate:'', party:names.get(t.account_id)||'—', status:t.kind === 'transfer' ? 'Transfers' : t.kind === 'money_in' ? 'Money In' : 'Money Out', amount:Number(t.amount), tags:[],items:[],kind:t.kind,to:t.to_account_id ? names.get(t.to_account_id) : undefined, path:`/${t.kind === 'transfer' ? 'transfers' : t.kind === 'money_in' ? 'money-in' : 'money-out'}/${t.id}/edit` }));
   }
   if (def.source === 'purchase') {
     const rows = await allRows('purchase_documents',userId,'id,doc_number,doc_type,doc_date,party,status,total,data');
@@ -39,6 +39,6 @@ export async function loadReport(def: ReportDefinition, userId: string): Promise
   const customerMap = new Map(customers.map(c=>[c.id,c]));
   return docs.map(r=>{
     const c = customerMap.get(r.customer_id || jobMap.get(r.job_id));
-    return { id:r.id,number:isQuote ? r.quote_number : def.name === 'Official Receipt Summary' ? r.receipt_number || r.invoice_number : r.invoice_number,date:date(r.issued_date || r.created_at),due:date(r.due_date),paidDate:date(r.paid_date),party:c?.name || '—',status:r.status,amount:Number(r.total)||0,tags:Array.isArray(c?.tags_v2) && c.tags_v2.length ? c.tags_v2.map((t:Raw)=>String(t.label || '')).filter(Boolean) : Array.isArray(c?.tags) ? c.tags : [],items:items(r.items),path:`/${isQuote ? 'quotations' : 'invoices'}/${r.id}` };
+    return { id:r.id,number:isQuote ? r.quote_number : def.name === 'Official Receipt Summary' ? r.receipt_number || r.invoice_number : r.invoice_number,date:date(r.issued_date || r.created_at),due:date(r.due_date),paidDate:date(r.paid_date),party:c?.name || '—',status:r.status,amount:Number(r.total)||0,tags:Array.isArray(c?.tags_v2) && c.tags_v2.length ? c.tags_v2.filter((t:Raw)=>t && typeof t==='object').map((t:Raw)=>String(t.label || '')).filter(Boolean) : Array.isArray(c?.tags) ? c.tags.filter((t:unknown)=>typeof t==='string') : [],items:items(r.items),path:`/${isQuote ? 'quotations' : 'invoices'}/${r.id}` };
   });
 }

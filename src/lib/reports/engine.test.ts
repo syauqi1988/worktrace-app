@@ -5,6 +5,7 @@ describe('report calculations',()=>{
   it('sums money without binary rounding drift',()=>expect(buildReport({name:'Invoice Summary',ms:'',mode:'documents'},[record(),record({amount:0.2})],'','2026-12-31').total).toBe(0.3));
   it('uses inclusive date boundaries',()=>expect(buildReport({name:'',ms:''},[record(),record({date:'2025-12-31'})],'2026-01-01','2026-01-01').rows).toHaveLength(1));
   it('uses payment date for collections',()=>expect(buildReport({name:'',ms:'',paid:true},[record({status:'Paid',paidDate:'2026-02-01'})],'2026-02-01','2026-02-28').total).toBe(0.1));
+  it('excludes collections with unknown payment dates even for all time',()=>expect(buildReport({name:'',ms:'',paid:true},[record({status:'Paid'})],'','2026-12-31').rows).toHaveLength(0));
   it('keeps payment after cutoff outstanding',()=>expect(buildReport({name:'',ms:'',mode:'aging'},[record({status:'Paid',paidDate:'2026-02-10'})],'','2026-02-01').total).toBe(0.1));
   it('does not invent a due date',()=>expect(ageBucket('','2026-02-01')).toBe(5));
   it('classifies aging boundaries',()=>expect([ageBucket('2026-02-01','2026-02-01'),ageBucket('2026-01-02','2026-02-01'),ageBucket('2026-01-01','2026-02-01')]).toEqual([0,1,2]));

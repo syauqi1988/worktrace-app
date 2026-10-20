@@ -8,7 +8,7 @@
   body:has(.report-print-area) * { overflow: visible !important; }
   body:has(.report-print-area) main,
   body:has(.report-print-area) main > div { height: auto !important; }
-  .report-print-area { position: absolute; inset: 0; background: var(--background); }
+  .report-print-area { position: absolute; inset: 0; background: hsl(var(--background)); }
   .report-print-only { display: block; }
   tr.report-print-only { display: table-row; }
   .report-print-area thead { display: table-header-group; }

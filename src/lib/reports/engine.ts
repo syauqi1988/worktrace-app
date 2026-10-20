@@ -20,7 +20,7 @@ export function buildReport(def: ReportDefinition, records: ReportRecord[], from
   let list = records.filter(r => {
     if (aging) return r.date <= to && (!r.paidDate || r.paidDate > to) && (r.status !== 'Paid' || Boolean(r.paidDate && r.paidDate > to));
     const date = def.paid ? r.paidDate : r.date;
-    return (!from || date >= from) && date <= to && (!def.paid || r.status === 'Paid');
+    return Boolean(date) && (!from || date >= from) && date <= to && (!def.paid || r.status === 'Paid');
   });
   const q = search.trim().toLowerCase();
   if (q) list = list.filter(r => [r.number, r.party, r.status, ...r.tags, ...r.items.map(i => i.name)].some(v => v.toLowerCase().includes(q)));
