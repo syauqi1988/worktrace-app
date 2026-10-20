@@ -56,7 +56,18 @@ export default function PaymentDetailsSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>{tm("Nama Bank")}</Label>
-          <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder={tm("cth. Maybank")} />
+          <select
+            value={bankName && !MALAYSIAN_BANKS.includes(bankName) ? '__other' : bankName}
+            onChange={e => setBankName(e.target.value === '__other' ? '' : e.target.value)}
+            className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
+          >
+            <option value="">{tm("Pilih bank")}</option>
+            {MALAYSIAN_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+            <option value="__other">{tm("Lain-lain (taip sendiri)")}</option>
+          </select>
+          {bankName && !MALAYSIAN_BANKS.includes(bankName) && (
+            <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder={tm("cth. Maybank")} className="mt-1.5" />
+          )}
         </div>
         <div className="space-y-1.5">
           <Label>{tm("No. Akaun")}</Label>
