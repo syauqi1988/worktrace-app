@@ -77,6 +77,9 @@ const supplierForm = <ContactFullForm key="suppliers" table="suppliers" />;
 const customerForm = <ContactFullForm key="customers" table="customers" />;
 const employeeForm = <ContactFullForm key="employees" table="employees" />;
 
+const ChartOfAccountsPage = lazy(() => import("@/pages/accounting/ChartOfAccountsPage"));
+const JournalEntriesPage = lazy(() => import("@/pages/accounting/JournalEntriesPage"));
+const JournalFormPage = lazy(() => import("@/pages/accounting/JournalFormPage"));
 const PlaceholderPage = lazy(() => import("@/pages/PlaceholderPage"));
 
 const queryClient = new QueryClient({
@@ -193,11 +196,13 @@ const App = () => (
                   <Route path="bank-accounts/new" element={<BankFormPage kind="account" />} />
                   <Route path="bank-accounts/:id/edit" element={<BankFormPage kind="account" />} />
                   <Route path="bank-accounts/:id" element={<BankLedgerPage />} />
-                  <Route path="journal-entries" element={<PlaceholderPage title="Journal Entries" />} />
+                  <Route path="journal-entries" element={<JournalEntriesPage />} />
+                  <Route path="journal-entries/new" element={<JournalFormPage />} />
+                  <Route path="journal-entries/:id/edit" element={<JournalFormPage />} />
                   <Route path="contras" element={<PlaceholderPage title="Contras" />} />
                   <Route path="fixed-assets" element={<PlaceholderPage title="Fixed Assets" />} />
                   <Route path="deemed-payments" element={<PlaceholderPage title="Deemed Payments" />} />
-                  <Route path="chart-of-accounts" element={<PlaceholderPage title="Chart of Accounts" />} />
+                  <Route path="chart-of-accounts" element={<ChartOfAccountsPage />} />
                 </Route>
                 <Route path="support" element={<SupportPage />} />
                 <Route path="support/new" element={<SupportNewPage />} />

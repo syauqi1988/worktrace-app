@@ -1,14 +1,13 @@
-export type ReportDefinition = { name: string; ms: string; source?: 'invoice' | 'quotation' | 'purchase' | 'bank'; mode?: 'documents' | 'party' | 'items' | 'aging' | 'agingDetail' | 'cashflow'; purchaseKind?: string; paid?: boolean; detail?: boolean; requirement?: [string, string] };
+export type ReportDefinition = { name: string; ms: string; source?: 'invoice' | 'quotation' | 'purchase' | 'bank' | 'ledger'; mode?: 'documents' | 'party' | 'items' | 'aging' | 'agingDetail' | 'cashflow'; purchaseKind?: string; paid?: boolean; detail?: boolean; requirement?: [string, string] };
 export type ReportGroup = { title: string; reports: ReportDefinition[] };
-const accounting: [string, string] = ['Posted double-entry journals and a chart of accounts are required. Accounting records are not yet available.', 'Catatan jurnal catatan bergu yang dipos dan carta akaun diperlukan. Rekod perakaunan belum tersedia.'];
 const inventory: [string, string] = ['Stock movements, opening quantities and costing records are required. The Products catalog does not track stock.', 'Pergerakan stok, kuantiti awal dan rekod kos diperlukan. Katalog Produk tidak menjejak stok.'];
 const tax: [string, string] = ['SST classifications, taxable dates and settlement allocations are required. Line tax alone is not sufficient for statutory SST reporting.', 'Pengelasan SST, tarikh bercukai dan peruntukan bayaran diperlukan. Cukai baris sahaja tidak mencukupi untuk laporan SST berkanun.'];
 const assets: [string, string] = ['An asset register with acquisition, depreciation and disposal records is required. Fixed Assets is not yet connected.', 'Daftar aset dengan rekod perolehan, susut nilai dan pelupusan diperlukan. Aset Tetap belum disambungkan.'];
 const fx: [string, string] = ['Foreign currency balances and dated exchange rates are required. These records are not yet available.', 'Baki mata wang asing dan kadar pertukaran bertarikh diperlukan. Rekod ini belum tersedia.'];
 export const REPORT_GROUPS: ReportGroup[] = [
   { title: 'Financial Reports', reports: [
-    { name: 'Balance Sheet', ms: 'Kunci Kira-kira', requirement: accounting },
-    { name: 'Profit & Loss', ms: 'Untung & Rugi', requirement: accounting },
+    { name: 'Balance Sheet', ms: 'Kunci Kira-kira', source: 'ledger' },
+    { name: 'Profit & Loss', ms: 'Untung & Rugi', source: 'ledger' },
     { name: 'Cash Flow Statement', ms: 'Penyata Aliran Tunai', source: 'bank', mode: 'cashflow' },
     { name: 'Financial Summary', ms: 'Ringkasan Kewangan', source: 'invoice', mode: 'documents' },
   ] },
@@ -52,19 +51,19 @@ export const REPORT_GROUPS: ReportGroup[] = [
   { title: 'Inventory Reports', reports: ['Inventory Summary', 'Inventory Detail', 'Inventory Summary by Location', 'Profit Summary', 'Profit Detail'].map((name, i) => ({ name, ms: ['Ringkasan Inventori', 'Butiran Inventori', 'Ringkasan Inventori Mengikut Lokasi', 'Ringkasan Untung', 'Butiran Untung'][i], requirement: inventory })) },
   { title: 'Fixed Asset Reports', reports: ['Fixed Asset List', 'Depreciation Schedule', 'Disposal Schedule'].map((name, i) => ({ name, ms: ['Senarai Aset Tetap', 'Jadual Susut Nilai', 'Jadual Pelupusan'][i], requirement: assets })) },
   { title: 'Ledger Reports', reports: [
-    { name: 'General Ledger', ms: 'Lejar Am', requirement: accounting },
+    { name: 'General Ledger', ms: 'Lejar Am', source: 'ledger' },
     { name: 'Debtor Ledger', ms: 'Lejar Penghutang', source: 'invoice', mode: 'documents' },
     { name: 'Creditor Ledger', ms: 'Lejar Pemiutang', source: 'purchase', purchaseKind: 'bill', mode: 'documents' },
   ] },
   { title: 'SST Reports', reports: ['SST-02', 'SST Sales Detail', 'SST Purchase Detail', 'SST Payment Collection', 'SST Deemed Payments', 'SST Recovered Payments', 'SST by Products'].map((name, i) => ({ name, ms: ['SST-02', 'Butiran Jualan SST', 'Butiran Pembelian SST', 'Kutipan Bayaran SST', 'Bayaran Dianggap SST', 'Bayaran Dipulihkan SST', 'SST Mengikut Produk'][i], requirement: tax })) },
   { title: 'Accounting Reports', reports: [
-    ...['Journal Entry Detail', 'Double Entry Detail', 'Trial Balance'].map((name, i) => ({ name, ms: ['Butiran Catatan Jurnal', 'Butiran Catatan Bergu', 'Imbangan Duga'][i], requirement: accounting })),
+    ...['Journal Entry Detail', 'Double Entry Detail', 'Trial Balance'].map((name, i) => ({ name, ms: ['Butiran Catatan Jurnal', 'Butiran Catatan Bergu', 'Imbangan Duga'][i], source: 'ledger' })),
     { name: 'Bank Reconciliation', ms: 'Penyesuaian Bank', requirement: ['Bank statement imports and reconciliation matches are required. Manual bank entries alone cannot establish reconciliation.', 'Import penyata bank dan padanan penyesuaian diperlukan. Rekod bank manual sahaja tidak menentukan penyesuaian.'] },
     { name: 'Reconciled Transactions', ms: 'Transaksi Disesuaikan', requirement: ['Bank statement reconciliation matches are not yet recorded.', 'Padanan penyesuaian penyata bank belum direkodkan.'] },
     { name: 'Transaction List', ms: 'Senarai Transaksi', source: 'bank', mode: 'documents' },
     ...['Exchange Gain/Loss Summary', 'Unrealised Exchange Detail', 'Exchange Rates'].map((name, i) => ({ name, ms: ['Ringkasan Untung/Rugi Pertukaran', 'Butiran Pertukaran Belum Direalisasi', 'Kadar Pertukaran'][i], requirement: fx })),
     { name: 'Audit Trail', ms: 'Jejak Audit', requirement: ['Immutable change history with actor and before/after values is required. Current records are not an audit trail.', 'Sejarah perubahan kekal dengan pelaku dan nilai sebelum/selepas diperlukan. Rekod semasa bukan jejak audit.'] },
-    { name: 'Chart of Accounts', ms: 'Carta Akaun', requirement: accounting },
+    { name: 'Chart of Accounts', ms: 'Carta Akaun', source: 'ledger' },
   ] },
 ];
 export const ALL_REPORTS = REPORT_GROUPS.flatMap(g => g.reports);

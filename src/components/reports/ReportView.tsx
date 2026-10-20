@@ -9,6 +9,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useAuth } from '@/contexts/AuthContext';
 import { useL, useTx } from '@/i18n/dual';
 import { loadReport } from '@/lib/reports/data';
+import { loadLedger } from '@/pages/accounting/api';
+import { buildLedgerReport, type LedgerData } from '@/pages/accounting/shared';
 import { buildReport, csvCell } from '@/lib/reports/engine';
 import type { ReportDefinition } from '@/lib/reports/catalog';
 
@@ -17,10 +19,10 @@ export default function ReportView({ report, onBack }: { report: ReportDefinitio
   const today = new Intl.DateTimeFormat('en-CA',{ timeZone:'Asia/Kuala_Lumpur',year:'numeric',month:'2-digit',day:'2-digit' }).format(new Date());
   const [from,setFrom] = useState(today.slice(0,4)+'-01-01'); const [to,setTo] = useState(today); const [search,setSearch] = useState('');
   const [page,setPage] = useState(0);
-  const aging = report.mode === 'aging' || report.mode === 'agingDetail';
+  const aging = report.mode === 'aging' || report.mode === 'agingDetail' || ['Balance Sheet','Trial Balance','Chart of Accounts'].includes(report.name);
   const valid = Boolean(to) && (aging || !from || from <= to);
-  const query = useQuery({ queryKey:['report',report.source,report.purchaseKind,report.name,user?.id], queryFn:()=>loadReport(report,user?.id || ''), enabled:Boolean(user && report.source && !report.requirement), staleTime:60000 });
-  const output = useMemo(()=>buildReport(report,query.data || [],from,to,search),[report,query.data,from,to,search]);
+  const query = useQuery({ queryKey:['report',report.source,report.purchaseKind,report.name,user?.id], queryFn:():Promise<unknown>=>report.source==='ledger' ? loadLedger(user?.id || '') : loadReport(report,user?.id || ''), enabled:Boolean(user && report.source && !report.requirement), staleTime:60000 });
+  const output = useMemo(()=>report.source==='ledger' ? buildLedgerReport(report.name,(query.data as LedgerData) || { accounts:[],entries:[] },report.name==='Profit & Loss' || report.name==='General Ledger' || report.name.includes('Detail') ? from : '',to,search) : buildReport(report,(query.data as any) || [],from,to,search),[report,query.data,from,to,search]);
   const title = l(report.name,report.ms);
   const money = (v: number) => `RM ${v.toLocaleString(l('en-MY','ms-MY'),{ minimumFractionDigits:2,maximumFractionDigits:2 })}`;
   const cell = (v:string|number,index:number) => typeof v==='number' && output.moneyColumns.includes(index) ? money(v) : typeof v==='string' ? tx(v) : v;
@@ -40,6 +42,7 @@ export default function ReportView({ report, onBack }: { report: ReportDefinitio
   if (aging && report.source==='purchase') notes.push(l('Unpaid bills currently recorded, issued on or before the cutoff. Historic paid dates and partial settlements are unavailable; earliest recorded term date is used for aging.','Bil belum dibayar yang direkodkan kini, dikeluarkan pada atau sebelum tarikh akhir. Tarikh bayaran lampau dan bayaran separa tidak tersedia; tarikh terma terawal digunakan untuk pengumuran.'));
   if (report.mode==='items') notes.push(l('Line amounts before document-level discounts, deductions and tax; products grouped by recorded item name and unit.','Jumlah baris sebelum diskaun, potongan dan cukai peringkat dokumen; produk dikumpulkan mengikut nama item dan unit yang direkodkan.'));
   if (report.name==='Sales By Tag') notes.push(l('A sale can appear under multiple customer tags. The total counts each invoice once.','Jualan boleh muncul di bawah berbilang tag pelanggan. Jumlah mengira setiap invois sekali.'));
+  if (report.source==='ledger') notes.push(l('Built from manual journals plus automatic postings from invoices, bills, purchase payments, credit notes and Bank records. If a payment is recorded both on an invoice and in Bank, it is counted twice.','Dibina daripada jurnal manual serta pos automatik daripada invois, bil, bayaran pembelian, nota kredit dan rekod Bank. Jika bayaran direkod pada invois dan juga di Bank, ia dikira dua kali.'));
   if (report.source==='bank') notes.push(l('Manual Bank records only; sales and purchase payments are not added automatically. Internal transfers are excluded from net cash flow.','Rekod Bank manual sahaja; bayaran jualan dan pembelian tidak ditambah secara automatik. Pindahan dalaman dikecualikan daripada aliran tunai bersih.'));
   return <div className="report-print-area p-4 md:p-6 space-y-5">
     <div className="flex items-start gap-3">
