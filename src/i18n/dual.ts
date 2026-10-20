@@ -7,6 +7,16 @@ import i18n from './index';
  *  - useTx(): tx('English') — looks up MS_DICT; used by shared list/form/menu screens.
  */
 export const MS_DICT: Record<string, string> = {
+  'Home / Bank': 'Utama / Bank',
+  'New Account': 'Akaun Baru', 'Edit Account': 'Sunting Akaun',
+  'New Money In': 'Wang Masuk Baru', 'Edit Money In': 'Sunting Wang Masuk',
+  'New Money Out': 'Wang Keluar Baru', 'Edit Money Out': 'Sunting Wang Keluar',
+  'New Transfer': 'Pindahan Baru', 'Edit Transfer': 'Sunting Pindahan',
+  'Bank Name': 'Nama Bank', 'Account Number': 'Nombor Akaun',
+  'Opening Balance': 'Baki Awal', 'Current Balance': 'Baki Semasa',
+  'From Account': 'Dari Akaun', 'To Account': 'Ke Akaun', 'Type': 'Jenis',
+  'Received From': 'Diterima Daripada', 'Paid To': 'Dibayar Kepada',
+  'Account Ledger': 'Lejar Akaun', 'Balance': 'Baki',
   'Contact Person': 'Orang Hubungan',
   'Edit Purchase Order': 'Sunting Pesanan Belian',
   'Edit Goods Received Note': 'Sunting Nota Penerimaan Barang',
