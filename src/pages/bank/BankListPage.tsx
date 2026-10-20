@@ -71,7 +71,7 @@ export default function BankListPage({ kind }: { kind: BankKind | 'account' }) {
     {accountMode ? <DataListPage breadcrumb="Bank" title="Accounts" newLabel="New Account" onNew={() => navigate(`${path}/new`)}
       rows={accounts} loading={query.isLoading} getRowId={a => a.id} columns={accountColumns} searchValues={a => [a.name, a.bank_name, a.account_number]}
       onRowClick={a => navigate(`/bank-accounts/${a.id}`)} rowActions={a => actions(a.id)} getAmount={a => balances.get(a.id) || 0} amountHeader="Current Balance"
-      headerExtra={readOnly ? undefined : undefined} /> :
+      /> :
       <DataListPage key={kind} breadcrumb="Bank" title={BANK_CONFIG[kind].title} newLabel={BANK_CONFIG[kind].newTitle} onNew={() => navigate(`${path}/new`)}
         rows={transactions.filter(t => t.kind === kind)} loading={query.isLoading} getRowId={t => t.id} columns={transactionColumns}
         searchValues={t => [t.reference, t.party, t.description, name(t.account_id), name(t.to_account_id)]} getDate={t => t.transaction_date}

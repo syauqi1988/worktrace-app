@@ -56,9 +56,14 @@ export default function BankFormPage({ kind }: { kind: BankKind | 'account' }) {
         if (id) {
           const record = accountMode ? data.accounts.find(a => a.id === id) : data.transactions.find(t => t.id === id && t.kind === kind);
           if (!record) throw new Error('not_found');
-          setForm(prev => ({ ...prev, ...record,
-            ...('opening_balance' in record ? { opening_balance: String(record.opening_balance) } : { amount: String(record.amount), to_account_id: record.to_account_id || '' }),
-          }));
+          if ('opening_balance' in record) {
+            setForm(prev => ({ ...prev, name: record.name, bank_name: record.bank_name,
+              account_number: record.account_number, notes: record.notes, opening_balance: String(record.opening_balance) }));
+          } else {
+            setForm(prev => ({ ...prev, account_id: record.account_id, to_account_id: record.to_account_id || '',
+              amount: String(record.amount), transaction_date: record.transaction_date, reference: record.reference,
+              party: record.party, description: record.description, notes: record.notes }));
+          }
         }
       } catch { if (!cancelled) setLoadError(true); }
       finally { if (!cancelled) setLoading(false); }
