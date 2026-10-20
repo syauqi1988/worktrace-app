@@ -357,7 +357,7 @@ export default function DataListPage<T>({
               <tfoot>
                 <tr className="border-t-2 border-border bg-muted/40 font-semibold">
                   <td colSpan={(selectable ? 1 : 0) + Math.max(1, amountIdx)} className="px-3 py-3 text-right text-muted-foreground">
-                    Total {amountHeader} ({sorted.length} {sorted.length === 1 ? 'item' : 'items'})
+                    {tx('Total')} {amountHeader} ({sorted.length} {tx('items')})
                   </td>
                   <td className="px-3 py-3 text-right whitespace-nowrap">
                     {currency} {money(total)}
