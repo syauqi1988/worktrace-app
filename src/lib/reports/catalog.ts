@@ -57,7 +57,7 @@ export const REPORT_GROUPS: ReportGroup[] = [
   ] },
   { title: 'SST Reports', reports: ['SST-02', 'SST Sales Detail', 'SST Purchase Detail', 'SST Payment Collection', 'SST Deemed Payments', 'SST Recovered Payments', 'SST by Products'].map((name, i) => ({ name, ms: ['SST-02', 'Butiran Jualan SST', 'Butiran Pembelian SST', 'Kutipan Bayaran SST', 'Bayaran Dianggap SST', 'Bayaran Dipulihkan SST', 'SST Mengikut Produk'][i], requirement: tax })) },
   { title: 'Accounting Reports', reports: [
-    ...['Journal Entry Detail', 'Double Entry Detail', 'Trial Balance'].map((name, i) => ({ name, ms: ['Butiran Catatan Jurnal', 'Butiran Catatan Bergu', 'Imbangan Duga'][i], source: 'ledger' })),
+    ...['Journal Entry Detail', 'Double Entry Detail', 'Trial Balance'].map((name, i) => ({ name, ms: ['Butiran Catatan Jurnal', 'Butiran Catatan Bergu', 'Imbangan Duga'][i], source: 'ledger' as const })),
     { name: 'Bank Reconciliation', ms: 'Penyesuaian Bank', requirement: ['Bank statement imports and reconciliation matches are required. Manual bank entries alone cannot establish reconciliation.', 'Import penyata bank dan padanan penyesuaian diperlukan. Rekod bank manual sahaja tidak menentukan penyesuaian.'] },
     { name: 'Reconciled Transactions', ms: 'Transaksi Disesuaikan', requirement: ['Bank statement reconciliation matches are not yet recorded.', 'Padanan penyesuaian penyata bank belum direkodkan.'] },
     { name: 'Transaction List', ms: 'Senarai Transaksi', source: 'bank', mode: 'documents' },

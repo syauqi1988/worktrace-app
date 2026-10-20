@@ -54,7 +54,7 @@ export const MS_DICT: Record<string, string> = {
   'Payments': 'Bayaran', 'Refunds': 'Bayaran Balik', 'Bank': 'Bank', 'Money In': 'Wang Masuk',
   'Money Out': 'Wang Keluar', 'Transfers': 'Pindahan', 'Accounts': 'Akaun', 'Accounting': 'Perakaunan',
   'Code': 'Kod', 'Debit': 'Debit', 'Credit': 'Kredit', 'Net Profit': 'Untung Bersih', 'Opening': 'Baki Awal', 'Source': 'Sumber', 'Section': 'Bahagian',
-  'Total Income': 'Jumlah Pendapatan', 'Total Expenses': 'Jumlah Perbelanjaan', 'Asset': 'Aset', 'Liability': 'Liabiliti', 'Equity': 'Ekuiti', 'Income': 'Pendapatan', 'Expense': 'Perbelanjaan',
+  'Total Income': 'Jumlah Pendapatan', 'Total Expenses': 'Jumlah Perbelanjaan', 'Asset': 'Aset', 'Liability': 'Liabiliti', 'Equity': 'Ekuiti',
   'Total Asset': 'Jumlah Aset', 'Total Liability': 'Jumlah Liabiliti', 'Total Equity': 'Jumlah Ekuiti', 'Total Liabilities & Equity': 'Jumlah Liabiliti & Ekuiti', 'Current Earnings': 'Pendapatan Semasa',
   'Total Assets': 'Jumlah Aset', 'Total Debit': 'Jumlah Debit', 'New Journal Entry': 'Catatan Jurnal Baharu', 'Invoice payment': 'Bayaran invois', 'Invoice': 'Invois', 'Bill': 'Bil',
   'Purchase payment': 'Bayaran pembelian', 'Purchase credit note': 'Nota kredit pembelian', 'Opening balance': 'Baki awal',
