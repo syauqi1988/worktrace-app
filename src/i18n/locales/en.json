@@ -1686,8 +1686,6 @@
     "payDate": "Payment Date",
     "method": "Method",
     "bank": "Bank (if any)",
-    "bankSelect": "Select bank",
-    "bankOther": "Other (type manually)",
     "reference": "Reference No.",
     "notes": "Notes",
     "receipt": "Receipt / Payment Proof",

@@ -193,8 +193,6 @@ export const EN_DICT: Record<string, string> = {
   "Dalam tempoh 14 hari (jaminan)": "Within 14 days (guarantee)",
   "Gagal menghantar permohonan.": "Failed to submit request.",
   "Lain-lain": "Others",
-  "Lain-lain (taip sendiri)": "Other (type manually)",
-  "Pilih bank": "Select bank",
   "Platform tidak boleh diakses > 7 hari": "Platform inaccessible > 7 days",
   "Tempoh bayaran balik telah tamat": "Refund period has ended",
   "Tempoh kelayakan bayaran balik telah berlalu. Anda masih boleh hantar permohonan untuk situasi khas (caj berganda, caj tidak dibenarkan, gangguan major).": "The refund eligibility period has passed. You can still submit a request for special cases (double charge, unauthorised charge, major outage).",

@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle2, XCircle, Upload, Loader2, Receipt, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { MALAYSIAN_BANKS } from '@/lib/banks';
 
 interface ProofRow {
   id: string;
@@ -270,19 +269,7 @@ export default function PublicPaymentProofPage() {
             </div>
             <div>
               <Label>{t('publicProof.bank')}</Label>
-              <select
-                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                value={bankName && !MALAYSIAN_BANKS.includes(bankName) ? '__other' : bankName}
-                onChange={(e) => setBankName(e.target.value === '__other' ? '' : e.target.value)}
-                disabled={isSubmitted}
-              >
-                <option value="">{t('publicProof.bankSelect')}</option>
-                {MALAYSIAN_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                <option value="__other">{t('publicProof.bankOther')}</option>
-              </select>
-              {bankName && !MALAYSIAN_BANKS.includes(bankName) && (
-                <Input value={bankName} onChange={(e) => setBankName(e.target.value)} disabled={isSubmitted} className="mt-1.5" />
-              )}
+              <Input value={bankName} onChange={(e) => setBankName(e.target.value)} disabled={isSubmitted} />
             </div>
           </div>
           <div>
