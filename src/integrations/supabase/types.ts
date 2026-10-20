@@ -211,6 +211,99 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_accounts: {
+        Row: {
+          account_number: string
+          bank_name: string
+          created_at: string
+          id: string
+          name: string
+          notes: string
+          opening_balance: number
+          user_id: string
+        }
+        Insert: {
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string
+          opening_balance?: number
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string
+          opening_balance?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bank_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          notes: string
+          party: string
+          reference: string
+          to_account_id: string | null
+          transaction_date: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          description?: string
+          id?: string
+          kind: string
+          notes?: string
+          party?: string
+          reference?: string
+          to_account_id?: string | null
+          transaction_date?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          notes?: string
+          party?: string
+          reference?: string
+          to_account_id?: string | null
+          transaction_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_transactions_user_id_account_id_fkey"
+            columns: ["user_id", "account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["user_id", "id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_user_id_to_account_id_fkey"
+            columns: ["user_id", "to_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["user_id", "id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           category: string
