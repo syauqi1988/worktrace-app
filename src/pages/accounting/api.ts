@@ -3,7 +3,7 @@ import { allRows } from '@/lib/reports/data';
 import { DEFAULT_ACCOUNTS, autoEntries, manualEntries, type AutoSources, type JournalEntry, type LedgerAccount, type LedgerData } from './shared';
 
 // Staged tables are not in generated Supabase types until draft acceptance.
-export const accountingDb = supabase as any;
+export const accountingDb = supabase as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /** Load the chart, preloading the standard accounts the first time. */
 export async function loadAccounts(userId: string): Promise<LedgerAccount[]> {

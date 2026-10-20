@@ -35,7 +35,6 @@ ALTER TABLE public.journal_entries ENABLE ROW LEVEL SECURITY;
 CREATE POLICY journal_entries_own ON public.journal_entries FOR ALL TO authenticated
   USING (user_id = (SELECT auth.uid())) WITH CHECK (user_id = (SELECT auth.uid()));
 
--- Reject unbalanced or malformed journals at the database level.
 CREATE OR REPLACE FUNCTION public.validate_journal_entry()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
 DECLARE dr numeric := 0; cr numeric := 0; line jsonb; d numeric; c numeric;

@@ -1071,6 +1071,42 @@ export type Database = {
           },
         ]
       }
+      journal_entries: {
+        Row: {
+          created_at: string
+          description: string
+          entry_date: string
+          entry_number: string
+          id: string
+          lines: Json
+          reference: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          entry_date?: string
+          entry_number?: string
+          id?: string
+          lines?: Json
+          reference?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          entry_date?: string
+          entry_number?: string
+          id?: string
+          lines?: Json
+          reference?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lead_sources: {
         Row: {
           campaign: string | null
@@ -1159,6 +1195,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ledger_accounts: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string
+          system_key: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string
+          system_key?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string
+          system_key?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       marketing_integrations: {
         Row: {
