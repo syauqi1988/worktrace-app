@@ -62,7 +62,7 @@ export type AutoSources = {
   bankTransactions: { id: string; kind: string; amount: number; transaction_date: string; reference: string; description: string; party: string }[];
 };
 const d10 = (v: string | null | undefined) => (v || '').slice(0, 10);
-const PURCHASE_PATHS: Record<string, string> = { bill: '/bills', payment: '/purchase-payments', credit_note: '/purchase-credit-notes' };
+const PURCHASE_PATHS: Record<string, string> = { bill: '/bills', payment: '/purchase-payments', credit_note: '/credit-notes' };
 
 /** Posting rules: turn saved documents into balanced journals using the system accounts. */
 export function autoEntries(src: AutoSources, accounts: LedgerAccount[]): PostedEntry[] {
