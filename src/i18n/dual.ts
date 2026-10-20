@@ -7,6 +7,10 @@ import i18n from './index';
  *  - useTx(): tx('English') — looks up MS_DICT; used by shared list/form/menu screens.
  */
 export const MS_DICT: Record<string, string> = {
+  'Current': 'Semasa', '1–30 days': '1–30 hari', '31–60 days': '31–60 hari',
+  '61–90 days': '61–90 hari', '90+ days': '90+ hari', 'No Due Date': 'Tiada Tarikh Akhir',
+  'Outstanding': 'Belum Dibayar', 'Tag': 'Tag', 'Untagged': 'Tanpa Tag',
+  'Documents': 'Dokumen', 'Unit': 'Unit', 'Line Amount': 'Jumlah Baris',
   'Home / Bank': 'Utama / Bank',
   'New Account': 'Akaun Baru', 'Edit Account': 'Sunting Akaun',
   'New Money In': 'Wang Masuk Baru', 'Edit Money In': 'Sunting Wang Masuk',

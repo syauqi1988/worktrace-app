@@ -1,5 +1,6 @@
 /** Offline knowledge used by the on-device WorkTrace AI Help. Keep short & factual. */
 export const KB: { k: string[]; en: string; ms: string }[] = [
+  { k: ['reports', 'laporan kewangan', 'csv', 'aging', 'pengumuran', 'report export'], en: 'Reports: select a report, filter dates and search, refresh, download CSV or Print / Save PDF. Sales, quotation, purchase, item and manual Bank reports use your saved records. Invoice collections use fully Paid invoices; partial allocations are unavailable. Product amounts exclude document-level tax and deductions. Accounting, inventory, asset, reconciliation, FX and statutory SST reports identify required records when unavailable, rather than inventing figures. Bank reports require accepting the Bank draft first.', ms: 'Laporan: pilih laporan, tapis tarikh dan cari, muat semula, muat turun CSV atau Cetak / Simpan PDF. Laporan jualan, sebut harga, pembelian, item dan Bank manual menggunakan rekod anda. Kutipan invois menggunakan invois Dibayar penuh; peruntukan separa tidak tersedia. Jumlah produk tidak termasuk cukai dan potongan peringkat dokumen. Laporan perakaunan, inventori, aset, penyesuaian, pertukaran dan SST berkanun menyatakan rekod diperlukan apabila belum tersedia, bukan mereka angka. Laporan Bank memerlukan penerimaan draf Bank dahulu.' },
   { k: ['job', 'kerja', 'create', 'buat', 'new'], en: 'Create a job: Jobs menu > "+" > fill title, customer, category, job type (normal, deposit, milestone) > Save.', ms: 'Buat kerja: menu Kerja > "+" > isi tajuk, pelanggan, kategori, jenis kerja (biasa, deposit, berperingkat) > Simpan.' },
   { k: ['quotation', 'sebut harga', 'quote'], en: 'Quotation: open a Job > Create Quotation, add items from catalog, deductions, terms. Press Create, then share via the WhatsApp button.', ms: 'Sebut harga: buka Kerja > Buat Sebut Harga, tambah item dari katalog, potongan, terma. Tekan Cipta, kemudian kongsi melalui butang WhatsApp.' },
   { k: ['invoice', 'invois'], en: 'Invoice: from a Job or Quotation > Create Invoice. Milestone jobs create one invoice per stage, each with its own number. No completion report needed first.', ms: 'Invois: dari Kerja atau Sebut Harga > Buat Invois. Kerja berperingkat mencipta satu invois setiap peringkat dengan nombor sendiri. Laporan siap kerja tidak diperlukan dahulu.' },
@@ -38,6 +39,7 @@ export const fullKB = (ms: boolean) => [...KB.map(e => '- ' + (ms ? e.ms : e.en)
 
 /** FAQ questions, same order as KB. */
 const Q: [string, string][] = [
+  ['How do I view and download reports?', 'Bagaimana melihat dan memuat turun laporan?'],
   ['How do I create a job?', 'Bagaimana cara buat kerja?'],
   ['How do I create and share a quotation?', 'Bagaimana buat dan kongsi sebut harga?'],
   ['How do I create an invoice?', 'Bagaimana buat invois?'],
