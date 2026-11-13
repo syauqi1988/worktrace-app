@@ -149,11 +149,11 @@ export function buildLedgerReport(name: string, data: LedgerData, from: string, 
   if (name === 'Profit & Loss') {
     const bal = balances(data.entries, accounts, from, to);
     const rows: ReportRow[] = []; let income = 0; let expense = 0;
-    for (const t of ['income', 'expense'] as AccountType[]) {
+    for (const t of ['income', 'cost_of_sales', 'expense'] as AccountType[]) {
       let sub = 0;
       for (const a of accounts.filter(x => x.type === t)) { const b = bal.get(a.id) || 0; if (!b) continue; sub += b; rows.push({ cells: [typeName(t), `${a.code} ${a.name}`, b / 100] }); }
-      rows.push({ cells: [typeName(t), t === 'income' ? 'Total Income' : 'Total Expenses', sub / 100] });
-      if (t === 'income') income = sub; else expense = sub;
+      rows.push({ cells: [typeName(t), t === 'income' ? 'Total Income' : t === 'cost_of_sales' ? 'Total Cost of Sales' : 'Total Expenses', sub / 100] });
+      if (t === 'income') income = sub; else expense += sub;
     }
     rows.push({ cells: ['', 'Net Profit', (income - expense) / 100] });
     return { columns: ['Section', 'Account', 'Amount'], moneyColumns: [2], totalLabel: 'Net Profit', total: (income - expense) / 100, rows };
@@ -161,7 +161,7 @@ export function buildLedgerReport(name: string, data: LedgerData, from: string, 
   if (name === 'Balance Sheet') {
     const bal = balances(data.entries, accounts, '', to);
     const rows: ReportRow[] = []; const totals: Record<string, number> = {};
-    const earnings = accounts.reduce((s, a) => s + (a.type === 'income' ? (bal.get(a.id) || 0) : a.type === 'expense' ? -(bal.get(a.id) || 0) : 0), 0);
+    const earnings = accounts.reduce((s, a) => s + (a.type === 'income' ? (bal.get(a.id) || 0) : (a.type === 'expense' || a.type === 'cost_of_sales') ? -(bal.get(a.id) || 0) : 0), 0);
     for (const t of ['asset', 'liability', 'equity'] as AccountType[]) {
       let sub = 0;
       for (const a of accounts.filter(x => x.type === t)) { const b = bal.get(a.id) || 0; if (!b) continue; sub += b; rows.push({ cells: [typeName(t), `${a.code} ${a.name}`, b / 100] }); }
