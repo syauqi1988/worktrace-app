@@ -1,0 +1,2 @@
+ALTER TABLE public.ledger_accounts DROP CONSTRAINT ledger_accounts_type_check;
+ALTER TABLE public.ledger_accounts ADD CONSTRAINT ledger_accounts_type_check CHECK (type IN ('asset', 'liability', 'equity', 'income', 'cost_of_sales', 'expense'));
