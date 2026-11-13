@@ -1,6 +1,6 @@
 import type { ReportOutput, ReportRow } from '@/lib/reports/engine';
 
-export type AccountType = 'asset' | 'liability' | 'equity' | 'income' | 'expense';
+export type AccountType = 'asset' | 'liability' | 'equity' | 'income' | 'cost_of_sales' | 'expense';
 export type LedgerAccount = { id: string; user_id: string; code: string; name: string; type: AccountType; system_key: string | null; is_active: boolean; notes: string; created_at: string };
 export type JournalLine = { account_id: string; debit: number; credit: number; memo?: string };
 export type JournalEntry = { id: string; user_id: string; entry_number: string; entry_date: string; reference: string; description: string; lines: JournalLine[]; created_at: string };
@@ -12,9 +12,10 @@ export const ACCOUNT_TYPES: { value: AccountType; en: string; ms: string; debitN
   { value: 'liability', en: 'Liability', ms: 'Liabiliti', debitNormal: false },
   { value: 'equity', en: 'Equity', ms: 'Ekuiti', debitNormal: false },
   { value: 'income', en: 'Income', ms: 'Pendapatan', debitNormal: false },
+  { value: 'cost_of_sales', en: 'Cost of Sales', ms: 'Kos Jualan', debitNormal: true },
   { value: 'expense', en: 'Expense', ms: 'Perbelanjaan', debitNormal: true },
 ];
-export const debitNormal = (t: AccountType) => t === 'asset' || t === 'expense';
+export const debitNormal = (t: AccountType) => t === 'asset' || t === 'expense' || t === 'cost_of_sales';
 
 /** Preloaded chart. system_key accounts receive automatic postings. */
 export const DEFAULT_ACCOUNTS: { code: string; name: string; type: AccountType; system_key: string | null }[] = [
@@ -35,6 +36,7 @@ export const DEFAULT_ACCOUNTS: { code: string; name: string; type: AccountType; 
   { code: '4000', name: 'Sales', type: 'income', system_key: 'sales' },
   { code: '4100', name: 'Other Income', type: 'income', system_key: 'other_income' },
   { code: '5000', name: 'Purchases', type: 'expense', system_key: 'purchases' },
+  { code: '5100', name: 'Cost of Sales', type: 'cost_of_sales', system_key: null },
   { code: '6000', name: 'General Expenses', type: 'expense', system_key: 'expenses' },
   { code: '6100', name: 'Salaries & Wages', type: 'expense', system_key: null },
   { code: '6200', name: 'Rent', type: 'expense', system_key: null },
