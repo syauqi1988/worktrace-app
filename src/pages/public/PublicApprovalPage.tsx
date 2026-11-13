@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, Download, XCircle, Share2 } from 'lucide-react';
+import { FileText, Download, XCircle, Share2, CheckCircle2, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { getDateLocale } from '@/i18n';
 import CompletionReportView from '@/components/reports/CompletionReportView';
 
 interface ApprovalRow {
@@ -67,6 +70,28 @@ export default function PublicApprovalPage() {
       setLoading(false);
     })();
   }, [token]);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [rejectMode, setRejectMode] = useState(false);
+  const [reason, setReason] = useState('');
+
+  // Customer verification (completion reports only).
+  const respond = async (action: 'accepted' | 'rejected') => {
+    if (!row) return;
+    if (action === 'rejected' && !reason.trim()) { toast.error(t('publicApproval.needReason')); return; }
+    setSubmitting(true);
+    const { error } = await supabase.rpc('respond_to_approval', {
+      p_token: row.token, p_action: action, p_reason: action === 'rejected' ? reason.trim() : null,
+    });
+    if (error) { toast.error(t('publicApproval.submitFailed')); setSubmitting(false); return; }
+    setRow({ ...row, action, responded_at: new Date().toISOString(), reason });
+    setSubmitting(false);
+    toast.success(action === 'accepted' ? t('publicApproval.thanksAccepted') : t('publicApproval.responseSent'));
+    try {
+      const { data: stamped } = await supabase.functions.invoke('stamp-approval-pdf', { body: { token: row.token } });
+      if (stamped?.pdf_url) setRow((prev) => (prev ? { ...prev, pdf_url: stamped.pdf_url } : prev));
+    } catch (e) { console.warn('stamp-approval-pdf failed', e); }
+  };
 
   const handleShare = async () => {
     if (!row?.pdf_url) return;
@@ -168,6 +193,41 @@ export default function PublicApprovalPage() {
         )}
 
         {/* View / Download / Share — no accept/reject action */}
+        {row.document_type === 'completion_report' && (
+          row.action ? (
+            <div className={`border rounded-xl p-4 text-center ${row.action === 'accepted' ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-destructive/10 border-destructive/30 text-destructive'}`}>
+              {row.action === 'accepted' ? <CheckCircle2 className="h-10 w-10 mx-auto mb-2" /> : <XCircle className="h-10 w-10 mx-auto mb-2" />}
+              <p className="font-bold">{row.action === 'accepted' ? t('publicApproval.approved') : t('publicApproval.rejected')}</p>
+              {row.reason && row.action === 'rejected' && <p className="text-sm mt-2">{t('publicApproval.reasonLabel')} {row.reason}</p>}
+              {row.responded_at && <p className="text-xs mt-2 opacity-75">{new Date(row.responded_at).toLocaleString(getDateLocale())}</p>}
+            </div>
+          ) : row.expires_at && new Date(row.expires_at) < new Date() ? (
+            <div className="bg-muted border border-border rounded-xl p-4 text-center text-muted-foreground">
+              <p className="font-medium">{t('publicApproval.linkExpired')}</p>
+            </div>
+          ) : rejectMode ? (
+            <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+              <p className="text-sm font-medium">{t('publicApproval.rejectPrompt')}</p>
+              <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} placeholder={t('publicApproval.rejectPlaceholder')} />
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setRejectMode(false)} disabled={submitting}>{t('publicApproval.cancel')}</Button>
+                <Button variant="destructive" className="flex-1" onClick={() => respond('rejected')} disabled={submitting}>
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('publicApproval.submit')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={() => respond('accepted')} disabled={submitting} className="rounded-lg gap-2 h-12">
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />} {t('publicApproval.accept')}
+              </Button>
+              <Button onClick={() => setRejectMode(true)} variant="outline" disabled={submitting} className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-lg gap-2 h-12">
+                <XCircle className="h-5 w-5" /> {t('publicApproval.reject')}
+              </Button>
+            </div>
+          )
+        )}
+
         {row.pdf_url && (
           <div className="grid grid-cols-1 gap-2">
             <Button asChild className="w-full rounded-lg gap-2 h-11">
